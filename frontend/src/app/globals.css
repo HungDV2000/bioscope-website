@@ -1,0 +1,134 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =========================================================================
+   Bioscope Vietnam — "Precision / Nanoscience"
+   Fonts self-host qua next/font (app/layout.tsx):
+   --font-heading (Be Vietnam Pro) · --font-body (Inter)
+   ========================================================================= */
+@layer base {
+  :root {
+    --font-heading: "Be Vietnam Pro", system-ui, sans-serif;
+    --font-body: "Inter", system-ui, sans-serif;
+  }
+
+  * {
+    @apply border-neutral-200;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-canvas text-neutral-900 font-sans antialiased;
+    line-height: 1.6;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: " cv11", "ss01";
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading font-semibold tracking-tightish text-ink;
+    line-height: 1.1;
+  }
+
+  :where(a, button, input, select, textarea):focus-visible {
+    @apply outline-none ring-2 ring-primary/45 ring-offset-2 ring-offset-canvas;
+  }
+
+  ::selection {
+    @apply bg-primary/15 text-primary-dark;
+  }
+}
+
+/* =========================================================================
+   Components
+   ========================================================================= */
+@layer components {
+  .container-bs {
+    @apply container max-w-[1320px];
+  }
+
+  /* Lab label — eyebrow kiểu "bảng đo": chữ nhỏ, tracking rộng, có vạch dẫn */
+  .lab-label {
+    @apply inline-flex items-center gap-2.5 text-xs font-semibold uppercase tracking-label text-primary-dark;
+  }
+  .lab-label::before {
+    content: "";
+    @apply h-px w-7 bg-primary/40;
+  }
+  .lab-label--invert {
+    @apply text-white/80;
+  }
+  .lab-label--invert::before {
+    @apply bg-white/30;
+  }
+
+  /* Số liệu kiểu readout — luôn tabular để cột số thẳng hàng */
+  .readout {
+    @apply font-heading font-bold tabular-nums tracking-tightish;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .link-underline {
+    @apply relative after:absolute after:bottom-0 after:left-0 after:h-px after:w-0 after:bg-primary after:transition-all hover:after:w-full;
+  }
+
+  .prose-bs {
+    @apply leading-relaxed text-neutral-700
+      [&>p]:mb-4
+      [&>h2]:mt-8 [&>h2]:mb-3 [&>h2]:text-2xl [&>h2]:font-heading [&>h2]:text-ink;
+  }
+}
+
+/* =========================================================================
+   Utilities
+   ========================================================================= */
+@layer utilities {
+  .text-balance { text-wrap: balance; }
+  .text-pretty { text-wrap: pretty; }
+
+  /* Scroll reveal */
+  .reveal {
+    opacity: 0;
+    transform: translateY(28px);
+    transition:
+      opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .reveal.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Mask gradient 2 mép cho logo cloud */
+  .mask-fade-x {
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 9%, #000 91%, transparent);
+    mask-image: linear-gradient(to right, transparent, #000 9%, #000 91%, transparent);
+  }
+  .pause-hover:hover { animation-play-state: paused; }
+
+  /* Orbit cho signature SVG — quay quanh tâm phần tử */
+  .orbit {
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+}
+
+/* Giảm chuyển động — giữ sự điềm tĩnh ngành y khoa */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .reveal { opacity: 1; transform: none; }
+}
+
+/* Thanh cuộn */
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-thumb { background: #c3d4cb; border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: #098f50; }

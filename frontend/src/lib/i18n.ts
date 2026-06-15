@@ -1,0 +1,134 @@
+import type { Locale } from "./utils";
+
+export const locales: Locale[] = ["vi", "en"];
+export const defaultLocale: Locale = "vi";
+
+export function isLocale(value: string): value is Locale {
+  return locales.includes(value as Locale);
+}
+
+/** Dictionary cho phần "chrome" của site (header/footer/nút/label chung) */
+const dictionaries = {
+  vi: {
+    nav: {
+      home: "Trang chủ",
+      about: "Giới thiệu",
+      ingredients: "Nguyên liệu",
+      technologies: "Công nghệ riêng",
+      services: "Dịch vụ ODM",
+      blog: "Bioneer's Blog",
+      contact: "Liên hệ",
+      careers: "Tuyển dụng",
+      faq: "Câu hỏi thường gặp",
+      privacy: "Chính sách bảo mật",
+    },
+    cta: {
+      login: "Đăng nhập B2B",
+      contact: "Liên hệ tư vấn",
+      explore: "Khám phá ngay",
+      viewAll: "Xem tất cả",
+      viewDetail: "Xem chi tiết",
+      readMore: "Đọc tiếp",
+      send: "Gửi yêu cầu",
+      downloadProfile: "Tải hồ sơ năng lực",
+      backHome: "Về trang chủ",
+      register: "Đăng ký tài khoản",
+    },
+    common: {
+      searchPlaceholder: "Tìm nguyên liệu, công nghệ...",
+      supplement: "Thực phẩm chức năng",
+      cosmetic: "Mỹ phẩm",
+      allCategories: "Tất cả nhóm",
+      allOrigins: "Tất cả xuất xứ",
+      origin: "Xuất xứ",
+      brand: "Thương hiệu",
+      category: "Phân nhóm",
+      benefits: "Công dụng nổi bật",
+      applications: "Ứng dụng",
+      relatedTech: "Công nghệ liên quan",
+      specs: "Thông số kỹ thuật",
+      mechanism: "Cơ chế hoạt động",
+      relatedProducts: "Nguyên liệu liên quan",
+      noResult: "Không tìm thấy kết quả phù hợp.",
+      readingTime: "phút đọc",
+      latestPosts: "Bài viết mới nhất",
+      quickContact: "Liên hệ nhanh",
+    },
+    footer: {
+      tagline:
+        "Đối tác tin cậy về nguyên liệu & giải pháp công thức cho ngành Dược phẩm, Thực phẩm chức năng và Mỹ phẩm tại Việt Nam.",
+      company: "Công ty",
+      products: "Sản phẩm & Dịch vụ",
+      support: "Hỗ trợ",
+      newsletter: "Nhận bản tin chuyên ngành",
+      newsletterDesc: "Cập nhật xu hướng nguyên liệu & công nghệ mới mỗi tháng.",
+      emailPlaceholder: "Email của bạn",
+      subscribe: "Đăng ký",
+      rights: "Bảo lưu mọi quyền.",
+    },
+  },
+  en: {
+    nav: {
+      home: "Home",
+      about: "About",
+      ingredients: "Ingredients",
+      technologies: "Technologies",
+      services: "ODM Services",
+      blog: "Bioneer's Blog",
+      contact: "Contact",
+      careers: "Careers",
+      faq: "FAQ",
+      privacy: "Privacy Policy",
+    },
+    cta: {
+      login: "B2B Login",
+      contact: "Get a consultation",
+      explore: "Explore now",
+      viewAll: "View all",
+      viewDetail: "View detail",
+      readMore: "Read more",
+      send: "Send request",
+      downloadProfile: "Download company profile",
+      backHome: "Back to home",
+      register: "Create account",
+    },
+    common: {
+      searchPlaceholder: "Search ingredients, technologies...",
+      supplement: "Dietary Supplements",
+      cosmetic: "Cosmetics",
+      allCategories: "All categories",
+      allOrigins: "All origins",
+      origin: "Origin",
+      brand: "Brand",
+      category: "Category",
+      benefits: "Key benefits",
+      applications: "Applications",
+      relatedTech: "Related technology",
+      specs: "Technical specs",
+      mechanism: "Mechanism of action",
+      relatedProducts: "Related ingredients",
+      noResult: "No matching results found.",
+      readingTime: "min read",
+      latestPosts: "Latest articles",
+      quickContact: "Quick contact",
+    },
+    footer: {
+      tagline:
+        "A trusted partner for raw materials & formulation solutions for the Pharmaceutical, Dietary Supplement and Cosmetic industries in Vietnam.",
+      company: "Company",
+      products: "Products & Services",
+      support: "Support",
+      newsletter: "Industry newsletter",
+      newsletterDesc: "Monthly updates on new ingredient & technology trends.",
+      emailPlaceholder: "Your email",
+      subscribe: "Subscribe",
+      rights: "All rights reserved.",
+    },
+  },
+};
+
+export type Dictionary = (typeof dictionaries)["vi"];
+
+export function getDictionary(locale: Locale): Dictionary {
+  return dictionaries[locale] ?? dictionaries.vi;
+}

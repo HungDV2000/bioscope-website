@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Search, SlidersHorizontal } from "lucide-react";
 import type { Ingredient } from "@/lib/types";
 import type { Locale } from "@/lib/utils";
@@ -11,16 +12,20 @@ import { IngredientCard } from "@/components/cards/ingredient-card";
 export function IngredientCatalog({
   ingredients,
   locale,
-  initialType,
 }: {
   ingredients: Ingredient[];
   locale: Locale;
-  initialType?: "supplement" | "cosmetic";
 }) {
   const t = getDictionary(locale);
-  const [type, setType] = useState<"all" | "supplement" | "cosmetic">(
-    initialType ?? "all"
-  );
+  const searchParams = useSearchParams();
+  const [type, setType] = useState<"all" | "supplement" | "cosmetic">("all");
+
+  useEffect(() => {
+    const param = searchParams.get("type");
+    if (param === "supplement" || param === "cosmetic") {
+      setType(param);
+    }
+  }, [searchParams]);
   const [origin, setOrigin] = useState("all");
   const [query, setQuery] = useState("");
 

@@ -17,6 +17,14 @@ npm run dev      # http://localhost:3000  → tự chuyển hướng /vi
 ```
 
 ## 🏗️ Build
+
+**Static (aaPanel — upload như React, không cần Node trên VPS):**
+```bash
+npm run build:static
+# → thư mục out/ — xem deploy/DEPLOY-AAPANEL.md
+```
+
+**Node / Docker (PM2, webhook CMS):**
 ```bash
 npm run build && npm start
 ```

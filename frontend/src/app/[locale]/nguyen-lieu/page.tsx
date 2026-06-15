@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import type { Locale } from "@/lib/utils";
 import { getDictionary } from "@/lib/i18n";
 import { ingredients } from "@/lib/data";
@@ -14,17 +15,11 @@ export const metadata: Metadata = {
 
 export default function IngredientsPage({
   params,
-  searchParams,
 }: {
   params: { locale: Locale };
-  searchParams: { type?: string };
 }) {
   const { locale } = params;
   const t = getDictionary(locale);
-  const initialType =
-    searchParams.type === "supplement" || searchParams.type === "cosmetic"
-      ? searchParams.type
-      : undefined;
 
   return (
     <>
@@ -39,11 +34,15 @@ export default function IngredientsPage({
         }
         breadcrumbs={[{ label: t.nav.ingredients }]}
       />
-      <IngredientCatalog
-        ingredients={ingredients}
-        locale={locale}
-        initialType={initialType}
-      />
+      <Suspense
+        fallback={
+          <div className="container-bs py-14 text-sm text-neutral-500">
+            {locale === "vi" ? "Đang tải danh mục…" : "Loading catalog…"}
+          </div>
+        }
+      >
+        <IngredientCatalog ingredients={ingredients} locale={locale} />
+      </Suspense>
       <CtaBand locale={locale} />
       <div className="pb-8" />
     </>

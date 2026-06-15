@@ -7,6 +7,9 @@
     "dev": "next dev",
     "dev:clean": "rm -rf .next && next dev",
     "build": "next build",
+    "build:static": "STATIC_EXPORT=1 next build",
+    "build:static:clean": "bash scripts/build-static.sh",
+    "package:static": "bash scripts/package-static.sh",
     "start": "next start",
     "lint": "next lint"
   },

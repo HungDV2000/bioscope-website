@@ -2,8 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 
 /**
- * On-demand ISR revalidation.
- * Payload CMS afterChange hook gọi:
+ * Chỉ dùng khi chạy Node (PM2 / Docker), KHÔNG dùng với static export.
+ * Copy vào: src/app/api/revalidate/route.ts
+ *
+ * Payload CMS afterChange hook:
  *   POST /api/revalidate?secret=...&path=/vi/nguyen-lieu
  */
 export async function POST(request: NextRequest) {

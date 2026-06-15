@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { SafeImage } from "@/components/ui/safe-image";
 import Link from "next/link";
 import { ArrowUpRight, MapPin } from "lucide-react";
 import type { Ingredient } from "@/lib/types";
@@ -21,7 +21,7 @@ export function IngredientCard({
       className="group flex flex-col overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover"
     >
       <div className="relative aspect-[4/3] overflow-hidden">
-        <Image
+        <SafeImage
           src={ingredient.image}
           alt={pick(ingredient.name, locale)}
           fill

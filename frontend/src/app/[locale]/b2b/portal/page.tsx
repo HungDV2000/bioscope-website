@@ -37,8 +37,8 @@ export default function PortalPage({
     <>
       <PageHeader
         locale={locale}
-        eyebrow={locale === "vi" ? "Cổng đối tác B2B" : "B2B Partner Portal"}
-        title={locale === "vi" ? "Tài liệu của bạn" : "Your documents"}
+        title={locale === "vi" ? "Tài liệu" : "Your"}
+        titleAccent={locale === "vi" ? "của bạn" : "documents"}
         description={
           locale === "vi"
             ? "Truy cập COA, spec sheet, báo giá và tài liệu kỹ thuật dành riêng cho đối tác. (Demo — sẽ bảo vệ bằng xác thực ở giai đoạn backend.)"

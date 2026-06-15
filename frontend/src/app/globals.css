@@ -51,19 +51,12 @@
     @apply container max-w-[1320px];
   }
 
-  /* Lab label — eyebrow kiểu "bảng đo": chữ nhỏ, tracking rộng, có vạch dẫn */
+  /* Lab label — eyebrow: chữ nhỏ, tracking rộng */
   .lab-label {
-    @apply inline-flex items-center gap-2.5 text-xs font-semibold uppercase tracking-label text-primary-dark;
-  }
-  .lab-label::before {
-    content: "";
-    @apply h-px w-7 bg-primary/40;
+    @apply inline-flex items-center text-xs font-semibold uppercase tracking-label text-primary-dark;
   }
   .lab-label--invert {
     @apply text-white/80;
-  }
-  .lab-label--invert::before {
-    @apply bg-white/30;
   }
 
   /* Số liệu kiểu readout — luôn tabular để cột số thẳng hàng */
@@ -79,7 +72,8 @@
   .prose-bs {
     @apply leading-relaxed text-neutral-700
       [&>p]:mb-4
-      [&>h2]:mt-8 [&>h2]:mb-3 [&>h2]:text-2xl [&>h2]:font-heading [&>h2]:text-ink;
+      [&>h2]:mt-10 [&>h2]:mb-4 [&>h2]:scroll-mt-28 [&>h2]:text-xl [&>h2]:font-heading [&>h2]:font-bold [&>h2]:text-ink sm:[&>h2]:text-2xl
+      [&>h3]:mt-6 [&>h3]:mb-3 [&>h3]:scroll-mt-28 [&>h3]:text-lg [&>h3]:font-heading [&>h3]:font-semibold [&>h3]:text-ink;
   }
 }
 
@@ -105,8 +99,8 @@
 
   /* Mask gradient 2 mép cho logo cloud */
   .mask-fade-x {
-    -webkit-mask-image: linear-gradient(to right, transparent, #000 9%, #000 91%, transparent);
-    mask-image: linear-gradient(to right, transparent, #000 9%, #000 91%, transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 4%, #000 96%, transparent);
+    mask-image: linear-gradient(to right, transparent, #000 4%, #000 96%, transparent);
   }
   .pause-hover:hover { animation-play-state: paused; }
 

@@ -1,9 +1,11 @@
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import type { Technology } from "@/lib/types";
 import type { Locale } from "@/lib/utils";
 import { pick } from "@/lib/utils";
+
+const PRIMARY = "#098F50";
+const ACCENT = "#F68C36";
 
 export function TechCard({
   tech,
@@ -14,18 +16,22 @@ export function TechCard({
   locale: Locale;
   index: number;
 }) {
+  // Số 1, 2, 4 → xanh thương hiệu; số 3 → cam
+  const color = index === 2 ? ACCENT : PRIMARY;
+
   return (
     <Link
       href={`/${locale}/cong-nghe/${tech.slug}`}
-      className="group relative flex flex-col overflow-hidden rounded-lg border border-neutral-200 bg-white p-7 shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover"
+      className="group relative flex flex-col overflow-hidden rounded-lg border border-neutral-200 bg-white p-7 transition-all duration-300 hover:-translate-y-1 hover:border-current"
+      style={{ color }}
     >
       <div
-        className="absolute right-0 top-0 h-32 w-32 -translate-y-12 translate-x-12 rounded-full opacity-10 blur-2xl transition-opacity group-hover:opacity-20"
-        style={{ background: tech.accent }}
+        className="absolute right-0 top-0 h-32 w-32 -translate-y-12 translate-x-12 rounded-full opacity-[0.08] blur-2xl transition-opacity group-hover:opacity-20"
+        style={{ background: color }}
       />
       <span
-        className="font-heading text-5xl font-extrabold text-neutral-100"
-        style={{ WebkitTextStroke: `1px ${tech.accent}33` }}
+        className="font-heading text-5xl font-extrabold leading-none"
+        style={{ color }}
       >
         0{index + 1}
       </span>
@@ -37,7 +43,7 @@ export function TechCard({
       </p>
       <div
         className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold"
-        style={{ color: tech.accent }}
+        style={{ color }}
       >
         {locale === "vi" ? "Tìm hiểu công nghệ" : "Explore technology"}
         <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />

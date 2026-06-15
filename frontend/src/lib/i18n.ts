@@ -54,6 +54,22 @@ const dictionaries = {
       latestPosts: "Bài viết mới nhất",
       quickContact: "Liên hệ nhanh",
     },
+    blog: {
+      searchPlaceholder: "Tìm bài viết, chủ đề...",
+      allCategories: "Tất cả",
+      sortNewest: "Mới nhất",
+      sortOldest: "Cũ nhất",
+      sortReadingShort: "Đọc nhanh",
+      sortReadingLong: "Đọc lâu",
+      articleCount: "bài viết",
+      tableOfContents: "Mục lục",
+      relatedPosts: "Bài viết liên quan",
+      categories: {
+        technology: "Công nghệ",
+        rd: "R&D",
+        manufacturing: "Sản xuất",
+      },
+    },
     footer: {
       tagline:
         "Đối tác tin cậy về nguyên liệu & giải pháp công thức cho ngành Dược phẩm, Thực phẩm chức năng và Mỹ phẩm tại Việt Nam.",
@@ -111,6 +127,22 @@ const dictionaries = {
       readingTime: "min read",
       latestPosts: "Latest articles",
       quickContact: "Quick contact",
+    },
+    blog: {
+      searchPlaceholder: "Search articles, topics...",
+      allCategories: "All",
+      sortNewest: "Newest",
+      sortOldest: "Oldest",
+      sortReadingShort: "Quickest read",
+      sortReadingLong: "Longest read",
+      articleCount: "articles",
+      tableOfContents: "Table of contents",
+      relatedPosts: "Related articles",
+      categories: {
+        technology: "Technology",
+        rd: "R&D",
+        manufacturing: "Manufacturing",
+      },
     },
     footer: {
       tagline:

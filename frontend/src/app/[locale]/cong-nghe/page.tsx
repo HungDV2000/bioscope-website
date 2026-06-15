@@ -26,12 +26,8 @@ export default function TechnologiesPage({
     <>
       <PageHeader
         locale={locale}
-        eyebrow={locale === "vi" ? "Năng lực R&D" : "R&D capability"}
-        title={
-          locale === "vi"
-            ? "Công nghệ độc quyền của Bioscope"
-            : "Bioscope's proprietary technologies"
-        }
+        title={locale === "vi" ? "Công nghệ độc quyền của" : "Bioscope's proprietary"}
+        titleAccent={locale === "vi" ? "Bioscope" : "technologies"}
         description={
           locale === "vi"
             ? "Bốn nền tảng công nghệ nano được nghiên cứu và phát triển nội bộ, giúp tối ưu sinh khả dụng, độ ổn định và hiệu quả của hoạt chất."

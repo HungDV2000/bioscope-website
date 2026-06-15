@@ -1,21 +1,16 @@
-import {
-  ArrowRight,
-  ShieldCheck,
-  Sparkles,
-  Boxes,
-  FlaskConical,
-  Atom,
-} from "lucide-react";
+import Image from "next/image";
+import { ArrowRight, ShieldCheck } from "lucide-react";
 import type { Locale } from "@/lib/utils";
 import { pick } from "@/lib/utils";
 import { getDictionary } from "@/lib/i18n";
 import { ButtonLink } from "@/components/ui/button";
 import { CountUp } from "@/components/ui/count-up";
 import { Reveal } from "@/components/ui/reveal";
-import { SectionHeading } from "@/components/ui/section-heading";
 import { TechCard } from "@/components/cards/tech-card";
 import { IngredientCard } from "@/components/cards/ingredient-card";
 import { PostCard } from "@/components/cards/post-card";
+import { SolutionsSection } from "@/components/home/solutions-section";
+import { CtaBand } from "@/components/shared/cta-band";
 import {
   technologies,
   ingredients,
@@ -25,79 +20,73 @@ import {
 } from "@/lib/data";
 
 /* -------------------------------------------------------------------------- */
-/*  Trang chủ — phong cách EDITORIAL (typography + storytelling)               */
+/*  Trang chủ — EDITORIAL · "Precision / Nanoscience"                          */
 /* -------------------------------------------------------------------------- */
 export default function HomePage({ params }: { params: { locale: Locale } }) {
   const { locale } = params;
   const t = getDictionary(locale);
   const techs = [...technologies].sort((a, b) => a.order - b.order);
-  const featured = ingredients.filter((i) => i.featured).slice(0, 3);
-  const featuredList =
-    featured.length > 0 ? featured : ingredients.slice(0, 3);
+  const pool = ingredients.filter((i) => i.featured);
+  const featured = (pool.length ? pool : ingredients).slice(0, 3);
 
   return (
     <>
       <Hero locale={locale} />
       <StatsBand locale={locale} />
-      <Pillars locale={locale} />
+      <PartnersCloud locale={locale} />
+      <SolutionsSection locale={locale} />
 
-      {/* Technologies — editorial preview */}
-      <section className="container-bs py-24">
+      {/* Technologies */}
+      <section className="container-bs py-16 lg:py-20">
         <Reveal>
-          <SectionHeading
-            eyebrow={locale === "vi" ? "Năng lực R&D" : "R&D capability"}
+          <SectionLead
+            label={locale === "vi" ? "Năng lực R&D" : "R&D capability"}
             title={
               locale === "vi"
-                ? "Công nghệ độc quyền tạo nên khác biệt"
-                : "Proprietary technologies that set us apart"
+                ? "Bốn nền tảng vận chuyển hoạt chất ở cấp độ nano"
+                : "Four nano-scale active delivery platforms"
             }
-            description={
+            desc={
               locale === "vi"
-                ? "Các nền tảng công nghệ nano do Bioscope tự nghiên cứu — nâng cao sinh khả dụng, độ ổn định và hiệu quả của hoạt chất."
-                : "Nano technology platforms developed in-house by Bioscope — boosting bioavailability, stability and efficacy of actives."
+                ? "Tự nghiên cứu và phát triển — nâng sinh khả dụng, độ ổn định và hiệu quả của hoạt chất lên nhiều lần so với dạng bào chế thường."
+                : "Developed in-house — multiplying bioavailability, stability and efficacy of actives over conventional forms."
             }
+            href={`/${locale}/cong-nghe`}
+            cta={t.cta.viewAll}
           />
         </Reveal>
         <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {techs.map((tech, i) => (
-            <Reveal key={tech.slug} delay={i * 80}>
+            <Reveal key={tech.slug} delay={i * 70}>
               <TechCard tech={tech} locale={locale} index={i} />
             </Reveal>
           ))}
         </div>
       </section>
 
-      {/* Featured ingredients — minimal / grid */}
-      <section className="bg-neutral-50 py-24">
+      {/* Featured ingredients */}
+      <section className="border-y border-primary/10 bg-primary-tint/30 py-16 lg:py-20">
         <div className="container-bs">
           <Reveal>
-            <div className="flex flex-wrap items-end justify-between gap-6">
-              <SectionHeading
-                eyebrow={locale === "vi" ? "Sản phẩm nổi bật" : "Featured"}
-                title={
-                  locale === "vi"
-                    ? "Nguyên liệu được tin dùng"
-                    : "Most trusted ingredients"
-                }
-                description={
-                  locale === "vi"
-                    ? "Tuyển chọn nguyên liệu cao cấp, chuẩn hóa cho thực phẩm chức năng và mỹ phẩm."
-                    : "A curated selection of premium, standardised ingredients for supplements and cosmetics."
-                }
-              />
-              <ButtonLink
-                href={`/${locale}/nguyen-lieu`}
-                variant="outline"
-                className="shrink-0"
-              >
-                {t.cta.viewAll}
-                <ArrowRight className="h-4 w-4" />
-              </ButtonLink>
-            </div>
+            <SectionLead
+              label={locale === "vi" ? "Danh mục nguyên liệu" : "Ingredient catalog"}
+              title={
+                locale === "vi"
+                  ? "Nguyên liệu chuẩn hóa, được tin dùng"
+                  : "Standardised, trusted ingredients"
+              }
+              desc={
+                locale === "vi"
+                  ? "Tuyển chọn cho thực phẩm chức năng và mỹ phẩm, nguồn gốc minh bạch từ các nhà sản xuất hàng đầu thế giới."
+                  : "Curated for supplements and cosmetics, transparently sourced from the world's leading manufacturers."
+              }
+              href={`/${locale}/nguyen-lieu`}
+              cta={t.cta.viewAll}
+            />
           </Reveal>
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {featuredList.map((ing, i) => (
-              <Reveal key={ing.slug} delay={i * 80}>
+            {featured.map((ing, i) => (
+              <Reveal key={ing.slug} delay={i * 70}>
                 <IngredientCard ingredient={ing} locale={locale} />
               </Reveal>
             ))}
@@ -105,50 +94,77 @@ export default function HomePage({ params }: { params: { locale: Locale } }) {
         </div>
       </section>
 
-      <PartnersCloud locale={locale} />
-
-      {/* Blog preview */}
-      <section className="container-bs py-24">
+      {/* Blog */}
+      <section className="container-bs py-16 lg:py-20">
         <Reveal>
-          <div className="flex flex-wrap items-end justify-between gap-6">
-            <SectionHeading
-              eyebrow="Bioneer's Blog"
-              title={
-                locale === "vi" ? "Kiến thức chuyên ngành" : "Industry insights"
-              }
-              description={
-                locale === "vi"
-                  ? "Góc nhìn chuyên gia về nguyên liệu, công nghệ bào chế và xu hướng ngành."
-                  : "Expert perspectives on ingredients, formulation technology and industry trends."
-              }
-            />
-            <ButtonLink
-              href={`/${locale}/blog`}
-              variant="outline"
-              className="shrink-0"
-            >
-              {t.cta.viewAll}
-              <ArrowRight className="h-4 w-4" />
-            </ButtonLink>
-          </div>
+          <SectionLead
+            label="Bioneer's Blog"
+            title={locale === "vi" ? "Kiến thức chuyên ngành" : "Industry insights"}
+            desc={
+              locale === "vi"
+                ? "Góc nhìn chuyên gia về nguyên liệu, công nghệ bào chế và xu hướng ngành."
+                : "Expert perspectives on ingredients, formulation technology and trends."
+            }
+            href={`/${locale}/blog`}
+            cta={t.cta.viewAll}
+          />
         </Reveal>
         <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {posts.slice(0, 3).map((post, i) => (
-            <Reveal key={post.slug} delay={i * 80}>
+            <Reveal key={post.slug} delay={i * 70}>
               <PostCard post={post} locale={locale} />
             </Reveal>
           ))}
         </div>
       </section>
 
-      <FinalCta locale={locale} />
+      <CtaBand locale={locale} />
       <div className="pb-8" />
     </>
   );
 }
 
 /* ========================================================================== */
-/*  HERO — gradient primary→primary-dark + pattern phân tử mờ ảo                */
+/*  Section lead — lab-label + title + (optional) link "Xem tất cả"            */
+/* ========================================================================== */
+function SectionLead({
+  label,
+  title,
+  desc,
+  href,
+  cta,
+}: {
+  label: string;
+  title: string;
+  desc?: string;
+  href?: string;
+  cta?: string;
+}) {
+  return (
+    <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+      <div className="max-w-2xl">
+        <span className="lab-label">{label}</span>
+        <h2 className="mt-3 text-2xl font-bold leading-tight text-balance text-ink sm:text-[1.75rem]">
+          {title}
+        </h2>
+        {desc && (
+          <p className="mt-3 text-sm leading-relaxed text-neutral-500 sm:text-[15px]">
+            {desc}
+          </p>
+        )}
+      </div>
+      {href && cta && (
+        <ButtonLink href={href} variant="outline" className="shrink-0">
+          {cta}
+          <ArrowRight className="h-4 w-4" />
+        </ButtonLink>
+      )}
+    </div>
+  );
+}
+
+/* ========================================================================== */
+/*  HERO — gradient sâu + signature "encapsulation" động                       */
 /* ========================================================================== */
 function Hero({ locale }: { locale: Locale }) {
   const t = getDictionary(locale);
@@ -157,102 +173,108 @@ function Hero({ locale }: { locale: Locale }) {
   const copy =
     locale === "vi"
       ? {
-          badge: "Nguyên liệu cao cấp · Công nghệ độc quyền",
-          titleA: "Tối ưu chi phí,",
-          titleB: "nâng tầm hiệu quả",
-          titleC: "cho sản phẩm của bạn",
-          desc: "Bioscope Việt Nam đồng hành cùng doanh nghiệp Dược phẩm, Thực phẩm chức năng và Mỹ phẩm — từ nguyên liệu nhập khẩu chuẩn hóa đến giải pháp công thức ODM ứng dụng công nghệ nano độc quyền, mang lại hiệu quả vượt trội với chi phí tối ưu cho người dùng.",
-          trust:
-            "Đạt chuẩn GMP · Nguồn gốc minh bạch · Hỗ trợ pháp lý trọn gói",
+          badge: "Nguyên liệu cao cấp · Công nghệ vận chuyển nano",
+          titleA: "Đưa hoạt chất",
+          titleB: "đến đúng đích —",
+          titleC: "hiệu quả hơn, chi phí tối ưu hơn",
+          desc: "Bioscope Việt Nam đồng hành cùng doanh nghiệp Dược phẩm, Thực phẩm chức năng và Mỹ phẩm — từ nguyên liệu nhập khẩu chuẩn hóa đến giải pháp công thức ODM ứng dụng công nghệ nano độc quyền.",
+          trust: "Đạt chuẩn GMP · Nguồn gốc minh bạch · Hỗ trợ pháp lý trọn gói",
         }
       : {
-          badge: "Premium ingredients · Proprietary technology",
-          titleA: "Optimise cost,",
-          titleB: "elevate efficacy",
-          titleC: "for your products",
-          desc: "Bioscope Vietnam partners with Pharmaceutical, Dietary Supplement and Cosmetic companies — from standardised imported ingredients to ODM formulation powered by proprietary nano technology, delivering superior efficacy at an optimised cost for end users.",
-          trust:
-            "GMP-certified · Transparent sourcing · Full regulatory support",
+          badge: "Premium ingredients · Nano delivery technology",
+          titleA: "Deliver actives",
+          titleB: "to the right target —",
+          titleC: "higher efficacy, optimised cost",
+          desc: "Bioscope Vietnam partners with Pharmaceutical, Supplement and Cosmetic companies — from standardised imported ingredients to ODM formulation powered by proprietary nano technology.",
+          trust: "GMP-certified · Transparent sourcing · Full regulatory support",
         };
 
+  const poster =
+    "https://images.unsplash.com/photo-1581093588401-fbb62a02f120?auto=format&fit=crop&w=1920&q=80";
+
   return (
-    <section className="relative overflow-hidden bg-hero-gradient text-white">
-      <div className="absolute inset-0 bg-mesh opacity-70" aria-hidden />
-      <MoleculePattern />
-      {/* vòng quỹ đạo mờ — chuyển động cực chậm, điềm tĩnh */}
-      <div
-        className="pointer-events-none absolute -right-24 top-1/2 h-[34rem] w-[34rem] -translate-y-1/2 rounded-full border border-white/10 opacity-40 animate-spin-slow"
-        aria-hidden
-      />
-      <div
-        className="pointer-events-none absolute -right-8 top-1/2 h-80 w-80 -translate-y-1/2 rounded-full border border-white/10 opacity-30"
+    <section className="relative -mt-[5.5rem] flex min-h-[82vh] items-center overflow-hidden text-white sm:-mt-[5.75rem] sm:min-h-[85vh]">
+      {/* Banner nền — Ken Burns trên ảnh (không dùng video để tránh 404) */}
+      <Image
+        src={poster}
+        alt=""
+        fill
+        priority
+        sizes="100vw"
+        className="object-cover animate-kenburns"
         aria-hidden
       />
 
-      <div className="container-bs relative grid items-center gap-12 py-20 lg:grid-cols-[1.15fr_0.85fr] lg:py-28">
-        <div>
-          <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide backdrop-blur-sm">
-            <Sparkles className="h-3.5 w-3.5" />
-            {copy.badge}
-          </span>
+      {/* Overlay — nền tối hơn để chữ trắng nổi rõ, giữ tông thương hiệu */}
+      <div className="absolute inset-0 bg-primary-deep/45" aria-hidden />
+      <div
+        className="absolute inset-0 bg-gradient-to-r from-primary-deep/95 via-primary-deep/65 to-transparent"
+        aria-hidden
+      />
+      <div
+        className="absolute inset-0 bg-gradient-to-t from-primary-deep/75 via-transparent to-transparent"
+        aria-hidden
+      />
+      <div
+        className="absolute inset-0 bg-grid [background-size:64px_64px] opacity-[0.1]"
+        aria-hidden
+      />
 
-          <h1 className="mt-6 font-heading text-4xl font-bold leading-[1.1] text-balance sm:text-5xl lg:text-6xl">
+      <div className="container-bs relative z-10 py-20 pt-28 sm:py-24 sm:pt-32 lg:py-28">
+        <div className="max-w-2xl sm:max-w-3xl lg:max-w-[42rem]">
+          <span className="lab-label lab-label--invert text-[10px] sm:text-[11px]">{copy.badge}</span>
+
+          <h1 className="mt-4 font-heading text-[1.75rem] font-bold leading-[1.12] tracking-[-0.02em] text-balance text-white sm:text-4xl lg:text-[2.75rem]">
             {copy.titleA}
-            <span className="block text-accent">{copy.titleB}</span>
+            <span className="block bg-gradient-to-r from-accent via-[#FFB36B] to-[#FFE0BD] bg-clip-text text-transparent">
+              {copy.titleB}
+            </span>
             <span className="block">{copy.titleC}</span>
           </h1>
 
-          <p className="mt-6 max-w-xl text-base leading-relaxed text-white/85 sm:text-lg">
+          <p className="mt-4 max-w-xl text-sm leading-relaxed text-white/80 sm:max-w-2xl sm:text-[15px] lg:text-base">
             {copy.desc}
           </p>
 
-          <div className="mt-9 flex flex-wrap gap-4">
-            <ButtonLink href={p("/nguyen-lieu")} variant="white" size="lg">
+          <div className="mt-7 flex flex-wrap gap-3">
+            <ButtonLink href={p("/nguyen-lieu")} variant="accent" size="md">
               {t.cta.explore}
               <ArrowRight className="h-5 w-5" />
             </ButtonLink>
-            <ButtonLink
-              href={p("/lien-he")}
-              variant="outline"
-              size="lg"
-              className="border-white/40 text-white hover:bg-white/10"
-            >
+            <ButtonLink href={p("/lien-he")} variant="white" size="md">
               {t.cta.contact}
             </ButtonLink>
           </div>
 
-          <div className="mt-8 flex items-start gap-2 text-sm text-white/80">
+          {/* Readout chips — chỉ số khoa học của công nghệ nano */}
+          <div className="mt-8 grid max-w-xl grid-cols-3 gap-2.5 sm:max-w-2xl sm:gap-3 lg:max-w-[36rem]">
+            {[
+              { v: "4.2×", l: locale === "vi" ? "Thẩm thấu" : "Permeation" },
+              { v: "95%", l: locale === "vi" ? "Hiệu suất bao gói" : "Encapsulation" },
+              { v: "80–120", u: "nm", l: locale === "vi" ? "Kích thước hạt" : "Particle size" },
+            ].map((c) => (
+              <div
+                key={c.l}
+                className="rounded-lg border border-white/15 bg-white/10 px-3 py-2.5 backdrop-blur-md sm:px-3.5 sm:py-3"
+              >
+                <div className="readout text-xl text-white sm:text-2xl">
+                  {c.v}
+                  {c.u && (
+                    <span className="ml-1 text-sm font-medium text-white/60">
+                      {c.u}
+                    </span>
+                  )}
+                </div>
+                <div className="mt-0.5 text-[11px] uppercase tracking-wider text-white/70">
+                  {c.l}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-8 flex items-start gap-2.5 text-sm text-white/75">
             <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-accent" />
             {copy.trust}
-          </div>
-        </div>
-
-        {/* Card minh họa cấu trúc phân tử */}
-        <div className="relative hidden lg:block">
-          <div className="rounded-2xl border border-white/15 bg-white/10 p-8 shadow-glow backdrop-blur-md">
-            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-white/70">
-              <Atom className="h-4 w-4 text-accent" />
-              {locale === "vi" ? "Công nghệ nano" : "Nano technology"}
-            </div>
-            <div className="mt-5 grid grid-cols-2 gap-5">
-              {certifications.slice(0, 4).map((c) => (
-                <div key={c.value}>
-                  <CountUp
-                    value={c.value}
-                    className="font-heading text-3xl font-bold text-accent sm:text-4xl"
-                  />
-                  <div className="mt-1 text-xs leading-snug text-white/75">
-                    {pick(c.suffix, locale)}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="absolute -bottom-5 -left-5 rounded-xl bg-accent px-5 py-4 text-white shadow-lg animate-float">
-            <div className="font-heading text-2xl font-bold">ISO · GMP</div>
-            <div className="text-xs text-white/85">
-              {locale === "vi" ? "Chứng nhận quốc tế" : "International standards"}
-            </div>
           </div>
         </div>
       </div>
@@ -260,59 +282,48 @@ function Hero({ locale }: { locale: Locale }) {
   );
 }
 
-/** Pattern cấu trúc phân tử — SVG nhẹ, mờ ảo, không gây nhiễu */
-function MoleculePattern() {
-  return (
-    <svg
-      className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.13]"
-      aria-hidden
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <defs>
-        <pattern
-          id="molecule"
-          width="180"
-          height="160"
-          patternUnits="userSpaceOnUse"
-          patternTransform="rotate(8)"
-        >
-          <g fill="none" stroke="#FFFFFF" strokeWidth="1">
-            <line x1="30" y1="40" x2="90" y2="20" />
-            <line x1="90" y1="20" x2="150" y2="55" />
-            <line x1="90" y1="20" x2="80" y2="95" />
-            <line x1="80" y1="95" x2="30" y2="120" />
-            <line x1="80" y1="95" x2="140" y2="120" />
-          </g>
-          <g fill="#FFFFFF">
-            <circle cx="30" cy="40" r="3.2" />
-            <circle cx="90" cy="20" r="4" />
-            <circle cx="150" cy="55" r="3.2" />
-            <circle cx="80" cy="95" r="4" />
-            <circle cx="30" cy="120" r="3.2" />
-            <circle cx="140" cy="120" r="3.2" />
-          </g>
-        </pattern>
-      </defs>
-      <rect width="100%" height="100%" fill="url(#molecule)" />
-    </svg>
-  );
-}
-
 /* ========================================================================== */
-/*  STATS BAND — số liệu uy tín, màu accent, đếm số animate                     */
+/*  STATS BAND — dải số liệu màu thương hiệu, chia cột, số lớn căn giữa         */
 /* ========================================================================== */
 function StatsBand({ locale }: { locale: Locale }) {
   return (
-    <section className="border-b border-neutral-200 bg-surface">
-      <div className="container-bs grid grid-cols-2 gap-8 py-14 lg:grid-cols-4">
+    <section className="relative overflow-hidden bg-primary text-white">
+      {/* Pattern nền mờ */}
+      <div
+        className="absolute -left-24 top-1/2 h-72 w-72 -translate-y-1/2 rounded-full bg-white/10 blur-3xl"
+        aria-hidden
+      />
+      <div
+        className="absolute -right-16 -top-8 h-56 w-56 rounded-full bg-accent/25 blur-3xl"
+        aria-hidden
+      />
+      <div
+        className="absolute bottom-0 left-1/3 h-40 w-40 rounded-full bg-white/5 blur-2xl"
+        aria-hidden
+      />
+      <div
+        className="absolute inset-0 opacity-[0.12]"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.35) 1px, transparent 0)",
+          backgroundSize: "28px 28px",
+        }}
+        aria-hidden
+      />
+      <div
+        className="absolute inset-0 bg-grid [background-size:48px_48px] opacity-[0.08]"
+        aria-hidden
+      />
+
+      <div className="container-bs relative grid grid-cols-2 gap-y-8 py-11 sm:py-12 lg:grid-cols-4 lg:gap-0 lg:divide-x lg:divide-white/15">
         {certifications.map((c, i) => (
           <Reveal key={c.value} delay={i * 80}>
-            <div className="text-center sm:text-left">
+            <div className="text-center lg:px-6">
               <CountUp
                 value={c.value}
-                className="font-heading text-4xl font-bold text-accent sm:text-5xl"
+                className="readout block text-3xl sm:text-4xl lg:text-5xl"
               />
-              <div className="mt-1.5 text-sm font-medium text-neutral-700">
+              <div className="mx-auto mt-1.5 max-w-[14ch] text-xs leading-snug text-white/75 sm:text-sm">
                 {pick(c.suffix, locale)}
               </div>
             </div>
@@ -324,177 +335,33 @@ function StatsBand({ locale }: { locale: Locale }) {
 }
 
 /* ========================================================================== */
-/*  CORE PILLARS — 3 trụ cột giá trị                                            */
-/* ========================================================================== */
-function Pillars({ locale }: { locale: Locale }) {
-  const items =
-    locale === "vi"
-      ? [
-          {
-            icon: Boxes,
-            title: "Cung cấp nguyên liệu",
-            desc: "Nhập khẩu & phân phối nguyên liệu cao cấp cho TPCN và Mỹ phẩm, nguồn gốc minh bạch từ các đối tác hàng đầu thế giới.",
-            href: "/nguyen-lieu",
-            cta: "Khám phá nguyên liệu",
-            tone: "primary" as const,
-          },
-          {
-            icon: FlaskConical,
-            title: "Dịch vụ ODM",
-            desc: "Nghiên cứu & phát triển công thức, gia công sản xuất đạt chuẩn GMP và tư vấn công bố sản phẩm trọn gói.",
-            href: "/dich-vu-odm",
-            cta: "Tìm hiểu dịch vụ ODM",
-            tone: "accent" as const,
-          },
-          {
-            icon: Atom,
-            title: "Công nghệ riêng",
-            desc: "Nền tảng công nghệ nano độc quyền — Novaskin™, Phytosome ướt, Lipodisq®, Liposome — nâng cao sinh khả dụng hoạt chất.",
-            href: "/cong-nghe",
-            cta: "Xem công nghệ",
-            tone: "primary" as const,
-          },
-        ]
-      : [
-          {
-            icon: Boxes,
-            title: "Ingredient Supply",
-            desc: "Importing & distributing premium ingredients for supplements and cosmetics, transparently sourced from world-leading partners.",
-            href: "/nguyen-lieu",
-            cta: "Explore ingredients",
-            tone: "primary" as const,
-          },
-          {
-            icon: FlaskConical,
-            title: "ODM Services",
-            desc: "Formulation R&D, GMP-certified manufacturing and end-to-end product registration consultancy.",
-            href: "/dich-vu-odm",
-            cta: "Discover ODM services",
-            tone: "accent" as const,
-          },
-          {
-            icon: Atom,
-            title: "Proprietary Technology",
-            desc: "In-house nano platforms — Novaskin™, Wet Phytosome, Lipodisq®, Liposome — boosting active bioavailability.",
-            href: "/cong-nghe",
-            cta: "View technologies",
-            tone: "primary" as const,
-          },
-        ];
-
-  return (
-    <section className="container-bs py-20">
-      <div className="grid gap-6 md:grid-cols-3">
-        {items.map((item, i) => {
-          const Icon = item.icon;
-          const accent = item.tone === "accent";
-          return (
-            <Reveal key={item.title} delay={i * 90}>
-              <a
-                href={`/${locale}${item.href}`}
-                className="group relative flex h-full flex-col overflow-hidden rounded-lg border border-neutral-200 bg-surface p-8 shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover"
-              >
-                <span
-                  className={`inline-flex h-14 w-14 items-center justify-center rounded-xl ${
-                    accent
-                      ? "bg-accent-tint text-accent-dark"
-                      : "bg-primary-tint text-primary-dark"
-                  }`}
-                >
-                  <Icon className="h-7 w-7" />
-                </span>
-                <h3 className="mt-5 font-heading text-xl font-bold text-neutral-900">
-                  {item.title}
-                </h3>
-                <p className="mt-2 flex-1 text-sm leading-relaxed text-neutral-500">
-                  {item.desc}
-                </p>
-                <span
-                  className={`mt-5 inline-flex items-center gap-1.5 text-sm font-semibold ${
-                    accent ? "text-accent-dark" : "text-primary-dark"
-                  }`}
-                >
-                  {item.cta}
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </span>
-              </a>
-            </Reveal>
-          );
-        })}
-      </div>
-    </section>
-  );
-}
-
-/* ========================================================================== */
-/*  PARTNERS — logo cloud dạng carousel (marquee) nền neutral-50                */
+/*  PARTNERS — dải đối tác (marquee) ngay dưới dải số liệu, nền trắng           */
 /* ========================================================================== */
 function PartnersCloud({ locale }: { locale: Locale }) {
-  // nhân đôi để cuộn vô tận
   const row = [...partners, ...partners];
   return (
-    <section className="border-y border-neutral-200 bg-neutral-50 py-14">
-      <div className="container-bs">
-        <p className="text-center text-sm font-medium uppercase tracking-widest text-neutral-500">
-          {locale === "vi"
-            ? "Đối tác cung ứng toàn cầu"
-            : "Trusted global supply partners"}
-        </p>
-      </div>
-      <div className="mask-fade-x mt-10 overflow-hidden">
-        <ul className="flex w-max items-center gap-12 animate-marquee pause-hover px-6">
-          {row.map((partner, i) => (
-            <li
-              key={`${partner.name}-${i}`}
-              className="flex shrink-0 flex-col items-center justify-center text-center"
-              aria-hidden={i >= partners.length}
-            >
-              <span className="font-heading text-lg font-bold text-neutral-700">
-                {partner.name}
-              </span>
-              <span className="text-xs text-neutral-500">{partner.country}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </section>
-  );
-}
-
-/* ========================================================================== */
-/*  FINAL CTA                                                                   */
-/* ========================================================================== */
-function FinalCta({ locale }: { locale: Locale }) {
-  const t = getDictionary(locale);
-  return (
-    <section className="container-bs">
-      <div className="relative overflow-hidden rounded-2xl bg-hero-gradient px-8 py-14 text-center text-white sm:px-16 sm:py-20">
-        <div className="absolute inset-0 bg-mesh opacity-60" aria-hidden />
-        <div className="relative mx-auto max-w-2xl">
-          <h2 className="font-heading text-3xl font-bold text-balance sm:text-4xl">
-            {locale === "vi"
-              ? "Sẵn sàng phát triển sản phẩm tiếp theo của bạn?"
-              : "Ready to develop your next product?"}
-          </h2>
-          <p className="mt-4 text-base text-white/85 sm:text-lg">
-            {locale === "vi"
-              ? "Đội ngũ chuyên gia Bioscope sẵn sàng tư vấn nguyên liệu và giải pháp công thức phù hợp nhất cho doanh nghiệp của bạn."
-              : "Bioscope experts are ready to advise on the best ingredients and formulation solutions for your business."}
-          </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-4">
-            <ButtonLink href={`/${locale}/lien-he`} variant="white" size="lg">
-              {t.cta.contact}
-              <ArrowRight className="h-5 w-5" />
-            </ButtonLink>
-            <ButtonLink
-              href={`/${locale}/cong-nghe`}
-              variant="outline"
-              size="lg"
-              className="border-white/40 text-white hover:bg-white/10"
-            >
-              {locale === "vi" ? "Tìm hiểu công nghệ" : "Explore technology"}
-            </ButtonLink>
-          </div>
+    <section className="w-full border-b border-neutral-200 bg-white py-8 sm:py-9">
+      <div className="flex w-full flex-col gap-5 sm:flex-row sm:items-center">
+        <span className="lab-label shrink-0 px-5 sm:px-8 lg:pl-[max(1.25rem,calc((100vw-1320px)/2+1.25rem))]">
+          {locale === "vi" ? "Đối tác cung ứng toàn cầu" : "Trusted global partners"}
+        </span>
+        <div className="mask-fade-x relative min-w-0 flex-1 overflow-hidden">
+          <ul className="flex w-max items-center gap-10 animate-marquee pause-hover sm:gap-14">
+            {row.map((partner, i) => (
+              <li
+                key={`${partner.name}-${i}`}
+                className="group flex shrink-0 items-baseline gap-2"
+                aria-hidden={i >= partners.length}
+              >
+                <span className="font-heading text-base font-bold text-neutral-400 transition-colors group-hover:text-primary-dark sm:text-lg">
+                  {partner.name}
+                </span>
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-300">
+                  {partner.code}
+                </span>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </section>

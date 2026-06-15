@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { SafeImage } from "@/components/ui/safe-image";
 import Link from "next/link";
 import { Clock } from "lucide-react";
 import type { Post } from "@/lib/types";
@@ -15,7 +15,7 @@ export function PostCard({ post, locale }: { post: Post; locale: Locale }) {
       className="group flex flex-col overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover"
     >
       <div className="relative aspect-[16/10] overflow-hidden">
-        <Image
+        <SafeImage
           src={post.image}
           alt={pick(post.title, locale)}
           fill

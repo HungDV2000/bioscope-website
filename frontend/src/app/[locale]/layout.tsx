@@ -21,7 +21,8 @@ export default function LocaleLayout({
   return (
     <>
       <Header locale={locale} />
-      <main className="min-h-screen">{children}</main>
+      {/* pt-20 chừa chỗ cho header pill cố định; trang có hero tự kéo lên bằng -mt-20 */}
+      <main className="min-h-screen pt-[var(--header-h,5.5rem)]">{children}</main>
       <Footer locale={locale} />
     </>
   );

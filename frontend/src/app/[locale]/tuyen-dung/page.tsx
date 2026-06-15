@@ -39,12 +39,8 @@ export default function CareersPage({
     <>
       <PageHeader
         locale={locale}
-        eyebrow={t.nav.careers}
-        title={
-          locale === "vi"
-            ? "Cùng Bioscope kiến tạo tương lai"
-            : "Build the future with Bioscope"
-        }
+        title={locale === "vi" ? "Cùng Bioscope kiến tạo" : "Build the future with"}
+        titleAccent={locale === "vi" ? "tương lai" : "Bioscope"}
         description={
           locale === "vi"
             ? "Chúng tôi luôn tìm kiếm những con người đam mê khoa học và đổi mới. Khám phá cơ hội nghề nghiệp tại Bioscope."

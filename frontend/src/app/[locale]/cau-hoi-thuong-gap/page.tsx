@@ -35,10 +35,8 @@ export default function FaqPage({ params }: { params: { locale: Locale } }) {
     <>
       <PageHeader
         locale={locale}
-        eyebrow={t.nav.faq}
-        title={
-          locale === "vi" ? "Câu hỏi thường gặp" : "Frequently asked questions"
-        }
+        title={locale === "vi" ? "Câu hỏi" : "Frequently asked"}
+        titleAccent={locale === "vi" ? "thường gặp" : "questions"}
         description={
           locale === "vi"
             ? "Những thắc mắc phổ biến về nguyên liệu, dịch vụ và quy trình hợp tác."

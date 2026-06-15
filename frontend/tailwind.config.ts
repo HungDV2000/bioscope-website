@@ -78,11 +78,11 @@ const config: Config = {
         "2xl": "28px",
       },
       boxShadow: {
-        // soft, ít đổ bóng — ưu tiên hairline
-        card: "0 1px 2px rgba(14,26,20,0.04), 0 8px 24px rgba(9,143,80,0.06)",
-        "card-hover": "0 2px 4px rgba(14,26,20,0.05), 0 18px 44px rgba(9,143,80,0.12)",
-        glow: "0 0 0 1px rgba(255,255,255,0.06), 0 30px 80px rgba(4,20,12,0.45)",
-        accent: "0 8px 24px rgba(246,140,54,0.28)",
+        // Không dùng đổ bóng — phân tách bằng viền (hairline) + nền
+        card: "none",
+        "card-hover": "none",
+        glow: "none",
+        accent: "none",
       },
       backgroundImage: {
         // Hero: deep → primary (giàu chiều sâu)
@@ -114,6 +114,10 @@ const config: Config = {
           "0%": { transform: "translateX(0)" },
           "100%": { transform: "translateX(-50%)" },
         },
+        kenburns: {
+          "0%": { transform: "scale(1) translate3d(0,0,0)" },
+          "100%": { transform: "scale(1.12) translate3d(-1.5%,-1.5%,0)" },
+        },
       },
       animation: {
         "fade-up": "fade-up 0.7s cubic-bezier(0.22,1,0.36,1) both",
@@ -123,6 +127,7 @@ const config: Config = {
         "orbit-rev": "spin-rev 30s linear infinite",
         "pulse-soft": "pulse-soft 5s ease-in-out infinite",
         marquee: "marquee 42s linear infinite",
+        kenburns: "kenburns 22s ease-in-out infinite alternate",
       },
     },
   },

@@ -43,12 +43,8 @@ export default function ServicesPage({
     <>
       <PageHeader
         locale={locale}
-        eyebrow={t.nav.services}
-        title={
-          locale === "vi"
-            ? "Giải pháp ODM trọn gói từ ý tưởng đến thị trường"
-            : "End-to-end ODM solutions from idea to market"
-        }
+        title={locale === "vi" ? "Giải pháp ODM trọn gói" : "End-to-end ODM solutions"}
+        titleAccent={locale === "vi" ? "từ ý tưởng đến thị trường" : "from idea to market"}
         description={
           locale === "vi"
             ? "Bioscope đồng hành cùng bạn trong toàn bộ vòng đời sản phẩm — nghiên cứu, sản xuất, pháp lý và bao bì."

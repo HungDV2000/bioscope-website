@@ -9,6 +9,16 @@ export interface Spec {
   percent?: number;
 }
 
+export interface PostSection {
+  id: string;
+  level: 2 | 3;
+  title: Bilingual;
+  paragraphs: Bilingual[];
+}
+
+/** Section nội dung dài — dùng chung blog / nguyên liệu / công nghệ */
+export type ContentSection = PostSection;
+
 export interface Technology {
   slug: string;
   name: Bilingual;
@@ -19,6 +29,9 @@ export interface Technology {
   accent: string;
   specs: Spec[];
   order: number;
+  /** Đoạn lead mở rộng (tuỳ chọn) */
+  contentLead?: Bilingual;
+  sections?: ContentSection[];
 }
 
 export interface Ingredient {
@@ -38,6 +51,8 @@ export interface Ingredient {
   specs: Spec[];
   relatedTech?: string;
   featured?: boolean;
+  contentLead?: Bilingual;
+  sections?: ContentSection[];
 }
 
 export interface Service {
@@ -65,9 +80,13 @@ export interface Post {
   title: Bilingual;
   excerpt: Bilingual;
   category: Bilingual;
+  categoryKey: "technology" | "rd" | "manufacturing";
   image: string;
   author: string;
   date: string;
   readingTime: number;
+  /** Đoạn mở đầu ngắn (lead) */
   content: Bilingual;
+  /** Nội dung dài — chia section cho TOC */
+  sections?: PostSection[];
 }

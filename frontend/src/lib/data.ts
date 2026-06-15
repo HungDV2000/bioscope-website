@@ -80,7 +80,7 @@ export const technologies: Technology[] = [
       vi: "Polymer lưỡng tính bao quanh đĩa lipid phẳng tạo cấu trúc bền vững, giữ hoạt chất ở trạng thái phân tán nano đồng đều, hạn chế kết tụ và phân hủy.",
       en: "An amphipathic polymer wraps a flat lipid disc into a robust structure, keeping actives in a uniform nano-dispersion that resists aggregation and degradation.",
     },
-    image: img("photo-1583912267550-d44c9c0c0c0f"),
+    image: img("photo-1570172619644-dfd03ed5d881"),
     specs: [
       { label: { vi: "Đường kính đĩa", en: "Disc diameter" }, value: "10–30", unit: "nm", display: "number" },
       { label: { vi: "Bảo vệ chống oxy hóa", en: "Oxidation protection" }, value: "88", unit: "%", display: "bar", percent: 88 },
@@ -228,7 +228,7 @@ export const ingredients: Ingredient[] = [
       { vi: "Serum chống lão hóa", en: "Anti-aging serum" },
       { vi: "Kem dưỡng đêm", en: "Night cream" },
     ],
-    image: img("photo-1570172619644-dfd03ed5d881", 800),
+    image: img("photo-1556228720-195a672e8a03", 800),
     relatedTech: "novaskin",
     specs: [
       { label: { vi: "Độ ổn định", en: "Stability" }, value: "92", unit: "%", display: "bar", percent: 92 },
@@ -392,14 +392,109 @@ export const posts: Post[] = [
       en: "Nanotechnology is reshaping how actives are delivered into the skin. Here are the standout trends.",
     },
     category: { vi: "Công nghệ", en: "Technology" },
-    image: img("photo-1532634922-8fe0b757fb13", 800),
+    categoryKey: "technology",
+    image: img("photo-1556228720-195a672e8a03", 800),
     author: "Bioscope R&D",
     date: "2026-05-20",
-    readingTime: 6,
+    readingTime: 12,
     content: {
-      vi: "Trong những năm gần đây, công nghệ nano đã trở thành mũi nhọn của ngành mỹ phẩm cao cấp...",
-      en: "In recent years, nanotechnology has become the spearhead of premium cosmetics...",
+      vi: "Ngành mỹ phẩm và dermocosmetics toàn cầu đang bước vào giai đoạn mà hiệu quả sản phẩm không còn được đo bằng nồng độ hoạt chất trên nhãn, mà bằng khả năng hoạt chất thực sự đến đúng lớp da mục tiêu. Công nghệ nano — từ liposome, phytosome đến hệ vận chuyển đĩa lipid — trở thành lợi thế cạnh tranh then chốt của các thương hiệu cao cấp và nhà sản xuất ODM chuyên sâu.",
+      en: "The global cosmetics and dermocosmetics industry is entering a phase where product efficacy is no longer measured by active concentration on the label, but by whether actives actually reach the target skin layer. Nano technology — from liposomes and phytosomes to lipid disc delivery systems — is becoming a decisive competitive edge for premium brands and specialised ODM manufacturers.",
     },
+    sections: [
+      {
+        id: "thị-trường-2026",
+        level: 2,
+        title: { vi: "Bức tranh thị trường 2026", en: "The 2026 market landscape" },
+        paragraphs: [
+          {
+            vi: "Theo các báo cáo ngành gần đây, phân khúc mỹ phẩm chức năng (cosmeceuticals) tăng trưởng hai con số tại châu Á — Thái Bình Dương, trong đó các sản phẩm có công bố cơ chế vận chuyển hoạt chất được minh chứng khoa học được ưu tiên bởi kênh phân phối chuyên biệt và bác sĩ da liễu.",
+            en: "According to recent industry reports, the functional cosmetics (cosmeceuticals) segment is growing at double-digit rates across Asia-Pacific, with products backed by scientifically substantiated active delivery mechanisms favoured by specialist channels and dermatologists.",
+          },
+          {
+            vi: "Tại Việt Nam, người tiêu dùng ngày càng am hiểu về retinol, peptide, vitamin C và các hoạt chất chống lão hóa. Điều này thúc đẩy doanh nghiệp nội địa tìm kiếm đối tác có năng lực bào chế nano để nâng cao hiệu quả thực tế, không chỉ cải thiện marketing claim.",
+            en: "In Vietnam, consumers are increasingly knowledgeable about retinol, peptides, vitamin C and anti-ageing actives. This pushes domestic brands to seek partners with nano formulation capability to improve real efficacy, not just marketing claims.",
+          },
+        ],
+      },
+      {
+        id: "vi-sao-nano",
+        level: 2,
+        title: { vi: "Vì sao nano quan trọng với mỹ phẩm", en: "Why nano matters for cosmetics" },
+        paragraphs: [
+          {
+            vi: "Da người có hàng rào lipid tự nhiên (skin barrier) ngăn phần lớn phân tử lớn và kỵ nước thâm nhập. Nhiều hoạt chất quý — chiết xuất thực vật, vitamin tan trong dầu — có kích thước phân tử hoặc độ phân cực khiến chúng khó vượt qua lớp corneum, dẫn đến lãng phí nguyên liệu và hiệu quả kém trên thực tế.",
+            en: "Human skin has a natural lipid barrier that blocks most large and hydrophobic molecules. Many valuable actives — botanical extracts, oil-soluble vitamins — have molecular size or polarity that makes crossing the stratum corneum difficult, wasting ingredients and reducing real-world efficacy.",
+          },
+        ],
+      },
+      {
+        id: "sinh-kha-dung",
+        level: 3,
+        title: { vi: "Sinh khả dụng và thẩm thấu", en: "Bioavailability and permeation" },
+        paragraphs: [
+          {
+            vi: "Hệ vận chuyển nano giúp đóng gói hoạt chất trong vesicle 80–200 nm, bảo vệ khỏi oxy hóa và tăng thời gian lưu trên bề mặt da. Khi tiếp xúc lipid da, cấu trúc nano có thể dung hợp hoặc giải phóng có kiểm soát, nâng tỷ lệ hoạt chất đến lớp epidermis và dermis.",
+            en: "Nano delivery systems encapsulate actives in 80–200 nm vesicles, protecting against oxidation and extending residence time on the skin surface. Upon contact with skin lipids, nano structures can fuse or release in a controlled manner, increasing the fraction of actives reaching the epidermis and dermis.",
+          },
+        ],
+      },
+      {
+        id: "on-dinh-hoat-chat",
+        level: 3,
+        title: { vi: "Ổn định hoạt chất nhạy cảm", en: "Stabilising sensitive actives" },
+        paragraphs: [
+          {
+            vi: "Retinol, ascorbic acid và nhiều peptide dễ bị phân hủy khi tiếp xúc ánh sáng, nhiệt hoặc ion kim loại trong công thức. Bao gói nano tạo môi trường bảo vệ, kéo dài shelf-life và giảm kích ứng ban đầu — một yếu tố quan trọng với sản phẩm chống lão hóa cao cấp.",
+            en: "Retinol, ascorbic acid and many peptides degrade easily when exposed to light, heat or metal ions in a formula. Nano encapsulation creates a protective environment, extending shelf life and reducing initial irritation — a key factor for premium anti-ageing products.",
+          },
+        ],
+      },
+      {
+        id: "cong-nghe-bioscope",
+        level: 2,
+        title: { vi: "Nền tảng vận chuyển tại Bioscope", en: "Bioscope delivery platforms" },
+        paragraphs: [
+          {
+            vi: "Bioscope phát triển nội bộ bốn nền tảng: Novaskin™ cho thẩm thấu sâu, Phytosome ướt cho dược liệu, Lipodisq® cho hoạt chất nhạy cảm và Liposome đa pha. Mỗi nền tảng được tối ưu cho nhóm hoạt chất và dạng bào chế (serum, cream, essence) cụ thể.",
+            en: "Bioscope develops four platforms in-house: Novaskin™ for deep permeation, wet phytosome for botanicals, Lipodisq® for sensitive actives and multi-phase liposomes. Each platform is optimised for specific active classes and dosage forms (serum, cream, essence).",
+          },
+        ],
+      },
+      {
+        id: "novaskin-lipodisq",
+        level: 3,
+        title: { vi: "Novaskin™ và Lipodisq® trong thực tế", en: "Novaskin™ and Lipodisq® in practice" },
+        paragraphs: [
+          {
+            vi: "Novaskin™ đã được ứng dụng trong các công thức serum peptide và vitamin C cho thương hiệu mỹ phẩm nội địa, ghi nhận cải thiện độ đồng đều màu da và độ ẩm sau 4–6 tuần sử dụng trong thử nghiệm nội bộ. Lipodisq® phù hợp với retinoid và chiết xuất tan trong dầu cần bảo vệ khỏi oxy hóa.",
+            en: "Novaskin™ has been applied in peptide and vitamin C serum formulas for domestic cosmetic brands, with internal testing showing improved skin tone evenness and hydration after 4–6 weeks of use. Lipodisq® suits retinoids and oil-soluble extracts that need protection from oxidation.",
+          },
+        ],
+      },
+      {
+        id: "quy-dinh",
+        level: 2,
+        title: { vi: "Quy định và minh bạch công bố", en: "Regulation and transparent claims" },
+        paragraphs: [
+          {
+            vi: "Cơ quan quản lý ngày càng chú trọng bằng chứng an toàn của hạt nano trong mỹ phẩm. Doanh nghiệp cần hồ sơ kỹ thuật về kích thước hạt, độ ổn định và kết quả in-vitro/in-vivo trước khi đưa claim \"công nghệ nano\" ra thị trường. Bioscope hỗ trợ đối tác xây dựng dossier kỹ thuật phục vụ công bố và truyền thông có trách nhiệm.",
+            en: "Regulators are increasingly focused on safety evidence for nano particles in cosmetics. Brands need technical dossiers on particle size, stability and in-vitro/in-vivo results before bringing \"nano technology\" claims to market. Bioscope supports partners in building technical dossiers for compliant registration and responsible communication.",
+          },
+        ],
+      },
+      {
+        id: "ket-luan",
+        level: 2,
+        title: { vi: "Kết luận và hướng đi cho doanh nghiệp", en: "Conclusion and recommendations" },
+        paragraphs: [
+          {
+            vi: "Công nghệ nano không còn là xu hướng xa vời — đó là tiêu chuẩn mới cho sản phẩm mỹ phẩm hiệu quả cao. Doanh nghiệp Việt Nam nên bắt đầu từ một dòng sản phẩm chủ lực, chọn đúng nền tảng vận chuyển và đối tác có năng lực R&D chứng minh được bằng số liệu. Liên hệ đội ngũ Bioscope để được tư vấn lộ trình tích hợp công nghệ nano vào công thức của bạn.",
+            en: "Nano technology is no longer a distant trend — it is the new standard for high-efficacy cosmetics. Vietnamese businesses should start with a hero product line, choose the right delivery platform and a partner with demonstrable R&D capability. Contact the Bioscope team for a roadmap to integrate nano technology into your formulations.",
+          },
+        ],
+      },
+    ],
   },
   {
     slug: "phytosome-giai-phap-sinh-kha-dung",
@@ -412,14 +507,50 @@ export const posts: Post[] = [
       en: "Why are many botanical extracts poorly absorbed, and how does wet phytosome solve it?",
     },
     category: { vi: "R&D", en: "R&D" },
+    categoryKey: "rd",
     image: img("photo-1611078489935-0cb964de46d6", 800),
     author: "Bioscope R&D",
     date: "2026-04-12",
-    readingTime: 8,
+    readingTime: 9,
     content: {
-      vi: "Sinh khả dụng là yếu tố then chốt quyết định hiệu quả của một sản phẩm dược liệu...",
-      en: "Bioavailability is the key factor determining the efficacy of a botanical product...",
+      vi: "Chiết xuất thực vật là nguồn nguyên liệu quý cho TPCN và mỹ phẩm, nhưng sinh khả dụng thấp khiến nhiều công thức khó đạt hiệu quả lâm sàng mong đợi. Phytosome — đặc biệt quy trình Phytosome ướt của Bioscope — là một trong những giải pháp được chứng minh hiệu quả nhất hiện nay.",
+      en: "Botanical extracts are a valuable source for supplements and cosmetics, but low bioavailability means many formulas fail to deliver expected clinical outcomes. Phytosome — especially Bioscope's wet phytosome process — is among the most proven solutions available today.",
     },
+    sections: [
+      {
+        id: "van-de-sinh-kha-dung",
+        level: 2,
+        title: { vi: "Bài toán sinh khả dụng dược liệu", en: "The herbal bioavailability challenge" },
+        paragraphs: [
+          {
+            vi: "Polyphenol, saponin và flavonoid thường có độ tan kém trong nước, dễ bị phân hủy trong dạ dày và chuyển hóa nhanh ở gan (hiệu ứng first-pass). Kết quả là chỉ một phần nhỏ hoạt chất đến được tuần hoàn hệ thống.",
+            en: "Polyphenols, saponins and flavonoids are often poorly water-soluble, easily degraded in the stomach and rapidly metabolised by the liver (first-pass effect). As a result, only a small fraction of actives reaches systemic circulation.",
+          },
+        ],
+      },
+      {
+        id: "co-che-phytosome",
+        level: 2,
+        title: { vi: "Cơ chế Phytosome", en: "How phytosome works" },
+        paragraphs: [
+          {
+            vi: "Phytosome liên kết phối tử hoạt chất thực vật với phospholipid (thường là lecithin) tạo phức hợp có tính ampiphilic, cải thiện hấp thu qua màng tế bào ruột. Quy trình Phytosome ướt của Bioscope giữ được độ tinh khiết cao hơn so với phương pháp khô truyền thống.",
+            en: "Phytosome complexes botanical actives with phospholipids (typically lecithin) to form amphiphilic structures that improve absorption across intestinal cell membranes. Bioscope's wet phytosome process maintains higher purity than conventional dry methods.",
+          },
+        ],
+      },
+      {
+        id: "ung-dung",
+        level: 2,
+        title: { vi: "Ứng dụng thực tế", en: "Practical applications" },
+        paragraphs: [
+          {
+            vi: "Phytosome phù hợp với công thức hỗ trợ gan (silymarin), kháng viêm (curcumin), mỹ phẩm chống oxy hóa (chiết xuất trà xanh, nho). Khi kết hợp với nguyên liệu chuẩn hóa từ Bioscope, doanh nghiệp có thể rút ngắn thời gian phát triển sản phẩm từ 12–18 tháng xuống còn 6–9 tháng.",
+            en: "Phytosome suits liver support (silymarin), anti-inflammatory (curcumin) and antioxidant cosmetics (green tea, grape extracts). Combined with standardised Bioscope ingredients, brands can shorten product development from 12–18 months to 6–9 months.",
+          },
+        ],
+      },
+    ],
   },
   {
     slug: "tieu-chuan-gmp-trong-san-xuat-tpcn",
@@ -432,14 +563,50 @@ export const posts: Post[] = [
       en: "GMP is more than a certificate — it is a commitment to quality across the entire production chain.",
     },
     category: { vi: "Sản xuất", en: "Manufacturing" },
-    image: img("photo-1581093458791-9d09a5c0d7a3", 800),
+    categoryKey: "manufacturing",
+    image: img("photo-1570172619644-dfd03ed5d881", 800),
     author: "Bioscope QA",
     date: "2026-03-03",
-    readingTime: 5,
+    readingTime: 7,
     content: {
-      vi: "GMP (Good Manufacturing Practice) là bộ tiêu chuẩn thực hành sản xuất tốt...",
-      en: "GMP (Good Manufacturing Practice) is a set of good production practice standards...",
+      vi: "Thực phẩm chức năng tại Việt Nam chịu sự quản lý ngày càng chặt chẽ về chất lượng, truy xuất nguồn gốc và công bố sản phẩm. GMP (Good Manufacturing Practice) là nền tảng bắt buộc cho mọi doanh nghiệp muốn xây dựng thương hiệu bền vững.",
+      en: "Dietary supplements in Vietnam face increasingly strict oversight on quality, traceability and product notification. GMP (Good Manufacturing Practice) is the foundation for any business building a sustainable brand.",
     },
+    sections: [
+      {
+        id: "gmp-la-gi",
+        level: 2,
+        title: { vi: "GMP là gì và vì sao quan trọng", en: "What GMP is and why it matters" },
+        paragraphs: [
+          {
+            vi: "GMP là bộ nguyên tắc đảm bảo sản phẩm được sản xuất và kiểm soát theo tiêu chuẩn chất lượng, từ nguyên liệu đầu vào, quy trình sản xuất, đóng gói đến lưu trữ và phân phối. Vi phạm GMP có thể dẫn đến thu hồi sản phẩm, mất uy tín thương hiệu và trách nhiệm pháp lý.",
+            en: "GMP is a set of principles ensuring products are manufactured and controlled to quality standards — from raw materials and production processes to packaging, storage and distribution. GMP violations can lead to product recalls, brand damage and legal liability.",
+          },
+        ],
+      },
+      {
+        id: "yeu-cau-co-ban",
+        level: 2,
+        title: { vi: "Yêu cầu cơ bản của GMP", en: "Core GMP requirements" },
+        paragraphs: [
+          {
+            vi: "Các yếu tố then chốt gồm: cơ sở vật chất phù hợp, nhân sự được đào tạo, tài liệu SOP rõ ràng, kiểm soát nguyên liệu (COA, kiểm nghiệm), validation quy trình, quản lý lô sản xuất và hệ thống CAPA khi phát hiện sai lệch.",
+            en: "Key elements include suitable facilities, trained personnel, clear SOP documentation, raw material control (COAs, testing), process validation, batch management and CAPA systems when deviations are found.",
+          },
+        ],
+      },
+      {
+        id: "bioscope-odm",
+        level: 2,
+        title: { vi: "GMP trong dịch vụ ODM của Bioscope", en: "GMP in Bioscope's ODM service" },
+        paragraphs: [
+          {
+            vi: "Bioscope hợp tác với các nhà máy đạt chuẩn GMP trong và ngoài nước, đồng thời cung cấp nguyên liệu có COA đầy đủ và hỗ trợ hồ sơ công bố sản phẩm. Đối tác ODM nhận được quy trình minh bạch từ công thức đến thùng thành phẩm.",
+            en: "Bioscope partners with GMP-certified factories domestically and abroad, supplies ingredients with full COAs and supports product notification dossiers. ODM partners receive transparent processes from formula to finished carton.",
+          },
+        ],
+      },
+    ],
   },
 ];
 

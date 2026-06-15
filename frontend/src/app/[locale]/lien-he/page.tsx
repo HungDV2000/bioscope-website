@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { MapPin, Phone, Mail, Clock } from "lucide-react";
 import type { Locale } from "@/lib/utils";
 import { getDictionary } from "@/lib/i18n";
+import { company } from "@/lib/company";
 import { PageHeader } from "@/components/shared/page-header";
 import { ContactForm } from "@/components/forms/contact-form";
 
@@ -21,11 +22,11 @@ export default function ContactPage({
   const info = [
     {
       icon: MapPin,
-      label: locale === "vi" ? "Địa chỉ" : "Address",
-      value: "Tầng 5, Tòa nhà Bioscope, Quận 1, TP. Hồ Chí Minh",
+      label: locale === "vi" ? "Trụ sở" : "Head office",
+      value: company.hqAddress,
     },
-    { icon: Phone, label: locale === "vi" ? "Hotline" : "Hotline", value: "+84 28 3999 9999" },
-    { icon: Mail, label: "Email", value: "info@bioscope.vn" },
+    { icon: Phone, label: "Hotline", value: company.hotline },
+    { icon: Mail, label: "Email", value: company.email },
     {
       icon: Clock,
       label: locale === "vi" ? "Giờ làm việc" : "Working hours",
@@ -37,10 +38,8 @@ export default function ContactPage({
     <>
       <PageHeader
         locale={locale}
-        eyebrow={t.nav.contact}
-        title={
-          locale === "vi" ? "Kết nối với Bioscope" : "Get in touch with Bioscope"
-        }
+        title={locale === "vi" ? "Kết nối với" : "Get in touch with"}
+        titleAccent="Bioscope"
         description={
           locale === "vi"
             ? "Để lại thông tin, đội ngũ chuyên gia của chúng tôi sẽ liên hệ tư vấn trong thời gian sớm nhất."

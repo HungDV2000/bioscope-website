@@ -30,12 +30,8 @@ export default function IngredientsPage({
     <>
       <PageHeader
         locale={locale}
-        eyebrow={t.nav.ingredients}
-        title={
-          locale === "vi"
-            ? "Nguyên liệu cho TPCN & Mỹ phẩm"
-            : "Ingredients for Supplements & Cosmetics"
-        }
+        title={locale === "vi" ? "Nguyên liệu cho TPCN &" : "Ingredients for Supplements &"}
+        titleAccent={locale === "vi" ? "Mỹ phẩm" : "Cosmetics"}
         description={
           locale === "vi"
             ? "Tuyển chọn nguyên liệu chuẩn hóa, độ tinh khiết cao từ các nhà sản xuất uy tín toàn cầu, sẵn sàng cho công thức của bạn."

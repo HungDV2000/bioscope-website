@@ -9,6 +9,8 @@ import { posts, getPost } from "@/lib/data";
 import { PageHeader } from "@/components/shared/page-header";
 import { PostCard } from "@/components/cards/post-card";
 import { Badge } from "@/components/ui/badge";
+import { TableOfContents } from "@/components/blog/table-of-contents";
+import { ArticleBody } from "@/components/blog/article-body";
 
 export function generateStaticParams() {
   return posts.map((p) => ({ slug: p.slug }));
@@ -27,6 +29,8 @@ export function generateMetadata({
   };
 }
 
+const contentColumnClass = "mx-auto flex w-full max-w-[42rem] flex-col";
+
 export default function PostDetail({
   params,
 }: {
@@ -36,21 +40,33 @@ export default function PostDetail({
   const post = getPost(slug);
   if (!post) notFound();
   const t = getDictionary(locale);
-  const more = posts.filter((p) => p.slug !== slug).slice(0, 3);
+  const related = posts
+    .filter((p) => p.slug !== slug)
+    .sort((a, b) => {
+      const aMatch = a.categoryKey === post.categoryKey ? 1 : 0;
+      const bMatch = b.categoryKey === post.categoryKey ? 1 : 0;
+      return bMatch - aMatch || b.date.localeCompare(a.date);
+    })
+    .slice(0, 2);
+  const sections = post.sections ?? [];
+  const hasToc = sections.length > 0;
 
   return (
     <>
       <PageHeader
         locale={locale}
+        compact
+        eyebrow={`${pick(post.category, locale).toUpperCase()} · BIONEER'S BLOG`}
         title={pick(post.title, locale)}
+        description={pick(post.excerpt, locale)}
         breadcrumbs={[
           { label: t.nav.blog, href: `/${locale}/blog` },
           { label: pick(post.title, locale) },
         ]}
       />
 
-      <article className="container-bs py-14">
-        <div className="mx-auto max-w-3xl">
+      <article className="container-bs py-10 sm:py-14">
+        <div className={contentColumnClass}>
           <div className="flex flex-wrap items-center gap-4 text-sm text-neutral-500">
             <Badge tone="accent">{pick(post.category, locale)}</Badge>
             <span className="inline-flex items-center gap-1.5">
@@ -69,33 +85,31 @@ export default function PostDetail({
               src={post.image}
               alt={pick(post.title, locale)}
               fill
-              sizes="(max-width:768px) 100vw, 768px"
+              sizes="(max-width:1024px) 100vw, 672px"
               className="object-cover"
               priority
             />
           </div>
 
-          <div className="prose-bs mt-10">
-            <p className="text-lg font-medium text-neutral-900">
-              {pick(post.excerpt, locale)}
-            </p>
-            <p>{pick(post.content, locale)}</p>
-            <p>
-              {locale === "vi"
-                ? "Nội dung bài viết đầy đủ sẽ được quản trị qua Payload CMS (Bioneer's Blog) ở giai đoạn tích hợp backend. Phần này hiển thị dữ liệu mẫu để minh họa bố cục trang chi tiết."
-                : "The full article content will be managed via Payload CMS (Bioneer's Blog) during backend integration. This shows sample data to illustrate the detail layout."}
-            </p>
+          {hasToc && (
+            <div className="mt-8 rounded-xl border border-neutral-200 bg-neutral-50 p-5 sm:p-6">
+              <TableOfContents sections={sections} locale={locale} />
+            </div>
+          )}
+
+          <div className="mt-10">
+            <ArticleBody post={post} locale={locale} />
           </div>
         </div>
       </article>
 
-      <section className="bg-neutral-50 py-20">
-        <div className="container-bs">
-          <h2 className="font-heading text-2xl font-bold">
-            {t.common.latestPosts}
+      <section className="border-t border-neutral-200 bg-neutral-50 py-14 sm:py-16">
+        <div className={`container-bs ${contentColumnClass}`}>
+          <h2 className="font-heading text-xl font-bold text-ink sm:text-2xl">
+            {t.blog.relatedPosts}
           </h2>
-          <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {more.map((p) => (
+          <div className="mt-6 grid gap-6 sm:grid-cols-2">
+            {related.map((p) => (
               <PostCard key={p.slug} post={p} locale={locale} />
             ))}
           </div>

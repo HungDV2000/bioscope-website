@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { MapPin, Phone, Mail, Facebook, Linkedin, Youtube } from "lucide-react";
+import { MapPin, Phone, Mail, Globe, Facebook, Linkedin, Youtube } from "lucide-react";
 import { getDictionary } from "@/lib/i18n";
 import type { Locale } from "@/lib/utils";
+import { company } from "@/lib/company";
 import { Logo } from "./logo";
 
 export function Footer({ locale }: { locale: Locale }) {
@@ -50,20 +51,33 @@ export function Footer({ locale }: { locale: Locale }) {
             <li className="flex gap-3">
               <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
               <span>
-                Tầng 2, Đường 1D, KDC Melosa Khang Điền, Quận 9, TP. Hồ Chí
-                Minh, Việt Nam
+                <span className="font-medium text-neutral-200/90">
+                  {locale === "vi" ? "Trụ sở:" : "Head office:"}
+                </span>{" "}
+                {company.hqAddress}
               </span>
             </li>
             <li className="flex gap-3">
               <Phone className="h-4 w-4 shrink-0 text-primary" />
-              <a href="tel:+842839999999" className="hover:text-white">
-                +84 28 3999 9999
+              <a href={company.hotlineHref} className="hover:text-white">
+                {company.hotline}
               </a>
             </li>
             <li className="flex gap-3">
               <Mail className="h-4 w-4 shrink-0 text-primary" />
-              <a href="mailto:info@bioscope.vn" className="hover:text-white">
-                info@bioscope.vn
+              <a href={company.emailHref} className="hover:text-white">
+                {company.email}
+              </a>
+            </li>
+            <li className="flex gap-3">
+              <Globe className="h-4 w-4 shrink-0 text-primary" />
+              <a
+                href={company.websiteUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-white"
+              >
+                {company.website}
               </a>
             </li>
           </ul>
@@ -91,21 +105,26 @@ export function Footer({ locale }: { locale: Locale }) {
       </div>
 
       <div className="border-t border-white/10">
-        <div className="container-bs flex flex-col items-center justify-between gap-4 py-6 sm:flex-row">
-          <p className="text-xs text-neutral-200/60">
-            © {year} Công ty Cổ phần Bioscope Việt Nam. {t.footer.rights} · MST:
-            0123456789
+        <div className="container-bs space-y-2 py-6">
+          <p className="text-xs leading-relaxed text-neutral-200/60">
+            {locale === "vi" ? "ĐKKD tại:" : "Business reg.:"} {company.regAddress}
           </p>
-          <div className="flex items-center gap-3">
-            {[Facebook, Linkedin, Youtube].map((Icon, i) => (
-              <a
-                key={i}
-                href="#"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/5 text-neutral-200/70 transition-colors hover:bg-primary hover:text-white"
-              >
-                <Icon className="h-4 w-4" />
-              </a>
-            ))}
+          <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+            <p className="text-xs text-neutral-200/60">
+              © {year} {company.legalName}. {t.footer.rights} · MST:{" "}
+              {company.taxId}
+            </p>
+            <div className="flex items-center gap-3">
+              {[Facebook, Linkedin, Youtube].map((Icon, i) => (
+                <a
+                  key={i}
+                  href="#"
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/5 text-neutral-200/70 transition-colors hover:bg-primary hover:text-white"
+                >
+                  <Icon className="h-4 w-4" />
+                </a>
+              ))}
+            </div>
           </div>
         </div>
       </div>

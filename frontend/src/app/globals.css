@@ -65,6 +65,11 @@
     font-variant-numeric: tabular-nums;
   }
 
+  /* Voerbon demo — serif display */
+  .font-voerbon {
+    font-family: var(--font-voerbon), Georgia, "Times New Roman", serif;
+  }
+
   .link-underline {
     @apply relative after:absolute after:bottom-0 after:left-0 after:h-px after:w-0 after:bg-primary after:transition-all hover:after:w-full;
   }

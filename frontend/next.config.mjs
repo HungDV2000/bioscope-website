@@ -3,6 +3,9 @@ const isStaticExport = process.env.STATIC_EXPORT === "1";
 
 const nextConfig = {
   reactStrictMode: true,
+  experimental: {
+    optimizePackageImports: ["lucide-react"],
+  },
   ...(isStaticExport
     ? {
         output: "export",

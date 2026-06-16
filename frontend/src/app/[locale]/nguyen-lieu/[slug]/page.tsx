@@ -233,6 +233,7 @@ export default function IngredientDetail({
           lead={rich.contentLead}
           sections={rich.sections}
           locale={locale}
+          wide
         />
       )}
 

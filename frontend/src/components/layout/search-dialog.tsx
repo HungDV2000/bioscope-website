@@ -11,14 +11,11 @@ import {
   CornerDownLeft,
 } from "lucide-react";
 import type { Locale } from "@/lib/utils";
-import { pick, cn } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { getDictionary } from "@/lib/i18n";
-import { ingredients, technologies, posts } from "@/lib/data";
+import type { SearchItem } from "@/lib/search-index";
 
-type Kind = "ingredient" | "tech" | "post";
-type Item = { label: string; sub: string; href: string; kind: Kind };
-
-const ICONS: Record<Kind, typeof Search> = {
+const ICONS: Record<SearchItem["kind"], typeof Search> = {
   ingredient: Atom,
   tech: FlaskConical,
   post: FileText,
@@ -34,31 +31,26 @@ export function SearchDialog({
   const t = getDictionary(locale);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [index, setIndex] = useState<SearchItem[]>([]);
+  const [indexLoading, setIndexLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const index: Item[] = useMemo(() => {
-    const p = (path: string) => `/${locale}${path}`;
-    return [
-      ...technologies.map((x) => ({
-        label: pick(x.name, locale),
-        sub: locale === "vi" ? "Công nghệ" : "Technology",
-        href: p(`/cong-nghe/${x.slug}`),
-        kind: "tech" as const,
-      })),
-      ...ingredients.map((x) => ({
-        label: pick(x.name, locale),
-        sub: `${x.brandName} · ${x.originCountry}`,
-        href: p(`/nguyen-lieu/${x.slug}`),
-        kind: "ingredient" as const,
-      })),
-      ...posts.map((x) => ({
-        label: pick(x.title, locale),
-        sub: "Bioneer's Blog",
-        href: p(`/blog/${x.slug}`),
-        kind: "post" as const,
-      })),
-    ];
-  }, [locale]);
+  useEffect(() => {
+    if (!open || index.length > 0) return;
+    let cancelled = false;
+    setIndexLoading(true);
+    import("@/lib/search-index")
+      .then((mod) => mod.buildSearchIndex(locale))
+      .then((items) => {
+        if (!cancelled) setIndex(items);
+      })
+      .finally(() => {
+        if (!cancelled) setIndexLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [open, index.length, locale]);
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -132,7 +124,11 @@ export function SearchDialog({
 
             {/* Kết quả */}
             <div className="max-h-[60vh] overflow-y-auto p-2">
-              {results.length === 0 ? (
+              {indexLoading ? (
+                <p className="px-4 py-10 text-center text-sm text-neutral-500">
+                  {locale === "vi" ? "Đang tải…" : "Loading…"}
+                </p>
+              ) : results.length === 0 ? (
                 <p className="px-4 py-10 text-center text-sm text-neutral-500">
                   {t.common.noResult}
                 </p>

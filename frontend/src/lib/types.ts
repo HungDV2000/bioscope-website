@@ -90,3 +90,15 @@ export interface Post {
   /** Nội dung dài — chia section cho TOC */
   sections?: PostSection[];
 }
+
+export interface Job {
+  slug: string;
+  title: Bilingual;
+  department: Bilingual;
+  location: Bilingual;
+  type: Bilingual;
+  description: Bilingual;
+  responsibilities: Bilingual[];
+  requirements: Bilingual[];
+  benefits: Bilingual[];
+}

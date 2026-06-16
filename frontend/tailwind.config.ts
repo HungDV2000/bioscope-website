@@ -44,7 +44,7 @@ const config: Config = {
           100: "#EAF0EC",
           50: "#F4F8F6", // section bg
         },
-        canvas: "#FBFCFB", // nền sáng có ám xanh rất nhẹ
+        canvas: "#F5FAF7", // nền sáng ám xanh nhẹ (tông SaaS thân thiện)
         white: "#FFFFFF",
       },
       fontFamily: {
@@ -118,6 +118,12 @@ const config: Config = {
           "0%": { transform: "scale(1) translate3d(0,0,0)" },
           "100%": { transform: "scale(1.12) translate3d(-1.5%,-1.5%,0)" },
         },
+        "scroll-dot": {
+          "0%": { opacity: "0", transform: "translateY(0)" },
+          "35%": { opacity: "1" },
+          "75%": { opacity: "0", transform: "translateY(9px)" },
+          "100%": { opacity: "0", transform: "translateY(9px)" },
+        },
       },
       animation: {
         "fade-up": "fade-up 0.7s cubic-bezier(0.22,1,0.36,1) both",
@@ -128,6 +134,7 @@ const config: Config = {
         "pulse-soft": "pulse-soft 5s ease-in-out infinite",
         marquee: "marquee 42s linear infinite",
         kenburns: "kenburns 22s ease-in-out infinite alternate",
+        "scroll-dot": "scroll-dot 1.7s ease-in-out infinite",
       },
     },
   },

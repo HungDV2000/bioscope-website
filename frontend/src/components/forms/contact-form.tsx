@@ -78,7 +78,7 @@ export function ContactForm({ locale }: { locale: Locale }) {
       </select>
       <textarea
         required
-        rows={5}
+        rows={12}
         placeholder={labels.message}
         className="w-full rounded-md border border-neutral-200 bg-white p-4 text-sm outline-none transition-colors focus:border-primary"
       />

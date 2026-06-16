@@ -40,6 +40,7 @@ export function RichContentLayout({
   locale,
   className,
   showToc = true,
+  wide = false,
 }: {
   lead?: Bilingual;
   sections: ContentSection[];
@@ -47,6 +48,8 @@ export function RichContentLayout({
   className?: string;
   /** Hiển thị mục lục phía trên nội dung (ngay dưới ảnh nếu dùng kèm) */
   showToc?: boolean;
+  /** Full width container-bs (không giới hạn max-w đọc blog) */
+  wide?: boolean;
 }) {
   if (sections.length === 0 && !lead) return null;
 
@@ -55,7 +58,12 @@ export function RichContentLayout({
   return (
     <section className={cn("border-t border-neutral-200 bg-neutral-50/50 py-12 sm:py-16", className)}>
       <div className="container-bs">
-        <div className="mx-auto flex w-full max-w-[48rem] flex-col">
+        <div
+          className={cn(
+            "mx-auto flex w-full flex-col",
+            wide ? "max-w-none" : "max-w-[48rem]",
+          )}
+        >
           {hasToc && (
             <div className="w-full rounded-xl border border-neutral-200 bg-white p-5 sm:p-6">
               <TableOfContents sections={sections} locale={locale} />

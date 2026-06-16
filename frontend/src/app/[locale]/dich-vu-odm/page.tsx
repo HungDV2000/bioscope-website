@@ -100,7 +100,7 @@ export default function ServicesPage({
             {steps[locale].map((step, i) => (
               <Reveal key={step.n} delay={i * 80}>
                 <div className="relative h-full rounded-xl border border-neutral-200 bg-white p-7">
-                  <span className="font-heading text-4xl font-extrabold text-primary/20">
+                  <span className="font-heading text-4xl font-extrabold text-primary">
                     {step.n}
                   </span>
                   <h3 className="mt-3 font-heading text-lg font-bold">{step.t}</h3>

@@ -29,8 +29,6 @@ export function generateMetadata({
   };
 }
 
-const contentColumnClass = "mx-auto flex w-full max-w-[42rem] flex-col";
-
 export default function PostDetail({
   params,
 }: {
@@ -66,7 +64,7 @@ export default function PostDetail({
       />
 
       <article className="container-bs py-10 sm:py-14">
-        <div className={contentColumnClass}>
+        <div className="flex w-full flex-col">
           <div className="flex flex-wrap items-center gap-4 text-sm text-neutral-500">
             <Badge tone="accent">{pick(post.category, locale)}</Badge>
             <span className="inline-flex items-center gap-1.5">
@@ -85,7 +83,7 @@ export default function PostDetail({
               src={post.image}
               alt={pick(post.title, locale)}
               fill
-              sizes="(max-width:1024px) 100vw, 672px"
+              sizes="(max-width:1024px) 100vw, 1320px"
               className="object-cover"
               priority
             />
@@ -104,7 +102,7 @@ export default function PostDetail({
       </article>
 
       <section className="border-t border-neutral-200 bg-neutral-50 py-14 sm:py-16">
-        <div className={`container-bs ${contentColumnClass}`}>
+        <div className="container-bs">
           <h2 className="font-heading text-xl font-bold text-ink sm:text-2xl">
             {t.blog.relatedPosts}
           </h2>

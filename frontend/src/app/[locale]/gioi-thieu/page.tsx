@@ -251,24 +251,82 @@ export default function AboutPage({ params }: { params: { locale: Locale } }) {
       </section>
 
       {/* Timeline */}
-      <section className="container-bs py-16 sm:py-20">
-        <SectionHeading
-          align="center"
-          eyebrow={locale === "vi" ? "Cột mốc" : "Milestones"}
-          title={locale === "vi" ? "Hành trình 10 năm" : "A decade of growth"}
-        />
-        <ol className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          {milestones.map((m, i) => (
-            <Reveal key={m.year} delay={i * 60}>
-              <li className="relative h-full rounded-xl border border-neutral-200 bg-white p-5 sm:p-6">
-                <span className="font-heading text-2xl font-bold text-primary">{m.year}</span>
-                <p className="mt-2 text-sm font-medium leading-snug text-ink sm:text-[15px]">
-                  {m.t}
-                </p>
-              </li>
-            </Reveal>
-          ))}
-        </ol>
+      <section className="border-y border-primary/10 bg-gradient-to-b from-primary-tint/30 via-primary-tint/10 to-white py-20 sm:py-24">
+        <div className="container-bs">
+          <SectionHeading
+            align="center"
+            className="max-w-3xl"
+            eyebrow={locale === "vi" ? "Cột mốc" : "Milestones"}
+            title={locale === "vi" ? "Hành trình 10 năm" : "A decade of growth"}
+            description={
+              locale === "vi"
+                ? "Từ nhà phân phối nguyên liệu đến đối tác R&D và ODM công nghệ nano tại Việt Nam."
+                : "From ingredient distribution to nano R&D and ODM partnership in Vietnam."
+            }
+          />
+
+          <div className="mt-14 lg:mt-16">
+            {/* Hàng chấm + đường nối — desktop */}
+            <div className="relative mb-5 hidden lg:grid lg:grid-cols-5 lg:gap-5">
+              <div
+                className="pointer-events-none absolute left-[8%] right-[8%] top-1/2 h-px -translate-y-1/2 bg-primary/25"
+                aria-hidden
+              />
+              {milestones.map((m, i) => {
+                const isLast = i === milestones.length - 1;
+                return (
+                <div key={`dot-${m.year}`} className="flex justify-center">
+                  <span
+                    className={`relative z-10 h-3.5 w-3.5 rounded-full border-2 bg-white ${
+                      isLast
+                        ? "border-accent shadow-[0_0_0_4px_rgba(246,140,54,0.15)]"
+                        : "border-primary shadow-[0_0_0_4px_rgba(9,143,80,0.1)]"
+                    }`}
+                    aria-hidden
+                  />
+                </div>
+              );
+              })}
+            </div>
+
+            <ol className="grid gap-5 sm:grid-cols-2 lg:grid-cols-5 lg:gap-5">
+              {milestones.map((m, i) => {
+                const isLast = i === milestones.length - 1;
+                return (
+                <Reveal key={m.year} as="li" delay={i * 70} className="h-full">
+                  <div
+                    className={`group flex h-full min-h-[10.5rem] flex-col rounded-2xl border border-neutral-200/90 bg-white p-5 shadow-[0_8px_32px_rgba(9,143,80,0.06)] transition duration-300 hover:-translate-y-0.5 sm:min-h-[11rem] sm:p-6 lg:text-center ${
+                      isLast
+                        ? "hover:border-accent/30 hover:shadow-[0_14px_40px_rgba(246,140,54,0.12)]"
+                        : "hover:border-primary/25 hover:shadow-[0_14px_40px_rgba(9,143,80,0.1)]"
+                    }`}
+                  >
+                    <span
+                      className={`inline-flex w-fit rounded-full px-2.5 py-0.5 text-[10px] font-bold tracking-[0.14em] lg:mx-auto ${
+                        isLast
+                          ? "bg-accent-tint text-accent-dark"
+                          : "bg-primary-tint text-primary-dark"
+                      }`}
+                    >
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <p
+                      className={`mt-3 font-heading text-[1.75rem] font-bold leading-none sm:text-3xl ${
+                        isLast ? "text-accent" : "text-primary"
+                      }`}
+                    >
+                      {m.year}
+                    </p>
+                    <p className="mt-3 flex-1 text-sm leading-relaxed text-neutral-600 sm:text-[15px]">
+                      {m.t}
+                    </p>
+                  </div>
+                </Reveal>
+              );
+              })}
+            </ol>
+          </div>
+        </div>
       </section>
 
       {/* Quality */}
@@ -324,6 +382,8 @@ export default function AboutPage({ params }: { params: { locale: Locale } }) {
         sections={aboutSections()}
         locale={locale}
         className="border-t-0 bg-white"
+        showToc={false}
+        wide
       />
 
       {/* Values */}

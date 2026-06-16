@@ -132,6 +132,7 @@ export default function TechnologyDetail({
           lead={rich.contentLead}
           sections={rich.sections}
           locale={locale}
+          wide
         />
       )}
 

@@ -1,6 +1,7 @@
 import type {
   Certification,
   Ingredient,
+  Job,
   Partner,
   Post,
   Service,
@@ -610,11 +611,130 @@ export const posts: Post[] = [
   },
 ];
 
+/* -------------------------------------------------------------------------- */
+/*  CAREERS — Tuyển dụng                                                        */
+/* -------------------------------------------------------------------------- */
+export const jobs: Job[] = [
+  {
+    slug: "chuyen-vien-rd-my-pham",
+    title: { vi: "Chuyên viên R&D Mỹ phẩm", en: "Cosmetic R&D Specialist" },
+    department: { vi: "R&D", en: "R&D" },
+    location: { vi: "TP. HCM", en: "Ho Chi Minh City" },
+    type: { vi: "Toàn thời gian", en: "Full-time" },
+    description: {
+      vi: "Tham gia phát triển công thức mỹ phẩm ứng dụng công nghệ nano Novaskin™, Phytosome và Liposome; phối hợp với đội QA/QC và đối tác ODM để đưa sản phẩm từ lab đến pilot scale.",
+      en: "Develop cosmetic formulations using Novaskin™, Phytosome and Liposome nano technologies; collaborate with QA/QC and ODM partners to take products from lab to pilot scale.",
+    },
+    responsibilities: [
+      { vi: "Nghiên cứu, thử nghiệm và tối ưu công thức mẫu theo brief khách hàng.", en: "Research, test and optimise sample formulas per client briefs." },
+      { vi: "Đánh giá tính ổn định, cảm quan và hiệu quả của hoạt chất trong hệ bào chế.", en: "Evaluate stability, sensory profile and efficacy of actives in formulations." },
+      { vi: "Lập báo cáo kỹ thuật, spec sheet và hỗ trợ scale-up sản xuất.", en: "Prepare technical reports, spec sheets and support production scale-up." },
+      { vi: "Cập nhật xu hướng nguyên liệu và quy định mỹ phẩm trong nước, quốc tế.", en: "Track ingredient trends and domestic/international cosmetic regulations." },
+    ],
+    requirements: [
+      { vi: "Tốt nghiệp Đại học chuyên ngành Hóa mỹ phẩm, Dược, Hóa học hoặc tương đương.", en: "Bachelor's in cosmetic chemistry, pharmacy, chemistry or equivalent." },
+      { vi: "Tối thiểu 2 năm kinh nghiệm R&D mỹ phẩm hoặc dược mỹ phẩm.", en: "At least 2 years in cosmetic or dermocosmetic R&D." },
+      { vi: "Thành thạo quy trình lab, ghi chép batch record và phân tích cơ bản.", en: "Proficient in lab workflows, batch records and basic analysis." },
+      { vi: "Tiếng Anh đọc hiểu tài liệu kỹ thuật; chủ động, làm việc nhóm tốt.", en: "English for technical documents; proactive with strong teamwork." },
+    ],
+    benefits: [
+      { vi: "Lương thưởng cạnh tranh theo năng lực.", en: "Competitive salary and performance bonus." },
+      { vi: "Môi trường lab hiện đại, tiếp cận công nghệ nano độc quyền.", en: "Modern lab environment with proprietary nano technology." },
+      { vi: "BHXH đầy đủ, review lương 2 lần/năm.", en: "Full social insurance, bi-annual salary review." },
+    ],
+  },
+  {
+    slug: "nhan-vien-kinh-doanh-b2b",
+    title: { vi: "Nhân viên Kinh doanh B2B", en: "B2B Sales Executive" },
+    department: { vi: "Kinh doanh", en: "Sales" },
+    location: { vi: "TP. HCM", en: "Ho Chi Minh City" },
+    type: { vi: "Toàn thời gian", en: "Full-time" },
+    description: {
+      vi: "Phát triển khách hàng doanh nghiệp trong lĩnh vực TPCN và mỹ phẩm; tư vấn nguyên liệu, giải pháp công thức và dịch vụ ODM trọn gói của Bioscope.",
+      en: "Grow B2B accounts in supplements and cosmetics; advise on ingredients, formulation solutions and Bioscope's end-to-end ODM services.",
+    },
+    responsibilities: [
+      { vi: "Tìm kiếm, chăm sóc và mở rộng danh mục khách hàng B2B.", en: "Prospect, nurture and expand the B2B client portfolio." },
+      { vi: "Tư vấn nguyên liệu, báo giá và phối hợp với R&D cho yêu cầu kỹ thuật.", en: "Advise on ingredients, quoting and coordinating R&D on technical requests." },
+      { vi: "Theo dõi pipeline, forecast doanh số và báo cáo định kỳ.", en: "Manage pipeline, sales forecast and periodic reporting." },
+      { vi: "Tham gia hội thảo, triển lãm ngành và xây dựng quan hệ đối tác.", en: "Attend industry events and build partner relationships." },
+    ],
+    requirements: [
+      { vi: "Tốt nghiệp Đại học kinh tế, marketing, hóa học hoặc dược.", en: "Bachelor's in business, marketing, chemistry or pharmacy." },
+      { vi: "Kinh nghiệm B2B ngành TPCN, mỹ phẩm hoặc nguyên liệu là lợi thế.", en: "B2B experience in supplements, cosmetics or ingredients is a plus." },
+      { vi: "Kỹ năng thuyết trình, đàm phán và CRM.", en: "Presentation, negotiation and CRM skills." },
+      { vi: "Sẵn sàng đi công tác trong nước khi cần.", en: "Willing to travel domestically when required." },
+    ],
+    benefits: [
+      { vi: "Thu nhập: lương cứng + hoa hồng theo doanh số.", en: "Base salary plus commission on sales." },
+      { vi: "Đào tạo sản phẩm và công nghệ chuyên sâu.", en: "In-depth product and technology training." },
+      { vi: "Laptop, điện thoại công ty và phụ cấp đi lại.", en: "Company laptop, phone and travel allowance." },
+    ],
+  },
+  {
+    slug: "chuyen-vien-dang-ky-cong-bo",
+    title: { vi: "Chuyên viên Đăng ký công bố", en: "Product Registration Specialist" },
+    department: { vi: "Pháp lý", en: "Legal" },
+    location: { vi: "Hà Nội", en: "Hanoi" },
+    type: { vi: "Toàn thời gian", en: "Full-time" },
+    description: {
+      vi: "Hỗ trợ đối tác và khách hàng ODM hoàn thiện hồ sơ công bố TPCN, mỹ phẩm; đảm bảo tuân thủ quy định Bộ Y tế và claim khoa học có căn cứ.",
+      en: "Support partners and ODM clients with supplement and cosmetic notification dossiers; ensure Ministry of Health compliance and evidence-based claims.",
+    },
+    responsibilities: [
+      { vi: "Soạn thảo, rà soát hồ sơ công bố sản phẩm theo quy định hiện hành.", en: "Draft and review product notification dossiers per current regulations." },
+      { vi: "Phối hợp QA/QC, R&D để thu thập COA, spec và tài liệu nhà máy.", en: "Coordinate with QA/QC and R&D for COAs, specs and factory documents." },
+      { vi: "Theo dõi tiến độ với cơ quan quản lý và xử lý phản hồi bổ sung.", en: "Track authority progress and handle supplementary feedback." },
+      { vi: "Cập nhật thay đổi pháp lý, claim và nhãn sản phẩm.", en: "Monitor legal updates, claims and product labelling." },
+    ],
+    requirements: [
+      { vi: "Tốt nghiệp Dược, Y, Hóa hoặc Luật có kinh nghiệm ngành TPCN/mỹ phẩm.", en: "Degree in pharmacy, medicine, chemistry or law with TPCN/cosmetics exposure." },
+      { vi: "Hiểu quy trình công bố TPCN, mỹ phẩm tại Việt Nam.", en: "Understanding of Vietnamese supplement/cosmetic notification processes." },
+      { vi: "Tỉ mỉ, có khả năng làm việc với nhiều hồ sơ song song.", en: "Detail-oriented; able to manage multiple dossiers in parallel." },
+      { vi: "Tiếng Anh đọc hiểu tài liệu quy chuẩn.", en: "English for reading regulatory documents." },
+    ],
+    benefits: [
+      { vi: "Lương cạnh tranh, thưởng theo số hồ sơ hoàn thành.", en: "Competitive pay with dossier completion bonus." },
+      { vi: "Đào tạo regulatory chuyên sâu nội bộ và bên ngoài.", en: "Internal and external regulatory training." },
+      { vi: "Làm việc tại văn phòng Hà Nội, hỗ trợ hybrid khi phù hợp.", en: "Hanoi office with hybrid support where appropriate." },
+    ],
+  },
+  {
+    slug: "marketing-executive",
+    title: { vi: "Marketing Executive", en: "Marketing Executive" },
+    department: { vi: "Marketing", en: "Marketing" },
+    location: { vi: "TP. HCM", en: "Ho Chi Minh City" },
+    type: { vi: "Toàn thời gian", en: "Full-time" },
+    description: {
+      vi: "Xây dựng nội dung thương hiệu Bioscope trên website, mạng xã hội và kênh B2B; truyền tải giá trị khoa học, minh bạch và đổi mới của công ty.",
+      en: "Build Bioscope brand content across website, social and B2B channels; communicate the company's scientific, transparent and innovative values.",
+    },
+    responsibilities: [
+      { vi: "Lên kế hoạch và triển khai nội dung blog, social, email B2B.", en: "Plan and execute blog, social and B2B email content." },
+      { vi: "Phối hợp R&D biên tập tài liệu kỹ thuật thành nội dung dễ hiểu.", en: "Work with R&D to turn technical material into accessible content." },
+      { vi: "Quản lý lịch đăng, báo cáo hiệu quả và tối ưu SEO cơ bản.", en: "Manage publishing calendar, performance reports and basic SEO." },
+      { vi: "Hỗ trợ sự kiện, triển lãm và tài liệu sales enablement.", en: "Support events, trade shows and sales enablement assets." },
+    ],
+    requirements: [
+      { vi: "Tốt nghiệp Marketing, Truyền thông hoặc ngành liên quan.", en: "Degree in marketing, communications or related field." },
+      { vi: "1–2 năm kinh nghiệm content/digital, ưu tiên ngành life science.", en: "1–2 years in content/digital; life science background preferred." },
+      { vi: "Thành thạo Canva/Adobe cơ bản; hiểu SEO và analytics.", en: "Canva/Adobe basics; SEO and analytics awareness." },
+      { vi: "Tiếng Anh giao tiếp và viết nội dung tốt.", en: "Good English communication and writing." },
+    ],
+    benefits: [
+      { vi: "Môi trường sáng tạo, làm việc trực tiếp với chuyên gia khoa học.", en: "Creative environment working alongside scientific experts." },
+      { vi: "Ngân sách đào tạo marketing và công cụ số.", en: "Marketing training budget and digital tools." },
+      { vi: "Review lương 2 lần/năm, team building định kỳ.", en: "Bi-annual salary review and regular team building." },
+    ],
+  },
+];
+
 /* ----------------------------- helpers ----------------------------------- */
 export const getTechnology = (slug: string) =>
   technologies.find((t) => t.slug === slug);
 export const getIngredient = (slug: string) =>
   ingredients.find((i) => i.slug === slug);
 export const getPost = (slug: string) => posts.find((p) => p.slug === slug);
+export const getJob = (slug: string) => jobs.find((j) => j.slug === slug);
 export const getRelatedIngredients = (techSlug: string) =>
   ingredients.filter((i) => i.relatedTech === techSlug);

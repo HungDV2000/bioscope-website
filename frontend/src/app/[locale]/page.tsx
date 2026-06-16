@@ -1,5 +1,5 @@
-import Image from "next/image";
-import { ArrowRight, ShieldCheck } from "lucide-react";
+import { ArrowRight, ChevronDown } from "lucide-react";
+import { HeroVideo } from "@/components/home/hero-video";
 import type { Locale } from "@/lib/utils";
 import { pick } from "@/lib/utils";
 import { getDictionary } from "@/lib/i18n";
@@ -32,6 +32,7 @@ export default function HomePage({ params }: { params: { locale: Locale } }) {
   return (
     <>
       <Hero locale={locale} />
+      <div id="after-hero" className="scroll-mt-24" />
       <StatsBand locale={locale} />
       <PartnersCloud locale={locale} />
       <SolutionsSection locale={locale} />
@@ -174,9 +175,9 @@ function Hero({ locale }: { locale: Locale }) {
     locale === "vi"
       ? {
           badge: "Nguyên liệu cao cấp · Công nghệ vận chuyển nano",
-          titleA: "Đưa hoạt chất",
-          titleB: "đến đúng đích —",
-          titleC: "hiệu quả hơn, chi phí tối ưu hơn",
+          titleA: "Đưa hoạt chất đến đúng đích",
+          titleB: "hiệu quả hơn, chi phí tối ưu hơn",
+          titleC: "",
           desc: "Bioscope Việt Nam đồng hành cùng doanh nghiệp Dược phẩm, Thực phẩm chức năng và Mỹ phẩm — từ nguyên liệu nhập khẩu chuẩn hóa đến giải pháp công thức ODM ứng dụng công nghệ nano độc quyền.",
           trust: "Đạt chuẩn GMP · Nguồn gốc minh bạch · Hỗ trợ pháp lý trọn gói",
         }
@@ -193,91 +194,66 @@ function Hero({ locale }: { locale: Locale }) {
     "https://images.unsplash.com/photo-1581093588401-fbb62a02f120?auto=format&fit=crop&w=1920&q=80";
 
   return (
-    <section className="relative -mt-[5.5rem] flex min-h-[82vh] items-center overflow-hidden text-white sm:-mt-[5.75rem] sm:min-h-[85vh]">
-      {/* Banner nền — Ken Burns trên ảnh (không dùng video để tránh 404) */}
-      <Image
-        src={poster}
-        alt=""
-        fill
-        priority
-        sizes="100vw"
-        className="object-cover animate-kenburns"
+    <section className="relative -mt-[5.5rem] flex min-h-screen items-center justify-center overflow-hidden bg-primary-tint sm:-mt-[5.75rem]">
+      {/* Video nền — loop, mute, chậm 1/3 */}
+      <HeroVideo poster={poster} />
+
+      {/* Lớp phủ trắng tập trung sau khối chữ (trên-giữa), nhạt dần để lộ video */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(120% 85% at 50% 42%, rgba(255,255,255,0.94) 0%, rgba(255,255,255,0.66) 42%, rgba(255,255,255,0.14) 66%, rgba(255,255,255,0) 82%)",
+        }}
         aria-hidden
       />
 
-      {/* Overlay — nền tối hơn để chữ trắng nổi rõ, giữ tông thương hiệu */}
-      <div className="absolute inset-0 bg-primary-deep/45" aria-hidden />
-      <div
-        className="absolute inset-0 bg-gradient-to-r from-primary-deep/95 via-primary-deep/65 to-transparent"
-        aria-hidden
-      />
-      <div
-        className="absolute inset-0 bg-gradient-to-t from-primary-deep/75 via-transparent to-transparent"
-        aria-hidden
-      />
-      <div
-        className="absolute inset-0 bg-grid [background-size:64px_64px] opacity-[0.1]"
-        aria-hidden
-      />
+      <div className="container-bs relative z-10 px-4 py-28 text-center">
+        <div className="mx-auto max-w-6xl lg:max-w-7xl">
+          <span className="lab-label justify-center text-[10px] sm:text-[11px]">
+            {copy.badge}
+          </span>
 
-      <div className="container-bs relative z-10 py-20 pt-28 sm:py-24 sm:pt-32 lg:py-28">
-        <div className="max-w-2xl sm:max-w-3xl lg:max-w-[42rem]">
-          <span className="lab-label lab-label--invert text-[10px] sm:text-[11px]">{copy.badge}</span>
-
-          <h1 className="mt-4 font-heading text-[1.75rem] font-bold leading-[1.12] tracking-[-0.02em] text-balance text-white sm:text-4xl lg:text-[2.75rem]">
+          <h1 className="mt-5 font-heading text-[2rem] font-bold leading-[1.12] tracking-[-0.025em] text-balance text-ink sm:text-5xl lg:text-[3.5rem]">
             {copy.titleA}
-            <span className="block bg-gradient-to-r from-accent via-[#FFB36B] to-[#FFE0BD] bg-clip-text text-transparent">
+            <span className="mt-2 block bg-gradient-to-r from-primary to-[#0FAE73] bg-clip-text text-transparent">
               {copy.titleB}
             </span>
-            <span className="block">{copy.titleC}</span>
+            {copy.titleC ? <span className="mt-2 block">{copy.titleC}</span> : null}
           </h1>
 
-          <p className="mt-4 max-w-xl text-sm leading-relaxed text-white/80 sm:max-w-2xl sm:text-[15px] lg:text-base">
+          <p className="mx-auto mt-5 max-w-2xl text-sm font-medium leading-relaxed text-neutral-700 sm:max-w-3xl sm:text-base lg:max-w-4xl">
             {copy.desc}
           </p>
 
-          <div className="mt-7 flex flex-wrap gap-3">
-            <ButtonLink href={p("/nguyen-lieu")} variant="accent" size="md">
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
+            <ButtonLink href={p("/nguyen-lieu")} variant="primary" size="lg">
               {t.cta.explore}
               <ArrowRight className="h-5 w-5" />
             </ButtonLink>
-            <ButtonLink href={p("/lien-he")} variant="white" size="md">
+            <ButtonLink
+              href={p("/lien-he")}
+              variant="white"
+              size="lg"
+              className="border border-primary/20"
+            >
               {t.cta.contact}
             </ButtonLink>
           </div>
-
-          {/* Readout chips — chỉ số khoa học của công nghệ nano */}
-          <div className="mt-8 grid max-w-xl grid-cols-3 gap-2.5 sm:max-w-2xl sm:gap-3 lg:max-w-[36rem]">
-            {[
-              { v: "4.2×", l: locale === "vi" ? "Thẩm thấu" : "Permeation" },
-              { v: "95%", l: locale === "vi" ? "Hiệu suất bao gói" : "Encapsulation" },
-              { v: "80–120", u: "nm", l: locale === "vi" ? "Kích thước hạt" : "Particle size" },
-            ].map((c) => (
-              <div
-                key={c.l}
-                className="rounded-lg border border-white/15 bg-white/10 px-3 py-2.5 backdrop-blur-md sm:px-3.5 sm:py-3"
-              >
-                <div className="readout text-xl text-white sm:text-2xl">
-                  {c.v}
-                  {c.u && (
-                    <span className="ml-1 text-sm font-medium text-white/60">
-                      {c.u}
-                    </span>
-                  )}
-                </div>
-                <div className="mt-0.5 text-[11px] uppercase tracking-wider text-white/70">
-                  {c.l}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-8 flex items-start gap-2.5 text-sm text-white/75">
-            <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-accent" />
-            {copy.trust}
-          </div>
         </div>
       </div>
+
+      {/* Chỉ báo cuộn xuống */}
+      <a
+        href="#after-hero"
+        aria-label={locale === "vi" ? "Cuộn xuống" : "Scroll down"}
+        className="absolute bottom-6 left-1/2 z-20 flex -translate-x-1/2 flex-col items-center gap-2"
+      >
+        <span className="flex h-9 w-[1.4rem] items-start justify-center rounded-full border-2 border-white/85 p-1 shadow-[0_2px_14px_rgba(0,0,0,0.28)]">
+          <span className="h-1.5 w-1.5 rounded-full bg-white animate-scroll-dot" />
+        </span>
+        <ChevronDown className="h-4 w-4 animate-bounce text-white drop-shadow-[0_1px_6px_rgba(0,0,0,0.45)]" />
+      </a>
     </section>
   );
 }
@@ -315,20 +291,22 @@ function StatsBand({ locale }: { locale: Locale }) {
         aria-hidden
       />
 
-      <div className="container-bs relative grid grid-cols-2 gap-y-8 py-11 sm:py-12 lg:grid-cols-4 lg:gap-0 lg:divide-x lg:divide-white/15">
-        {certifications.map((c, i) => (
-          <Reveal key={c.value} delay={i * 80}>
-            <div className="text-center lg:px-6">
-              <CountUp
-                value={c.value}
-                className="readout block text-3xl sm:text-4xl lg:text-5xl"
-              />
-              <div className="mx-auto mt-1.5 max-w-[14ch] text-xs leading-snug text-white/75 sm:text-sm">
-                {pick(c.suffix, locale)}
+      <div className="container-bs relative py-4 sm:py-4 lg:py-6">
+        <div className="mx-auto grid max-w-3xl grid-cols-2 gap-x-3 gap-y-8 sm:max-w-4xl sm:gap-x-4 lg:max-w-5xl lg:grid-cols-4 lg:gap-y-0 lg:divide-x lg:divide-white/15">
+          {certifications.map((c, i) => (
+            <Reveal key={c.value} delay={i * 80}>
+              <div className="py-2 text-center sm:py-3 lg:px-4">
+                <CountUp
+                  value={c.value}
+                  className="readout block text-2xl sm:text-3xl lg:text-4xl"
+                />
+                <div className="mx-auto mt-1.5 max-w-[12ch] text-[11px] leading-snug text-white/75 sm:text-xs">
+                  {pick(c.suffix, locale)}
+                </div>
               </div>
-            </div>
-          </Reveal>
-        ))}
+            </Reveal>
+          ))}
+        </div>
       </div>
     </section>
   );
@@ -341,8 +319,8 @@ function PartnersCloud({ locale }: { locale: Locale }) {
   const row = [...partners, ...partners];
   return (
     <section className="w-full border-b border-neutral-200 bg-white py-8 sm:py-9">
-      <div className="flex w-full flex-col gap-5 sm:flex-row sm:items-center">
-        <span className="lab-label shrink-0 px-5 sm:px-8 lg:pl-[max(1.25rem,calc((100vw-1320px)/2+1.25rem))]">
+      <div className="flex w-full flex-col gap-5 px-5 sm:flex-row sm:items-center sm:px-8 lg:px-10 xl:px-12">
+        <span className="lab-label shrink-0">
           {locale === "vi" ? "Đối tác cung ứng toàn cầu" : "Trusted global partners"}
         </span>
         <div className="mask-fade-x relative min-w-0 flex-1 overflow-hidden">

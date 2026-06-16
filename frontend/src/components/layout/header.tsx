@@ -1,15 +1,28 @@
 "use client";
 
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Menu, X, ArrowRight, User } from "lucide-react";
+import { Menu, X, ArrowRight, User, Search } from "lucide-react";
 import { getDictionary } from "@/lib/i18n";
 import type { Locale } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { LangSwitcher } from "./lang-switcher";
-import { SearchDialog } from "./search-dialog";
 import { Logo } from "./logo";
+
+const SearchDialog = dynamic(
+  () =>
+    import("./search-dialog").then((mod) => ({ default: mod.SearchDialog })),
+  {
+    ssr: false,
+    loading: () => (
+      <span className="inline-flex h-10 w-10 items-center justify-center rounded-full text-neutral-700">
+        <Search className="h-5 w-5" />
+      </span>
+    ),
+  },
+);
 
 export function Header({ locale }: { locale: Locale }) {
   const t = getDictionary(locale);
@@ -17,10 +30,8 @@ export function Header({ locale }: { locale: Locale }) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
-  const isHome =
-    pathname === `/${locale}` || pathname === `/${locale}/`;
-  /** Pill nổi: luôn ở trang chủ; trang khác chỉ khi scroll */
-  const pillMode = isHome || scrolled;
+  /** Đầu trang: header thường chìm trong nền. Scroll xuống mới thành pill nổi. */
+  const pillMode = scrolled;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 48);
@@ -66,21 +77,21 @@ export function Header({ locale }: { locale: Locale }) {
     <header
       className={cn(
         "fixed inset-x-0 top-0 z-50 w-full transition-all duration-300",
-        !pillMode && "border-b border-neutral-200 bg-white"
+        !pillMode && "bg-transparent"
       )}
     >
       <div
         className={cn(
           "transition-all duration-300",
-          pillMode && "container-bs pt-8 sm:pt-10"
+          pillMode ? "container-bs pt-8 sm:pt-10" : "pt-4 sm:pt-6"
         )}
       >
         <div
           className={cn(
-            "relative flex items-center justify-between gap-3 bg-white transition-all duration-300",
+            "relative flex items-center justify-between gap-3 transition-all duration-300",
             pillMode
-              ? "h-14 rounded-full border border-neutral-200 py-1.5 pl-4 pr-1.5 shadow-[0_4px_24px_rgba(0,0,0,0.06)] sm:h-[3.25rem] sm:pl-5 sm:pr-2"
-              : "container-bs h-16"
+              ? "h-14 rounded-full border border-neutral-200 bg-white py-1.5 pl-4 pr-1.5 shadow-[0_4px_24px_rgba(0,0,0,0.06)] sm:h-[3.25rem] sm:pl-5 sm:pr-2"
+              : "container-bs h-16 bg-transparent"
           )}
         >
           <Link href={p("")} aria-label="Bioscope Vietnam" className="shrink-0">

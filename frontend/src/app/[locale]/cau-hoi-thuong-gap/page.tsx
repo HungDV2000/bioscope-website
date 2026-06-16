@@ -46,9 +46,7 @@ export default function FaqPage({ params }: { params: { locale: Locale } }) {
       />
 
       <section className="container-bs py-16">
-        <div className="mx-auto max-w-3xl">
-          <Accordion items={faqs[locale]} />
-        </div>
+        <Accordion items={faqs[locale]} />
       </section>
 
       <div className="pb-12">

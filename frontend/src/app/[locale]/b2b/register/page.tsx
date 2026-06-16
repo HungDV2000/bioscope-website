@@ -16,7 +16,7 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
 
   const field =
-    "h-12 w-full rounded-md border border-neutral-200 bg-white px-4 text-sm outline-none transition-colors focus:border-primary";
+    "h-12 w-full rounded-xl border border-neutral-200 bg-neutral-50/80 px-4 text-sm outline-none transition-colors placeholder:text-neutral-400 focus:border-primary focus:bg-white";
 
   const labels =
     locale === "vi"
@@ -52,10 +52,13 @@ export default function RegisterPage() {
 
   return (
     <AuthShell locale={locale}>
-      <h1 className="font-heading text-2xl font-bold">
-        {locale === "vi" ? "Đăng ký tài khoản đối tác" : "Register a partner account"}
+      <div className="mb-2 inline-flex rounded-full bg-primary-tint px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-primary-dark">
+        B2B
+      </div>
+      <h1 className="font-heading text-2xl font-bold tracking-tight sm:text-[1.65rem]">
+        {locale === "vi" ? "Đăng ký đối tác" : "Partner registration"}
       </h1>
-      <p className="mt-2 text-sm text-neutral-500">{labels.note}</p>
+      <p className="mt-2 text-sm leading-relaxed text-neutral-500">{labels.note}</p>
 
       <form onSubmit={onSubmit} className="mt-8 space-y-4">
         <input required placeholder={labels.company} className={field} />

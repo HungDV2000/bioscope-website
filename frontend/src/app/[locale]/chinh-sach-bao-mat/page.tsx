@@ -48,7 +48,7 @@ export default function PrivacyPage({
       />
 
       <section className="container-bs py-16">
-        <div className="mx-auto max-w-3xl space-y-8">
+        <div className="space-y-8">
           {sections[locale].map((s) => (
             <div key={s.h}>
               <h2 className="font-heading text-xl font-bold text-neutral-900">

@@ -32,14 +32,15 @@ cd /www/wwwroot/demo.bioscope.vn/repo/frontend
 
 npm ci
 npm run build          # KHÔNG dùng build:static
-PORT=3000 pm2 start npm --name bioscope-demo -- start
+# Dùng port riêng nếu 3000 đã bận (vd. app khác trên VPS) — xem docs/DEPLOY-SERVER.md
+PORT=31002 NODE_ENV=production pm2 start npm --name bioscope-frontend -- start
 pm2 save
 ```
 
 Kiểm tra:
 
 ```bash
-curl -I http://127.0.0.1:3000/vi
+curl -I http://127.0.0.1:31002/vi
 # HTTP/1.1 200 OK
 ```
 
@@ -53,7 +54,7 @@ curl -I http://127.0.0.1:3000/vi
 
 ```nginx
 location / {
-    proxy_pass http://127.0.0.1:3000;
+    proxy_pass http://127.0.0.1:31002;
     proxy_http_version 1.1;
     proxy_set_header Upgrade $http_upgrade;
     proxy_set_header Connection 'upgrade';
@@ -82,7 +83,7 @@ cd /www/wwwroot/demo.bioscope.vn/repo/frontend
 git pull
 npm ci
 npm run build
-pm2 restart bioscope-demo
+pm2 restart bioscope-frontend
 ```
 
 ---

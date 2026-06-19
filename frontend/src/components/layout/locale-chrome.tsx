@@ -27,7 +27,7 @@ export function LocaleChrome({
     <>
       <NavigationProgress />
       <Header locale={locale} />
-      <main className="min-h-screen pt-[var(--header-h,5.5rem)]">{children}</main>
+      <main className="min-h-screen bg-white">{children}</main>
       <Footer locale={locale} />
       <ScrollToTop locale={locale} />
     </>

@@ -1,7 +1,7 @@
 import type { Locale } from "./utils";
 
-export const locales: Locale[] = ["vi", "en"];
-export const defaultLocale: Locale = "vi";
+export const locales: Locale[] = ["en", "vi"];
+export const defaultLocale: Locale = "en";
 
 export function isLocale(value: string): value is Locale {
   return locales.includes(value as Locale);
@@ -186,5 +186,5 @@ const dictionaries = {
 export type Dictionary = (typeof dictionaries)["vi"];
 
 export function getDictionary(locale: Locale): Dictionary {
-  return dictionaries[locale] ?? dictionaries.vi;
+  return dictionaries[locale] ?? dictionaries.en;
 }

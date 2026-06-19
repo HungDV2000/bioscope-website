@@ -9,8 +9,8 @@
    ========================================================================= */
 @layer base {
   :root {
-    --font-heading: "Be Vietnam Pro", system-ui, sans-serif;
-    --font-body: "Inter", system-ui, sans-serif;
+     --font-heading: "Plus Jakarta Sans", system-ui, sans-serif;
+    --font-body: "Plus Jakarta Sans", system-ui, sans-serif;
   }
 
   * {
@@ -23,7 +23,7 @@
   }
 
   body {
-    @apply bg-canvas text-neutral-900 font-sans antialiased;
+    @apply bg-white text-neutral-700 font-sans antialiased;
     line-height: 1.6;
     text-rendering: optimizeLegibility;
     font-feature-settings: " cv11", "ss01";
@@ -48,7 +48,7 @@
    ========================================================================= */
 @layer components {
   .container-bs {
-    @apply container max-w-[1320px];
+    @apply container max-w-[1400px] px-8;
   }
 
   /* Lab label — eyebrow: chữ nhỏ, tracking rộng */
@@ -130,4 +130,4 @@
 /* Thanh cuộn */
 ::-webkit-scrollbar { width: 10px; }
 ::-webkit-scrollbar-thumb { background: #c3d4cb; border-radius: 999px; }
-::-webkit-scrollbar-thumb:hover { background: #098f50; }
+::-webkit-scrollbar-thumb:hover { background: #1d8a3b; }

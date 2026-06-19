@@ -30,7 +30,7 @@ export function HeroVideo({ poster }: { poster?: string }) {
       playsInline
       poster={poster}
       aria-hidden
-      className="absolute inset-0 h-full w-full object-cover"
+      className="absolute inset-0 h-full w-full object-cover object-right-center"
     >
       <source src="/video_bg.mp4" type="video/mp4" />
     </video>

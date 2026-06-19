@@ -1,10 +1,7 @@
 import type { Config } from "tailwindcss";
 
 /**
- * Bioscope Vietnam — Design Tokens
- * Direction: "Precision / Nanoscience" — uy tín y khoa, chính xác, điềm tĩnh.
- * Bio Green #098F50 · Vital Orange #F68C36 (chỉ dùng cho điểm dữ liệu) · Ink #0E1A14
- * Heading: Be Vietnam Pro · Body: Inter (line-height 1.6)
+ * Bioscope — palette pixel-sampled từ example/styles.css (mockup tham chiếu)
  */
 const config: Config = {
   darkMode: ["class"],
@@ -20,31 +17,33 @@ const config: Config = {
     },
     extend: {
       colors: {
-        // ---- Brand ----
         primary: {
-          DEFAULT: "#098F50", // Bio Green
-          dark: "#066B3B", // hover
-          deep: "#04140C", // nền hero sâu nhất
-          tint: "#E6F4EC", // soft bg / badge
-          50: "#F0F9F4",
+          DEFAULT: "#0E804C",
+          dark: "#0E6147",
+          deeper: "#004F32",
+          deep: "#00301A",
+          tint: "#EEF6F1",
+          border: "#CFE3D8",
+          50: "#EEF6F1",
         },
         accent: {
-          DEFAULT: "#F68C36", // Vital Orange — chỉ cho điểm dữ liệu / highlight
-          dark: "#D9701B",
-          tint: "#FEF1E6",
+          DEFAULT: "#F7941D",
+          dark: "#E07C0A",
+          tint: "#FFF7EC",
+          soft: "#E9C4A1",
         },
-        // ---- Ink & neutral (không dùng đen tuyền) ----
-        ink: "#0E1A14",
+        ink: "#101814",
         neutral: {
-          900: "#1A2B24", // body text
-          700: "#3C4D45",
-          500: "#6B7A72",
-          300: "#B7C6BD",
-          200: "#DCE5E0", // hairline
-          100: "#EAF0EC",
-          50: "#F4F8F6", // section bg
+          900: "#101814",
+          700: "#33403A",
+          600: "#5B6661",
+          500: "#7C8884",
+          300: "#C7CFCB",
+          200: "#E3E8E5",
+          100: "#EEF1EF",
+          50: "#F7F9F8",
         },
-        canvas: "#F5FAF7", // nền sáng ám xanh nhẹ (tông SaaS thân thiện)
+        canvas: "#F7F9F8",
         white: "#FFFFFF",
       },
       fontFamily: {
@@ -56,14 +55,13 @@ const config: Config = {
         sm: ["0.875rem", { lineHeight: "1.6" }],
         base: ["1rem", { lineHeight: "1.6" }],
         lg: ["1.125rem", { lineHeight: "1.6" }],
-        // display scale — heading dứt khoát
         "display-sm": ["2.5rem", { lineHeight: "1.08", letterSpacing: "-0.02em" }],
         display: ["3.5rem", { lineHeight: "1.04", letterSpacing: "-0.025em" }],
         "display-lg": ["4.5rem", { lineHeight: "1.0", letterSpacing: "-0.03em" }],
       },
       letterSpacing: {
         tightish: "-0.01em",
-        label: "0.18em", // lab label
+        label: "0.18em",
       },
       spacing: {
         13: "3.25rem",
@@ -78,20 +76,17 @@ const config: Config = {
         "2xl": "28px",
       },
       boxShadow: {
-        // Không dùng đổ bóng — phân tách bằng viền (hairline) + nền
-        card: "none",
-        "card-hover": "none",
+        card: "0 2px 10px rgba(16,40,28,.06), 0 1px 2px rgba(16,40,28,.04)",
+        "card-hover": "0 8px 28px rgba(16,40,28,.14)",
         glow: "none",
         accent: "none",
       },
       backgroundImage: {
-        // Hero: deep → primary (giàu chiều sâu)
         "hero-gradient":
-          "radial-gradient(120% 120% at 78% 12%, #0FAE73 0%, #098F50 26%, #066B3B 52%, #04140C 100%)",
-        surface: "linear-gradient(180deg, #FFFFFF 0%, #F4F8F6 100%)",
+          "radial-gradient(120% 120% at 78% 12%, #2BA84A 0%, #1D8A3B 28%, #157030 52%, #0A3D1C 100%)",
+        surface: "linear-gradient(180deg, #FFFFFF 0%, #F2FAF4 100%)",
         mesh:
-          "radial-gradient(at 12% 8%, rgba(15,174,115,0.20) 0px, transparent 50%), radial-gradient(at 92% 88%, rgba(246,140,54,0.12) 0px, transparent 45%)",
-        // lưới hairline mảnh cho cảm giác "bảng đo"
+          "radial-gradient(at 12% 8%, rgba(29,138,59,0.18) 0px, transparent 50%), radial-gradient(at 92% 88%, rgba(243,146,0,0.12) 0px, transparent 45%)",
         grid:
           "linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)",
       },

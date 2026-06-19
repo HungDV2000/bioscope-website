@@ -4,8 +4,8 @@ import type { Technology } from "@/lib/types";
 import type { Locale } from "@/lib/utils";
 import { pick } from "@/lib/utils";
 
-const PRIMARY = "#098F50";
-const ACCENT = "#F68C36";
+const PRIMARY = "#1D8A3B";
+const ACCENT = "#F39200";
 
 export function TechCard({
   tech,

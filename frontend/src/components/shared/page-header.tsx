@@ -27,8 +27,8 @@ export function PageHeader({
 
   if (compact) {
     return (
-      <section className="-mt-[var(--header-h,5.5rem)] border-b border-neutral-200 bg-gradient-to-b from-primary-tint/55 via-primary-tint/15 to-white">
-        <div className="container-bs pb-12 pt-[calc(var(--header-h,5.5rem)+2rem)] sm:pb-14 sm:pt-[calc(var(--header-h,5.5rem)+2.75rem)] lg:pb-16 lg:pt-[calc(var(--header-h,5.5rem)+3rem)]">
+      <section className="border-b border-neutral-200 bg-gradient-to-b from-primary-tint/45 to-white">
+        <div className="container-bs py-10 sm:py-12 lg:py-14">
           {breadcrumbs && (
             <nav
               className="mb-5 flex flex-wrap items-center gap-1 text-xs text-neutral-400"
@@ -88,8 +88,8 @@ export function PageHeader({
 
   /* Trang danh sách — nền tint, chừa đủ khoảng dưới header cố định */
   return (
-    <section className="-mt-[var(--header-h,5.5rem)] border-b border-neutral-200 bg-gradient-to-b from-primary-tint/50 via-primary-tint/18 to-white">
-      <div className="container-bs pb-12 pt-[calc(var(--header-h,5.5rem)+2rem)] sm:pb-14 sm:pt-[calc(var(--header-h,5.5rem)+2.75rem)] lg:pb-16 lg:pt-[calc(var(--header-h,5.5rem)+3.25rem)]">
+    <section className="border-b border-neutral-200 bg-gradient-to-b from-primary-tint/45 to-white">
+      <div className="container-bs py-10 sm:py-12 lg:py-14">
         {breadcrumbs && (
           <nav
             className="mb-6 flex flex-wrap items-center gap-1 text-xs text-neutral-400"

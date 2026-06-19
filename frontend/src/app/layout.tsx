@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
-import { Be_Vietnam_Pro, Inter } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 
-const beVietnam = Be_Vietnam_Pro({
+const plusJakarta = Plus_Jakarta_Sans({
   subsets: ["latin", "vietnamese"],
   weight: ["400", "500", "600", "700", "800"],
   variable: "--font-heading",
   display: "swap",
 });
 
-const inter = Inter({
+const plusJakartaBody = Plus_Jakarta_Sans({
   subsets: ["latin", "vietnamese"],
   weight: ["400", "500", "600", "700"],
   variable: "--font-body",
@@ -44,7 +44,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="vi" className={`${beVietnam.variable} ${inter.variable}`}>
+    <html lang="vi" className={`${plusJakarta.variable} ${plusJakartaBody.variable}`}>
       <body>{children}</body>
     </html>
   );

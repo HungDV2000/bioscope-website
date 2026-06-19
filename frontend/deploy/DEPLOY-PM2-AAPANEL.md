@@ -84,6 +84,10 @@ git pull
 npm ci
 npm run build
 pm2 restart bioscope-frontend
+
+
+
+cd /www/wwwroot/bioscope-website/frontend && git pull && npm ci && npm run build && pm2 restart bioscope-frontend && pm2 list
 ```
 
 ---

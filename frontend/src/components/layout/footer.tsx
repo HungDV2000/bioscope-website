@@ -1,133 +1,157 @@
 import Link from "next/link";
-import { MapPin, Phone, Mail, Globe, Facebook, Linkedin, Youtube } from "lucide-react";
-import { getDictionary } from "@/lib/i18n";
+import { Phone, Mail, MapPin, Send, Linkedin, Youtube } from "lucide-react";
 import type { Locale } from "@/lib/utils";
-import { company } from "@/lib/company";
+import { homeContent, pickL } from "@/lib/home-content";
 import { Logo } from "./logo";
 
+const COMPANY_HREFS = ["/gioi-thieu", "/gioi-thieu", "/gioi-thieu", "/blog", "/tuyen-dung"] as const;
+const INGREDIENT_HREFS = ["/nguyen-lieu", "/nguyen-lieu", "/nguyen-lieu", "/nguyen-lieu", "/nguyen-lieu"] as const;
+const SUPPORT_HREFS = ["/lien-he", "/lien-he", "/lien-he", "/cau-hoi-thuong-gap", "/blog"] as const;
+
 export function Footer({ locale }: { locale: Locale }) {
-  const t = getDictionary(locale);
+  const vi = locale === "vi";
   const p = (path: string) => `/${locale}${path}`;
   const year = new Date().getFullYear();
-
-  const columns = [
-    {
-      title: t.footer.company,
-      links: [
-        { label: t.nav.about, href: p("/gioi-thieu") },
-        { label: t.nav.careers, href: p("/tuyen-dung") },
-        { label: t.nav.blog, href: p("/blog") },
-        { label: t.nav.contact, href: p("/lien-he") },
-      ],
-    },
-    {
-      title: t.footer.products,
-      links: [
-        { label: t.common.supplement, href: p("/nguyen-lieu?type=supplement") },
-        { label: t.common.cosmetic, href: p("/nguyen-lieu?type=cosmetic") },
-        { label: t.nav.technologies, href: p("/cong-nghe") },
-        { label: t.nav.services, href: p("/dich-vu-odm") },
-      ],
-    },
-    {
-      title: t.footer.support,
-      links: [
-        { label: t.nav.faq, href: p("/cau-hoi-thuong-gap") },
-        { label: t.nav.privacy, href: p("/chinh-sach-bao-mat") },
-        { label: t.cta.login, href: p("/b2b/login") },
-      ],
-    },
-  ];
+  const c = homeContent.footer;
 
   return (
-    <footer className="mt-24 bg-neutral-900 text-neutral-200">
-      <div className="container-bs grid gap-12 py-16 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
+    <footer className="bg-primary-deep text-white/80">
+      <div className="container-bs grid gap-7 py-14 lg:grid-cols-[1.6fr_1fr_1fr_1fr_1fr_1.2fr]">
         <div>
-          <Logo variant="white" />
-          <p className="mt-5 max-w-sm text-sm leading-relaxed text-neutral-200/70">
-            {t.footer.tagline}
+          <Link href={p("")}>
+            <Logo variant="white" />
+          </Link>
+          <p className="mt-3.5 max-w-[240px] text-[13px] leading-relaxed text-white/65">
+            {pickL(c.description, locale)}
           </p>
-          <ul className="mt-6 space-y-3 text-sm text-neutral-200/80">
-            <li className="flex gap-3">
-              <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-              <span>
-                <span className="font-medium text-neutral-200/90">
-                  {locale === "vi" ? "Trụ sở:" : "Head office:"}
-                </span>{" "}
-                {company.hqAddress}
-              </span>
-            </li>
-            <li className="flex gap-3">
-              <Phone className="h-4 w-4 shrink-0 text-primary" />
-              <a href={company.hotlineHref} className="hover:text-white">
-                {company.hotline}
-              </a>
-            </li>
-            <li className="flex gap-3">
-              <Mail className="h-4 w-4 shrink-0 text-primary" />
-              <a href={company.emailHref} className="hover:text-white">
-                {company.email}
-              </a>
-            </li>
-            <li className="flex gap-3">
-              <Globe className="h-4 w-4 shrink-0 text-primary" />
+          <div className="mt-4 flex gap-2.5">
+            {[
+              { Icon: Linkedin, label: "LinkedIn" },
+              { Icon: Youtube, label: "YouTube" },
+              { Icon: Mail, label: "Email", href: c.emailHref },
+            ].map(({ Icon, label, href }) => (
               <a
-                href={company.websiteUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-white"
+                key={label}
+                href={href ?? "#"}
+                aria-label={label}
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/30 text-white transition-colors hover:bg-white/12"
               >
-                {company.website}
+                <Icon className="h-4 w-4" />
               </a>
+            ))}
+          </div>
+        </div>
+
+        <FooterCol
+          title={pickL(c.company, locale)}
+          links={c.companyLinks.map((item, i) => ({
+            label: vi ? item.vi : item.en,
+            href: p(COMPANY_HREFS[i]),
+          }))}
+        />
+        <FooterCol
+          title={pickL(c.ingredients, locale)}
+          links={c.ingredientLinks.map((item, i) => ({
+            label: vi ? item.vi : item.en,
+            href: p(INGREDIENT_HREFS[i]),
+          }))}
+        />
+        <FooterCol
+          title={pickL(c.support, locale)}
+          links={c.supportLinks.map((item, i) => ({
+            label: vi ? item.vi : item.en,
+            href: p(SUPPORT_HREFS[i]),
+          }))}
+        />
+
+        <div>
+          <h4 className="text-[14.5px] font-bold text-white">{pickL(c.contactUs, locale)}</h4>
+          <ul className="mt-4 space-y-1 text-[13px] text-white/68">
+            <li className="flex gap-2 py-1">
+              <Phone className="mt-0.5 h-[15px] w-[15px] shrink-0" />
+              <a href={c.phoneHref} className="hover:text-white">
+                {c.phone}
+              </a>
+            </li>
+            <li className="flex gap-2 py-1">
+              <Mail className="mt-0.5 h-[15px] w-[15px] shrink-0" />
+              <a href={c.emailHref} className="hover:text-white">
+                {c.email}
+              </a>
+            </li>
+            <li className="flex gap-2 py-1 leading-snug">
+              <MapPin className="mt-0.5 h-[15px] w-[15px] shrink-0" />
+              <span>{pickL(c.address, locale)}</span>
             </li>
           </ul>
         </div>
 
-        {columns.map((col) => (
-          <div key={col.title}>
-            <h4 className="text-sm font-semibold uppercase tracking-wider text-white">
-              {col.title}
-            </h4>
-            <ul className="mt-4 space-y-2.5">
-              {col.links.map((link) => (
-                <li key={link.label}>
-                  <Link
-                    href={link.href}
-                    className="text-sm text-neutral-200/70 transition-colors hover:text-primary"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
+        <div>
+          <h4 className="text-[14.5px] font-bold text-white">{pickL(c.stayUpdated, locale)}</h4>
+          <form className="mt-4 flex gap-2">
+            <input
+              type="email"
+              placeholder={pickL(c.emailPlaceholder, locale)}
+              className="min-w-0 flex-1 rounded-md border border-white/25 bg-white/[0.06] px-3 py-2.5 text-[13px] text-white outline-none placeholder:text-white/50"
+            />
+            <button
+              type="button"
+              aria-label={vi ? "Đăng ký" : "Subscribe"}
+              className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-primary-dark text-white transition-colors hover:bg-primary-deeper"
+            >
+              <Send className="h-4 w-4" />
+            </button>
+          </form>
+          <p className="mt-3.5 text-[13px] leading-relaxed text-white/65">
+            {pickL(c.newsletterNote, locale)}
+          </p>
+        </div>
       </div>
 
       <div className="border-t border-white/10">
-        <div className="container-bs space-y-2 py-6">
-          <p className="text-xs leading-relaxed text-neutral-200/60">
-            {locale === "vi" ? "ĐKKD tại:" : "Business reg.:"} {company.regAddress}
+        <div className="container-bs flex flex-col gap-3 py-5 text-[13px] text-white/55 lg:flex-row lg:items-center lg:justify-between">
+          <p>
+            © {year} Bioscope. {pickL(c.rights, locale)}
           </p>
-          <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-            <p className="text-xs text-neutral-200/60">
-              © {year} {company.legalName}. {t.footer.rights} · MST:{" "}
-              {company.taxId}
-            </p>
-            <div className="flex items-center gap-3">
-              {[Facebook, Linkedin, Youtube].map((Icon, i) => (
-                <a
-                  key={i}
-                  href="#"
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/5 text-neutral-200/70 transition-colors hover:bg-primary hover:text-white"
-                >
-                  <Icon className="h-4 w-4" />
-                </a>
-              ))}
-            </div>
+          <div className="flex flex-wrap gap-5">
+            <Link href={p("/chinh-sach-bao-mat")} className="hover:text-white">
+              {pickL(c.privacy, locale)}
+            </Link>
+            <Link href={p("/cau-hoi-thuong-gap")} className="hover:text-white">
+              {pickL(c.terms, locale)}
+            </Link>
+            <Link href="/sitemap.xml" className="hover:text-white">
+              Sitemap
+            </Link>
           </div>
         </div>
       </div>
     </footer>
+  );
+}
+
+function FooterCol({
+  title,
+  links,
+}: {
+  title: string;
+  links: { label: string; href: string }[];
+}) {
+  return (
+    <div>
+      <h4 className="text-[14.5px] font-bold text-white">{title}</h4>
+      <ul className="mt-4">
+        {links.map((l) => (
+          <li key={l.label}>
+            <Link
+              href={l.href}
+              className="block py-1.5 text-[13px] text-white/68 transition-colors hover:text-white"
+            >
+              {l.label}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }

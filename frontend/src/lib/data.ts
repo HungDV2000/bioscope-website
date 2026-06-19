@@ -18,7 +18,7 @@ export const technologies: Technology[] = [
   {
     slug: "novaskin",
     order: 1,
-    accent: "#098F50",
+    accent: "#1D8A3B",
     name: { vi: "Novaskin™", en: "Novaskin™" },
     tagline: {
       vi: "Công nghệ vận chuyển dưỡng chất thẩm thấu sâu vào da",
@@ -67,7 +67,7 @@ export const technologies: Technology[] = [
   {
     slug: "lipodisq",
     order: 3,
-    accent: "#F68C36",
+    accent: "#F39200",
     name: { vi: "Lipodisq®", en: "Lipodisq®" },
     tagline: {
       vi: "Hệ nano đĩa lipid ổn định cho hoạt chất nhạy cảm",
@@ -91,7 +91,7 @@ export const technologies: Technology[] = [
   {
     slug: "liposome",
     order: 4,
-    accent: "#066B3B",
+    accent: "#157030",
     name: { vi: "Liposome", en: "Liposome" },
     tagline: {
       vi: "Vận chuyển kép ưa nước & ưa dầu trong một cấu trúc",

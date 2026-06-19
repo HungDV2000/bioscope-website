@@ -14,8 +14,8 @@ import { CtaBand } from "@/components/shared/cta-band";
 import { RichContentLayout } from "@/components/shared/rich-content";
 import type { ContentSection } from "@/lib/types";
 
-const PRIMARY = "#098F50";
-const ACCENT = "#F68C36";
+const PRIMARY = "#1D8A3B";
+const ACCENT = "#F39200";
 
 export const metadata: Metadata = {
   title: "Giới thiệu",

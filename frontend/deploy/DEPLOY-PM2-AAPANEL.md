@@ -33,7 +33,10 @@ cd /www/wwwroot/demo.bioscope.vn/repo/frontend
 npm ci
 npm run build          # KHÔNG dùng build:static
 # Dùng port riêng nếu 3000 đã bận (vd. app khác trên VPS) — xem docs/DEPLOY-SERVER.md
-PORT=31002 NODE_ENV=production pm2 start npm --name bioscope-frontend -- start
+PORT=31002 NODE_ENV=production pm2 start npm \
+  --name bioscope-frontend \
+  --cwd /www/wwwroot/demo.bioscope.vn/repo/frontend \
+  -- start
 pm2 save
 ```
 
@@ -50,7 +53,8 @@ curl -I http://127.0.0.1:31002/vi
 
 **Website** → `demo.bioscope.vn` → **Config**
 
-**Xóa** các block `location /` với `try_files` cũ. Thay bằng:
+**Xóa** các block `location /` với `try_files` cũ **và** mọi `location /_next/static/` trỏ document root (gây mất CSS).  
+Thay bằng nội dung file `deploy/nginx-pm2-aapanel.conf`:
 
 ```nginx
 location / {

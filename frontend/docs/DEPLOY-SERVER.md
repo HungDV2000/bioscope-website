@@ -14,9 +14,10 @@ Tài liệu này mô tả cách deploy project **Next.js 14** (`frontend/`) lên
 > API webhook CMS (`/api/revalidate`) **chỉ hoạt động** với cách A (PM2 + Node).
 
 File cấu hình mẫu thêm trong thư mục `deploy/`:
+- `deploy/nginx-pm2-aapanel.conf` — Nginx reverse proxy (Cách A) **khuyến nghị**
 - `deploy/DEPLOY-PM2-AAPANEL.md` — bản rút gọn PM2
 - `deploy/DEPLOY-AAPANEL.md` — bản rút gọn static
-- `deploy/nginx-aapanel.conf` — Nginx cho static export
+- `deploy/nginx-aapanel.conf` — Nginx cho static export (Cách B only)
 
 ---
 
@@ -77,10 +78,18 @@ ss -tlnp | grep 3000
 Khuyến nghị Bioscope dùng **port 31002**:
 
 ```bash
-PORT=31002 NODE_ENV=production pm2 start npm --name bioscope-frontend -- start
+cd /www/wwwroot/bioscope-website/frontend
+
+PORT=31002 NODE_ENV=production pm2 start npm \
+  --name bioscope-frontend \
+  --cwd /www/wwwroot/bioscope-website/frontend \
+  -- start
+
 pm2 save
 pm2 list
 ```
+
+> **`--cwd`** bắt buộc — nếu thiếu, `public/` (logo, videos, images) trả 404.
 
 Test local:
 
@@ -99,7 +108,12 @@ curl -I http://127.0.0.1:31002/vi
 
 **Website** → domain → **Config**
 
-Xóa/comment block `location /` cũ (try_files, PHP). Thêm:
+Xóa/comment **toàn bộ** block cũ:
+- `location /` với `try_files` (static export)
+- `location /_next/static/` trỏ `root` document root ← **hay gây mất CSS**
+- `include enable-php-*.conf`
+
+Chỉ giữ **một** block proxy (xem `deploy/nginx-pm2-aapanel.conf`):
 
 ```nginx
 location / {
@@ -113,13 +127,12 @@ location / {
     proxy_set_header X-Forwarded-Proto $scheme;
     proxy_cache_bypass $http_upgrade;
 }
-```
 
-Comment PHP (Next.js không cần):
-
-```nginx
 # include enable-php-83.conf;
 ```
+
+> **Cách A (PM2):** mọi URL (`/`, `/_next/static/`, `/logo.avif`, `/videos/`) đều do Node phục vụ qua proxy.  
+> **Không** trộn static export (`out/` hoặc `_next/` trong document root) với PM2.
 
 Reload Nginx trong aaPanel.
 
@@ -220,7 +233,68 @@ rsync -avz --delete out/ root@vps:/www/wwwroot/demo.bioscope.vn/
 
 # Xử lý lỗi thường gặp
 
-## PM2 `errored` / `EADDRINUSE: port 3000`
+## Site không có CSS / font Times New Roman / link xanh (style vỡ)
+
+**Triệu chứng:** HTML hiện đúng nội dung nhưng không Tailwind, logo/ảnh vỡ, giống trang HTML thuần.
+
+**Nguyên nhân phổ biến (đã gặp trên `demo.bioscope.vn`):**
+
+1. Nginx còn `location /_next/static/` trỏ **document root** (từ lần deploy static cũ) → file CSS/JS **hash cũ** (200) nhưng HTML từ PM2 trỏ **hash mới** (404).
+2. Hoặc trộn **Cách A (PM2)** + file `out/` / `_next/` còn sót trong `/www/wwwroot/demo.bioscope.vn/`.
+3. PM2 chạy sai thư mục → thiếu `public/` (logo, videos 404).
+4. Build cũ / cache `.next` lệch sau `git pull`.
+
+**Chẩn đoán nhanh (trên VPS hoặc máy dev):**
+
+```bash
+# Lấy tên file CSS trong HTML
+curl -s https://demo.bioscope.vn/en | grep -o '/_next/static/css/[^"]*' | head -1
+
+# Kiểm tra file đó — phải HTTP 200
+curl -I https://demo.bioscope.vn/_next/static/css/XXXXXXXX.css
+```
+
+Nếu CSS **404** → làm theo bước sửa bên dưới.
+
+**Sửa trên VPS (theo thứ tự):**
+
+```bash
+cd /www/wwwroot/bioscope-website/frontend
+
+# 1. Build sạch
+rm -rf .next
+git pull origin main
+npm ci
+npm run build
+
+# 2. Restart PM2 đúng cwd + port
+pm2 delete bioscope-frontend 2>/dev/null || true
+PORT=31002 NODE_ENV=production pm2 start npm \
+  --name bioscope-frontend \
+  --cwd /www/wwwroot/bioscope-website/frontend \
+  -- start
+pm2 save
+
+# 3. Xóa static cũ trong document root (nếu từng deploy Cách B)
+rm -rf /www/wwwroot/demo.bioscope.vn/_next
+rm -rf /www/wwwroot/demo.bioscope.vn/vi /www/wwwroot/demo.bioscope.vn/en
+# (chỉ xóa nếu site đang dùng PM2, không dùng static export)
+
+# 4. Sửa Nginx — chỉ proxy_pass, KHÔNG location /_next/static/ riêng
+#    Xem deploy/nginx-pm2-aapanel.conf → Reload Nginx
+```
+
+**Verify sau sửa:**
+
+```bash
+CSS=$(curl -s http://127.0.0.1:31002/en | grep -o '/_next/static/css/[^"]*' | head -1)
+curl -I "http://127.0.0.1:31002$CSS"    # → 200
+curl -I http://127.0.0.1:31002/logo.avif # → 200
+```
+
+Trình duyệt: **Ctrl+Shift+R** (hard refresh) hoặc xóa cache.
+
+---
 
 **Nguyên nhân:** Port đã bị app khác chiếm (vd. PersonalAdvisorBot trên 3000). PM2 restart liên tục → `errored`.
 
@@ -229,7 +303,10 @@ rsync -avz --delete out/ root@vps:/www/wwwroot/demo.bioscope.vn/
 ```bash
 ss -tlnp | grep 3000          # xem app nào đang dùng
 pm2 delete bioscope-frontend   # xóa process lỗi
-PORT=31002 NODE_ENV=production pm2 start npm --name bioscope-frontend -- start
+PORT=31002 NODE_ENV=production pm2 start npm \
+  --name bioscope-frontend \
+  --cwd /www/wwwroot/bioscope-website/frontend \
+  -- start
 ```
 
 Cập nhật Nginx `proxy_pass` → `http://127.0.0.1:31002`.

@@ -44,6 +44,18 @@ cd apps/bioscope-frontend
 pnpm dev -- -p 26000 -H 0.0.0.0
 ```
 
+Hoặc dùng biến môi trường:
+
+```bash
+PORT=26000 pnpm dev -- -H 0.0.0.0
+```
+
+Hoặc gọi trực tiếp:
+
+```bash
+pnpm exec next dev -p 26000 -H 0.0.0.0
+```
+
 Truy cập tạm: `http://<IP-VPS>:26000` (mở firewall cổng 26000 nếu cần).
 
 > Dev server **không nên** để chạy lâu trên production — chỉ để xem thử.
@@ -58,6 +70,8 @@ cd apps/bioscope-frontend
 pnpm build
 PORT=26000 pnpm start
 ```
+
+(`next start` đọc cổng từ biến `PORT`, mặc định 3000.)
 
 Chạy nền bằng **PM2** (khuyến nghị):
 

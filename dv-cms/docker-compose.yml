@@ -7,9 +7,8 @@ services:
       POSTGRES_USER: dvcms
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dvcms}
       POSTGRES_DB: dvcms
-    # Host port: đổi DVCMS_DB_HOST_PORT trong .env nếu 5432 đã bị chiếm (vd. 26432)
     ports:
-      - "127.0.0.1:${DVCMS_DB_HOST_PORT:-5432}:5432"
+      - "127.0.0.1:${DVCMS_DB_HOST_PORT:-26432}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -18,9 +17,6 @@ services:
       timeout: 5s
       retries: 10
 
-  # The CMS image — only started with the "full" profile:
-  #   docker compose --profile full up -d
-  # For local dev run Postgres only (`docker compose up -d db`) and the app via pnpm.
   cms:
     build:
       context: .
@@ -33,17 +29,34 @@ services:
     environment:
       DATABASE_URI: postgres://dvcms:${POSTGRES_PASSWORD:-dvcms}@db:5432/dvcms
       PAYLOAD_SECRET: ${PAYLOAD_SECRET:-please-change-this-to-a-long-random-secret}
-      PAYLOAD_PUBLIC_SERVER_URL: ${PAYLOAD_PUBLIC_SERVER_URL:-http://localhost:3001}
-      FRONTEND_URL: ${FRONTEND_URL:-}
+      PAYLOAD_PUBLIC_SERVER_URL: ${PAYLOAD_PUBLIC_SERVER_URL:-https://cms.bioscope.vn}
+      FRONTEND_URL: ${FRONTEND_URL:-https://web.bioscope.vn}
       REVALIDATE_SECRET: ${REVALIDATE_SECRET:-}
       B2B_COOKIE: ${B2B_COOKIE:-bio-token}
       NODE_ENV: production
+      NODE_OPTIONS: --no-deprecation
       PORT: "3001"
-    # Host port: đổi DVCMS_CMS_HOST_PORT trong .env nếu 3001 đã bị chiếm (vd. 26001)
     ports:
-      - "127.0.0.1:${DVCMS_CMS_HOST_PORT:-3001}:3001"
+      - "127.0.0.1:${DVCMS_CMS_HOST_PORT:-26001}:3001"
     volumes:
       - media:/app/apps/core-cms/media
+    profiles: ["full"]
+
+  frontend:
+    build:
+      context: .
+      dockerfile: apps/bioscope-frontend/Dockerfile
+      args:
+        NEXT_PUBLIC_CMS_URL: ${NEXT_PUBLIC_CMS_URL:-https://cms.bioscope.vn}
+    container_name: dvcms-frontend
+    restart: unless-stopped
+    depends_on:
+      cms:
+        condition: service_started
+    environment:
+      PORT: "3000"
+    ports:
+      - "127.0.0.1:${DVCMS_FRONTEND_HOST_PORT:-26000}:3000"
     profiles: ["full"]
 
 volumes:

@@ -83,6 +83,8 @@ export interface Config {
     technologies: Technology;
     services: Service;
     certifications: Certification;
+    'case-studies': CaseStudy;
+    faqs: Faq;
     members: Member;
     'gated-documents': GatedDocument;
     'payload-kv': PayloadKv;
@@ -107,6 +109,8 @@ export interface Config {
     technologies: TechnologiesSelect<false> | TechnologiesSelect<true>;
     services: ServicesSelect<false> | ServicesSelect<true>;
     certifications: CertificationsSelect<false> | CertificationsSelect<true>;
+    'case-studies': CaseStudiesSelect<false> | CaseStudiesSelect<true>;
+    faqs: FaqsSelect<false> | FaqsSelect<true>;
     members: MembersSelect<false> | MembersSelect<true>;
     'gated-documents': GatedDocumentsSelect<false> | GatedDocumentsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
@@ -957,6 +961,91 @@ export interface Certification {
   createdAt: string;
 }
 /**
+ * Câu chuyện thương hiệu đã đồng kiến tạo cùng Bioscope.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "case-studies".
+ */
+export interface CaseStudy {
+  id: number;
+  brand: string;
+  /**
+   * Để trống sẽ tự tạo từ tiêu đề.
+   */
+  slug?: string | null;
+  /**
+   * Đối tác nguyên liệu hoặc công nghệ áp dụng (vd GC Rieber Oils, Phytosome ướt).
+   */
+  partner?: string | null;
+  industry?: ('Thực phẩm chức năng' | 'Dược phẩm' | 'Mỹ phẩm' | 'Dinh dưỡng') | null;
+  summary?: string | null;
+  /**
+   * vd 500K USD, 70%+, #1
+   */
+  kpi?: string | null;
+  kpiLabel?: string | null;
+  problem?: string | null;
+  solution?: string | null;
+  /**
+   * Mỗi mục là một kết quả đo lường được.
+   */
+  results?: string[] | null;
+  coCreateSteps?: string[] | null;
+  testimonial?: string | null;
+  /**
+   * Nhãn hiển thị trên thẻ (vd Đồng kiến tạo, Dầu & Omega).
+   */
+  tags?: string[] | null;
+  coverImage?: (number | null) | Media;
+  featured?: boolean | null;
+  order?: number | null;
+  /**
+   * Meta cho công cụ tìm kiếm & mạng xã hội.
+   */
+  seo?: {
+    /**
+     * Thẻ <title>. Bỏ trống dùng tiêu đề mặc định.
+     */
+    title?: string | null;
+    /**
+     * Meta description (~155 ký tự).
+     */
+    description?: string | null;
+    /**
+     * Ảnh Open Graph (1200×630).
+     */
+    image?: (number | null) | Media;
+    /**
+     * Canonical URL (tùy chọn).
+     */
+    canonical?: string | null;
+    /**
+     * Chặn index trang này.
+     */
+    noIndex?: boolean | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * Hỏi đáp hiển thị ở trang Câu hỏi thường gặp và trang Liên hệ.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "faqs".
+ */
+export interface Faq {
+  id: number;
+  question: string;
+  answer: string;
+  category?: ('ingredients' | 'solutions' | 'support') | null;
+  showOnContact?: boolean | null;
+  order?: number | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "members".
  */
@@ -1077,6 +1166,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'certifications';
         value: number | Certification;
+      } | null)
+    | ({
+        relationTo: 'case-studies';
+        value: number | CaseStudy;
+      } | null)
+    | ({
+        relationTo: 'faqs';
+        value: number | Faq;
       } | null)
     | ({
         relationTo: 'members';
@@ -1637,6 +1734,54 @@ export interface CertificationsSelect<T extends boolean = true> {
   order?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "case-studies_select".
+ */
+export interface CaseStudiesSelect<T extends boolean = true> {
+  brand?: T;
+  slug?: T;
+  partner?: T;
+  industry?: T;
+  summary?: T;
+  kpi?: T;
+  kpiLabel?: T;
+  problem?: T;
+  solution?: T;
+  results?: T;
+  coCreateSteps?: T;
+  testimonial?: T;
+  tags?: T;
+  coverImage?: T;
+  featured?: T;
+  order?: T;
+  seo?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+        canonical?: T;
+        noIndex?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "faqs_select".
+ */
+export interface FaqsSelect<T extends boolean = true> {
+  question?: T;
+  answer?: T;
+  category?: T;
+  showOnContact?: T;
+  order?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

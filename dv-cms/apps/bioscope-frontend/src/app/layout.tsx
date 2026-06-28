@@ -9,7 +9,7 @@ const beVietnam = Be_Vietnam_Pro({
   display: 'swap',
 })
 
-const SITE_URL = 'https://bioscope.vn'
+const SITE_URL = 'https://web.bioscope.vn'
 const DESCRIPTION =
   'Không chỉ nguyên liệu — Bioscope đồng kiến tạo những giải pháp đột phá cho ngành Dược phẩm, Thực phẩm chức năng và Mỹ phẩm tại Việt Nam.'
 

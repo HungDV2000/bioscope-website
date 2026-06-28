@@ -14,10 +14,10 @@ ENV NEXT_PUBLIC_CMS_URL=$NEXT_PUBLIC_CMS_URL
 ENV NEXT_TELEMETRY_DISABLED=1
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/apps/bioscope-frontend/node_modules ./apps/bioscope-frontend/node_modules
-COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
+COPY pnpm-workspace.yaml pnpm-lock.yaml package.json tsconfig.base.json ./
 COPY apps/bioscope-frontend ./apps/bioscope-frontend
 WORKDIR /app/apps/bioscope-frontend
-RUN pnpm exec next build
+RUN pnpm exec next build --webpack
 
 FROM base AS runner
 ENV NODE_ENV=production

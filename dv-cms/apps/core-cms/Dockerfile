@@ -15,7 +15,7 @@ ENV NODE_OPTIONS=--no-deprecation
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/packages ./packages
 COPY --from=deps /app/apps/core-cms/node_modules ./apps/core-cms/node_modules
-COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
+COPY pnpm-workspace.yaml pnpm-lock.yaml package.json tsconfig.base.json ./
 COPY packages ./packages
 COPY apps/core-cms ./apps/core-cms
 WORKDIR /app/apps/core-cms

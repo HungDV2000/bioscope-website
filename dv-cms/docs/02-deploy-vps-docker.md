@@ -6,7 +6,7 @@ CMS chạy bằng **Docker Compose**: Postgres 16 + **CMS** (`core-cms`) + **Fro
 | Tài liệu | Mục đích |
 |---|---|
 | [01-local-development.md](./01-local-development.md) | Dev trên máy: `pnpm cms:dev` + Postgres Docker |
-| **02-deploy-vps-docker.md** (file này) | Deploy production trên server |
+| [03-frontend-only-preview.md](./03-frontend-only-preview.md) | Chỉ frontend Next.js — xem giao diện, trỏ domain aaPanel |
 
 ---
 

@@ -30,4 +30,4 @@ COPY --from=build /app/node_modules /app/node_modules
 COPY --from=build /app/packages /app/packages
 COPY --from=build /app/apps/core-cms /app/apps/core-cms
 EXPOSE 3001
-CMD ["pnpm", "exec", "next", "start", "-p", "3001"]
+CMD ["node", "/app/node_modules/next/dist/bin/next", "start", "-p", "3001"]

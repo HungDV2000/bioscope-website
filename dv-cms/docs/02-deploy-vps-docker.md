@@ -96,19 +96,19 @@ openssl rand -hex 16    # REVALIDATE_SECRET
 ## 3. Build & chạy
 
 ```bash
-docker compose --profile full up -d --build
+docker compose up -d --build
 ```
 
 Theo dõi log lần đầu:
 
 ```bash
-docker compose --profile full logs -f cms frontend
+docker compose logs -f cms frontend
 ```
 
 Kiểm tra container và cổng thực tế:
 
 ```bash
-docker compose --profile full ps
+docker compose ps
 # dvcms-db        ... 127.0.0.1:26432->5432/tcp
 # dvcms-app       ... 127.0.0.1:26001->3001/tcp
 # dvcms-frontend  ... 127.0.0.1:26000->3000/tcp
@@ -128,8 +128,8 @@ Admin: sau khi gắn reverse proxy → `https://cms.bioscope.vn/admin`.
 ## 4. Migration & seed (lần đầu)
 
 ```bash
-docker compose --profile full exec cms pnpm exec payload migrate
-docker compose --profile full exec cms pnpm exec payload run src/seed/index.ts
+docker compose exec cms pnpm exec payload migrate
+docker compose exec cms pnpm exec payload run src/seed/index.ts
 ```
 
 Sau seed: **admin@bioscope.vn / Bioscope@123** → đổi mật khẩu ngay tại `/admin`.
@@ -205,7 +205,7 @@ Service `frontend` build từ `apps/bioscope-frontend/Dockerfile`, cổng host
 phải rebuild:
 
 ```bash
-docker compose --profile full up -d --build frontend
+docker compose up -d --build frontend
 ```
 
 Reverse proxy website: `web.bioscope.vn` → `127.0.0.1:26000`.
@@ -217,17 +217,17 @@ Reverse proxy website: `web.bioscope.vn` → `127.0.0.1:26000`.
 ```bash
 # Cập nhật phiên bản
 git pull
-docker compose --profile full up -d --build
+docker compose up -d --build
 
 # Log / restart
-docker compose --profile full logs -f cms frontend
-docker compose --profile full restart cms frontend
+docker compose logs -f cms frontend
+docker compose restart cms frontend
 
 # Dừng (giữ volume dữ liệu)
-docker compose --profile full down
+docker compose down
 
 # Dừng + XÓA dữ liệu (cẩn thận!)
-docker compose --profile full down -v
+docker compose down -v
 ```
 
 ### Backup Postgres
@@ -250,6 +250,8 @@ Upload media lưu ở volume `media`; database ở volume `pgdata`.
 
 | Triệu chứng | Cách xử lý |
 |---|---|
+| aaPanel **list index out of range** | Deploy qua SSH — mục **8.1**, không dùng GUI panel |
+| Container **Paused** trên aaPanel | Mục **8.2** |
 | `sh: cross-env: not found` khi build | Đã sửa Dockerfile — `git pull` rồi build lại |
 | `Bind for 127.0.0.1:5432 failed: port is already allocated` | Đổi `DVCMS_DB_HOST_PORT` (vd. `26432`) |
 | `Bind for 127.0.0.1:3001 failed` | Đổi `DVCMS_CMS_HOST_PORT` (vd. `26001`) |
@@ -257,6 +259,34 @@ Upload media lưu ở volume `media`; database ở volume `pgdata`.
 | CMS không kết nối DB | Kiểm tra `POSTGRES_PASSWORD` khớp giữa `db` và `DATABASE_URI` trong compose |
 | Admin/API 502 qua domain | Reverse proxy trỏ đúng `127.0.0.1:<DVCMS_CMS_HOST_PORT>` |
 | CORS / cookie B2B lỗi | `PAYLOAD_PUBLIC_SERVER_URL`, `FRONTEND_URL` phải đúng URL HTTPS public |
+
+### 8.1 aaPanel: **Setup failed! list index out of range**
+
+Lỗi này đến từ **giao diện Docker của aaPanel/BT Panel** (bug Python khi parse
+`docker-compose.yml`), **không phải** lỗi project hay ổ cứng.
+
+**Không deploy qua panel** — dùng **SSH + CLI**:
+
+```bash
+cd /www/wwwroot/bioscope-website/dv-cms
+git pull
+cp .env.server.example .env   # nếu chưa có
+bash scripts/deploy.sh
+```
+
+### 8.2 Container **Paused**
+
+```bash
+docker unpause dvcms-db dvcms-app dvcms-frontend 2>/dev/null || true
+docker compose down && docker compose up -d --build
+```
+
+### 8.3 Ổ đĩa đầy (Disk 100%)
+
+```bash
+docker builder prune -af && docker image prune -af
+df -h /
+```
 
 ---
 

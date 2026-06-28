@@ -27,4 +27,4 @@ COPY --from=build /app/node_modules /app/node_modules
 COPY --from=build /app/apps/bioscope-frontend /app/apps/bioscope-frontend
 EXPOSE 3000
 ENV PORT=3000
-CMD ["pnpm", "exec", "next", "start", "-p", "3000"]
+CMD ["node", "/app/node_modules/next/dist/bin/next", "start", "-p", "3000"]

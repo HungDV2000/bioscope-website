@@ -43,7 +43,7 @@ CMS chạy cổng **3001** (frontend website giữ cổng 3000).
 ## Deploy trên server (Docker)
 
 Xem **[docs/02-deploy-vps-docker.md](./docs/02-deploy-vps-docker.md)** — hướng dẫn đầy đủ:
-Postgres + CMS + **Frontend** qua Docker Compose (`docker compose --profile full up`).
+Postgres + CMS + **Frontend** qua Docker Compose (`docker compose up -d --build`).
 Cổng host cấu hình qua `.env` — mẫu server: `cp .env.server.example .env`.
 
 ## Tech

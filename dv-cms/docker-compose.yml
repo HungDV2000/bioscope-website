@@ -40,7 +40,6 @@ services:
       - "127.0.0.1:${DVCMS_CMS_HOST_PORT:-26001}:3001"
     volumes:
       - media:/app/apps/core-cms/media
-    profiles: ["full"]
 
   frontend:
     build:
@@ -57,7 +56,6 @@ services:
       PORT: "3000"
     ports:
       - "127.0.0.1:${DVCMS_FRONTEND_HOST_PORT:-26000}:3000"
-    profiles: ["full"]
 
 volumes:
   pgdata:

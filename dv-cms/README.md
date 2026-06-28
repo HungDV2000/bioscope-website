@@ -40,5 +40,11 @@ pnpm cms:seed                   # load sample data
 
 CMS chạy cổng **3001** (frontend website giữ cổng 3000).
 
+## Deploy trên server (Docker)
+
+Xem **[docs/02-deploy-vps-docker.md](./docs/02-deploy-vps-docker.md)** — hướng dẫn đầy đủ:
+Postgres + CMS qua Docker Compose, **cổng host cấu hình qua `.env`** (`DVCMS_DB_HOST_PORT`,
+`DVCMS_CMS_HOST_PORT`) để tránh trùng container khác trên VPS. Mẫu: `cp .env.server.example .env`.
+
 ## Tech
 Payload 3.85 · Next 15.4 · React 19 · PostgreSQL 16 (Drizzle) · pnpm + Turborepo.

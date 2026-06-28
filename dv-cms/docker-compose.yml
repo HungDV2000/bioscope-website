@@ -5,10 +5,11 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: dvcms
-      POSTGRES_PASSWORD: dvcms
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dvcms}
       POSTGRES_DB: dvcms
+    # Host port: đổi DVCMS_DB_HOST_PORT trong .env nếu 5432 đã bị chiếm (vd. 26432)
     ports:
-      - "5432:5432"
+      - "127.0.0.1:${DVCMS_DB_HOST_PORT:-5432}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -30,7 +31,7 @@ services:
       db:
         condition: service_healthy
     environment:
-      DATABASE_URI: postgres://dvcms:dvcms@db:5432/dvcms
+      DATABASE_URI: postgres://dvcms:${POSTGRES_PASSWORD:-dvcms}@db:5432/dvcms
       PAYLOAD_SECRET: ${PAYLOAD_SECRET:-please-change-this-to-a-long-random-secret}
       PAYLOAD_PUBLIC_SERVER_URL: ${PAYLOAD_PUBLIC_SERVER_URL:-http://localhost:3001}
       FRONTEND_URL: ${FRONTEND_URL:-}
@@ -38,8 +39,9 @@ services:
       B2B_COOKIE: ${B2B_COOKIE:-bio-token}
       NODE_ENV: production
       PORT: "3001"
+    # Host port: đổi DVCMS_CMS_HOST_PORT trong .env nếu 3001 đã bị chiếm (vd. 26001)
     ports:
-      - "3001:3001"
+      - "127.0.0.1:${DVCMS_CMS_HOST_PORT:-3001}:3001"
     volumes:
       - media:/app/apps/core-cms/media
     profiles: ["full"]

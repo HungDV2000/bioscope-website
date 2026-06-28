@@ -1,0 +1,49 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: dvcms-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: dvcms
+      POSTGRES_PASSWORD: dvcms
+      POSTGRES_DB: dvcms
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dvcms"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # The CMS image — only started with the "full" profile:
+  #   docker compose --profile full up -d
+  # For local dev run Postgres only (`docker compose up -d db`) and the app via pnpm.
+  cms:
+    build:
+      context: .
+      dockerfile: apps/core-cms/Dockerfile
+    container_name: dvcms-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URI: postgres://dvcms:dvcms@db:5432/dvcms
+      PAYLOAD_SECRET: ${PAYLOAD_SECRET:-please-change-this-to-a-long-random-secret}
+      PAYLOAD_PUBLIC_SERVER_URL: ${PAYLOAD_PUBLIC_SERVER_URL:-http://localhost:3001}
+      FRONTEND_URL: ${FRONTEND_URL:-}
+      REVALIDATE_SECRET: ${REVALIDATE_SECRET:-}
+      B2B_COOKIE: ${B2B_COOKIE:-bio-token}
+      NODE_ENV: production
+      PORT: "3001"
+    ports:
+      - "3001:3001"
+    volumes:
+      - media:/app/apps/core-cms/media
+    profiles: ["full"]
+
+volumes:
+  pgdata:
+  media:

@@ -1,6 +1,9 @@
-# SRS — BIOSCOPE VIỆT NAM (Headless Rebuild)
-> Software Requirements Specification — Tối ưu cho **Vibe Coding** (Cursor / Windsurf / Copilot)
-> Phiên bản: 1.0 · Ngày: 2026-06-14 · Trạng thái: Production-ready blueprint
+# SRS — DEEPVIEW AGENCY PLATFORM (Core CMS + Modules + Domain Services)
+> Software Requirements Specification — Nền tảng dùng chung cho mọi dự án của Agency.
+> Phiên bản: 2.0 · Cập nhật: 2026-06-27 · Trạng thái: Blueprint đã chốt (Hybrid)
+> Consumer đầu tiên: **Bioscope**. Stress-test mở rộng: **Ma Cabane** (marketplace BĐS).
+>
+> Đổi từ v1.0 (SRS riêng Bioscope) → v2.0: tổng quát hóa thành **nền tảng đa dự án** theo kiến trúc **Hybrid** (Payload Core + NestJS Domain). Bioscope giữ nguyên là dự án triển khai trước để tôi luyện Core.
 
 ---
 
@@ -8,597 +11,253 @@
 
 | Hạng mục | Quyết định |
 |---|---|
-| **Brand Primary** | `#098F50` (Bio Green) |
-| **Brand Accent** | `#F68C36` (Vital Orange) |
-| **Neutral Dark / Light** | `#1A2B24` / `#F4F8F6` |
-| **Typography** | Heading: **Be Vietnam Pro** · Body: **Inter** (đều full Vietnamese + Latin Extended) |
-| **Layout** | Hybrid: **Editorial** (Home/Technologies) + **Minimal/Grid** (Ingredients/Blog/Contact) |
-| **Frontend** | **Next.js 14+ App Router** + TypeScript + **Tailwind CSS** + **shadcn/ui** |
-| **Backend Core (Tầng 1)** | **Payload CMS 3.0** standalone (Decoupled), REST + GraphQL |
-| **Backend Bioscope (Tầng 2)** | Collections + Custom Endpoints + Hooks trên nền Payload |
-| **Database** | **PostgreSQL 16** (Drizzle adapter của Payload) |
-| **Infra** | **VPS + Docker Compose** self-host |
-| **i18n** | **VI + EN** (localization built-in của Payload) |
-| **Auth** | Admin (Payload) + **Cổng thành viên B2B** (JWT/HTTP-only cookie) |
-| **Scope** | Production đầy đủ. Thứ tự thực thi: **(1) Frontend UI → (2) Core CMS API/Admin → (3) Bioscope modules + B2B** |
+| **Mô hình** | **Hybrid**: Payload Core (nội dung + danh tính) **+** NestJS Domain Services (nghiệp vụ phức tạp, tùy chọn) |
+| **Core CMS** | **Payload CMS 3** (`3.85.x`) — auth/RBAC, media, pages, blog, SEO, forms, i18n, settings; REST + GraphQL tự sinh |
+| **Domain Service** | **NestJS** (`11.x`) — chỉ bật cho dự án phức tạp (marketplace, booking, payment, AI nặng, feed sync) |
+| **Frontend (chuẩn hóa)** | **Next.js 16 App Router** + React 19 + TypeScript 5.9 + **Tailwind v4** + Be Vietnam Pro + Motion |
+| **Database** | **PostgreSQL 16** (schema `cms` cho Payload, schema `app` cho NestJS) |
+| **Search** | **Meilisearch** (self-host) cho dự án có catalog/annonces lớn |
+| **Hàng đợi / cache** | **Redis + BullMQ** (job nền: import feed, email, AI scoring) |
+| **Định danh dùng chung** | **SSO bằng JWT** — Payload phát token, NestJS verify cùng secret/JWKS |
+| **Admin** | **Cách 1** — bắt đầu bằng Payload admin (theming), **di cư dần** sang UI bespoke (Swiss) dựng trên backend Payload, theo từng module |
+| **Monorepo / Infra** | pnpm + Turborepo · Docker Compose · self-host VPS (site nhẹ) / **EU cloud** (Ma Cabane, RGPD) |
+| **API** | REST + GraphQL, **API-first** (phục vụ cả Web Next.js lẫn Mobile App tương lai) |
+| **AI** | AI module dùng chung (Claude API): sinh/tối ưu nội dung, SEO, dịch, scoring, matching, assistant |
+| **Thứ tự thực thi** | (1) Frontend Bioscope → (2) Core CMS Payload → (3) Modules Bioscope + B2B → (4) Domain Services (khi tới Ma Cabane) |
 
-### Phong cách hình ảnh (chốt — đồng bộ với Bioscope AI)
-> **Định hướng: "Light Soft SaaS" tông xanh thương hiệu** — lấy cảm hứng từ giao diện chatbot **Bioscope AI**: nền sáng, nhiều khoảng trắng, tông xanh lá mềm, bo góc lớn, **giao diện phẳng (chỉ dùng viền + nền tint, KHÔNG đổ bóng)**, thân thiện và hiện đại.
-> - **Nền chủ đạo sáng**: canvas `#F5FAF7` (trắng ám xanh nhẹ); section xen kẽ trắng / `primary-tint`.
-> - **Hero sáng**: nền gradient trắng → `primary-tint`, chữ xanh đậm, dòng nhấn gradient xanh (`#098F50 → #0FAE73`); ảnh banner hoà mềm bên phải; sóng trang trí xanh nhạt.
-> - **Phẳng**: card/button phân tách bằng **viền hairline + nền**, không box-shadow; hover đổi viền/nền + nhấc nhẹ.
-> - **Bo góc lớn**: card/chip `rounded-2xl`, nút `pill`.
-> - **Cam (accent)** chỉ dùng điểm nhấn nhỏ (1 trong các thẻ / số liệu), không lạm dụng.
-
-### Design Tokens (chốt)
-```
---color-primary:        #098F50;
---color-primary-dark:   #066B3B;   /* hover */
---color-primary-tint:   #E6F4EC;   /* badge / subtle bg / section sáng */
---color-accent:         #F68C36;   /* điểm nhấn nhỏ (dùng tiết chế) */
---color-accent-dark:    #D9701B;
---color-ink:            #1A2B24;   /* body / heading text */
---color-neutral-50:     #F4F8F6;   /* section bg */
---color-canvas:         #F5FAF7;   /* nền trang (light SaaS) */
---color-white:          #FFFFFF;
-
---font-heading: "Be Vietnam Pro", system-ui, sans-serif;
---font-body:    "Inter", "Be Vietnam Pro", system-ui, sans-serif;
-
-/* type scale (rem): 0.75 / 0.875 / 1 / 1.125 / 1.5 / 2 / 3 / 4 */
-/* radius: sm 6px · md 10px · lg 16px · 2xl 20px · pill 999px */
-/* elevation: PHẲNG — phân tách bằng border (#DCE5E0) + nền tint, không box-shadow */
-```
+### Nguyên tắc nền tảng
+1. **Core dùng chung, Module cắm thêm.** Mỗi dự án = duplicate monorepo + bật module qua config; không sửa Core trực tiếp.
+2. **Ranh giới rõ:** *Nội dung & danh tính → Payload. Tiền, giao dịch nhiều bước, dữ liệu lớn/real-time, tích hợp ngoài → NestJS.*
+3. **Chống coupling** để giảm "upgrade tax" của Payload (xem §7).
+4. **Frontend chuẩn hóa Next.js** cho mọi dự án (SEO-first) — thay cho Vite SPA/HTML template cũ.
+5. **Mã nguồn 100% sở hữu** (Payload + NestJS đều open-source, self-host) — thỏa yêu cầu "sur mesure, propriété cliente" của Ma Cabane.
 
 ---
 
-## 1. SYSTEM ARCHITECTURE
+## 1. KIẾN TRÚC TỔNG THỂ (4 tầng)
 
-### 1.1 Tổng quan giao tiếp
-
-```mermaid
-flowchart TB
-    subgraph Client["🌐 Người dùng / Trình duyệt"]
-        U[Visitor / B2B Member]
-    end
-
-    subgraph FE["FRONTEND — Next.js 14 (Docker)"]
-        SSR[App Router · RSC · SSG/ISR]
-        MW[Middleware i18n + Auth guard]
-        UI[Tailwind + shadcn/ui]
-    end
-
-    subgraph BE["BACKEND CORE — Payload CMS 3.0 (Docker)"]
-        ADMIN[Admin Panel /admin]
-        REST[REST API /api/*]
-        GQL[GraphQL /api/graphql]
-        T1[(Tầng 1: users, media, pages,\nposts, navigation, settings, forms)]
-        T2[(Tầng 2: technologies, ingredients,\nservices, certifications, partners, specs)]
-        HOOK[Hooks · Access Control · Endpoints]
-        B2B[B2B Members auth + documents]
-    end
-
-    subgraph DB["PostgreSQL 16 (Docker)"]
-        PG[(Relational + JSONB)]
-    end
-
-    subgraph STORE["Media Storage"]
-        VOL[Local Volume → S3-compatible sau]
-    end
-
-    U -->|HTTPS| SSR
-    SSR -->|REST/GraphQL fetch| REST
-    SSR -->|GraphQL| GQL
-    MW -->|verify token| B2B
-    ADMIN --> HOOK
-    REST --> T1 & T2
-    GQL --> T1 & T2
-    HOOK --> PG
-    T1 & T2 & B2B --> PG
-    BE --> VOL
-
-    style FE fill:#E6F4EC,stroke:#098F50
-    style BE fill:#FFF1E5,stroke:#F68C36
-    style DB fill:#F4F8F6,stroke:#1A2B24
+```
+┌────────────────────────── FRONTEND (Next.js 16, SEO-first) ──────────────────────────┐
+│  Theme + pages riêng mỗi dự án · SSR/SSG/ISR · i18n · design system dùng chung          │
+└───────────────┬───────────────────────────────────────────────┬───────────────────────┘
+                │ REST/GraphQL (nội dung)                         │ REST/GraphQL (nghiệp vụ)
+┌───────────────▼───────────────┐                 ┌───────────────▼────────────────────────┐
+│   CORE CMS — Payload 3         │  ◀── SSO JWT ──▶ │   DOMAIN SERVICES — NestJS (tùy chọn)   │
+│   (schema: cms)                │   webhook/event  │   (schema: app)                          │
+│   auth/RBAC · media · pages    │ ◀──────────────▶ │   marketplace · booking · payment        │
+│   blog · forms · SEO · i18n    │                  │   feed-sync · AI scoring · reports       │
+│   settings · MODULES (plugin)  │                  │   connectors (CRM, Brevo, Stripe…)       │
+└───────────────┬───────────────┘                 └───────────────┬─────────────────────────┘
+                │                                                  │
+        PostgreSQL 16 (schema cms)                  PostgreSQL 16 (schema app) · Meilisearch · Redis/BullMQ
 ```
 
-### 1.2 Nguyên tắc kiến trúc
-- **Decoupled hoàn toàn:** FE và Payload là 2 service/container riêng. FE chỉ giao tiếp qua HTTP API → Core có thể tái dùng cho nhiều website khác.
-- **2-Tier Backend:** Tầng 1 (Core, generic) vs Tầng 2 (Bioscope-specific). Code Tầng 1 có thể tách thành package/template dùng lại.
-- **i18n:** Payload `localization` (vi mặc định, en). FE dùng route segment `/[locale]/...`.
-- **Caching:** FE dùng ISR (`revalidate`) + on-demand revalidation qua webhook từ Payload `afterChange` hook.
-- **SEO:** `@payloadcms/plugin-seo` ở BE; FE render `generateMetadata` + JSON-LD (Organization, Product, Article).
+### 1.1 Bốn cơ chế kết nối Payload ↔ NestJS
+1. **SSO / JWT dùng chung** — Payload là nguồn danh tính; NestJS verify cùng `JWT_SECRET`/JWKS qua `AuthGuard`. Một đăng nhập, hai service đều biết "ai/role gì".
+2. **NestJS đọc nội dung qua API Payload** (REST/GraphQL) — không ghi đè; Payload là source of truth cho nội dung.
+3. **Payload → NestJS qua webhook (`afterChange` hook)** — đồng bộ index search, cập nhật trạng thái.
+4. **Event bất đồng bộ qua Redis/BullMQ** — việc nặng (import feed, email hàng loạt, AI scoring) chạy nền.
+
+> **Sở hữu dữ liệu:** mỗi service sở hữu bảng của mình; tham chiếu chéo bằng **ID**; đồng bộ bằng event — **không dual-write**.
 
 ---
 
-## 2. DATABASE SCHEMA (ERD)
+## 2. TẦNG CORE CMS (Payload) — dùng chung mọi dự án
 
-> Trong Payload, "Collections" map thành bảng Postgres (qua Drizzle). Các field `localized` sinh bảng `_locales` phụ tự động. ERD dưới mô tả mô hình logic.
+Cung cấp sẵn (không tự code lại):
+- **Auth + RBAC** (admin/editor/viewer + role tùy biến), access control theo field/collection.
+- **Media** (upload, alt/caption localized, imageSizes thumbnail/card/og, focal point).
+- **Pages** (slug, layout = blocks[], status draft/published, SEO) — title localized.
+- **Posts/Blog** + Categories + Tags (title/excerpt/content localized, author, cover, publishedAt, SEO).
+- **Globals**: SiteSettings (logo, contact, social, tracking GA4/GTM, defaultSeo), Navigation (header/footer).
+- **Forms / FormSubmissions** (thu lead) + Redirects.
+- **i18n** (`localization`, vi mặc định + en, mở rộng được).
+- **REST `/api/*` + GraphQL `/api/graphql`** tự sinh; **admin schema-driven** (khai báo collection → CRUD tự render).
+- **Hooks/Endpoints/Jobs** để mở rộng; plugin SEO + form-builder.
 
-### 2.1 Tầng 1 — Core CMS
-
-```mermaid
-erDiagram
-    USERS ||--o{ POSTS : authors
-    USERS }o--|| ROLES : has
-    POSTS }o--o{ CATEGORIES : in
-    POSTS }o--o{ TAGS : tagged
-    POSTS }o--|| MEDIA : cover
-    PAGES ||--o{ BLOCKS : contains
-    PAGES }o--|| MEDIA : hero
-    FORMS ||--o{ FORM_SUBMISSIONS : receives
-    NAVIGATION }o--o{ PAGES : links
-
-    USERS {
-        uuid id PK
-        string email UK
-        string name
-        enum role "admin|editor|viewer"
-        string avatar_id FK
-        timestamp createdAt
-    }
-    ROLES {
-        uuid id PK
-        string name
-        json permissions
-    }
-    MEDIA {
-        uuid id PK
-        string filename
-        string mimeType
-        int filesize
-        string alt "localized"
-        string caption "localized"
-        json sizes "thumbnail/card/og"
-        json focalPoint
-    }
-    PAGES {
-        uuid id PK
-        string title "localized"
-        string slug UK
-        json layout "blocks[]"
-        string hero_id FK
-        enum status "draft|published"
-        json seo
-        string locale
-    }
-    BLOCKS {
-        uuid id PK
-        uuid page_id FK
-        enum blockType "hero|richText|gallery|cta|stats|featureGrid|videoEmbed|logoCloud"
-        json data
-        int order
-    }
-    POSTS {
-        uuid id PK
-        string title "localized"
-        string slug UK
-        richtext content "localized"
-        string excerpt "localized"
-        uuid author_id FK
-        string cover_id FK
-        enum status
-        json seo
-        timestamp publishedAt
-    }
-    CATEGORIES {
-        uuid id PK
-        string name "localized"
-        string slug UK
-    }
-    TAGS {
-        uuid id PK
-        string name "localized"
-        string slug UK
-    }
-    NAVIGATION {
-        uuid id PK
-        string location "header|footer"
-        json items "label/url/children"
-    }
-    SITE_SETTINGS {
-        uuid id PK
-        string logo_id FK
-        json contact "address/phone/email/mst"
-        json social
-        json tracking "ga4/gtm/pixel"
-        json defaultSeo
-    }
-    FORMS {
-        uuid id PK
-        string title
-        json fields "schema"
-        json emailTo
-    }
-    FORM_SUBMISSIONS {
-        uuid id PK
-        uuid form_id FK
-        json data
-        timestamp createdAt
-    }
-    REDIRECTS {
-        uuid id PK
-        string from
-        string to
-        int statusCode
-    }
-```
-
-### 2.2 Tầng 2 — Bioscope Specific
-
-```mermaid
-erDiagram
-    TECHNOLOGIES ||--o{ SPECS : has
-    TECHNOLOGIES }o--|| MEDIA : featuredImage
-    INGREDIENTS }o--o{ TECHNOLOGIES : uses
-    INGREDIENTS }o--|| INGREDIENT_CATEGORIES : in
-    INGREDIENTS }o--|| PARTNERS : suppliedBy
-    INGREDIENTS ||--o{ SPECS : has
-    INGREDIENTS }o--|| MEDIA : featuredImage
-    SERVICES }o--|| MEDIA : icon
-    B2B_MEMBERS ||--o{ B2B_DOCUMENTS : canAccess
-    B2B_DOCUMENTS }o--o{ INGREDIENTS : relatesTo
-
-    TECHNOLOGIES {
-        uuid id PK
-        string name "localized"
-        string slug UK
-        string tagline "localized"
-        richtext description "localized"
-        richtext mechanism "localized"
-        string featuredImage_id FK
-        string videoUrl
-        json gallery
-        json seo
-        int order
-    }
-    INGREDIENTS {
-        uuid id PK
-        string name "localized"
-        string slug UK
-        enum type "supplement|cosmetic"
-        uuid category_id FK
-        string originCountry
-        string brandName "OEM brand"
-        uuid partner_id FK
-        richtext description "localized"
-        json benefits "localized[]"
-        json applications "localized[]"
-        string featuredImage_id FK
-        json gallery
-        enum status
-        json seo
-        boolean featured
-    }
-    INGREDIENT_CATEGORIES {
-        uuid id PK
-        string name "localized"
-        string slug UK
-        enum scope "supplement|cosmetic|both"
-    }
-    SPECS {
-        uuid id PK
-        string parentType "technology|ingredient"
-        uuid parent_id FK
-        string label "localized"
-        string value
-        string unit
-        enum display "text|bar|donut|number"
-        int order
-    }
-    SERVICES {
-        uuid id PK
-        string title "localized"
-        string slug UK
-        richtext description "localized"
-        string icon_id FK
-        json features "localized[]"
-        int order
-    }
-    CERTIFICATIONS {
-        uuid id PK
-        string title "localized"
-        enum kind "certificate|stat|award"
-        string value "e.g. 23 / 14 / GMP"
-        string suffix "localized e.g. dự án R&D"
-        string image_id FK
-        int order
-    }
-    PARTNERS {
-        uuid id PK
-        string name
-        string country
-        string logo_id FK
-        string website
-    }
-    B2B_MEMBERS {
-        uuid id PK
-        string email UK
-        string passwordHash
-        string company
-        string contactName
-        string phone
-        enum status "pending|approved|rejected"
-        timestamp approvedAt
-    }
-    B2B_DOCUMENTS {
-        uuid id PK
-        string title "localized"
-        enum docType "COA|spec_sheet|quote|brochure"
-        string file_id FK
-        enum visibility "approved_members|specific"
-        json allowedMembers
-    }
-```
+→ **Eneville, LAS-XD, Bioscope** chủ yếu chỉ cần tầng này (+ module nhẹ).
 
 ---
 
-## 3. API CONTRACTS
+## 3. TẦNG MODULES (Payload plugins, bật/tắt theo dự án)
 
-> Payload tự sinh REST (`/api/{collection}`) và GraphQL (`/api/graphql`). Dưới đây là contract chính + các custom endpoint Tầng 2.
+Mỗi module là package npm riêng, kích hoạt trong `payload.config.ts`:
 
-### 3.1 Convention chung
-- Base URL: `https://cms.bioscope.vn`
-- Locale: query `?locale=vi|en` (mặc định `vi`), `?fallback-locale=vi`
-- Depth: `?depth=1` để populate relationship.
-- Pagination: `?limit=12&page=1&sort=-publishedAt`
-- Auth B2B: `Authorization: Bearer <jwt>` hoặc cookie `bio-token` (HTTP-only).
-
-### 3.2 Core (auto REST)
-| Method | Endpoint | Mô tả |
+| Module | Nội dung | Dùng cho |
 |---|---|---|
-| GET | `/api/pages?where[slug][equals]=home&locale=vi` | Lấy trang theo slug |
-| GET | `/api/posts?limit=9&page=1&sort=-publishedAt&depth=1` | Danh sách blog |
-| GET | `/api/posts?where[slug][equals]={slug}` | Chi tiết bài viết |
-| GET | `/api/globals/site-settings?locale=vi` | Cấu hình site |
-| GET | `/api/globals/navigation` | Menu |
-| POST | `/api/form-submissions` | Gửi form liên hệ |
+| `module-catalog` | Sản phẩm/danh mục/specs generic | Bioscope, e-comm nhẹ |
+| `module-b2b` | Thành viên B2B + tài liệu gated (COA/báo giá) | Bioscope |
+| `module-blocks` | Page-builder blocks (Hero/Stats/Gallery/CTA…) | Mọi dự án |
+| `module-bioscope` | Glue riêng Bioscope (Technologies, Ingredients, Partners, Certifications) | Bioscope |
+| `module-editorial` | Guides/news nâng cao, programmatic content source | Ma Cabane, blog-heavy |
 
-### 3.3 Bioscope (auto REST + custom)
-| Method | Endpoint | Mô tả |
-|---|---|---|
-| GET | `/api/technologies?sort=order&depth=2` | DS công nghệ + specs |
-| GET | `/api/technologies?where[slug][equals]={slug}&depth=2` | Chi tiết công nghệ |
-| GET | `/api/ingredients?where[type][equals]=supplement&limit=12` | Nguyên liệu TPCN |
-| GET | `/api/ingredients?where[type][equals]=cosmetic` | Nguyên liệu mỹ phẩm |
-| GET | `/api/ingredients?where[category][equals]={id}&where[originCountry][equals]=JP` | Filter |
-| GET | `/api/services?sort=order` | Dịch vụ ODM |
-| GET | `/api/certifications?sort=order` | Trust signals |
-| GET | `/api/partners` | Đối tác |
-
-### 3.4 B2B Member (custom endpoints)
-| Method | Endpoint | Body / Mô tả |
-|---|---|---|
-| POST | `/api/b2b/register` | `{email, password, company, contactName, phone}` → status=pending |
-| POST | `/api/b2b/login` | `{email, password}` → set cookie `bio-token` |
-| POST | `/api/b2b/logout` | Clear cookie |
-| GET | `/api/b2b/me` | Thông tin member hiện tại |
-| GET | `/api/b2b/documents` | DS tài liệu member được phép xem (COA, báo giá...) |
-| GET | `/api/b2b/documents/{id}/download` | Signed URL tải file (kiểm tra quyền) |
-
-### 3.5 Webhook (revalidation)
-| Method | Endpoint (FE) | Mô tả |
-|---|---|---|
-| POST | `/api/revalidate?secret=...&path=/...` | Payload `afterChange` hook gọi để ISR revalidate |
-
-### 3.6 Mẫu response (Ingredient)
-```json
-{
-  "doc": {
-    "id": "uuid",
-    "name": "Marine Sweet® - N-Acetyl-Glucosamin",
-    "slug": "marine-sweet-nag",
-    "type": "supplement",
-    "originCountry": "JP",
-    "brandName": "Marine Sweet®",
-    "category": { "id": "uuid", "name": "Nguyên liệu TPCN" },
-    "partner": { "id": "uuid", "name": "Yaizu Suisankagaku", "country": "JP" },
-    "benefits": ["Hỗ trợ khớp", "Dưỡng da"],
-    "specs": [
-      { "label": "Độ tinh khiết", "value": "99", "unit": "%", "display": "bar" }
-    ],
-    "featuredImage": { "url": "/media/nag.jpg", "alt": "NAG" },
-    "seo": { "title": "...", "description": "..." }
-  }
-}
-```
+> Module = nghiệp vụ **biên tập viên quản trong admin**. Nghiệp vụ giao dịch nặng KHÔNG làm thành Payload module → đẩy xuống Domain (§5).
 
 ---
 
-## 4. COMPONENT TREE (Frontend Folder Structure)
+## 4. TẦNG FRONTEND (Next.js — chuẩn hóa toàn agency)
 
+- **Stack:** Next 16 App Router · React 19 · TS 5.9 · Tailwind v4 · Motion · next/font (Be Vietnam Pro).
+- **Design system dùng chung:** tokens (màu/thân/spacing/radius/shadow) theo **biến CSS** → mỗi dự án override theme riêng.
+- **Render SEO-first:** SSG/ISR cho trang nội dung & **programmatic SEO**; SSR cho trang động (search/listing).
+- **i18n** route segment `/[locale]` + middleware.
+- **Tiêu dùng API:** gọi Payload cho nội dung, gọi NestJS cho nghiệp vụ; có thể đặt **BFF/gateway** khi cần.
+- **Bỏ dần** Vite-SPA (Eneville) và HTML template (LAS-XD) → chuyển Next để đạt SEO/CWV.
+
+### 4.1 Design tokens Bioscope (theo logo)
 ```
-bioscope-frontend/
+--color-primary:        #008E4D;   /* Bio Green (logo) */
+--color-primary-dark:   #036F3D;
+--color-primary-tint:   #EEF6F1;
+--color-primary-border: #CFE3D8;
+--color-accent:         #F58E33;   /* Vital Orange (logo) */
+--color-ink:            #101814;
+--color-mist:           #F4F8F6;
+--font-sans: "Be Vietnam Pro", system-ui, sans-serif;   /* heading + body */
+/* radius lg16 / xl24 / 2xl28 · shadow-card mềm khuếch tán */
+```
+> Mỗi dự án (Eneville/LAS-XD/Ma Cabane) có bộ token riêng; **Ma Cabane**: xanh dương (confiance) chủ đạo + accent ấm (vert/orangé "cabane").
+
+---
+
+## 5. TẦNG DOMAIN SERVICES (NestJS) — bật cho dự án phức tạp
+
+Chỉ triển khai khi dự án có nghiệp vụ vượt khả năng CMS. Tận dụng DI + module hóa của NestJS.
+
+**Khi nào dùng:** marketplace, booking/RDV, thanh toán/subscription, search triệu bản ghi, đồng bộ feed bên thứ 3, AI nhiều bước, tích hợp CRM/ERP, real-time.
+
+**Cấu trúc thư mục NestJS (module độc lập, bật qua `MODULES_ENABLED`):**
+```
+domain-service/
 ├─ src/
-│  ├─ app/
-│  │  ├─ [locale]/
-│  │  │  ├─ layout.tsx                 # Root: fonts, providers, Header, Footer
-│  │  │  ├─ page.tsx                   # Trang chủ (Editorial)
-│  │  │  ├─ nguyen-lieu/
-│  │  │  │  ├─ page.tsx                # Catalog (tabs: TPCN | Mỹ phẩm) + filter
-│  │  │  │  └─ [slug]/page.tsx         # Chi tiết nguyên liệu
-│  │  │  ├─ cong-nghe/
-│  │  │  │  ├─ page.tsx                # DS công nghệ
-│  │  │  │  └─ [slug]/page.tsx         # Storytelling + specs + data viz
-│  │  │  ├─ dich-vu-odm/page.tsx
-│  │  │  ├─ blog/
-│  │  │  │  ├─ page.tsx
-│  │  │  │  └─ [slug]/page.tsx
-│  │  │  ├─ lien-he/page.tsx           # Form (POST /api/form-submissions)
-│  │  │  └─ b2b/
-│  │  │     ├─ login/page.tsx
-│  │  │     ├─ register/page.tsx
-│  │  │     └─ (portal)/
-│  │  │        ├─ layout.tsx           # Auth guard
-│  │  │        └─ documents/page.tsx
-│  │  ├─ api/
-│  │  │  └─ revalidate/route.ts        # ISR webhook receiver
-│  │  ├─ globals.css                   # Tailwind + design tokens
-│  │  └─ sitemap.ts / robots.ts
-│  ├─ components/
-│  │  ├─ ui/                           # shadcn primitives (button, card, tabs...)
-│  │  ├─ layout/                       # Header, Footer, LangSwitcher, MobileNav
-│  │  ├─ blocks/                       # Block renderer (map blockType → component)
-│  │  │  ├─ HeroBlock.tsx
-│  │  │  ├─ StatsBlock.tsx             # Trust signals (đếm số animate)
-│  │  │  ├─ FeatureGridBlock.tsx
-│  │  │  ├─ RichTextBlock.tsx
-│  │  │  ├─ GalleryBlock.tsx
-│  │  │  ├─ CTABlock.tsx
-│  │  │  └─ RenderBlocks.tsx
-│  │  ├─ ingredients/                  # IngredientCard, IngredientFilter, TypeTabs
-│  │  ├─ technologies/                 # TechHero, MechanismSection, SpecChart, MoleculeSVG
-│  │  ├─ shared/                       # SpecBar, SpecDonut, CountUp, SectionHeading
-│  │  └─ seo/                          # JsonLd
-│  ├─ lib/
-│  │  ├─ api.ts                        # fetch wrapper (REST/GraphQL) + types
-│  │  ├─ payload-types.ts              # auto-generated từ Payload
-│  │  ├─ i18n.ts                       # locale config (vi, en)
-│  │  ├─ auth.ts                       # B2B token helpers
-│  │  └─ utils.ts                      # cn(), formatters
-│  ├─ middleware.ts                    # i18n routing + B2B guard
-│  └─ messages/                        # vi.json, en.json (UI strings)
-├─ public/
-│  └─ fonts/                           # Be Vietnam Pro, Inter (self-host)
-├─ tailwind.config.ts                  # map design tokens → theme
-├─ next.config.mjs
-├─ Dockerfile
-└─ .env.local                          # NEXT_PUBLIC_CMS_URL, REVALIDATE_SECRET
+│  ├─ core/            # config, AuthGuard (verify JWT Payload), drizzle/prisma, http
+│  ├─ modules/
+│  │  ├─ listings/     # CRUD + search (Meilisearch) + map
+│  │  ├─ feed-sync/    # import Apimo/Hektor (XML/JSON) qua queue
+│  │  ├─ billing/      # Stripe (CB/SEPA), abonnements, factures/TVA
+│  │  ├─ booking/      # RDV: slot, agent, confirm email/SMS
+│  │  ├─ accounts-pro/ # vérif pro (OTP), espace pro
+│  │  ├─ ai/           # rewrite/scoring annonces, matching, assistant (Claude API)
+│  │  ├─ reports/      # KPI: CA, leads, conversion, perf annonces
+│  │  └─ connectors/   # CRM, Brevo, Crisp, compta, Ads, DPE
+│  └─ main.ts
 ```
-
-```
-bioscope-cms/  (repo riêng — Payload CMS)
-├─ src/
-│  ├─ collections/
-│  │  ├─ core/          # Users, Media, Pages, Posts, Categories, Tags, Forms...
-│  │  └─ bioscope/      # Technologies, Ingredients, Services, Certifications, Partners, Specs
-│  ├─ globals/          # SiteSettings, Navigation
-│  ├─ blocks/           # Hero, Stats, FeatureGrid, RichText, Gallery, CTA...
-│  ├─ access/           # role-based + b2b access functions
-│  ├─ endpoints/        # /b2b/* custom routes
-│  ├─ hooks/            # afterChange → revalidate FE
-│  └─ payload.config.ts # localization {vi,en}, db: postgres, plugins: seo, form-builder
-├─ Dockerfile
-└─ docker-compose.yml   # cms + postgres + (frontend)
-```
+- **API-first**: REST + GraphQL → dùng cho Web và **Mobile App**.
+- **Schema endpoint** (`GET /_schema/:resource`) để admin schema-driven vẽ CRUD chung.
 
 ---
 
-## 5. VIBE CODING PROMPTS (copy/paste vào AI Editor)
+## 6. CHIẾN LƯỢC ADMIN (Cách 1 — di cư dần)
 
-> Thứ tự thực thi theo ưu tiên đã chốt: **(1) Frontend UI trước → (2) Core CMS → (3) Bioscope + B2B**.
+| Giai đoạn | Admin |
+|---|---|
+| **A (khởi đầu)** | Payload admin + **theming sâu** (Be Vietnam Pro, màu thương hiệu, nav/dashboard tùy biến) — nhanh, giữ CRUD tự sinh |
+| **1 (nâng cấp)** | **UI bespoke (Swiss minimalism)** dựng trên **backend Payload**, làm **từng module một**; module chưa làm vẫn dùng admin Payload |
+| Dữ liệu Domain (NestJS) | Nhúng vào shell admin qua **custom view gọi `/api/app/*`** (kèm JWT) hoặc dashboard riêng; **schema-driven** từ `_schema` endpoint |
 
-### 🟢 PROMPT 1 — Khởi tạo Frontend + Design System (làm TRƯỚC)
-```
-Bạn là senior Next.js engineer. Khởi tạo dự án frontend cho Bioscope Việt Nam.
-
-STACK: Next.js 14 App Router + TypeScript + Tailwind CSS + shadcn/ui. i18n VI+EN
-qua route segment /[locale] và middleware. Dùng next/font tự host Be Vietnam Pro
-(heading) và Inter (body).
-
-DESIGN TOKENS (đưa vào tailwind.config.ts + globals.css làm CSS variables):
-- primary #098F50, primary-dark #066B3B, primary-tint #E6F4EC
-- accent #F68C36, accent-dark #D9701B
-- neutral-900 #1A2B24, neutral-50 #F4F8F6
-- font-heading: Be Vietnam Pro; font-body: Inter
-- radius: sm 6 / md 10 / lg 16; shadow-card: 0 4px 16px rgba(9,143,80,.08)
-
-YÊU CẦU:
-1. Setup tailwind + shadcn/ui, map tokens vào theme.
-2. Tạo layout: Header (logo, menu: Trang chủ/Nguyên liệu/Công nghệ riêng/Dịch vụ
-   ODM/Bioneer's blog/Liên hệ + LangSwitcher VI/EN + nút Đăng nhập B2B + Tìm kiếm),
-   Footer (thông tin LIÊN HỆ: tên cty, địa chỉ, MST, hotline, email).
-3. Tạo trang chủ phong cách EDITORIAL: Hero gradient green→teal, section giới thiệu,
-   section "Cung cấp nguyên liệu" + "Phát triển công thức (ODM)", StatsBlock đếm số
-   animate (23 dự án R&D, 14 bằng sáng chế, 4 công nghệ độc quyền), video section.
-4. Tạo component dùng lại: SectionHeading, IngredientCard, TechCard, CountUp,
-   SpecBar, SpecDonut, Button, Card, Tabs.
-5. Dữ liệu tạm thời để trong lib/mock-data.ts (sẽ thay bằng API sau).
-6. Mobile-first, responsive, accessible (WCAG AA), micro-interactions hover/scroll-reveal.
-
-Tạo đầy đủ file theo cấu trúc thư mục frontend chuẩn. Code TypeScript strict.
-```
-
-### 🔵 PROMPT 2 — Backend Core CMS (Payload Tầng 1)
-```
-Bạn là senior backend engineer. Tạo Backend Core CMS bằng Payload CMS 3.0
-(standalone, decoupled) với PostgreSQL và localization VI+EN.
-
-CẤU HÌNH payload.config.ts:
-- db: @payloadcms/db-postgres (DATABASE_URL từ env)
-- localization: locales ['vi','en'], default 'vi', fallback true
-- plugins: @payloadcms/plugin-seo, @payloadcms/plugin-form-builder
-- cors + csrf cho domain frontend
-
-TẠO COLLECTIONS TẦNG 1 (Core, generic dùng lại nhiều web):
-- Users (auth, field role: admin|editor|viewer) + Access control theo role
-- Media (upload, alt+caption localized, imageSizes: thumbnail/card/og, focalPoint)
-- Pages (slug, layout = blocks[] gồm Hero/RichText/Stats/FeatureGrid/Gallery/CTA/
-  VideoEmbed/LogoCloud, status draft|published, seo) — title localized
-- Posts (blog: title/excerpt/content localized, author rel, cover rel, categories,
-  tags, publishedAt, seo) + Categories + Tags
-- Redirects
-GLOBALS: SiteSettings (logo, contact{address,phone,email,mst}, social, tracking
-{ga4,gtm}, defaultSeo) và Navigation (header/footer items với children).
-
-THÊM: afterChange hook gọi webhook revalidate frontend
-(POST {FRONTEND_URL}/api/revalidate?secret=...). Tạo Dockerfile + docker-compose
-(cms + postgres). Export payload-types tự động. Code TypeScript.
-```
-
-### 🟠 PROMPT 3 — Bioscope Modules (Tầng 2) + Cổng B2B
-```
-Mở rộng Payload CMS đã có (Core Tầng 1) bằng các module đặc thù Bioscope (Tầng 2)
-và cổng thành viên B2B.
-
-COLLECTIONS TẦNG 2 (localized VI+EN, có seo, sort order):
-- Technologies: name, slug, tagline, description(richText), mechanism(richText),
-  featuredImage, videoUrl, gallery, + relationship hasMany Specs.
-- Ingredients: name, slug, type(select supplement|cosmetic), category(rel),
-  originCountry, brandName, partner(rel), description, benefits(array localized),
-  applications(array localized), featuredImage, gallery, featured(bool),
-  technologies(relationship hasMany), specs(rel hasMany), status.
-- IngredientCategories: name, slug, scope(supplement|cosmetic|both)
-- Services: title, slug, description, icon, features(array)
-- Certifications: title, kind(certificate|stat|award), value, suffix, image, order
-- Partners: name, country, logo, website
-- Specs: parentType, parent(rel), label(localized), value, unit, display(text|bar|
-  donut|number), order
-
-CỔNG B2B:
-- Collection B2BMembers (auth: true): email, company, contactName, phone,
-  status(pending|approved|rejected). Đăng ký mặc định pending; chỉ admin approve.
-- Collection B2BDocuments: title, docType(COA|spec_sheet|quote|brochure), file
-  (upload), visibility(approved_members|specific), allowedMembers, relatesTo
-  (rel Ingredients).
-- Custom endpoints dưới /api/b2b: register, login (set HTTP-only cookie), logout,
-  me, documents (chỉ trả tài liệu member được phép), documents/:id/download
-  (kiểm tra quyền, trả signed/streamed file).
-- Access control: B2BDocuments chỉ đọc được khi member status=approved và nằm
-  trong allowedMembers (nếu visibility=specific).
-
-Cập nhật payload-types và đảm bảo afterChange revalidate các route liên quan
-(technologies, ingredients) trên frontend.
-```
+- **Một đăng nhập, một shell admin** cho cả nội dung (Payload) lẫn nghiệp vụ (NestJS).
+- **Form Generator dùng chung**: component generic đọc Schema JSON từ cả Payload lẫn NestJS → thêm module mới = khai báo schema, không code lại UI.
+- Menu admin **render động** theo `MODULES_ENABLED` backend trả về.
 
 ---
 
-## 6. NON-FUNCTIONAL REQUIREMENTS
-- **Performance:** Lighthouse ≥ 90 (Perf/SEO/A11y). LCP < 2.5s. next/image + ISR.
-- **SEO:** sitemap.xml, robots.txt, hreflang VI/EN, JSON-LD (Organization, Product, Article, BreadcrumbList).
-- **Security:** HTTP-only cookie cho B2B, CORS chặt, rate-limit endpoint auth, helmet headers, validate input (zod ở FE), Payload access control ở BE.
-- **Tracking:** GA4 + GTM cấu hình qua SiteSettings (consent-aware).
-- **Observability:** healthcheck endpoint, logs JSON, error boundary FE.
-- **Deploy:** docker-compose (frontend, cms, postgres, + reverse proxy Caddy/Nginx với HTTPS Let's Encrypt) trên VPS.
+## 7. NGUYÊN TẮC CHỐNG COUPLING (giảm upgrade-tax Payload)
+
+- **Pin version chính xác**; nâng cấp **chủ động** (security/feature), đọc changelog/migration trước.
+- Customize **chỉ** ở lớp an toàn: **config collections/fields/hooks/access/endpoints** + **custom view dạng trang-riêng-gọi-API** + **CSS variables/theme**.
+- **Tránh** đè component nội bộ sâu / import API chưa export của `@payloadcms/ui`.
+- Quy trình nâng cấp: branch → `pnpm update` → **typecheck + build + smoke test admin (e2e CRUD 1 bản ghi)**.
+- Domain (NestJS) tách hẳn → **không bị ảnh hưởng** khi update Payload.
 
 ---
 
-## 7. ROADMAP THỰC THI
-1. **Sprint 1 — Frontend UI** (PROMPT 1): scaffold + design system + Home + component library + mock data. → *Chốt giao diện.*
-2. **Sprint 2 — Core CMS** (PROMPT 2): Payload Tầng 1 + Postgres + admin + i18n + nối FE thật cho Pages/Blog.
-3. **Sprint 3 — Bioscope Modules** (PROMPT 3): Technologies/Ingredients/Services/Certifications/Partners + trang catalog/detail + data viz.
-4. **Sprint 4 — B2B Portal**: auth + documents + access control.
-5. **Sprint 5 — Hardening**: SEO/JSON-LD, performance, tracking, security, dockerize, deploy VPS.
-```
-```
-```
+## 8. AI MODULE (dùng chung)
+
+- **Tác vụ nhẹ** (sinh SEO/meta, dịch VI↔EN, tóm tắt, phân loại, gợi ý tag) → gắn Payload **hook/job**.
+- **Tác vụ nặng/đa bước** (RAG "hỏi dữ liệu", scoring/rewrite annonces, matching, alertes intelligentes, assistant immobilier) → **NestJS + queue**.
+- Model: **Claude** (mặc định model mới nhất); abstraction provider để thay đổi.
+
+---
+
+## 9. BIOSCOPE — CONSUMER ĐẦU TIÊN
+
+**Bật:** Core + `module-catalog` + `module-b2b` + `module-bioscope` + `module-blocks`. **Không cần** Domain NestJS (trừ khi sau này thêm AI gợi ý công thức nặng / ERP).
+
+**Collections Tầng-2 (localized VI+EN, seo, order):** Technologies, Ingredients, IngredientCategories, Services, Certifications, Partners, Specs.
+**B2B:** B2BMembers (auth, status pending/approved/rejected), B2BDocuments (COA/spec/quote/brochure, visibility, allowedMembers) + endpoints `/api/b2b/*` (register/login/logout/me/documents/download), access control theo status.
+**Frontend (đã dựng Phase 1):** Trang chủ, Nguyên liệu (catalog+gating), Giải pháp, Đồng kiến tạo, R&D, Case Study, Về chúng tôi, Tài nguyên, Liên hệ (form wizard) — hiện chạy sample data, sẽ nối Payload.
+
+> Chi tiết schema/endpoint Bioscope giữ như v1.0 (đã triển khai trong `dv-cms`): Users/Media/Pages/Posts + Technologies/Ingredients/Services/Certifications/Partners/Specs + B2B.
+
+---
+
+## 10. PHỤ LỤC — MAP DỰ ÁN VÀO KIẾN TRÚC
+
+### 10.1 Eneville & LAS-XD 1628 (brochure)
+- **Chỉ cần Core** (pages, blog, media, SEO, forms, i18n) + theme riêng. **Không** Domain.
+- **Khuyến nghị:** chuyển frontend sang **Next.js** (Eneville đang Vite SPA → kém SEO; LAS-XD đang HTML template). Tái dùng design system + component của nền tảng.
+
+### 10.2 Ma Cabane (marketplace BĐS — stress test) — map yêu cầu
+| Yêu cầu | Tầng |
+|---|---|
+| Guides/blog SEO, trang tĩnh, FAQ, mentions légales, bannière home | **Payload Core** |
+| **Annonces** (import Apimo/Hektor XML/JSON), **search + carte**, hàng triệu trang | **NestJS** `listings` + `feed-sync` + **Meilisearch** + Mapbox/Google Maps |
+| Espace pro, tunnel dépôt, **abonnements/options (Stripe CB/SEPA)**, factures/TVA, codes promo | **NestJS** `billing` + `accounts-pro` |
+| **Booking/RDV** (date, agent, confirm email/SMS) | **NestJS** `booking` |
+| Comptes: email/pwd, **OAuth Google/FB**, **OTP SMS** (vérif pro), favoris/alertes/historique | **NestJS** `accounts-pro` (danh tính chung Payload qua SSO) |
+| **IA**: réécriture/scoring annonces, matching, alertes intelligentes, assistant | **AI module** (NestJS + queue) |
+| **SEO programmatique** (ville/type/quartier/département, triệu trang), maillage/canonical/pagination, CWV, A/B + CRO | **Frontend Next.js** SSG/ISR đọc data Domain |
+| Intégrations: CRM, **Brevo** email, **Crisp** livechat, compta API, **Google/Meta Ads**, GA4/GTM, DPE/public | **NestJS** `connectors` |
+| Reports: CA/jour-mois, perf annonces (vues/contacts), leads, conversion | **NestJS** `reports` + dashboard admin |
+| **API-first** cho mobile app · **RGPD** · **hosting UE** · scalabilité (triệu page/visit) | Toàn kiến trúc; deploy **EU cloud** |
+| "Sur mesure, **không** WordPress/Wix, **mã nguồn 100% cliente**" | Payload (code-first, self-host) + NestJS — **không phải** CMS SaaS; thỏa yêu cầu |
+
+> Lưu ý ranh giới: với Ma Cabane, **annonces nằm ở NestJS/Postgres+Meilisearch**, KHÔNG trong CMS — Payload chỉ giữ nội dung biên tập (guides, home, FAQ, legal).
+
+---
+
+## 11. STACK & PHIÊN BẢN
+
+| Thành phần | Phiên bản |
+|---|---|
+| Payload + @payloadcms/* | `3.85.x` |
+| NestJS | `11.x` |
+| Next.js / React | `16.2.9` / `19.2.x` |
+| TypeScript | `5.9.x` |
+| PostgreSQL | `16` (Drizzle cho Payload; Prisma/Drizzle cho NestJS) |
+| Meilisearch · Redis/BullMQ | mới nhất ổn định |
+| Node · pnpm · Turborepo · Docker | Node ≥ 20.9 · pnpm 9 · Turbo 2 |
+
+---
+
+## 12. NON-FUNCTIONAL
+
+- **Performance:** Lighthouse ≥ 90; LCP < 2.5s; **Core Web Vitals** (ưu tiên #1 của Ma Cabane). next/image + ISR + cache.
+- **SEO:** URL sạch, meta tùy biến, sitemap/robots tự động, **Schema.org** (Organization, Product/RealEstateListing, Article, BreadcrumbList, AggregateRating), OpenGraph, hreflang, **SEO programmatique** ở quy mô lớn.
+- **Security:** JWT HTTP-only, CORS chặt, rate-limit auth, validate input (zod), Payload access control, helmet headers.
+- **Privacy:** **RGPD** (Ma Cabane) — consent, data retention, EU hosting; cookie consent + GA4 consent-aware.
+- **Scalability:** Ma Cabane tới triệu trang/visit — ISR + search engine + queue + horizontal scale Domain.
+- **Observability:** healthcheck, logs JSON, error boundary FE, Sentry-ready.
+- **Bàn giao:** mã nguồn 100% client, tài liệu admin (PDF + video), bảo trì hàng tháng.
+
+---
+
+## 13. HẠ TẦNG & DEPLOY
+
+- **Monorepo** pnpm + Turborepo; mỗi service Dockerfile; **Docker Compose** (frontend + payload + nestjs + postgres + meilisearch + redis + reverse-proxy Caddy/Nginx HTTPS).
+- **Site nhẹ** (Eneville/LAS-XD/Bioscope): VPS self-host.
+- **Ma Cabane**: **EU cloud** (AWS/GCP/Scaleway EU) cho RGPD + scale.
+- **Dự án mới** = duplicate monorepo → chỉnh config (bật module, theme, MODULES_ENABLED) → deploy instance riêng, DB riêng.
+
+---
+
+## 14. ROADMAP
+
+1. **Bioscope Frontend** (đang làm — Phase 1 xong): Home + 14 trang theo tài liệu khảo sát, design system, sample data.
+2. **Core CMS Payload**: chuẩn hóa `dv-cms` (đã có) làm Core nền tảng; nối Bioscope frontend vào API thật.
+3. **Modules Bioscope + B2B**: catalog/ingredients/technologies + portal B2B + gating thật.
+4. **Tổng quát hóa Core**: tách design system + Core thành nền tảng tái dùng; chuyển Eneville/LAS-XD sang Next.
+5. **Domain Services (Ma Cabane)**: NestJS listings/feed-sync/billing/booking/AI + Meilisearch + programmatic SEO + EU deploy.
+6. **Admin di cư** (Cách A → Cách 1) + **Mobile App** (dùng API-first).
+
+> **Backend xử lý sau** (theo yêu cầu hiện tại). Bước kế tiếp: **review Frontend Bioscope**.

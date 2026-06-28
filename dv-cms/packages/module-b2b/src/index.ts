@@ -1,0 +1,5 @@
+export { b2bPlugin, type B2BPluginOptions } from './plugin.js'
+export { Members } from './collections/Members.js'
+export { createGatedDocuments, type GatedDocumentsOptions } from './collections/GatedDocuments.js'
+export { createB2BEndpoints, type B2BEndpointOptions } from './endpoints/index.js'
+export { readGated } from './access/gated.js'

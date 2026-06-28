@@ -1,0 +1,45 @@
+/* =========================================================================
+   Bioscope admin theme (light "soft SaaS").
+   Static defaults; the ThemeInjector overrides these live from the Branding
+   global, so changing colors in the admin does not require a redeploy.
+   ========================================================================= */
+:root {
+  /* Brand tokens consumed by our admin components. */
+  --dv-primary: #0e6147;
+  --dv-primary-dark: #00301a;
+  --dv-accent: #f7941d;
+  --dv-font: 'Be Vietnam Pro', system-ui, sans-serif;
+
+  /* Larger, friendlier corners. */
+  --style-radius-s: 8px;
+  --style-radius-m: 12px;
+  --style-radius-l: 16px;
+
+  /* Best-effort mapping onto Payload's accent (success) scale. */
+  --color-success-500: #0e6147;
+  --color-success-550: #0e6147;
+  --color-success-600: #00301a;
+  --theme-success-500: #0e6147;
+}
+
+/* Brand the primary action buttons + active links. */
+.btn--style-primary:not(.btn--disabled) {
+  --color: #fff;
+  background-color: var(--dv-primary);
+  border-color: var(--dv-primary);
+}
+.btn--style-primary:not(.btn--disabled):hover {
+  background-color: var(--dv-primary-dark);
+  border-color: var(--dv-primary-dark);
+}
+
+/* Nav active item accent. */
+.nav__link.active,
+.nav-group__toggle:hover {
+  color: var(--dv-primary);
+}
+
+/* Login screen brand spacing. */
+.login__brand {
+  margin-bottom: 1.5rem;
+}

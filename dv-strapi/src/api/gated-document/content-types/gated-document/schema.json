@@ -1,0 +1,56 @@
+{
+  "kind": "collectionType",
+  "collectionName": "gated_documents",
+  "info": {
+    "singularName": "gated-document",
+    "pluralName": "gated-documents",
+    "displayName": "Gated Document"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "docType": {
+      "type": "enumeration",
+      "enum": [
+        "COA",
+        "spec_sheet",
+        "quote",
+        "brochure"
+      ],
+      "default": "COA"
+    },
+    "file": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos"
+      ]
+    },
+    "visibility": {
+      "type": "enumeration",
+      "enum": [
+        "approved_members",
+        "specific"
+      ],
+      "default": "approved_members"
+    },
+    "allowedMembers": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "plugin::users-permissions.user"
+    },
+    "relatesTo": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::ingredient.ingredient"
+    }
+  }
+}

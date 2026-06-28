@@ -1,0 +1,27 @@
+{
+  "name": "@dv/cms-core",
+  "version": "0.1.0",
+  "description": "Tier-1 reusable CMS core (collections, globals, blocks, access, hooks, whitelabel admin) for Payload 3",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./admin": "./src/admin/index.ts",
+    "./fields": "./src/fields/index.ts",
+    "./access": "./src/access/index.ts"
+  },
+  "peerDependencies": {
+    "payload": "^3.0.0",
+    "react": "^19.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react": { "optional": true }
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "payload": "3.85.1",
+    "react": "19.2.7",
+    "typescript": "5.9.3"
+  }
+}

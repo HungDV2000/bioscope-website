@@ -1,0 +1,36 @@
+{
+  "collectionName": "components_shared_specs",
+  "info": {
+    "displayName": "Spec",
+    "icon": "bulletList"
+  },
+  "options": {},
+  "attributes": {
+    "label": {
+      "type": "string",
+      "required": true
+    },
+    "value": {
+      "type": "string",
+      "required": true
+    },
+    "unit": {
+      "type": "string"
+    },
+    "display": {
+      "type": "enumeration",
+      "enum": [
+        "text",
+        "number",
+        "bar",
+        "donut"
+      ],
+      "default": "text"
+    },
+    "percent": {
+      "type": "integer",
+      "min": 0,
+      "max": 100
+    }
+  }
+}

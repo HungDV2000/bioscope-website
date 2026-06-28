@@ -1,0 +1,42 @@
+{
+  "name": "@dv/core-cms",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "cross-env NODE_OPTIONS=--no-deprecation next dev --webpack -p 3001",
+    "devsafe": "rm -rf .next && cross-env NODE_OPTIONS=--no-deprecation next dev --webpack -p 3001",
+    "build": "cross-env NODE_OPTIONS=--no-deprecation next build --webpack",
+    "start": "cross-env NODE_OPTIONS=--no-deprecation next start -p 3001",
+    "lint": "next lint",
+    "generate:types": "cross-env NODE_OPTIONS=--no-deprecation payload generate:types",
+    "generate:importmap": "cross-env NODE_OPTIONS=--no-deprecation payload generate:importmap",
+    "migrate": "cross-env NODE_OPTIONS=--no-deprecation payload migrate",
+    "migrate:create": "cross-env NODE_OPTIONS=--no-deprecation payload migrate:create",
+    "seed": "cross-env NODE_OPTIONS=--no-deprecation payload run src/seed/index.ts"
+  },
+  "dependencies": {
+    "@dv/cms-core": "workspace:*",
+    "@dv/module-b2b": "workspace:*",
+    "@dv/module-blocks": "workspace:*",
+    "@dv/module-bioscope": "workspace:*",
+    "@dv/module-catalog": "workspace:*",
+    "@payloadcms/db-postgres": "3.85.1",
+    "@payloadcms/next": "3.85.1",
+    "@payloadcms/richtext-lexical": "3.85.1",
+    "@payloadcms/ui": "3.85.1",
+    "cross-env": "^7.0.3",
+    "graphql": "^16.9.0",
+    "next": "16.2.9",
+    "payload": "3.85.1",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
+    "sharp": "0.33.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "5.9.3"
+  }
+}

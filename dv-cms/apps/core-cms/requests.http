@@ -1,0 +1,59 @@
+@base = http://localhost:3001
+
+### ── CORE ────────────────────────────────────────────────
+### Site settings (global)
+GET {{base}}/api/globals/site-settings?locale=vi
+
+### Pages
+GET {{base}}/api/pages?locale=vi&limit=10
+
+### Posts
+GET {{base}}/api/posts?locale=vi&limit=9&sort=-publishedAt
+
+### ── BIOSCOPE ────────────────────────────────────────────
+### Ingredients (supplements) with relationships
+GET {{base}}/api/ingredients?where[type][equals]=supplement&depth=2&locale=vi
+
+### Ingredients (featured)
+GET {{base}}/api/ingredients?where[featured][equals]=true&depth=1&locale=vi
+
+### Technologies sorted
+GET {{base}}/api/technologies?sort=order&depth=2&locale=vi
+
+### Services
+GET {{base}}/api/services?sort=order&locale=vi
+
+### Certifications
+GET {{base}}/api/certifications?sort=order&locale=vi
+
+### Partners
+GET {{base}}/api/partners
+
+### ── GRAPHQL ─────────────────────────────────────────────
+POST {{base}}/api/graphql
+Content-Type: application/json
+
+{ "query": "{ Ingredients(locale: vi, limit: 3) { docs { id name slug type } } }" }
+
+### ── B2B ─────────────────────────────────────────────────
+### Register (creates a pending member)
+POST {{base}}/api/b2b/register
+Content-Type: application/json
+
+{ "email": "new@acme.com", "password": "Member@123", "company": "ACME", "contactName": "Tester", "phone": "0900000001" }
+
+### Login (approved seeded member) — sets payload-token cookie
+# @name login
+POST {{base}}/api/b2b/login
+Content-Type: application/json
+
+{ "email": "member@acme.com", "password": "Member@123" }
+
+### Current member
+GET {{base}}/api/b2b/me
+
+### Documents the member may access
+GET {{base}}/api/b2b/documents
+
+### Logout
+POST {{base}}/api/b2b/logout

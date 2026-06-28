@@ -1,0 +1,19 @@
+{
+  "name": "@dv/module-b2b",
+  "version": "0.1.0",
+  "description": "Generic B2B portal: member accounts + access-gated documents + auth endpoints for Payload 3",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": { ".": "./src/index.ts" },
+  "dependencies": {
+    "@dv/cms-core": "workspace:*"
+  },
+  "peerDependencies": {
+    "payload": "^3.0.0"
+  },
+  "devDependencies": {
+    "payload": "3.85.1",
+    "typescript": "5.9.3"
+  }
+}

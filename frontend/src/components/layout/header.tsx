@@ -6,36 +6,34 @@ import { useEffect, useState } from "react";
 import { FlaskConical } from "lucide-react";
 import type { Locale } from "@/lib/utils";
 import { cn } from "@/lib/utils";
-import { homeContent, pickL } from "@/lib/home-content";
 import { LangSwitcher } from "./lang-switcher";
 import { Logo } from "./logo";
 
-const NAV_HREFS = [
-  "/nguyen-lieu",
-  "/dich-vu-odm",
-  "/cong-nghe",
-  "/gioi-thieu",
-  "/gioi-thieu",
-  "/blog",
-  "/lien-he",
+const NAV = [
+  { vi: "Nguyên liệu", en: "Ingredients", href: "/nguyen-lieu" },
+  { vi: "Giải pháp", en: "Solutions", href: "/dich-vu-odm" },
+  { vi: "Đồng kiến tạo", en: "Co-creation", href: "/dich-vu-odm" },
+  { vi: "Nghiên cứu & Phát triển", en: "R&D", href: "/cong-nghe" },
+  { vi: "Tài nguyên", en: "Resources", href: "/blog" },
+  { vi: "Về chúng tôi", en: "About Us", href: "/gioi-thieu" },
 ] as const;
 
 export function Header({ locale }: { locale: Locale }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const vi = locale === "vi";
-  const nav = homeContent.header.nav;
 
   useEffect(() => setOpen(false), [pathname]);
 
   const p = (path: string) => `/${locale}${path}`;
+  const cta = vi ? "Yêu cầu mẫu thử" : "Request Sample";
 
   const isActive = (href: string) =>
     pathname === href || pathname.startsWith(href + "/");
 
   const linkClass = (href: string) =>
     cn(
-      "whitespace-nowrap text-[13px] font-medium transition-colors xl:text-[14.5px]",
+      "whitespace-nowrap text-[13px] font-medium transition-colors xl:text-[14px]",
       isActive(href) ? "text-primary" : "text-neutral-700 hover:text-primary"
     );
 
@@ -46,12 +44,11 @@ export function Header({ locale }: { locale: Locale }) {
           <Logo className="h-11" />
         </Link>
 
-        {/* Desktop: links + CTA cùng một flex row (theo example — không đè Contact) */}
         <nav className="hidden min-w-0 flex-1 items-center justify-end gap-3 lg:flex xl:gap-5">
-          {nav.map((item, i) => {
-            const href = p(NAV_HREFS[i]);
+          {NAV.map((item) => {
+            const href = p(item.href);
             return (
-              <Link key={item.en} href={href} className={linkClass(href)}>
+              <Link key={item.vi} href={href} className={linkClass(href)}>
                 {vi ? item.vi : item.en}
               </Link>
             );
@@ -59,9 +56,9 @@ export function Header({ locale }: { locale: Locale }) {
           <div className="ml-1 flex shrink-0 items-center gap-2.5 pl-3 xl:ml-2 xl:pl-4">
             <Link
               href={p("/lien-he")}
-              className="inline-flex items-center gap-2 rounded-md bg-primary px-3.5 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-[#0c7344] xl:px-[18px] xl:text-[13.5px]"
+              className="inline-flex items-center gap-2 rounded-md bg-primary px-3.5 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-primary-dark xl:px-[18px] xl:text-[13.5px]"
             >
-              {pickL(homeContent.header.requestSample, locale)}
+              {cta}
               <FlaskConical className="h-4 w-4 shrink-0" />
             </Link>
             <LangSwitcher locale={locale} compact />
@@ -73,32 +70,14 @@ export function Header({ locale }: { locale: Locale }) {
           <LangSwitcher locale={locale} compact />
           <button
             type="button"
-            className={cn(
-              "relative flex h-8 w-8 shrink-0 flex-col items-center justify-center gap-[5px]",
-              open && "is-open"
-            )}
+            className="relative flex h-8 w-8 shrink-0 flex-col items-center justify-center gap-[5px]"
             onClick={() => setOpen((v) => !v)}
             aria-label={vi ? "Mở menu" : "Open menu"}
             aria-expanded={open}
           >
-            <span
-              className={cn(
-                "block h-0.5 w-full rounded-sm bg-ink transition-transform",
-                open && "translate-y-[7px] rotate-45"
-              )}
-            />
-            <span
-              className={cn(
-                "block h-0.5 w-full rounded-sm bg-ink transition-opacity",
-                open && "opacity-0"
-              )}
-            />
-            <span
-              className={cn(
-                "block h-0.5 w-full rounded-sm bg-ink transition-transform",
-                open && "-translate-y-[7px] -rotate-45"
-              )}
-            />
+            <span className={cn("block h-0.5 w-full rounded-sm bg-ink transition-transform", open && "translate-y-[7px] rotate-45")} />
+            <span className={cn("block h-0.5 w-full rounded-sm bg-ink transition-opacity", open && "opacity-0")} />
+            <span className={cn("block h-0.5 w-full rounded-sm bg-ink transition-transform", open && "-translate-y-[7px] -rotate-45")} />
           </button>
         </div>
       </div>
@@ -110,17 +89,15 @@ export function Header({ locale }: { locale: Locale }) {
         )}
       >
         <nav className="container-bs flex flex-col gap-1 py-4">
-          {nav.map((item, i) => {
-            const href = p(NAV_HREFS[i]);
+          {NAV.map((item) => {
+            const href = p(item.href);
             return (
               <Link
-                key={item.en}
+                key={item.vi}
                 href={href}
                 className={cn(
                   "rounded-md px-3 py-2.5 text-sm font-medium",
-                  isActive(href)
-                    ? "bg-primary-tint text-primary"
-                    : "text-ink hover:bg-neutral-50"
+                  isActive(href) ? "bg-primary-tint text-primary" : "text-ink hover:bg-neutral-50"
                 )}
               >
                 {vi ? item.vi : item.en}
@@ -129,9 +106,9 @@ export function Header({ locale }: { locale: Locale }) {
           })}
           <Link
             href={p("/lien-he")}
-            className="mt-2 inline-flex items-center justify-center gap-2 rounded-md bg-primary px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#0c7344]"
+            className="mt-2 inline-flex items-center justify-center gap-2 rounded-md bg-primary px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-primary-dark"
           >
-            {pickL(homeContent.header.requestSample, locale)}
+            {cta}
             <FlaskConical className="h-4 w-4" />
           </Link>
         </nav>

@@ -1,0 +1,21 @@
+node_modules
+.next
+dist
+.turbo
+*.tsbuildinfo
+.DS_Store
+
+# env
+.env
+.env.local
+.env.*.local
+
+# payload / uploads
+media
+apps/**/media
+build
+
+# logs
+*.log
+npm-debug.log*
+pnpm-debug.log*

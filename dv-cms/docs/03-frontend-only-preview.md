@@ -81,15 +81,28 @@ PORT=26000 pnpm start
 > **Lưu ý:** `pnpm build` ở **gốc** `dv-cms/` sẽ build **cả CMS + frontend** (turbo).
 > `pnpm start` ở gốc **không có** — phải dùng `pnpm fe:start` hoặc `cd apps/bioscope-frontend`.
 
-Chạy nền bằng **PM2** (khuyến nghị):
+Chạy nền bằng **PM2** (bắt buộc trên VPS — đóng SSH vẫn chạy):
 
 ```bash
 npm i -g pm2
-cd /www/wwwroot/bioscope-website/dv-cms/apps/bioscope-frontend
-PORT=26000 pm2 start "pnpm start" --name bioscope-web
+cd /www/wwwroot/bioscope-website/dv-cms
+
+# Đã build xong rồi thì chỉ cần:
+pm2 start ecosystem.frontend.config.cjs
 pm2 save
-pm2 startup   # làm theo hướng dẫn in ra
+pm2 startup    # copy & chạy lệnh in ra để tự chạy lại sau reboot
 ```
+
+Quản lý:
+
+```bash
+pm2 status
+pm2 logs bioscope-web
+pm2 restart bioscope-web
+pm2 stop bioscope-web
+```
+
+**Không** dùng `pnpm start` trực tiếp trong terminal production — tắt SSH là web dừng.
 
 Kiểm tra:
 
@@ -155,12 +168,6 @@ cd /www/wwwroot/bioscope-website/dv-cms
 git pull
 pnpm fe:build
 pm2 restart bioscope-web
-```
-
-Hoặc:
-
-```bash
-cd apps/bioscope-frontend && pnpm build && pm2 restart bioscope-web
 ```
 
 ---

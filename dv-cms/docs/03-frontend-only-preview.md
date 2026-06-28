@@ -62,23 +62,31 @@ Truy cập tạm: `http://<IP-VPS>:26000` (mở firewall cổng 26000 nếu cầ
 
 ### B.2 Chế độ production (ổn định hơn)
 
+**Chỉ build frontend** (không build CMS):
+
 ```bash
 cd /www/wwwroot/bioscope-website/dv-cms
-pnpm install
+pnpm fe:build
+PORT=26000 pnpm fe:start
+```
 
+Hoặc vào thư mục app:
+
+```bash
 cd apps/bioscope-frontend
 pnpm build
 PORT=26000 pnpm start
 ```
 
-(`next start` đọc cổng từ biến `PORT`, mặc định 3000.)
+> **Lưu ý:** `pnpm build` ở **gốc** `dv-cms/` sẽ build **cả CMS + frontend** (turbo).
+> `pnpm start` ở gốc **không có** — phải dùng `pnpm fe:start` hoặc `cd apps/bioscope-frontend`.
 
 Chạy nền bằng **PM2** (khuyến nghị):
 
 ```bash
 npm i -g pm2
 cd /www/wwwroot/bioscope-website/dv-cms/apps/bioscope-frontend
-pm2 start "pnpm start" --name bioscope-web -- -p 26000
+PORT=26000 pm2 start "pnpm start" --name bioscope-web
 pm2 save
 pm2 startup   # làm theo hướng dẫn in ra
 ```
@@ -145,9 +153,14 @@ location / {
 ```bash
 cd /www/wwwroot/bioscope-website/dv-cms
 git pull
-cd apps/bioscope-frontend
-pnpm build
+pnpm fe:build
 pm2 restart bioscope-web
+```
+
+Hoặc:
+
+```bash
+cd apps/bioscope-frontend && pnpm build && pm2 restart bioscope-web
 ```
 
 ---

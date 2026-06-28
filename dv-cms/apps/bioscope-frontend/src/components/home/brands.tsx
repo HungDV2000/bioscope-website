@@ -1,6 +1,5 @@
 'use client'
 
-import Image from 'next/image'
 import { useCallback, useEffect, useRef } from 'react'
 import {
   ChevronLeft,
@@ -141,12 +140,13 @@ export function Brands() {
                   key={`${c.name}-${i}`}
                   className="flex h-[104px] w-[170px] shrink-0 items-center justify-center rounded-2xl border border-primary-border/70 bg-white px-4"
                 >
-                  <Image
+                  <img
                     src={c.logo}
                     alt={c.name}
                     width={140}
                     height={56}
-                    unoptimized
+                    loading="lazy"
+                    decoding="async"
                     className="max-h-11 w-auto max-w-full object-contain"
                   />
                 </div>

@@ -179,4 +179,36 @@ pm2 restart bioscope-web
 | `pnpm: command not found` | `corepack enable && corepack prepare pnpm@9.15.9 --activate` |
 | `EADDRINUSE :26000` | Đổi cổng: `PORT=26002 pnpm start` và sửa proxy aaPanel |
 | Trang trắng / 502 | `pm2 logs bioscope-web` hoặc `curl http://127.0.0.1:26000` |
+| Ảnh `/images/...` lỗi (icon OK, logo/ảnh PNG lỗi) | Xem **E.1** bên dưới |
+
+### E.1 Ảnh static lỗi trên VPS
+
+**1. Kiểm tra file có trên server không:**
+
+```bash
+ls -la /www/wwwroot/bioscope-website/dv-cms/apps/bioscope-frontend/public/images/clients/
+curl -sI http://127.0.0.1:26000/images/clients/PolymerSolution.png | head -5
+```
+
+Phải thấy `HTTP/1.1 200`. Nếu **404** → file thiếu hoặc reverse proxy aaPanel không chuyển `/images` về Next.
+
+**2. Sửa reverse proxy aaPanel** — proxy **toàn bộ** site:
+
+```nginx
+location / {
+    proxy_pass http://127.0.0.1:26000;
+    ...
+}
+```
+
+Không để nginx phục vụ `/images` từ thư mục PHP tĩnh.
+
+**3. Rebuild sau khi git pull:**
+
+```bash
+cd /www/wwwroot/bioscope-website/dv-cms
+git pull
+pnpm fe:build
+pm2 restart bioscope-web
+```
 | SSL lỗi | DNS phải trỏ đúng IP trước khi cấp Let's Encrypt |

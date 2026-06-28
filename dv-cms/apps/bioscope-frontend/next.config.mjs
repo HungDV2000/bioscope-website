@@ -3,12 +3,12 @@ import { fileURLToPath } from 'node:url'
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  // Pin the monorepo root (multiple lockfiles exist above this dir).
   turbopack: {
     root: fileURLToPath(new URL('../..', import.meta.url)),
   },
+  // VPS / aaPanel: serve /public trực tiếp, không qua /_next/image
   images: {
-    // Payload media is served from the core-cms instance.
+    unoptimized: true,
     remotePatterns: [
       { protocol: 'http', hostname: 'localhost', port: '3001' },
       { protocol: 'https', hostname: '**' },

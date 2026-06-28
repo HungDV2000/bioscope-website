@@ -21,6 +21,7 @@
     "fe:dev": "pnpm --filter @dv/bioscope-frontend dev",
     "fe:build": "pnpm --filter @dv/bioscope-frontend build",
     "fe:start": "pnpm --filter @dv/bioscope-frontend start",
+    "start": "pnpm --filter @dv/bioscope-frontend start",
     "db:up": "docker compose up -d db",
     "db:down": "docker compose down"
   },

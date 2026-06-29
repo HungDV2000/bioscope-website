@@ -5,6 +5,7 @@ import { PageHero } from '@/components/ui/page-hero'
 import { Reveal } from '@/components/ui/reveal'
 import { Counter } from '@/components/ui/counter'
 import { CtaBand } from '@/components/home/cta-band'
+import { AboutProductProcess } from '@/components/about/product-process'
 import {
   ABOUT_TIMELINE,
   ABOUT_DIFFERENTIATION,
@@ -89,7 +90,9 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <section className="bg-mist py-20">
+      <AboutProductProcess />
+
+      <section className="bg-white py-20">
         <div className="container-bs grid gap-12 lg:grid-cols-2">
           <Reveal>
             <h2 className="text-[1.9rem] font-bold tracking-tight text-ink sm:text-[2.3rem]">Hành trình của chúng tôi</h2>
@@ -117,7 +120,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <section className="bg-white py-16">
+      <section className="bg-mist py-16">
         <div className="container-bs">
           <Reveal className="text-center">
             <div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-primary-tint text-primary">

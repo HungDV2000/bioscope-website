@@ -759,6 +759,41 @@ export const ABOUT_CORE_VALUES = [
   { title: 'Đổi mới không ngừng', desc: '23+ dự án R&D, 14 đơn sáng chế và liên tục đưa công nghệ mới vào Việt Nam.' },
 ]
 
+export const ABOUT_PRODUCT_PROCESS = {
+  title: 'Quy trình phát triển sản phẩm cùng Bioscope',
+  description:
+    'Từ ý tưởng ban đầu đến tăng trưởng bền vững — Bioscope đồng hành cùng đối tác qua 5 giai đoạn rõ ràng, khoa học và có thể đo lường.',
+  image: '/images/quy-trinh.jpg',
+  imageAlt: 'Quy trình phát triển sản phẩm cùng Bioscope — 5 bước từ ý tưởng đến tăng trưởng dài hạn',
+  steps: [
+    {
+      n: '01',
+      title: 'Ý tưởng',
+      desc: 'Hiểu nhu cầu và xu hướng thị trường.',
+    },
+    {
+      n: '02',
+      title: 'Nghiên cứu & đề xuất giải pháp',
+      desc: 'Phân tích sâu nhu cầu thị trường & mục tiêu sản phẩm.',
+    },
+    {
+      n: '03',
+      title: 'Kiểm chứng & thử nghiệm',
+      desc: 'Đánh giá hiệu quả, kiểm tra an toàn và tối ưu công thức.',
+    },
+    {
+      n: '04',
+      title: 'Phát triển & ra mắt',
+      desc: 'Đảm bảo chuyển giao mượt mà và hỗ trợ truyền thông sản phẩm.',
+    },
+    {
+      n: '05',
+      title: 'Tăng trưởng & đồng hành lâu dài',
+      desc: 'Tối ưu sản phẩm và đồng hành phát triển bền vững.',
+    },
+  ],
+} as const
+
 export const CLIENT_LOGOS = [
   { name: 'GC Rieber Oils', logo: '/images/clients/GCRieberOils.svg' },
   { name: 'Indena', logo: '/images/clients/indena_science.png' },

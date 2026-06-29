@@ -11,6 +11,8 @@ import { catalogPlugin } from '@dv/module-catalog'
 import { bioscopePlugin } from '@dv/module-bioscope'
 import { b2bPlugin } from '@dv/module-b2b'
 
+import { seedEndpoint } from './endpoints/seed.js'
+
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
@@ -29,6 +31,10 @@ export default buildConfig({
   admin: {
     user: 'users',
     importMap: { baseDir: path.resolve(dirname) },
+    components: {
+      // One-click seed/refresh card on the dashboard (admin-only endpoint).
+      beforeDashboard: ['/components/SeedButton#SeedButton'],
+    },
   },
   serverURL,
   editor: lexicalEditor(),
@@ -46,6 +52,7 @@ export default buildConfig({
   csrf: corsOrigins,
   sharp,
   typescript: { outputFile: path.resolve(dirname, 'payload-types.ts') },
+  endpoints: [seedEndpoint],
   collections: [],
   plugins: [
     // Tier 1 — generic core (must come first: users + media).

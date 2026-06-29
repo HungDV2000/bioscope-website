@@ -650,6 +650,40 @@ export async function runSeed(payload: Payload): Promise<string[]> {
         ]),
       ] },
     },
+    // ── Bioscope AI / AI assistant ──
+    {
+      slug: 'bioscope-ai',
+      vi: { title: 'Bioscope AI', layout: [
+        hero('Trợ lý AI', 'Bioscope AI', 'Hỏi bất cứ điều gì về nguyên liệu — gợi ý hoạt chất, đề xuất công thức và gửi TDS/COA ngay lập tức.', [link('Đăng ký nhận thông báo', '/lien-he', 'primary')]),
+        stats('Bioscope AI', [
+          { value: '500+', label: 'Nguyên liệu trong catalog' },
+          { value: '24/7', label: 'Tra cứu mọi lúc' },
+          { value: '3', label: 'Ngành: DP · TPCN · Mỹ phẩm' },
+        ]),
+        features('Tính năng chính', '4', [
+          { icon: 'Sparkles', title: 'Tư vấn nguyên liệu thông minh', description: 'Hiểu mục tiêu sản phẩm và đề xuất hoạt chất có căn cứ từ dữ liệu Bioscope.' },
+          { icon: 'FlaskConical', title: 'Gợi ý công thức & phối hợp', description: 'Đề xuất kết hợp hoạt chất với liều tham khảo và lưu ý tương thích.' },
+          { icon: 'FileText', title: 'Tài liệu kỹ thuật tức thì', description: 'Yêu cầu TDS, COA, SDS ngay trong chat — không cần email qua lại.' },
+          { icon: 'Clock', title: 'Hỗ trợ 24/7', description: 'Tra cứu nhanh trước khi liên hệ sales — lý tưởng cho giai đoạn brainstorm.' },
+        ]),
+        cta('Sắp ra mắt', 'Trợ lý AI chuyên biệt cho ngành nguyên liệu chức năng — được huấn luyện trên catalog, tài liệu R&D và kinh nghiệm tư vấn thực tế của Bioscope.', [link('Liên hệ với chúng tôi', '/lien-he', 'primary')]),
+      ] },
+      en: { title: 'Bioscope AI', layout: [
+        hero('AI assistant', 'Bioscope AI', 'Ask anything about ingredients — get active suggestions, formula ideas, and TDS/COA delivery instantly.', [link('Notify me', '/lien-he', 'primary')]),
+        stats('Bioscope AI', [
+          { value: '500+', label: 'Ingredients in catalog' },
+          { value: '24/7', label: 'Always-on lookup' },
+          { value: '3', label: 'Industries: Pharma · Nutra · Cosmetics' },
+        ]),
+        features('Key features', '4', [
+          { icon: 'Sparkles', title: 'Smart ingredient guidance', description: 'Understands your product goal and recommends evidence-based actives from Bioscope data.' },
+          { icon: 'FlaskConical', title: 'Formula & combination ideas', description: 'Suggests active combinations with reference dosages and compatibility notes.' },
+          { icon: 'FileText', title: 'Instant technical documents', description: 'Request TDS, COA, SDS right in the chat — no email back-and-forth.' },
+          { icon: 'Clock', title: '24/7 support', description: 'Quick lookup before contacting sales — ideal for the brainstorming stage.' },
+        ]),
+        cta('Coming soon', 'A specialized AI assistant for the functional-ingredient industry — trained on Bioscope catalog, R&D documents, and real consulting experience.', [link('Contact us', '/lien-he', 'primary')]),
+      ] },
+    },
   ]
   for (const pg of pages) await upsertPage(pg.slug, pg.vi, pg.en)
   log(`pages: ${pages.length} (song ngữ vi + en)`)

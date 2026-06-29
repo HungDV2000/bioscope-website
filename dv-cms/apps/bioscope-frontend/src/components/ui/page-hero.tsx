@@ -6,6 +6,7 @@ import { ChevronRight } from 'lucide-react'
 import { Eyebrow } from '@/components/ui/section'
 import { Reveal } from '@/components/ui/reveal'
 import { useLocale } from '@/lib/i18n/context'
+import { cn } from '@/lib/utils'
 import { img, type ImgKey } from '@/lib/images'
 
 type Crumb = { label: string; href?: string }
@@ -17,6 +18,7 @@ export function PageHero({
   crumbs = [],
   image,
   coverImage,
+  className,
 }: {
   eyebrow?: string
   title: string
@@ -24,11 +26,12 @@ export function PageHero({
   crumbs?: Crumb[]
   image?: ImgKey
   coverImage?: string
+  className?: string
 }) {
   const { t } = useLocale()
 
   return (
-    <section className="relative overflow-hidden bg-mist pt-32 lg:pt-40">
+    <section className={cn('relative overflow-hidden bg-mist pt-32 lg:pt-40', className)}>
       <div
         aria-hidden
         className="pointer-events-none absolute -right-32 -top-20 h-[420px] w-[420px] rounded-full opacity-50 blur-3xl"

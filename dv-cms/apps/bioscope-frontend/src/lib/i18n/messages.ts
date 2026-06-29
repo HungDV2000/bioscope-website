@@ -80,6 +80,24 @@ export type Messages = {
       imageAlt: string
       stats: { label: string }[]
     }
+    aiChat: {
+      badge: string
+      titleBefore: string
+      titleHighlight: string
+      description: string
+      features: string[]
+      cta: string
+      ctaHref: string
+      chatName: string
+      chatStatus: string
+      typing: string
+      suggestions: [string, string]
+      demoUser: string
+      demoAi1: string
+      demoAi2: string
+      replyAntiAging: string
+      replyOmega3: string
+    }
   }
   about: {
     mission: { title: string; desc: string }[]
@@ -168,7 +186,7 @@ const vi: Messages = {
       },
       support: {
         title: 'Hỗ trợ',
-        links: ['Liên hệ', 'Yêu cầu mẫu thử', 'Câu hỏi thường gặp', 'Chính sách bảo mật'],
+        links: ['Liên hệ', 'Yêu cầu mẫu thử', 'Câu hỏi thường gặp', 'Chính sách bảo mật', 'Cổng đối tác'],
       },
     },
     copyright: '© 2026 Bioscope. Bảo lưu mọi quyền.',
@@ -259,6 +277,28 @@ const vi: Messages = {
         { label: 'đơn sáng chế' },
         { label: 'dự án R&D' },
       ],
+    },
+    aiChat: {
+      badge: 'Mới — Trợ lý AI',
+      titleBefore: 'Gặp gỡ',
+      titleHighlight: 'Bioscope AI',
+      description:
+        'Hỏi bất cứ điều gì về nguyên liệu — trợ lý AI gợi ý hoạt chất phù hợp, đề xuất công thức và gửi tài liệu kỹ thuật cho bạn ngay lập tức.',
+      features: ['Tư vấn nguyên liệu', 'Gợi ý công thức', 'Tải TDS / COA', '24/7'],
+      cta: 'Tìm hiểu thêm',
+      ctaHref: '/bioscope-ai',
+      chatName: 'Bioscope AI',
+      chatStatus: 'Đang hoạt động',
+      typing: 'Đang nhập',
+      suggestions: ['Chống lão hóa da', 'Omega-3 dạng TG'],
+      demoUser: 'Serum chống lão hóa da',
+      demoAi1: 'Chào bạn, tôi là Bioscope AI. Bạn đang phát triển sản phẩm gì?',
+      demoAi2:
+        'Gợi ý 3 hoạt chất: NMN, Bacopa và Curcumin Phytosome. Bạn muốn xem TDS hay yêu cầu mẫu thử?',
+      replyAntiAging:
+        'Gợi ý 3 hoạt chất: NMN, Bacopa và Curcumin Phytosome. Bạn muốn xem TDS hay yêu cầu mẫu thử?',
+      replyOmega3:
+        'Omega-3 dạng TG có sinh khả dụng cao hơn EE — phù hợp phân khúc premium. Bạn muốn xem catalog vivomega® hay nhận TDS?',
     },
   },
   about: {
@@ -370,7 +410,7 @@ const en: Messages = {
       },
       support: {
         title: 'Support',
-        links: ['Contact', 'Request samples', 'FAQ', 'Privacy policy'],
+        links: ['Contact', 'Request samples', 'FAQ', 'Privacy policy', 'Partner portal'],
       },
     },
     copyright: '© 2026 Bioscope. All rights reserved.',
@@ -461,6 +501,28 @@ const en: Messages = {
         { label: 'patents' },
         { label: 'R&D projects' },
       ],
+    },
+    aiChat: {
+      badge: 'New — AI assistant',
+      titleBefore: 'Meet',
+      titleHighlight: 'Bioscope AI',
+      description:
+        'Ask anything about ingredients — our AI suggests suitable actives, proposes formulas, and sends technical documents instantly.',
+      features: ['Ingredient advice', 'Formula suggestions', 'Download TDS / COA', '24/7'],
+      cta: 'Learn more',
+      ctaHref: '/bioscope-ai',
+      chatName: 'Bioscope AI',
+      chatStatus: 'Online',
+      typing: 'Typing',
+      suggestions: ['Anti-aging serum', 'Omega-3 TG form'],
+      demoUser: 'Anti-aging facial serum',
+      demoAi1: "Hi, I'm Bioscope AI. What product are you developing?",
+      demoAi2:
+        'I suggest 3 actives: NMN, Bacopa, and Curcumin Phytosome. Would you like to view TDS or request samples?',
+      replyAntiAging:
+        'I suggest 3 actives: NMN, Bacopa, and Curcumin Phytosome. Would you like to view TDS or request samples?',
+      replyOmega3:
+        'TG-form omega-3 offers higher bioavailability than EE — ideal for premium positioning. View the vivomega® catalog or get TDS?',
     },
   },
   about: {

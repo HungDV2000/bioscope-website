@@ -342,6 +342,34 @@ const pages: Record<string, Record<Locale, PageI18n>> = {
       },
     },
   },
+  bioscopeAi: {
+    vi: {
+      metadata: {
+        title: 'Bioscope AI — Trợ lý thông minh',
+        description: 'Trợ lý AI hỗ trợ tra cứu nguyên liệu, gợi ý công thức và tài liệu kỹ thuật — sắp ra mắt.',
+      },
+      hero: {
+        eyebrow: 'Trợ lý AI',
+        title: 'Bioscope AI',
+        description:
+          'Hỏi bất cứ điều gì về nguyên liệu — gợi ý hoạt chất, đề xuất công thức và gửi TDS/COA ngay lập tức.',
+        crumbs: [{ label: 'Bioscope AI' }],
+      },
+    },
+    en: {
+      metadata: {
+        title: 'Bioscope AI — Smart assistant',
+        description: 'AI assistant for ingredient lookup, formula suggestions, and technical docs — coming soon.',
+      },
+      hero: {
+        eyebrow: 'AI assistant',
+        title: 'Bioscope AI',
+        description:
+          'Ask anything about ingredients — get active suggestions, formula ideas, and TDS/COA delivery instantly.',
+        crumbs: [{ label: 'Bioscope AI' }],
+      },
+    },
+  },
 }
 
 export function getPageI18n(key: string, locale: Locale): PageI18n {

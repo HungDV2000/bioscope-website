@@ -6,6 +6,7 @@ import { CaseStudies } from '@/components/home/case-studies'
 import { Certifications } from '@/components/home/certifications'
 import { Experts } from '@/components/home/experts'
 import { CtaBand } from '@/components/home/cta-band'
+import { AiChatPromo } from '@/components/home/ai-chat-promo'
 
 export default function HomePage() {
   return (
@@ -18,6 +19,7 @@ export default function HomePage() {
       <Certifications />
       <Experts />
       <CtaBand />
+      <AiChatPromo />
     </>
   )
 }

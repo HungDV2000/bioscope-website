@@ -78,6 +78,36 @@ export type PageExtras = {
     nextPage: string
     pagination: string
   }
+  aiAssistantPage: {
+    status: string
+    statusDesc: string
+    introQuote: string
+    stats: { value: string; label: string }[]
+    previewEyebrow: string
+    previewTitle: string
+    previewDesc: string
+    useCasesTitle: string
+    useCasesDesc: string
+    useCases: { persona: string; scenario: string; example: string }[]
+    capabilitiesTitle: string
+    capabilitiesDesc: string
+    capabilities: { title: string; desc: string; bullets: string[] }[]
+    compareTitle: string
+    compareDesc: string
+    compareGeneric: string
+    compareBioscope: string
+    genericItems: string[]
+    bioscopeItems: string[]
+    strengthsTitle: string
+    strengthsDesc: string
+    strengths: { title: string; desc: string }[]
+    notifyTitle: string
+    notifyDesc: string
+    notifyPlaceholder: string
+    notifyButton: string
+    contactCta: string
+    backHome: string
+  }
   ingredientsCatalog: {
     tags: Record<string, string>
     searchPlaceholder: string
@@ -219,6 +249,107 @@ const vi: PageExtras = {
     prevPage: 'Trang trước',
     nextPage: 'Trang sau',
     pagination: 'Phân trang blog',
+  },
+  aiAssistantPage: {
+    status: 'Sắp ra mắt',
+    statusDesc:
+      'Trợ lý AI chuyên biệt cho ngành nguyên liệu chức năng — được huấn luyện trên catalog, tài liệu R&D và kinh nghiệm tư vấn thực tế của Bioscope.',
+    introQuote:
+      '“Từ câu hỏi đầu tiên đến danh sách hoạt chất ứng viên — trong vài phút, không vài ngày.”',
+    stats: [
+      { value: '500+', label: 'Nguyên liệu trong catalog' },
+      { value: '24/7', label: 'Tra cứu mọi lúc' },
+      { value: '3', label: 'Ngành: DP · TPCN · Mỹ phẩm' },
+    ],
+    previewEyebrow: 'Xem trước',
+    previewTitle: 'Hỏi như đang chat với chuyên gia Bioscope',
+    previewDesc:
+      'Mô tả sản phẩm bạn đang phát triển — AI gợi ý hoạt chất, giải thích lý do lựa chọn và hỏi bạn muốn xem TDS hay đặt mẫu thử.',
+    useCasesTitle: 'Ai sẽ dùng Bioscope AI?',
+    useCasesDesc: 'Thiết kế cho mọi vai trò trong chuỗi phát triển sản phẩm — từ ý tưởng ban đầu đến quyết định mua nguyên liệu.',
+    useCases: [
+      {
+        persona: 'Formulator / R&D',
+        scenario: 'Cần shortlist hoạt chất cho concept mới',
+        example: '“Serum chống lão hóa, phân khúc premium, ưu tiên peptide và botanical có bằng chứng lâm sàng.”',
+      },
+      {
+        persona: 'Product Manager',
+        scenario: 'So sánh phương án trước khi họp với supplier',
+        example: '“Omega-3 dạng TG vs EE cho softgel — khác biệt sinh khả dụng và định vị giá?”',
+      },
+      {
+        persona: 'QA / Regulatory',
+        scenario: 'Tra cứu chứng nhận và tài liệu nhanh',
+        example: '“Gửi TDS và COA của Curcumin Phytosome — có Halal và non-GMO không?”',
+      },
+    ],
+    capabilitiesTitle: 'Tính năng chính',
+    capabilitiesDesc: 'Mọi bước trong quy trình nghiên cứu nguyên liệu — gom vào một giao diện hội thoại.',
+    capabilities: [
+      {
+        title: 'Tư vấn nguyên liệu thông minh',
+        desc: 'Hiểu mục tiêu sản phẩm và đề xuất hoạt chất có căn cứ từ dữ liệu Bioscope.',
+        bullets: ['Lọc theo ngành hàng, công dụng, ngân sách', 'Giải thích cơ chế và ưu điểm từng hoạt chất', 'Gợi ý thay thế khi MOQ hoặc nguồn cung hạn chế'],
+      },
+      {
+        title: 'Gợi ý công thức & phối hợp',
+        desc: 'Đề xuất kết hợp hoạt chất với liều tham khảo và lưu ý tương thích.',
+        bullets: ['Phối hợp đa hoạt chất theo mục tiêu', 'Liều dùng tham khảo và cảnh báo tương tác', 'Liên kết công cụ gợi ý công thức Bioscope'],
+      },
+      {
+        title: 'Tài liệu kỹ thuật tức thì',
+        desc: 'Yêu cầu TDS, COA, SDS ngay trong chat — không cần email qua lại.',
+        bullets: ['TDS / COA / SDS theo từng mã nguyên liệu', 'Thông tin chứng nhận (Halal, organic, non-GMO…)', 'Luồng gated cho tài liệu nhạy cảm'],
+      },
+      {
+        title: 'Hỗ trợ 24/7',
+        desc: 'Tra cứu nhanh trước khi liên hệ sales — lý tưởng cho giai đoạn brainstorm.',
+        bullets: ['Phản hồi tức thì, không chờ giờ hành chính', 'Lưu ngữ cảnh cuộc hội thoại', 'Chuyển tiếp mượt sang đội tư vấn khi cần'],
+      },
+    ],
+    compareTitle: 'Khác gì so với chatbot thông thường?',
+    compareDesc: 'ChatGPT biết nhiều thứ — nhưng Bioscope AI biết đúng thứ bạn cần khi phát triển sản phẩm.',
+    compareGeneric: 'Chatbot AI chung',
+    compareBioscope: 'Bioscope AI',
+    genericItems: [
+      'Trả lời chung chung, thiếu dữ liệu catalog cụ thể',
+      'Không liên kết TDS/COA thật từ Bioscope',
+      'Dễ “ảo giác” tên hoạt chất hoặc liều dùng',
+      'Không hiểu MOQ, chứng nhận, nguồn cung Bioscope',
+    ],
+    bioscopeItems: [
+      'Gợi ý từ catalog và tài liệu kỹ thuật Bioscope',
+      'Yêu cầu & nhận TDS/COA qua luồng chuẩn',
+      'Ngôn ngữ chuyên môn DP · TPCN · Mỹ phẩm',
+      'Kết nối sales, mẫu thử và cổng đối tác B2B',
+    ],
+    strengthsTitle: 'Điểm mạnh cốt lõi',
+    strengthsDesc: 'Xây dựng trên nền tảng dữ liệu và kinh nghiệm tư vấn thực chiến — không phải wrapper ChatGPT.',
+    strengths: [
+      {
+        title: 'Dữ liệu catalog thật',
+        desc: 'Huấn luyện trên hàng trăm nguyên liệu, case study và whitepaper — câu trả lời có nguồn, không đoán mò.',
+      },
+      {
+        title: 'Ngôn ngữ formulator',
+        desc: 'Hiểu INCI, liều dùng, dạng bào chế, claim — nói đúng ngôn ngữ R&D và regulatory.',
+      },
+      {
+        title: 'Một luồng, nhiều công cụ',
+        desc: 'Từ chat → gợi ý công thức → tài liệu → liên hệ mẫu thử — không phải nhảy qua 4 tab.',
+      },
+      {
+        title: 'Rút ngắn vòng R&D',
+        desc: 'Giảm thời gian từ brief sản phẩm đến shortlist hoạt chất — formulator tập trung vào thử nghiệm.',
+      },
+    ],
+    notifyTitle: 'Nhận thông báo khi ra mắt',
+    notifyDesc: 'Để lại email công việc — chúng tôi ưu tiên mời các nhãn hàng và formulator đăng ký sớm.',
+    notifyPlaceholder: 'Email công việc của bạn',
+    notifyButton: 'Đăng ký nhận tin',
+    contactCta: 'Liên hệ tư vấn ngay',
+    backHome: '← Về trang chủ',
   },
   ingredientsCatalog: {
     tags: { NEW: 'Mới', TRENDING: 'Nổi bật', EXCLUSIVE: 'Độc quyền' },
@@ -370,6 +501,107 @@ const en: PageExtras = {
     prevPage: 'Previous page',
     nextPage: 'Next page',
     pagination: 'Blog pagination',
+  },
+  aiAssistantPage: {
+    status: 'Coming soon',
+    statusDesc:
+      'A specialized AI assistant for functional ingredients — trained on Bioscope catalog, R&D documents, and real advisory experience.',
+    introQuote:
+      '“From your first question to a shortlist of candidate actives — in minutes, not days.”',
+    stats: [
+      { value: '500+', label: 'Ingredients in catalog' },
+      { value: '24/7', label: 'Always available' },
+      { value: '3', label: 'Industries: Pharma · Nutraceutical · Cosmetics' },
+    ],
+    previewEyebrow: 'Preview',
+    previewTitle: 'Chat like you are talking to a Bioscope expert',
+    previewDesc:
+      'Describe the product you are developing — AI suggests actives, explains why, and asks if you want TDS or samples.',
+    useCasesTitle: 'Who is Bioscope AI for?',
+    useCasesDesc: 'Built for every role in product development — from early ideation to ingredient sourcing decisions.',
+    useCases: [
+      {
+        persona: 'Formulator / R&D',
+        scenario: 'Need a shortlist of actives for a new concept',
+        example: '“Premium anti-aging serum — prioritize peptides and botanicals with clinical evidence.”',
+      },
+      {
+        persona: 'Product Manager',
+        scenario: 'Compare options before supplier meetings',
+        example: '“TG vs EE omega-3 for softgels — bioavailability and price positioning differences?”',
+      },
+      {
+        persona: 'QA / Regulatory',
+        scenario: 'Quick lookup for certifications and documents',
+        example: '“Send TDS and COA for Curcumin Phytosome — Halal and non-GMO certified?”',
+      },
+    ],
+    capabilitiesTitle: 'Core features',
+    capabilitiesDesc: 'Every step in ingredient research — unified in one conversational interface.',
+    capabilities: [
+      {
+        title: 'Smart ingredient guidance',
+        desc: 'Understands product goals and suggests actives backed by Bioscope data.',
+        bullets: ['Filter by industry, benefit, budget', 'Explain mechanism and advantages per active', 'Suggest alternatives when MOQ or supply is limited'],
+      },
+      {
+        title: 'Formula & combination ideas',
+        desc: 'Proposes active pairings with reference dosing and compatibility notes.',
+        bullets: ['Multi-active stacks by product goal', 'Reference dosing and interaction warnings', 'Links to Bioscope formulation tools'],
+      },
+      {
+        title: 'Instant technical documents',
+        desc: 'Request TDS, COA, SDS in chat — no back-and-forth emails.',
+        bullets: ['TDS / COA / SDS per ingredient code', 'Certification info (Halal, organic, non-GMO…)', 'Gated flow for sensitive documents'],
+      },
+      {
+        title: '24/7 support',
+        desc: 'Quick lookup before contacting sales — ideal for brainstorming.',
+        bullets: ['Instant responses, any time zone', 'Conversation context retained', 'Smooth handoff to advisory team when needed'],
+      },
+    ],
+    compareTitle: 'How is it different from a generic chatbot?',
+    compareDesc: 'ChatGPT knows a lot — Bioscope AI knows what you need when developing products.',
+    compareGeneric: 'Generic AI chatbot',
+    compareBioscope: 'Bioscope AI',
+    genericItems: [
+      'Generic answers without specific catalog data',
+      'No link to real Bioscope TDS/COA documents',
+      'Risk of hallucinated actives or dosing',
+      'No understanding of MOQ, certs, or Bioscope supply',
+    ],
+    bioscopeItems: [
+      'Suggestions from Bioscope catalog and technical docs',
+      'Request & receive TDS/COA through standard flow',
+      'Pharma · nutraceutical · cosmetics terminology',
+      'Connects to sales, samples, and B2B partner portal',
+    ],
+    strengthsTitle: 'Core strengths',
+    strengthsDesc: 'Built on real data and advisory experience — not a ChatGPT wrapper.',
+    strengths: [
+      {
+        title: 'Real catalog data',
+        desc: 'Trained on hundreds of ingredients, case studies, and whitepapers — sourced answers, not guesses.',
+      },
+      {
+        title: 'Formulator language',
+        desc: 'Understands INCI, dosing, dosage forms, claims — speaks R&D and regulatory fluently.',
+      },
+      {
+        title: 'One flow, many tools',
+        desc: 'Chat → formula ideas → documents → sample requests — no jumping across four tabs.',
+      },
+      {
+        title: 'Shorter R&D cycles',
+        desc: 'Less time from product brief to active shortlist — formulators focus on testing.',
+      },
+    ],
+    notifyTitle: 'Get notified at launch',
+    notifyDesc: 'Leave your work email — we will prioritize early access for registered brands and formulators.',
+    notifyPlaceholder: 'Your work email',
+    notifyButton: 'Notify me',
+    contactCta: 'Contact us now',
+    backHome: '← Back to home',
   },
   ingredientsCatalog: {
     tags: { NEW: 'New', TRENDING: 'Trending', EXCLUSIVE: 'Exclusive' },

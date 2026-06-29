@@ -1,31 +1,26 @@
-import type { Metadata } from 'next'
 import { PageHero } from '@/components/ui/page-hero'
 import { LegalContent } from '@/components/legal-content'
-import { PRIVACY_POLICY } from '@/lib/content'
+import { getContent } from '@/lib/get-content'
+import { getLocale } from '@/lib/i18n/server'
+import { getPageI18n } from '@/lib/i18n/pages'
 
-export const metadata: Metadata = {
-  title: 'Chính sách bảo mật',
-  description: 'Cách Bioscope thu thập, sử dụng và bảo vệ thông tin cá nhân của bạn.',
+export async function generateMetadata() {
+  const locale = await getLocale()
+  return getPageI18n('privacy', locale).metadata
 }
 
-export default function PrivacyPage() {
+export default async function PrivacyPage() {
+  const locale = await getLocale()
+  const policy = getContent(locale).PRIVACY_POLICY
+  const { hero } = getPageI18n('privacy', locale)
+
   return (
     <>
-      <PageHero
-        eyebrow="Pháp lý"
-        title={PRIVACY_POLICY.title}
-        description="Cam kết bảo vệ thông tin cá nhân khi bạn sử dụng website và dịch vụ Bioscope."
-        crumbs={[{ label: 'Chính sách bảo mật' }]}
-        image="labWork"
-      />
+      <PageHero eyebrow={hero.eyebrow} title={policy.title} description={hero.description} crumbs={hero.crumbs} image="labWork" />
 
       <section className="bg-white pb-16 pt-16">
         <div className="container-bs">
-          <LegalContent
-            intro={PRIVACY_POLICY.intro}
-            sections={PRIVACY_POLICY.sections}
-            updated={PRIVACY_POLICY.updated}
-          />
+          <LegalContent intro={policy.intro} sections={policy.sections} updated={policy.updated} />
         </div>
       </section>
     </>

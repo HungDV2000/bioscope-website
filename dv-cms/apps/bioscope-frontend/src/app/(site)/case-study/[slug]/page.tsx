@@ -1,39 +1,57 @@
-import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { AlertCircle, Lightbulb, TrendingUp, Quote } from 'lucide-react'
 import { PageHero } from '@/components/ui/page-hero'
 import { Reveal } from '@/components/ui/reveal'
 import { Button } from '@/components/ui/button'
 import { CASE_STUDIES } from '@/lib/content'
+import { getContent } from '@/lib/get-content'
+import { getLocale } from '@/lib/i18n/server'
 
 export function generateStaticParams() {
   return CASE_STUDIES.map((c) => ({ slug: c.slug }))
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ slug: string }>
-}): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
-  const c = CASE_STUDIES.find((x) => x.slug === slug)
+  const locale = await getLocale()
+  const c = getContent(locale).CASE_STUDIES.find((x) => x.slug === slug)
   if (!c) return {}
   return { title: `${c.brand} — Case Study`, description: c.problem }
 }
 
-const BLOCKS = [
-  { key: 'problem', icon: AlertCircle, label: 'Vấn đề', tone: 'text-accent' },
-  { key: 'solution', icon: Lightbulb, label: 'Giải pháp Bioscope', tone: 'text-primary' },
-] as const
-
-export default async function CaseStudyDetail({
-  params,
-}: {
-  params: Promise<{ slug: string }>
-}) {
+export default async function CaseStudyDetail({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
-  const c = CASE_STUDIES.find((x) => x.slug === slug)
+  const locale = await getLocale()
+  const c = getContent(locale).CASE_STUDIES.find((x) => x.slug === slug)
   if (!c) notFound()
+
+  const labels =
+    locale === 'en'
+      ? {
+          problem: 'Challenge',
+          solution: 'Bioscope solution',
+          results: 'Results',
+          journey: 'Co-creation journey',
+          partner: 'Partner',
+          cta: 'Want similar results?',
+          contact: 'Contact us',
+          crumb: 'Case studies',
+        }
+      : {
+          problem: 'Vấn đề',
+          solution: 'Giải pháp Bioscope',
+          results: 'Kết quả',
+          journey: 'Hành trình đồng kiến tạo',
+          partner: 'Đối tác',
+          cta: 'Muốn kết quả tương tự?',
+          contact: 'Liên hệ ngay',
+          crumb: 'Case Study',
+        }
+
+  const blocks = [
+    { key: 'problem' as const, icon: AlertCircle, label: labels.problem, tone: 'text-accent' },
+    { key: 'solution' as const, icon: Lightbulb, label: labels.solution, tone: 'text-primary' },
+  ]
 
   return (
     <>
@@ -41,7 +59,7 @@ export default async function CaseStudyDetail({
         eyebrow={c.industry}
         title={`${c.brand} — ${c.kpiLabel}`}
         description={c.summary}
-        crumbs={[{ label: 'Case Study', href: '/case-study' }, { label: c.brand }]}
+        crumbs={[{ label: labels.crumb, href: '/case-study' }, { label: c.brand }]}
         image={c.coverImage ? undefined : c.image}
         coverImage={c.coverImage}
       />
@@ -49,7 +67,7 @@ export default async function CaseStudyDetail({
       <section className="bg-white py-16">
         <div className="container-bs grid gap-12 lg:grid-cols-[1fr_320px]">
           <div className="space-y-8">
-            {BLOCKS.map(({ key, icon: Icon, label, tone }) => (
+            {blocks.map(({ key, icon: Icon, label, tone }) => (
               <Reveal key={key}>
                 <div className="rounded-[2rem] border border-primary-border/60 bg-mist/40 p-8">
                   <div className={`flex items-center gap-2 ${tone}`}>
@@ -65,7 +83,7 @@ export default async function CaseStudyDetail({
               <div className="rounded-[2rem] border border-primary-border/60 bg-primary p-8 text-white">
                 <div className="flex items-center gap-2 text-white/80">
                   <TrendingUp className="h-5 w-5" strokeWidth={1.7} />
-                  <span className="text-[11px] font-bold uppercase tracking-[0.16em]">Kết quả</span>
+                  <span className="text-[11px] font-bold uppercase tracking-[0.16em]">{labels.results}</span>
                 </div>
                 <ul className="mt-5 grid gap-4 sm:grid-cols-3">
                   {c.result.map((r) => (
@@ -80,7 +98,7 @@ export default async function CaseStudyDetail({
             {c.coCreateSteps && c.coCreateSteps.length > 0 && (
               <Reveal>
                 <div className="rounded-[2rem] border border-primary-border/60 bg-white p-8">
-                  <h3 className="text-[15px] font-bold text-ink">Hành trình đồng kiến tạo</h3>
+                  <h3 className="text-[15px] font-bold text-ink">{labels.journey}</h3>
                   <ol className="mt-5 space-y-3">
                     {c.coCreateSteps.map((step, i) => (
                       <li key={step} className="flex gap-3 text-[14px] text-ink/70">
@@ -100,7 +118,9 @@ export default async function CaseStudyDetail({
                 <div className="rounded-[2rem] border border-primary-border/60 bg-mist/40 p-8">
                   <Quote className="h-6 w-6 text-primary/50" strokeWidth={1.5} />
                   <p className="mt-4 text-[16px] italic leading-relaxed text-ink/75">&ldquo;{c.testimonial}&rdquo;</p>
-                  <p className="mt-4 text-[13px] font-semibold text-ink/55">— Đối tác {c.brand}</p>
+                  <p className="mt-4 text-[13px] font-semibold text-ink/55">
+                    — {labels.partner} {c.brand}
+                  </p>
                 </div>
               </Reveal>
             )}
@@ -111,9 +131,11 @@ export default async function CaseStudyDetail({
               <div className="text-[40px] font-extrabold tracking-tight text-primary">{c.kpi}</div>
               <p className="mt-2 text-[13.5px] text-ink/55">{c.kpiLabel}</p>
               <hr className="my-6 border-primary-border/50" />
-              <h3 className="text-[16px] font-bold text-ink">Muốn kết quả tương tự?</h3>
+              <h3 className="text-[16px] font-bold text-ink">{labels.cta}</h3>
               <div className="mt-5">
-                <Button href="/lien-he" className="w-full justify-between">Liên hệ ngay</Button>
+                <Button href="/lien-he" className="w-full justify-between">
+                  {labels.contact}
+                </Button>
               </div>
             </div>
           </aside>

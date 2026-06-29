@@ -1,8 +1,11 @@
+'use client'
+
 import Image from 'next/image'
 import Link from 'next/link'
 import { ChevronRight } from 'lucide-react'
 import { Eyebrow } from '@/components/ui/section'
 import { Reveal } from '@/components/ui/reveal'
+import { useLocale } from '@/lib/i18n/context'
 import { img, type ImgKey } from '@/lib/images'
 
 type Crumb = { label: string; href?: string }
@@ -22,6 +25,8 @@ export function PageHero({
   image?: ImgKey
   coverImage?: string
 }) {
+  const { t } = useLocale()
+
   return (
     <section className="relative overflow-hidden bg-mist pt-32 lg:pt-40">
       <div
@@ -34,7 +39,7 @@ export function PageHero({
           {crumbs.length > 0 && (
             <nav className="mb-6 flex flex-wrap items-center gap-1.5 text-[13px] text-ink/45">
               <Link href="/" className="transition-colors hover:text-primary">
-                Trang chủ
+                {t.nav.home}
               </Link>
               {crumbs.map((c) => (
                 <span key={c.label} className="flex items-center gap-1.5">

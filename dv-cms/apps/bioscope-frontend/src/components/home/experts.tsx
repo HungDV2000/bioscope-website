@@ -1,17 +1,24 @@
+'use client'
+
 import Image from 'next/image'
 import { CalendarDays, FlaskConical, Award, Lightbulb } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Reveal } from '@/components/ui/reveal'
 import { Counter } from '@/components/ui/counter'
+import { useLocale } from '@/lib/i18n/context'
 
-const STATS = [
-  { icon: CalendarDays, to: 15, suffix: '+', label: 'năm kinh nghiệm' },
-  { icon: FlaskConical, to: 100, suffix: '+', label: 'dự án nghiên cứu' },
-  { icon: Award, to: 14, suffix: '', label: 'đơn sáng chế' },
-  { icon: Lightbulb, to: 23, suffix: '', label: 'dự án R&D' },
+const STAT_ICONS = [CalendarDays, FlaskConical, Award, Lightbulb]
+const STAT_VALUES = [
+  { to: 15, suffix: '+' },
+  { to: 100, suffix: '+' },
+  { to: 14, suffix: '' },
+  { to: 23, suffix: '' },
 ]
 
 export function Experts() {
+  const { t } = useLocale()
+  const e = t.home.experts
+
   return (
     <section className="bg-mist py-14 lg:py-16">
       <div className="container-bs grid items-stretch gap-10 lg:grid-cols-2 lg:gap-10">
@@ -19,7 +26,7 @@ export function Experts() {
           <div className="relative overflow-hidden rounded-[1.75rem] shadow-card">
             <Image
               src="/images/experts.png"
-              alt="Đội ngũ chuyên gia Bioscope"
+              alt={e.imageAlt}
               width={2880}
               height={1440}
               sizes="(max-width: 1024px) 100vw, 560px"
@@ -33,41 +40,41 @@ export function Experts() {
           <div className="grid h-full w-full gap-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-8 xl:gap-10">
             <div className="flex flex-col justify-between gap-6 lg:py-1">
               <div className="min-w-0">
-                <p className="text-[12px] font-bold uppercase tracking-[0.16em] text-accent">Đội ngũ chuyên gia</p>
+                <p className="text-[12px] font-bold uppercase tracking-[0.16em] text-accent">{e.eyebrow}</p>
                 <h2 className="mt-2.5 text-[1.65rem] font-bold leading-[1.2] tracking-tight text-ink sm:text-[1.85rem]">
-                  Khoa học là nền tảng, con người là giá trị cốt lõi
+                  {e.title}
                 </h2>
                 <div className="mt-3 max-w-[26rem] space-y-3 text-[14px] leading-[1.65] text-ink/60">
-                  <p>
-                    Đội ngũ chuyên gia R&D giàu kinh nghiệm, tâm huyết và luôn tiên phong trong nghiên cứu ứng dụng.
-                  </p>
-                  <p>
-                    Chúng tôi đồng hành từ chọn nguyên liệu, phát triển công thức và kiểm chứng hiệu quả — đến khi
-                    sản phẩm của bạn sẵn sàng ra thị trường.
-                  </p>
+                  {e.paragraphs.map((p) => (
+                    <p key={p.slice(0, 24)}>{p}</p>
+                  ))}
                 </div>
               </div>
               <div>
                 <Button href="/ve-chung-toi" variant="outline">
-                  Tìm hiểu về chúng tôi
+                  {e.cta}
                 </Button>
               </div>
             </div>
 
             <div className="flex flex-col justify-between gap-y-6 border-primary-border/40 py-1 lg:border-l lg:pl-8 lg:gap-y-0">
-              {STATS.map(({ icon: Icon, to, suffix, label }) => (
-                <div key={label} className="flex items-start gap-3">
-                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary-tint text-primary">
-                    <Icon className="h-5 w-5" strokeWidth={1.6} />
-                  </span>
-                  <div>
-                    <div className="text-[24px] font-extrabold leading-none tracking-tight text-primary">
-                      <Counter to={to} suffix={suffix} />
+              {e.stats.map(({ label }, i) => {
+                const Icon = STAT_ICONS[i]
+                const { to, suffix } = STAT_VALUES[i]
+                return (
+                  <div key={label} className="flex items-start gap-3">
+                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary-tint text-primary">
+                      <Icon className="h-5 w-5" strokeWidth={1.6} />
+                    </span>
+                    <div>
+                      <div className="text-[24px] font-extrabold leading-none tracking-tight text-primary">
+                        <Counter to={to} suffix={suffix} />
+                      </div>
+                      <div className="mt-1 text-[12.5px] font-medium leading-tight text-ink/55">{label}</div>
                     </div>
-                    <div className="mt-1 text-[12.5px] font-medium leading-tight text-ink/55">{label}</div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
         </Reveal>

@@ -4,24 +4,37 @@ import { ArrowLeft } from 'lucide-react'
 import { PageHero } from '@/components/ui/page-hero'
 import { Reveal } from '@/components/ui/reveal'
 import { BlogList } from '@/components/resources/blog-list'
-import { BLOG_POSTS, getResourceCategory } from '@/lib/content'
+import { getContent } from '@/lib/get-content'
+import { getLocale } from '@/lib/i18n/server'
+import { getMessages } from '@/lib/i18n/messages'
+import { getPageI18n } from '@/lib/i18n/pages'
 
-const cat = getResourceCategory('blog-chuyen-mon')!
-
-export const metadata: Metadata = {
-  title: 'Blog chuyên môn — Kiến thức phát triển nhãn hàng & công thức',
-  description: cat.description,
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale()
+  const content = getContent(locale)
+  const cat = content.getResourceCategory('blog-chuyen-mon')
+  if (!cat) return {}
+  return {
+    title: `${cat.title} — ${locale === 'en' ? 'Brand & formulation knowledge' : 'Kiến thức phát triển nhãn hàng & công thức'}`,
+    description: cat.description,
+  }
 }
 
-export default function BlogPage() {
+export default async function BlogPage() {
+  const locale = await getLocale()
+  const content = getContent(locale)
+  const t = getMessages(locale)
+  const { hero } = getPageI18n('resources', locale)
+  const cat = content.getResourceCategory('blog-chuyen-mon')!
+
   return (
     <>
       <PageHero
-        eyebrow="Tài nguyên"
+        eyebrow={hero.eyebrow}
         title={cat.title}
         description={cat.shortDesc}
         crumbs={[
-          { label: 'Tài nguyên', href: '/tai-nguyen' },
+          { label: hero.eyebrow, href: '/tai-nguyen' },
           { label: cat.title },
         ]}
         image={cat.image}
@@ -35,7 +48,7 @@ export default function BlogPage() {
         </div>
       </Reveal>
 
-      <BlogList posts={BLOG_POSTS} />
+      <BlogList posts={content.BLOG_POSTS} />
 
       <div className="container-bs -mt-12 pb-16">
         <Link
@@ -43,7 +56,7 @@ export default function BlogPage() {
           className="inline-flex items-center gap-2 text-[14px] font-semibold text-primary transition-colors hover:text-primary-dark"
         >
           <ArrowLeft className="h-4 w-4" strokeWidth={2} />
-          Quay lại Tài nguyên
+          {t.resourcesPage.backToResources}
         </Link>
       </div>
     </>

@@ -1,50 +1,42 @@
-import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Lightbulb, FlaskConical, ShieldCheck, Rocket, TrendingUp, ArrowUpRight, X, Check } from 'lucide-react'
 import { PageHero } from '@/components/ui/page-hero'
 import { Reveal } from '@/components/ui/reveal'
 import { CtaBand } from '@/components/home/cta-band'
-import { CO_CREATE_COMPARISON, CO_CREATE_STEP_DURATIONS, CASE_STUDIES } from '@/lib/content'
+import { getContent } from '@/lib/get-content'
+import { getLocale } from '@/lib/i18n/server'
+import { getPageI18n } from '@/lib/i18n/pages'
+import { getMessages } from '@/lib/i18n/messages'
 
-export const metadata: Metadata = {
-  title: 'Đồng kiến tạo — Hành trình 5 bước cùng Bioscope',
-  description:
-    'Nhà phân phối thông thường giao hàng rồi kết thúc. Bioscope bắt đầu từ ý tưởng và đồng hành đến khi thương hiệu của bạn tăng trưởng bền vững.',
+const JOURNEY_ICONS = [Lightbulb, FlaskConical, ShieldCheck, Rocket, TrendingUp]
+
+export async function generateMetadata() {
+  const locale = await getLocale()
+  return getPageI18n('coCreate', locale).metadata
 }
 
-const JOURNEY = [
-  { icon: Lightbulb, title: 'Ý tưởng', desc: 'Thấu hiểu nhu cầu & nắm bắt xu hướng. Cùng bạn phân tích thị trường, đối tượng mục tiêu, phân khúc và cơ hội.' },
-  { icon: FlaskConical, title: 'Nghiên cứu & đề xuất', desc: 'Lựa chọn nguyên liệu, công nghệ và đề xuất công thức tối ưu hiệu quả/chi phí.' },
-  { icon: ShieldCheck, title: 'Kiểm chứng & thử nghiệm', desc: 'Tạo mẫu, kiểm nghiệm hiệu quả và độ an toàn; test tín hiệu thị trường qua kênh online trước khi sản xuất lớn.' },
-  { icon: Rocket, title: 'Phát triển & ra mắt', desc: 'Hoàn thiện sản phẩm, hỗ trợ pháp lý, sản xuất và đưa ra thị trường.' },
-  { icon: TrendingUp, title: 'Tăng trưởng & đồng hành', desc: 'Tối ưu liên tục, mở rộng danh mục, đồng hành xây dựng thương hiệu bền vững.' },
-]
+export default async function CoCreatePage() {
+  const locale = await getLocale()
+  const content = getContent(locale)
+  const { hero } = getPageI18n('coCreate', locale)
+  const m = getMessages(locale)
+  const p = m.coCreatePage
+  const { CO_CREATE_COMPARISON, CO_CREATE_STEP_DURATIONS, CASE_STUDIES } = content
 
-export default function CoCreatePage() {
   return (
     <>
-      <PageHero
-        eyebrow="Đồng kiến tạo"
-        title="Tại sao đồng kiến tạo khác hẳn việc mua nguyên liệu thông thường?"
-        description="Nhà phân phối thông thường giao hàng rồi kết thúc. Bioscope bắt đầu từ ý tưởng và đồng hành đến tận lúc thương hiệu của bạn tăng trưởng bền vững."
-        crumbs={[{ label: 'Đồng kiến tạo' }]}
-        image="heroTeam"
-      />
+      <PageHero {...hero} image="heroTeam" />
 
       <section className="bg-white py-16">
         <div className="container-bs">
           <Reveal>
-            <h2 className="text-center text-[1.9rem] font-bold tracking-tight text-ink sm:text-[2.3rem]">
-              So sánh mô hình hợp tác
-            </h2>
-            <p className="mx-auto mt-3 max-w-2xl text-center text-[15px] leading-relaxed text-ink/65">
-              Chúng tôi không chỉ cung cấp. Chúng tôi đồng kiến tạo — từ ý tưởng đến thành công thị trường.
-            </p>
+            <h2 className="text-center text-[1.9rem] font-bold tracking-tight text-ink sm:text-[2.3rem]">{p.compareTitle}</h2>
+            <p className="mx-auto mt-3 max-w-2xl text-center text-[15px] leading-relaxed text-ink/65">{p.compareDesc}</p>
           </Reveal>
           <div className="mt-10 grid gap-5 lg:grid-cols-2">
             <Reveal delay={0.08}>
               <div className="rounded-[2rem] border border-primary-border/60 bg-mist/30 p-8">
-                <h3 className="text-[17px] font-bold text-ink/55">Nhà phân phối thông thường</h3>
+                <h3 className="text-[17px] font-bold text-ink/55">{p.traditionalTitle}</h3>
                 <ul className="mt-5 space-y-3">
                   {CO_CREATE_COMPARISON.traditional.map((item) => (
                     <li key={item} className="flex items-start gap-2.5 text-[14px] text-ink/60">
@@ -57,7 +49,7 @@ export default function CoCreatePage() {
             </Reveal>
             <Reveal delay={0.12}>
               <div className="rounded-[2rem] border border-primary/30 bg-primary-tint/30 p-8">
-                <h3 className="text-[17px] font-bold text-primary-dark">Bioscope — Đồng kiến tạo</h3>
+                <h3 className="text-[17px] font-bold text-primary-dark">{p.bioscopeTitle}</h3>
                 <ul className="mt-5 space-y-3">
                   {CO_CREATE_COMPARISON.bioscope.map((item) => (
                     <li key={item} className="flex items-start gap-2.5 text-[14px] text-ink/75">
@@ -79,11 +71,11 @@ export default function CoCreatePage() {
               aria-hidden
               className="absolute top-2 bottom-2 left-1/2 hidden w-px -translate-x-1/2 bg-primary-border/70 sm:block"
             />
-
             <div className="space-y-10 sm:space-y-12">
-              {JOURNEY.map(({ icon: Icon, title, desc }, i) => {
+              {p.journey.map(({ title, desc }, i) => {
+                const Icon = JOURNEY_ICONS[i]
                 const isLeft = i % 2 === 0
-                const stepLabel = `Bước ${i + 1}`
+                const stepLabel = `${p.stepLabel} ${i + 1}`
                 const duration = CO_CREATE_STEP_DURATIONS[i]
 
                 const card = (
@@ -129,12 +121,8 @@ export default function CoCreatePage() {
       <section className="bg-white py-16">
         <div className="container-bs">
           <Reveal>
-            <h2 className="text-[1.9rem] font-bold tracking-tight text-ink sm:text-[2.3rem]">
-              Câu chuyện đồng kiến tạo thực tế
-            </h2>
-            <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-ink/65">
-              vivomega®, Gastroheal và PEA — minh chứng cho hành trình 5 bước từ ý tưởng đến tăng trưởng đo lường được.
-            </p>
+            <h2 className="text-[1.9rem] font-bold tracking-tight text-ink sm:text-[2.3rem]">{p.casesTitle}</h2>
+            <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-ink/65">{p.casesDesc}</p>
           </Reveal>
           <div className="mt-8 grid gap-5 md:grid-cols-3">
             {CASE_STUDIES.map((c, i) => (
@@ -147,7 +135,7 @@ export default function CoCreatePage() {
                   <p className="mt-2 flex-1 text-[13.5px] leading-relaxed text-ink/60">{c.summary ?? c.problem}</p>
                   <div className="mt-4 text-[28px] font-extrabold text-primary">{c.kpi}</div>
                   <span className="mt-4 inline-flex items-center gap-1 text-[13px] font-semibold text-primary">
-                    Đọc case study
+                    {p.readCase}
                     <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                   </span>
                 </Link>

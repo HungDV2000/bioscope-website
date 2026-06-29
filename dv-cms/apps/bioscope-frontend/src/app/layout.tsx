@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Be_Vietnam_Pro } from 'next/font/google'
+import { getLocale } from '@/lib/i18n/server'
 import './globals.css'
 
 const beVietnam = Be_Vietnam_Pro({
@@ -66,11 +67,12 @@ const JSON_LD = {
   ],
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const locale = await getLocale()
   return (
-    <html lang="vi" className={beVietnam.variable} suppressHydrationWarning>
+    <html lang={locale} className={beVietnam.variable} suppressHydrationWarning>
       <body suppressHydrationWarning>
         <script
           type="application/ld+json"

@@ -12,16 +12,10 @@ import {
   Pill,
 } from 'lucide-react'
 import { CLIENT_LOGOS } from '@/lib/content'
+import { useLocale } from '@/lib/i18n/context'
 import { cn } from '@/lib/utils'
 
-const CATEGORIES = [
-  { icon: Sprout, label: 'Thực phẩm chức năng' },
-  { icon: Sparkles, label: 'Mỹ phẩm' },
-  { icon: Leaf, label: 'Dinh dưỡng' },
-  { icon: FlaskConical, label: 'Dược phẩm' },
-  { icon: HeartPulse, label: 'Tim mạch' },
-  { icon: Pill, label: 'Vitamin & Khoáng' },
-]
+const CATEGORY_ICONS = [Sprout, Sparkles, Leaf, FlaskConical, HeartPulse, Pill] as const
 
 /** Drag-to-scroll + optional auto-loop marquee (pauses on hover/drag). */
 function useTrackScroll(autoLoop = false) {
@@ -87,6 +81,12 @@ const navBtn =
   'grid h-9 w-9 shrink-0 place-items-center rounded-full border border-primary-border bg-white text-ink/40 transition-colors duration-300 hover:text-primary'
 
 export function Brands() {
+  const { t } = useLocale()
+  const categories = t.home.brands.categories.map((label, i) => ({
+    icon: CATEGORY_ICONS[i],
+    label,
+  }))
+
   const { ref: catRef, dragProps: catDrag } = useTrackScroll()
   const { ref: brandRef, dragProps: brandDrag, hoverProps: brandHover } = useTrackScroll(true)
 
@@ -102,7 +102,7 @@ export function Brands() {
     <section className="bg-white py-8">
       <div className="container-bs">
         <p className="mx-auto max-w-[300px] text-balance text-center text-[13.5px] font-bold uppercase leading-relaxed tracking-[0.18em] text-primary sm:max-w-none sm:text-[13px]">
-          Đã đồng hành cùng hơn 50 thương hiệu
+          {t.home.brands.title}
         </p>
 
         <div className="mt-5 grid grid-cols-1 items-center gap-5 lg:grid-cols-2">
@@ -113,7 +113,7 @@ export function Brands() {
             </button>
             <div className="min-w-0 flex-1 overflow-hidden rounded-2xl border border-primary-border/70">
               <div ref={catRef} {...catDrag} className={cn(track, 'gap-0 snap-x snap-mandatory')}>
-                {CATEGORIES.map(({ icon: Icon, label }, i) => (
+                {categories.map(({ icon: Icon, label }, i) => (
                   <div
                     key={label}
                     className={cn(

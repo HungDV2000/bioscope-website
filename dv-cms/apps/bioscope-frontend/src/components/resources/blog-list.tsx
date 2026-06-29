@@ -4,14 +4,10 @@ import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Search, ArrowUpRight, ChevronLeft, ChevronRight, Clock, Calendar, X } from 'lucide-react'
-import {
-  BLOG_TOPICS,
-  BLOG_INDUSTRIES,
-  formatBlogDate,
-  type BlogPost,
-} from '@/lib/content'
+import type { BlogPost } from '@/lib/content'
 import { img } from '@/lib/images'
 import { cn } from '@/lib/utils'
+import { useLocale } from '@/lib/i18n/context'
 
 const PAGE_SIZE = 6
 
@@ -56,18 +52,20 @@ function Pagination({
   page,
   totalPages,
   onPage,
+  labels,
 }: {
   page: number
   totalPages: number
   onPage: (p: number) => void
+  labels: { pagination: string; prevPage: string; nextPage: string }
 }) {
   const pages = Array.from({ length: totalPages }, (_, i) => i + 1)
 
   return (
-    <nav aria-label="Phân trang blog" className="mt-12 flex flex-wrap items-center justify-center gap-2">
+    <nav aria-label={labels.pagination} className="mt-12 flex flex-wrap items-center justify-center gap-2">
       <button
         type="button"
-        aria-label="Trang trước"
+        aria-label={labels.prevPage}
         disabled={page <= 1}
         onClick={() => onPage(page - 1)}
         className="grid h-10 w-10 place-items-center rounded-full border border-primary-border bg-white text-ink/45 transition-colors hover:text-primary disabled:opacity-40"
@@ -92,7 +90,7 @@ function Pagination({
       ))}
       <button
         type="button"
-        aria-label="Trang sau"
+        aria-label={labels.nextPage}
         disabled={page >= totalPages}
         onClick={() => onPage(page + 1)}
         className="grid h-10 w-10 place-items-center rounded-full border border-primary-border bg-white text-ink/45 transition-colors hover:text-primary disabled:opacity-40"
@@ -104,6 +102,9 @@ function Pagination({
 }
 
 export function BlogList({ posts }: { posts: BlogPost[] }) {
+  const { t, content } = useLocale()
+  const m = t.blogPage
+  const { BLOG_TOPICS, BLOG_INDUSTRIES, formatBlogDate } = content
   const [q, setQ] = useState('')
   const [topic, setTopic] = useState<string | null>(null)
   const [industry, setIndustry] = useState<string | null>(null)
@@ -164,22 +165,22 @@ export function BlogList({ posts }: { posts: BlogPost[] }) {
   const sidebar = (
     <aside className="space-y-6">
       <div className="rounded-[1.5rem] border border-primary-border/60 bg-mist/50 p-5">
-        <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-ink/40">Tìm kiếm</p>
+        <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-ink/40">{m.search}</p>
         <div className="relative mt-3">
           <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink/35" />
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Tiêu đề, từ khóa…"
+            placeholder={m.searchPlaceholder}
             className="w-full rounded-xl border border-primary-border bg-white py-2.5 pl-10 pr-4 text-[14px] outline-none transition-colors focus:border-primary/50"
           />
         </div>
       </div>
 
       <div className="rounded-[1.5rem] border border-primary-border/60 bg-mist/50 p-5">
-        <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-ink/40">Chủ đề</p>
+        <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-ink/40">{m.topics}</p>
         <div className="mt-3 space-y-1">
-          <SidebarFilter label="Tất cả chủ đề" active={!topic} onClick={() => setTopic(null)} count={posts.length} />
+          <SidebarFilter label={m.allTopics} active={!topic} onClick={() => setTopic(null)} count={posts.length} />
           {BLOG_TOPICS.map((t) => (
             <SidebarFilter
               key={t}
@@ -193,9 +194,9 @@ export function BlogList({ posts }: { posts: BlogPost[] }) {
       </div>
 
       <div className="rounded-[1.5rem] border border-primary-border/60 bg-mist/50 p-5">
-        <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-ink/40">Ngành</p>
+        <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-ink/40">{m.industries}</p>
         <div className="mt-3 space-y-1">
-          <SidebarFilter label="Tất cả ngành" active={!industry} onClick={() => setIndustry(null)} count={posts.length} />
+          <SidebarFilter label={m.allIndustries} active={!industry} onClick={() => setIndustry(null)} count={posts.length} />
           {BLOG_INDUSTRIES.map((ind) => (
             <SidebarFilter
               key={ind}
@@ -215,7 +216,7 @@ export function BlogList({ posts }: { posts: BlogPost[] }) {
           className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-primary-border bg-white py-2.5 text-[13px] font-semibold text-primary transition-colors hover:bg-primary-tint"
         >
           <X className="h-4 w-4" />
-          Xóa bộ lọc
+          {m.clearFilters}
         </button>
       )}
     </aside>
@@ -231,11 +232,11 @@ export function BlogList({ posts }: { posts: BlogPost[] }) {
           <div className="min-w-0">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <p className="text-[13.5px] font-medium text-ink/50">
-                {filtered.length} bài viết
+                {filtered.length} {m.articleCount}
                 {filtered.length > PAGE_SIZE && (
                   <span className="text-ink/40">
                     {' '}
-                    · Trang {safePage}/{totalPages}
+                    · {m.pageOf} {safePage}/{totalPages}
                   </span>
                 )}
               </p>
@@ -256,7 +257,7 @@ export function BlogList({ posts }: { posts: BlogPost[] }) {
                     priority
                   />
                   <span className="absolute left-4 top-4 rounded-full bg-accent px-3 py-1 text-[11px] font-bold text-white">
-                    Nổi bật
+                    {m.featured}
                   </span>
                 </div>
                 <div className="flex flex-col justify-center p-6 lg:p-8">
@@ -270,7 +271,7 @@ export function BlogList({ posts }: { posts: BlogPost[] }) {
                     </span>
                     <span className="inline-flex items-center gap-1">
                       <Clock className="h-3.5 w-3.5" />
-                      {featured.readTime} phút đọc
+                      {featured.readTime} {m.minRead}
                     </span>
                   </div>
                   <h2 className="mt-4 text-[1.35rem] font-bold leading-snug tracking-tight text-ink sm:text-[1.5rem]">
@@ -278,7 +279,7 @@ export function BlogList({ posts }: { posts: BlogPost[] }) {
                   </h2>
                   <p className="mt-3 text-[14.5px] leading-relaxed text-ink/65">{featured.excerpt}</p>
                   <span className="mt-5 inline-flex items-center gap-1 text-[14px] font-semibold text-primary">
-                    Đọc bài viết
+                    {m.readArticle}
                     <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                   </span>
                 </div>
@@ -313,13 +314,13 @@ export function BlogList({ posts }: { posts: BlogPost[] }) {
                       <span>·</span>
                       <span className="inline-flex items-center gap-1">
                         <Clock className="h-3 w-3" />
-                        {post.readTime} phút
+                        {post.readTime} {m.minRead}
                       </span>
                     </div>
                     <h3 className="mt-3 text-[17px] font-bold leading-snug text-ink">{post.title}</h3>
                     <p className="mt-2 flex-1 text-[13.5px] leading-relaxed text-ink/60 line-clamp-3">{post.excerpt}</p>
                     <span className="mt-5 inline-flex items-center gap-1 border-t border-primary-border/50 pt-4 text-[13px] font-semibold text-primary">
-                      Đọc thêm
+                      {m.readMore}
                       <ArrowUpRight className="h-4 w-4 transition-transform duration-500 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                     </span>
                   </div>
@@ -329,12 +330,17 @@ export function BlogList({ posts }: { posts: BlogPost[] }) {
 
             {filtered.length === 0 && (
               <p className="mt-12 text-center text-[15px] text-ink/50">
-                Không tìm thấy bài viết phù hợp. Thử từ khóa hoặc bộ lọc khác.
+                {m.noResults}
               </p>
             )}
 
             {filtered.length > PAGE_SIZE && (
-              <Pagination page={safePage} totalPages={totalPages} onPage={setPage} />
+              <Pagination
+                page={safePage}
+                totalPages={totalPages}
+                onPage={setPage}
+                labels={{ pagination: m.pagination, prevPage: m.prevPage, nextPage: m.nextPage }}
+              />
             )}
           </div>
         </div>

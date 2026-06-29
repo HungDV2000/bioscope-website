@@ -1,4 +1,3 @@
-import type { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
@@ -6,39 +5,43 @@ import { ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { DetailTabs } from '@/components/ingredients/detail-tabs'
 import { INGREDIENTS } from '@/lib/content'
+import { getContent } from '@/lib/get-content'
+import { getLocale } from '@/lib/i18n/server'
+import { getMessages } from '@/lib/i18n/messages'
 import { ingredientImg } from '@/lib/images'
 
 export function generateStaticParams() {
   return INGREDIENTS.map((it) => ({ slug: it.slug }))
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ slug: string }>
-}): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
-  const it = INGREDIENTS.find((x) => x.slug === slug)
+  const locale = await getLocale()
+  const it = getContent(locale).INGREDIENTS.find((x) => x.slug === slug)
   if (!it) return {}
   return { title: it.name, description: it.shortDesc }
 }
 
-export default async function IngredientDetail({
-  params,
-}: {
-  params: Promise<{ slug: string }>
-}) {
+export default async function IngredientDetail({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
-  const it = INGREDIENTS.find((x) => x.slug === slug)
+  const locale = await getLocale()
+  const m = getMessages(locale)
+  const it = getContent(locale).INGREDIENTS.find((x) => x.slug === slug)
   if (!it) notFound()
+
+  const askExpert = locale === 'en' ? 'Ask an expert' : 'Hỏi chuyên gia'
 
   return (
     <article className="bg-white pt-32 lg:pt-40">
       <div className="container-bs pb-24">
         <nav className="flex items-center gap-1.5 text-[13px] text-ink/45">
-          <Link href="/" className="hover:text-primary">Trang chủ</Link>
+          <Link href="/" className="hover:text-primary">
+            {m.nav.home}
+          </Link>
           <ChevronRight className="h-3.5 w-3.5" />
-          <Link href="/nguyen-lieu" className="hover:text-primary">Nguyên liệu</Link>
+          <Link href="/nguyen-lieu" className="hover:text-primary">
+            {m.nav.ingredients}
+          </Link>
           <ChevronRight className="h-3.5 w-3.5" />
           <span className="text-ink/70">{it.name}</span>
         </nav>
@@ -85,7 +88,7 @@ export default async function IngredientDetail({
             <div className="rounded-[2rem] border border-primary-border/60 bg-mist/50 p-7">
               <div className="grid grid-cols-2 gap-4 text-center">
                 <div>
-                  <div className="text-[12px] font-medium text-ink/45">Xuất xứ</div>
+                  <div className="text-[12px] font-medium text-ink/45">{m.ingredientsCatalog.originLabel}</div>
                   <div className="mt-1 text-[15px] font-bold text-ink">{it.origin}</div>
                 </div>
                 <div>
@@ -94,8 +97,12 @@ export default async function IngredientDetail({
                 </div>
               </div>
               <div className="mt-6 flex flex-col gap-2.5">
-                <Button href="/lien-he" className="w-full justify-between">Yêu cầu mẫu thử</Button>
-                <Button href="/lien-he" variant="outline" className="w-full justify-between">Hỏi chuyên gia</Button>
+                <Button href="/lien-he" className="w-full justify-between">
+                  {m.header.requestSamples}
+                </Button>
+                <Button href="/lien-he" variant="outline" className="w-full justify-between">
+                  {askExpert}
+                </Button>
               </div>
             </div>
           </aside>

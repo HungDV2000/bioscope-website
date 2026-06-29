@@ -1,4 +1,3 @@
-import type { Metadata } from 'next'
 import Link from 'next/link'
 import {
   FileText,
@@ -14,12 +13,10 @@ import type { LucideIcon } from 'lucide-react'
 import { PageHero } from '@/components/ui/page-hero'
 import { Reveal } from '@/components/ui/reveal'
 import { ResourceItemCard } from '@/components/resources/item-card'
-import { RESOURCE_CATEGORIES, RESOURCE_ITEMS } from '@/lib/content'
-
-export const metadata: Metadata = {
-  title: 'Tài nguyên — Whitepaper, Blog & Webinar chuyên môn',
-  description: 'Cập nhật xu hướng nguyên liệu & công nghệ mới từ đội ngũ R&D Bioscope.',
-}
+import { getContent } from '@/lib/get-content'
+import { getLocale } from '@/lib/i18n/server'
+import { getPageI18n } from '@/lib/i18n/pages'
+import { getMessages } from '@/lib/i18n/messages'
 
 const CATEGORY_ICONS: Record<string, LucideIcon> = {
   'whitepaper-ebook': FileText,
@@ -30,16 +27,44 @@ const CATEGORY_ICONS: Record<string, LucideIcon> = {
   'infographic-checklist': LayoutGrid,
 }
 
-export default function ResourcesPage() {
+export async function generateMetadata() {
+  const locale = await getLocale()
+  return getPageI18n('resources', locale).metadata
+}
+
+export default async function ResourcesPage() {
+  const locale = await getLocale()
+  const content = getContent(locale)
+  const { hero } = getPageI18n('resources', locale)
+  const m = getMessages(locale)
+  const { RESOURCE_CATEGORIES, RESOURCE_ITEMS } = content
+
+  const ui =
+    locale === 'en'
+      ? {
+          featured: 'Featured content',
+          featuredDesc: 'Starter picks — gated whitepapers for leads, public blog for SEO.',
+          newsletter: 'R&D newsletter',
+          newsletterTitle: 'Stay updated on ingredients & new technologies',
+          newsletterDesc: 'Expert newsletter from Bioscope R&D — new research, case studies, and market trends.',
+          emailPlaceholder: 'Your work email',
+          subscribe: 'Subscribe',
+          privacy: 'No spam · Expert content only · Unsubscribe anytime',
+        }
+      : {
+          featured: 'Nội dung nổi bật',
+          featuredDesc: 'Gợi ý nội dung khởi đầu — whitepaper gated thu lead, blog public nuôi SEO.',
+          newsletter: 'Bản tin R&D',
+          newsletterTitle: 'Cập nhật xu hướng nguyên liệu & công nghệ mới',
+          newsletterDesc: 'Nhận bản tin chuyên môn từ đội ngũ R&D Bioscope — nghiên cứu mới, case study và xu hướng thị trường.',
+          emailPlaceholder: 'Email công việc của bạn',
+          subscribe: 'Đăng ký nhận tin',
+          privacy: 'Không spam · Chỉ gửi nội dung chuyên môn · Hủy đăng ký bất cứ lúc nào',
+        }
+
   return (
     <>
-      <PageHero
-        eyebrow="Tài nguyên"
-        title="Kiến thức chuyên môn từ đội ngũ R&D Bioscope"
-        description="Whitepaper, blog và webinar — cập nhật xu hướng nguyên liệu & công nghệ mới mỗi tháng."
-        crumbs={[{ label: 'Tài nguyên' }]}
-        image="botanical"
-      />
+      <PageHero {...hero} image="botanical" />
 
       <section className="bg-white pb-16 pt-16">
         <div className="container-bs grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -57,7 +82,7 @@ export default function ResourcesPage() {
                   <h3 className="mt-5 text-[19px] font-bold text-ink">{cat.title}</h3>
                   <p className="mt-2 flex-1 text-[14px] leading-relaxed text-ink/65">{cat.shortDesc}</p>
                   <span className="mt-5 inline-flex w-fit rounded-full bg-accent-soft px-3 py-1 text-[11px] font-bold text-accent">
-                    Khám phá
+                    {m.common.explore}
                   </span>
                 </Link>
               </Reveal>
@@ -67,10 +92,8 @@ export default function ResourcesPage() {
 
         <div className="container-bs mt-14">
           <Reveal>
-            <h2 className="text-[1.9rem] font-bold tracking-tight text-ink sm:text-[2.3rem]">Nội dung nổi bật</h2>
-            <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-ink/65">
-              Gợi ý nội dung khởi đầu — whitepaper gated thu lead, blog public nuôi SEO.
-            </p>
+            <h2 className="text-[1.9rem] font-bold tracking-tight text-ink sm:text-[2.3rem]">{ui.featured}</h2>
+            <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-ink/65">{ui.featuredDesc}</p>
           </Reveal>
           <div className="mt-8 grid gap-4 sm:grid-cols-2">
             {RESOURCE_ITEMS.slice(0, 6).map((item, i) => (
@@ -96,32 +119,28 @@ export default function ResourcesPage() {
               <div className="relative mx-auto max-w-xl text-center">
                 <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-white/90 backdrop-blur-sm">
                   <Mail className="h-3.5 w-3.5" strokeWidth={2} />
-                  Bản tin R&D
+                  {ui.newsletter}
                 </span>
                 <h3 className="mt-5 text-[1.65rem] font-bold leading-tight tracking-tight text-white sm:text-[2rem]">
-                  Cập nhật xu hướng nguyên liệu & công nghệ mới
+                  {ui.newsletterTitle}
                 </h3>
-                <p className="mx-auto mt-3 max-w-md text-[15px] leading-relaxed text-white/75">
-                  Nhận bản tin chuyên môn từ đội ngũ R&D Bioscope — nghiên cứu mới, case study và xu hướng thị trường.
-                </p>
+                <p className="mx-auto mt-3 max-w-md text-[15px] leading-relaxed text-white/75">{ui.newsletterDesc}</p>
 
                 <form className="mx-auto mt-8 max-w-lg">
                   <div className="flex flex-col gap-2 rounded-[2rem] bg-white p-2 shadow-[0_8px_32px_rgba(0,0,0,0.12)] sm:flex-row sm:items-center">
                     <input
                       type="email"
-                      placeholder="Email công việc của bạn"
+                      placeholder={ui.emailPlaceholder}
                       className="min-w-0 flex-1 rounded-full bg-transparent px-5 py-3.5 text-[14px] text-ink outline-none placeholder:text-ink/40"
                     />
                     <button
                       type="submit"
                       className="shrink-0 rounded-full bg-accent px-7 py-3.5 text-[14px] font-semibold text-white transition-all duration-300 hover:brightness-105 active:scale-[0.98]"
                     >
-                      Đăng ký nhận tin
+                      {ui.subscribe}
                     </button>
                   </div>
-                  <p className="mt-4 text-[12px] text-white/45">
-                    Không spam · Chỉ gửi nội dung chuyên môn · Hủy đăng ký bất cứ lúc nào
-                  </p>
+                  <p className="mt-4 text-[12px] text-white/45">{ui.privacy}</p>
                 </form>
               </div>
             </div>

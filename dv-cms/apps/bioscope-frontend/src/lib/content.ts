@@ -1406,8 +1406,8 @@ export function getBlogPost(slug: string) {
   return BLOG_POSTS.find((p) => p.slug === slug)
 }
 
-export function formatBlogDate(iso: string) {
-  return new Date(iso).toLocaleDateString('vi-VN', {
+export function formatBlogDate(iso: string, locale: 'vi' | 'en' = 'vi') {
+  return new Date(iso).toLocaleDateString(locale === 'en' ? 'en-US' : 'vi-VN', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',

@@ -1,43 +1,40 @@
-import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ArrowUpRight, Check } from 'lucide-react'
 import { PageHero } from '@/components/ui/page-hero'
 import { Reveal } from '@/components/ui/reveal'
 import { CtaBand } from '@/components/home/cta-band'
-import { SOLUTIONS, SOLUTIONS_ICP } from '@/lib/content'
+import { getContent } from '@/lib/get-content'
+import { getLocale } from '@/lib/i18n/server'
+import { getPageI18n } from '@/lib/i18n/pages'
+import { getMessages } from '@/lib/i18n/messages'
 import { cn } from '@/lib/utils'
 
-export const metadata: Metadata = {
-  title: 'Giải pháp — Ba cách Bioscope giúp thương hiệu chiến thắng',
-  description:
-    'Từ cung cấp nguyên liệu đến đồng kiến tạo trọn hành trình — chọn mức độ đồng hành phù hợp với năng lực và mục tiêu của bạn.',
+export async function generateMetadata() {
+  const locale = await getLocale()
+  return getPageI18n('solutions', locale).metadata
 }
 
-export default function SolutionsPage() {
+export default async function SolutionsPage() {
+  const locale = await getLocale()
+  const content = getContent(locale)
+  const { hero } = getPageI18n('solutions', locale)
+  const m = getMessages(locale)
+  const { SOLUTIONS, SOLUTIONS_ICP } = content
+
   return (
     <>
-      <PageHero
-        eyebrow="Giải pháp"
-        title="Ba cách Bioscope giúp thương hiệu của bạn chiến thắng"
-        description="Tùy vào năng lực và mục tiêu, bạn có thể chọn mức độ đồng hành phù hợp — từ cung cấp nguyên liệu đến đồng kiến tạo trọn hành trình."
-        crumbs={[{ label: 'Giải pháp' }]}
-        image="labWork"
-      />
+      <PageHero {...hero} image="labWork" />
 
       <section className="bg-white py-16">
         <div className="container-bs">
           <Reveal>
-            <h2 className="text-[1.9rem] font-bold tracking-tight text-ink sm:text-[2.3rem]">
-              Ai phù hợp với giải pháp nào?
-            </h2>
-            <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-ink/65">
-              Tùy năng lực nội bộ và mục tiêu kinh doanh, bạn có thể chọn mức độ đồng hành phù hợp — từ cung cấp nguyên liệu đến đồng kiến tạo trọn hành trình.
-            </p>
+            <h2 className="text-[1.9rem] font-bold tracking-tight text-ink sm:text-[2.3rem]">{m.solutionsPage.icpTitle}</h2>
+            <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-ink/65">{m.solutionsPage.icpDesc}</p>
           </Reveal>
           <div className="mt-8 grid gap-5 lg:grid-cols-3">
             {SOLUTIONS_ICP.map((icp, i) => {
               const solution = SOLUTIONS.find((s) => s.slug === icp.solution)
-              const isPriority2 = icp.priority === 'Ưu tiên 2'
+              const isPriority2 = icp.priority.toLowerCase().includes('2') || icp.priority.includes('Ưu tiên 2')
               return (
                 <Reveal key={icp.title} delay={i * 0.08}>
                   <Link

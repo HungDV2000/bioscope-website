@@ -4,18 +4,8 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Search, ArrowUpRight, SlidersHorizontal, X, ChevronLeft, ChevronRight } from 'lucide-react'
-import {
-  INDUSTRIES,
-  CERT_FILTERS,
-  INGREDIENT_TAGS,
-  INGREDIENT_CATEGORIES,
-  ORIGINS,
-  PRODUCT_FORMS,
-  APPLICATION_TYPES,
-  ingredientForm,
-  parseMoqKg,
-  type Ingredient,
-} from '@/lib/content'
+import { ingredientForm, parseMoqKg, type Ingredient } from '@/lib/content'
+import { useLocale } from '@/lib/i18n/context'
 import { ingredientImg } from '@/lib/images'
 import { cn } from '@/lib/utils'
 
@@ -25,12 +15,6 @@ const TAG_STYLE: Record<string, string> = {
   NEW: 'bg-accent-soft text-accent',
   TRENDING: 'bg-primary-tint text-primary-dark',
   EXCLUSIVE: 'bg-ink text-white',
-}
-
-const TAG_LABEL: Record<string, string> = {
-  NEW: 'Mới',
-  TRENDING: 'Nổi bật',
-  EXCLUSIVE: 'Độc quyền',
 }
 
 type MoqFilter = 'any' | '10' | '25'
@@ -95,6 +79,11 @@ function matchesAdvanced(it: Ingredient, f: AdvancedFilters) {
 }
 
 export function Catalog({ items }: { items: Ingredient[] }) {
+  const { content, t } = useLocale()
+  const cat = t.ingredientsCatalog
+  const { INDUSTRIES, CERT_FILTERS, INGREDIENT_TAGS, INGREDIENT_CATEGORIES, ORIGINS, PRODUCT_FORMS, APPLICATION_TYPES } =
+    content
+
   const [q, setQ] = useState('')
   const [industry, setIndustry] = useState<string | null>(null)
   const [cert, setCert] = useState<string | null>(null)
@@ -159,14 +148,14 @@ export function Catalog({ items }: { items: Ingredient[] }) {
                 <input
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
-                  placeholder="Tìm theo tên, nhóm hoặc công dụng…"
+                  placeholder={cat.searchPlaceholder}
                   className="w-full rounded-full border border-primary-border bg-white py-3 pl-11 pr-4 text-[14.5px] outline-none transition-colors focus:border-primary/50"
                 />
               </div>
               <button
                 type="button"
                 onClick={openAdvanced}
-                aria-label="Tìm kiếm nâng cao"
+                aria-label={cat.advancedSearch}
                 className={cn(
                   'relative grid h-12 w-12 shrink-0 place-items-center rounded-full border transition-colors duration-300',
                   advancedCount > 0
@@ -184,7 +173,7 @@ export function Catalog({ items }: { items: Ingredient[] }) {
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-              <Filter label="Tất cả ngành" active={!industry} onClick={() => setIndustry(null)} />
+              <Filter label={cat.allIndustries} active={!industry} onClick={() => setIndustry(null)} />
               {INDUSTRIES.map((ind) => (
                 <Filter key={ind} label={ind} active={industry === ind} onClick={() => setIndustry(ind)} />
               ))}
@@ -198,7 +187,7 @@ export function Catalog({ items }: { items: Ingredient[] }) {
                   onClick={resetAdvanced}
                   className="ml-auto text-[13px] font-medium text-primary hover:underline"
                 >
-                  Xóa bộ lọc nâng cao
+                  {cat.clearAdvanced}
                 </button>
               )}
             </div>
@@ -206,11 +195,11 @@ export function Catalog({ items }: { items: Ingredient[] }) {
 
           <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
             <p className="text-[13.5px] font-medium text-ink/50">
-              {filtered.length} nguyên liệu
+              {filtered.length} {cat.ingredientsUnit}
               {filtered.length > PAGE_SIZE && (
                 <span className="text-ink/40">
                   {' '}
-                  · Trang {safePage}/{totalPages}
+                  · {cat.pageOf} {safePage}/{totalPages}
                 </span>
               )}
             </p>
@@ -243,7 +232,7 @@ export function Catalog({ items }: { items: Ingredient[] }) {
                         TAG_STYLE[it.tag],
                       )}
                     >
-                      {TAG_LABEL[it.tag] ?? it.tag}
+                      {cat.tags[it.tag] ?? it.tag}
                     </span>
                   )}
                 </div>
@@ -251,11 +240,11 @@ export function Catalog({ items }: { items: Ingredient[] }) {
                   <h3 className="text-[18px] font-bold text-ink">{it.name}</h3>
                   <p className="mt-2 flex-1 text-[13.5px] leading-relaxed text-ink/60">{it.shortDesc}</p>
                   <div className="mt-5 flex items-center justify-between border-t border-primary-border/50 pt-4 text-[12.5px] text-ink/55">
-                    <span>Xuất xứ: {it.origin}</span>
+                    <span>{cat.originLabel}: {it.origin}</span>
                     <span>MOQ {it.moq}</span>
                   </div>
                   <span className="mt-4 inline-flex items-center gap-1 text-[13px] font-semibold text-primary">
-                    Xem chi tiết
+                    {cat.viewDetails}
                     <ArrowUpRight className="h-4 w-4 transition-transform duration-500 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                   </span>
                 </div>
@@ -264,9 +253,7 @@ export function Catalog({ items }: { items: Ingredient[] }) {
           </div>
 
           {filtered.length === 0 && (
-            <p className="mt-12 text-center text-[15px] text-ink/50">
-              Không tìm thấy nguyên liệu phù hợp. Thử xóa bớt bộ lọc.
-            </p>
+            <p className="mt-12 text-center text-[15px] text-ink/50">{cat.tryClearFilters}</p>
           )}
 
           {filtered.length > PAGE_SIZE && (
@@ -297,13 +284,15 @@ function Pagination({
   totalPages: number
   onPage: (p: number) => void
 }) {
+  const { t } = useLocale()
+  const cat = t.ingredientsCatalog
   const pages = Array.from({ length: totalPages }, (_, i) => i + 1)
 
   return (
-    <nav aria-label="Phân trang" className="mt-12 flex items-center justify-center gap-2">
+    <nav aria-label={cat.pagination} className="mt-12 flex items-center justify-center gap-2">
       <button
         type="button"
-        aria-label="Trang trước"
+        aria-label={cat.prevPage}
         disabled={page <= 1}
         onClick={() => onPage(page - 1)}
         className="grid h-10 w-10 place-items-center rounded-full border border-primary-border bg-white text-ink/45 transition-colors hover:text-primary disabled:opacity-40"
@@ -328,7 +317,7 @@ function Pagination({
       ))}
       <button
         type="button"
-        aria-label="Trang sau"
+        aria-label={cat.nextPage}
         disabled={page >= totalPages}
         onClick={() => onPage(page + 1)}
         className="grid h-10 w-10 place-items-center rounded-full border border-primary-border bg-white text-ink/45 transition-colors hover:text-primary disabled:opacity-40"
@@ -352,6 +341,19 @@ function AdvancedSearchModal({
   onApply: () => void
   onReset: () => void
 }) {
+  const { content, t } = useLocale()
+  const cat = t.ingredientsCatalog
+  const f = cat.filters
+  const {
+    INDUSTRIES,
+    CERT_FILTERS,
+    INGREDIENT_TAGS,
+    INGREDIENT_CATEGORIES,
+    ORIGINS,
+    PRODUCT_FORMS,
+    APPLICATION_TYPES,
+  } = content
+
   const toggle = <K extends keyof AdvancedFilters>(key: K, value: string) => {
     const list = draft[key] as string[]
     if (!Array.isArray(list)) return
@@ -363,16 +365,16 @@ function AdvancedSearchModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center">
-      <button type="button" aria-label="Đóng" className="absolute inset-0 bg-ink/40 backdrop-blur-sm" onClick={onClose} />
+      <button type="button" aria-label={cat.close} className="absolute inset-0 bg-ink/40 backdrop-blur-sm" onClick={onClose} />
       <div className="relative flex max-h-[min(90vh,720px)] w-full max-w-2xl flex-col overflow-hidden rounded-[2rem] border border-primary-border/60 bg-white shadow-card">
         <div className="flex items-center justify-between border-b border-primary-border/50 px-6 py-5">
           <div>
-            <h2 className="text-[1.25rem] font-bold text-ink">Tìm kiếm nâng cao</h2>
-            <p className="mt-1 text-[13.5px] text-ink/55">Chọn nhiều tiêu chí để thu hẹp danh mục</p>
+            <h2 className="text-[1.25rem] font-bold text-ink">{cat.advancedTitle}</h2>
+            <p className="mt-1 text-[13.5px] text-ink/55">{cat.advancedDesc}</p>
           </div>
           <button
             type="button"
-            aria-label="Đóng"
+            aria-label={cat.close}
             onClick={onClose}
             className="grid h-9 w-9 place-items-center rounded-full border border-primary-border text-ink/45 hover:text-primary"
           >
@@ -381,54 +383,54 @@ function AdvancedSearchModal({
         </div>
 
         <div className="flex-1 space-y-6 overflow-y-auto px-6 py-5">
-          <FilterSection title="Ngành hàng">
+          <FilterSection title={f.industry}>
             {INDUSTRIES.map((v) => (
               <Chip key={v} label={v} active={draft.industries.includes(v)} onClick={() => toggle('industries', v)} />
             ))}
           </FilterSection>
 
-          <FilterSection title="Nhóm nguyên liệu">
+          <FilterSection title={f.category}>
             {INGREDIENT_CATEGORIES.map((v) => (
               <Chip key={v} label={v} active={draft.categories.includes(v)} onClick={() => toggle('categories', v)} />
             ))}
           </FilterSection>
 
-          <FilterSection title="Xuất xứ">
+          <FilterSection title={f.origin}>
             {ORIGINS.map((v) => (
               <Chip key={v} label={v} active={draft.origins.includes(v)} onClick={() => toggle('origins', v)} />
             ))}
           </FilterSection>
 
-          <FilterSection title="Dạng bào chế">
+          <FilterSection title={f.form}>
             {PRODUCT_FORMS.map((v) => (
               <Chip key={v} label={v} active={draft.forms.includes(v)} onClick={() => toggle('forms', v)} />
             ))}
           </FilterSection>
 
-          <FilterSection title="Ứng dụng">
+          <FilterSection title={f.application}>
             {APPLICATION_TYPES.map((v) => (
               <Chip key={v} label={v} active={draft.applications.includes(v)} onClick={() => toggle('applications', v)} />
             ))}
           </FilterSection>
 
-          <FilterSection title="Chứng nhận">
+          <FilterSection title={f.cert}>
             {CERT_FILTERS.map((v) => (
               <Chip key={v} label={v} active={draft.certs.includes(v)} onClick={() => toggle('certs', v)} />
             ))}
           </FilterSection>
 
-          <FilterSection title="Nhãn nổi bật">
+          <FilterSection title={f.tag}>
             {INGREDIENT_TAGS.map((v) => (
-              <Chip key={v} label={TAG_LABEL[v] ?? v} active={draft.tags.includes(v)} onClick={() => toggle('tags', v)} />
+              <Chip key={v} label={cat.tags[v] ?? v} active={draft.tags.includes(v)} onClick={() => toggle('tags', v)} />
             ))}
           </FilterSection>
 
           <div>
-            <p className="mb-3 text-[13px] font-bold uppercase tracking-wide text-ink/45">MOQ tối đa</p>
+            <p className="mb-3 text-[13px] font-bold uppercase tracking-wide text-ink/45">{cat.moqMax}</p>
             <div className="flex flex-wrap gap-2">
               {(
                 [
-                  ['any', 'Không giới hạn'],
+                  ['any', cat.moqAny],
                   ['10', '≤ 10 kg'],
                   ['25', '≤ 25 kg'],
                 ] as const
@@ -446,7 +448,7 @@ function AdvancedSearchModal({
 
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-primary-border/50 px-6 py-4">
           <button type="button" onClick={onReset} className="text-[14px] font-medium text-ink/50 hover:text-primary">
-            Đặt lại
+            {cat.reset}
           </button>
           <div className="flex gap-2">
             <button
@@ -454,14 +456,14 @@ function AdvancedSearchModal({
               onClick={onClose}
               className="rounded-full border border-primary-border px-5 py-2.5 text-[14px] font-semibold text-ink/65 hover:text-primary"
             >
-              Hủy
+              {cat.cancel}
             </button>
             <button
               type="button"
               onClick={onApply}
               className="rounded-full bg-primary px-5 py-2.5 text-[14px] font-semibold text-white hover:bg-primary-dark"
             >
-              Áp dụng bộ lọc
+              {cat.applyFiltersFull}
             </button>
           </div>
         </div>

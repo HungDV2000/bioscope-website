@@ -3,16 +3,18 @@
 import { useState } from 'react'
 import { Boxes, FlaskConical, Handshake, Check, CheckCircle2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useLocale } from '@/lib/i18n/context'
 
-const NEEDS = [
-  { key: 'nguyen-lieu', icon: Boxes, label: 'Nguyên liệu', desc: 'Tìm nguồn nguyên liệu chuyên biệt.' },
-  { key: 'odm', icon: FlaskConical, label: 'ODM / Phát triển công thức', desc: 'Xây dựng công thức & sản xuất.' },
-  { key: 'dong-kien-tao', icon: Handshake, label: 'Tư vấn đồng kiến tạo', desc: 'Đồng hành xây thương hiệu từ đầu.' },
-]
+const NEED_KEYS = ['nguyen-lieu', 'odm', 'dong-kien-tao'] as const
+const NEED_ICONS = [Boxes, FlaskConical, Handshake]
 
 type Form = { need: string; name: string; company: string; email: string; phone: string; message: string }
 
 export function ContactWizard() {
+  const { t } = useLocale()
+  const w = t.contact.wizard
+  const needs = NEED_KEYS.map((key, i) => ({ key, icon: NEED_ICONS[i], ...w.needs[i] }))
+
   const [step, setStep] = useState(1)
   const [done, setDone] = useState(false)
   const [form, setForm] = useState<Form>({ need: '', name: '', company: '', email: '', phone: '', message: '' })
@@ -21,26 +23,22 @@ export function ContactWizard() {
   const canNext = step === 1 ? !!form.need : step === 2 ? form.name && form.email.includes('@') : true
 
   const submit = () => {
-    // Phase 2: POST → Payload FormSubmissions (email + Zalo/Lark/CRM notify).
     setDone(true)
   }
 
   if (done) {
+    const body = w.successBody.replace('{name}', form.name).replace('{email}', form.email)
     return (
       <div className="rounded-[2rem] border border-primary-border/60 bg-mist/40 p-10 text-center">
         <CheckCircle2 className="mx-auto h-14 w-14 text-primary" strokeWidth={1.4} />
-        <h3 className="mt-5 text-[22px] font-bold text-ink">Đã gửi yêu cầu thành công!</h3>
-        <p className="mx-auto mt-2 max-w-md text-[14.5px] leading-relaxed text-ink/60">
-          Cảm ơn <strong>{form.name}</strong>. Đội ngũ chuyên gia của Bioscope sẽ phản hồi trong vòng
-          24 giờ làm việc qua email <strong>{form.email}</strong>.
-        </p>
+        <h3 className="mt-5 text-[22px] font-bold text-ink">{w.successTitle}</h3>
+        <p className="mx-auto mt-2 max-w-md text-[14.5px] leading-relaxed text-ink/60">{body}</p>
       </div>
     )
   }
 
   return (
     <div className="rounded-[2rem] border border-primary-border/60 bg-white p-7 shadow-soft sm:p-9">
-      {/* Progress */}
       <div className="mb-8 flex items-center gap-2">
         {[1, 2, 3].map((s) => (
           <div key={s} className="flex flex-1 items-center gap-2">
@@ -59,9 +57,9 @@ export function ContactWizard() {
 
       {step === 1 && (
         <div>
-          <h3 className="text-[19px] font-bold text-ink">Bạn cần Bioscope hỗ trợ điều gì?</h3>
+          <h3 className="text-[19px] font-bold text-ink">{w.step1Title}</h3>
           <div className="mt-5 grid gap-3">
-            {NEEDS.map(({ key, icon: Icon, label, desc }) => (
+            {needs.map(({ key, icon: Icon, label, desc }) => (
               <button
                 key={key}
                 onClick={() => set('need', key)}
@@ -70,7 +68,12 @@ export function ContactWizard() {
                   form.need === key ? 'border-primary bg-primary-tint/60' : 'border-primary-border bg-white hover:border-primary/40',
                 )}
               >
-                <span className={cn('grid h-11 w-11 shrink-0 place-items-center rounded-xl', form.need === key ? 'bg-primary text-white' : 'bg-primary-tint text-primary')}>
+                <span
+                  className={cn(
+                    'grid h-11 w-11 shrink-0 place-items-center rounded-xl',
+                    form.need === key ? 'bg-primary text-white' : 'bg-primary-tint text-primary',
+                  )}
+                >
                   <Icon className="h-5 w-5" strokeWidth={1.6} />
                 </span>
                 <span>
@@ -85,24 +88,24 @@ export function ContactWizard() {
 
       {step === 2 && (
         <div>
-          <h3 className="text-[19px] font-bold text-ink">Thông tin liên hệ</h3>
+          <h3 className="text-[19px] font-bold text-ink">{w.step2Title}</h3>
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
-            <Field label="Họ và tên *" value={form.name} onChange={(v) => set('name', v)} />
-            <Field label="Công ty" value={form.company} onChange={(v) => set('company', v)} />
-            <Field label="Email công việc *" type="email" value={form.email} onChange={(v) => set('email', v)} />
-            <Field label="Số điện thoại" value={form.phone} onChange={(v) => set('phone', v)} />
+            <Field label={`${w.name} *`} value={form.name} onChange={(v) => set('name', v)} />
+            <Field label={w.company} value={form.company} onChange={(v) => set('company', v)} />
+            <Field label={`${w.email} *`} type="email" value={form.email} onChange={(v) => set('email', v)} />
+            <Field label={w.phone} value={form.phone} onChange={(v) => set('phone', v)} />
           </div>
         </div>
       )}
 
       {step === 3 && (
         <div>
-          <h3 className="text-[19px] font-bold text-ink">Mô tả ngắn về dự án</h3>
+          <h3 className="text-[19px] font-bold text-ink">{w.step3Title}</h3>
           <textarea
             value={form.message}
             onChange={(e) => set('message', e.target.value)}
             rows={5}
-            placeholder="Chia sẻ ý tưởng, sản phẩm hoặc thách thức bạn đang gặp…"
+            placeholder={w.message}
             className="mt-5 w-full rounded-2xl border border-primary-border bg-white px-5 py-4 text-[14.5px] outline-none transition-colors focus:border-primary/50"
           />
         </div>
@@ -113,7 +116,7 @@ export function ContactWizard() {
           onClick={() => setStep((s) => Math.max(1, s - 1))}
           className={cn('text-[14px] font-semibold text-ink/50 transition-colors hover:text-ink', step === 1 && 'invisible')}
         >
-          ← Quay lại
+          ← {w.back}
         </button>
         {step < 3 ? (
           <button
@@ -121,14 +124,14 @@ export function ContactWizard() {
             onClick={() => setStep((s) => s + 1)}
             className="rounded-full bg-primary px-7 py-3 text-[14px] font-semibold text-white transition-all duration-300 hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-40"
           >
-            Tiếp tục
+            {w.next}
           </button>
         ) : (
           <button
             onClick={submit}
             className="rounded-full bg-primary px-7 py-3 text-[14px] font-semibold text-white transition-colors duration-300 hover:bg-primary-dark"
           >
-            Gửi yêu cầu
+            {w.submit}
           </button>
         )}
       </div>

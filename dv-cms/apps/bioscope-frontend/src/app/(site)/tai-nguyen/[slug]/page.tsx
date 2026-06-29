@@ -6,15 +6,14 @@ import { PageHero } from '@/components/ui/page-hero'
 import { Reveal } from '@/components/ui/reveal'
 import { Button } from '@/components/ui/button'
 import { ResourceItemCard } from '@/components/resources/item-card'
-import {
-  RESOURCE_CATEGORIES,
-  CASE_STUDIES,
-  getResourceCategory,
-  getResourceItemsForCategory,
-} from '@/lib/content'
+import { getContent } from '@/lib/get-content'
+import { getLocale } from '@/lib/i18n/server'
+import { getMessages } from '@/lib/i18n/messages'
+import { getPageI18n } from '@/lib/i18n/pages'
 
 export function generateStaticParams() {
-  return RESOURCE_CATEGORIES.map((c) => ({ slug: c.slug }))
+  const content = getContent('vi')
+  return content.RESOURCE_CATEGORIES.map((c) => ({ slug: c.slug }))
 }
 
 export async function generateMetadata({
@@ -23,9 +22,12 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>
 }): Promise<Metadata> {
   const { slug } = await params
-  const cat = getResourceCategory(slug)
+  const locale = await getLocale()
+  const content = getContent(locale)
+  const cat = content.getResourceCategory(slug)
   if (!cat) return {}
-  return { title: `${cat.title} — Tài nguyên`, description: cat.shortDesc }
+  const { hero } = getPageI18n('resources', locale)
+  return { title: `${cat.title} — ${hero.eyebrow}`, description: cat.shortDesc }
 }
 
 export default async function ResourceCategoryPage({
@@ -34,11 +36,17 @@ export default async function ResourceCategoryPage({
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
-  const cat = getResourceCategory(slug)
+  const locale = await getLocale()
+  const content = getContent(locale)
+  const t = getMessages(locale)
+  const { hero } = getPageI18n('resources', locale)
+  const m = t.resourcesPage
+
+  const cat = content.getResourceCategory(slug)
   if (!cat) notFound()
 
   const items = cat.useCaseStudies
-    ? CASE_STUDIES.map((c) => ({
+    ? content.CASE_STUDIES.map((c) => ({
         slug: c.slug,
         title: c.brand,
         category: 'Case Study',
@@ -46,16 +54,16 @@ export default async function ResourceCategoryPage({
         gated: false,
         href: `/case-study/${c.slug}`,
       }))
-    : getResourceItemsForCategory(slug).map((i) => ({ ...i, href: undefined }))
+    : content.getResourceItemsForCategory(slug).map((i) => ({ ...i, href: undefined }))
 
   return (
     <>
       <PageHero
-        eyebrow="Tài nguyên"
+        eyebrow={hero.eyebrow}
         title={cat.title}
         description={cat.shortDesc}
         crumbs={[
-          { label: 'Tài nguyên', href: '/tai-nguyen' },
+          { label: hero.eyebrow, href: '/tai-nguyen' },
           { label: cat.title },
         ]}
         image={cat.image}
@@ -73,10 +81,8 @@ export default async function ResourceCategoryPage({
             ) : (
               <Reveal>
                 <div className="col-span-full rounded-[1.5rem] border border-dashed border-primary-border/60 bg-mist/30 px-8 py-12 text-center">
-                  <p className="text-[15px] font-semibold text-ink">Nội dung đang được cập nhật</p>
-                  <p className="mt-2 text-[14px] text-ink/55">
-                    Đăng ký nhận tin để không bỏ lỡ khi có tài liệu mới trong danh mục này.
-                  </p>
+                  <p className="text-[15px] font-semibold text-ink">{m.emptyTitle}</p>
+                  <p className="mt-2 text-[14px] text-ink/55">{m.emptyDesc}</p>
                 </div>
               </Reveal>
             )}
@@ -88,11 +94,11 @@ export default async function ResourceCategoryPage({
               className="inline-flex items-center gap-2 text-[14px] font-semibold text-primary transition-colors hover:text-primary-dark"
             >
               <ArrowLeft className="h-4 w-4" strokeWidth={2} />
-              Quay lại Tài nguyên
+              {m.backToResources}
             </Link>
             {cat.useCaseStudies && (
               <Button href="/case-study" variant="outline">
-                Xem tất cả Case Study
+                {m.viewAllCaseStudies}
               </Button>
             )}
           </Reveal>

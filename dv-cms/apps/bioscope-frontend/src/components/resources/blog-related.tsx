@@ -1,18 +1,24 @@
+'use client'
+
 import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowUpRight, Calendar, Clock } from 'lucide-react'
 import { Reveal } from '@/components/ui/reveal'
-import { formatBlogDate, type BlogPost } from '@/lib/content'
+import type { BlogPost } from '@/lib/content'
 import { img } from '@/lib/images'
+import { useLocale } from '@/lib/i18n/context'
 
 export function BlogRelatedPosts({ posts }: { posts: BlogPost[] }) {
+  const { t, content } = useLocale()
+  const m = t.blogPage
+
   if (posts.length === 0) return null
 
   return (
     <section>
       <Reveal>
-        <h2 className="text-[1.5rem] font-bold tracking-tight text-ink sm:text-[1.75rem]">Bài viết liên quan</h2>
-        <p className="mt-2 text-[14.5px] text-ink/55">Cùng chủ đề hoặc ngành — gợi ý đọc tiếp.</p>
+        <h2 className="text-[1.5rem] font-bold tracking-tight text-ink sm:text-[1.75rem]">{m.relatedTitle}</h2>
+        <p className="mt-2 text-[14.5px] text-ink/55">{m.relatedDesc}</p>
       </Reveal>
       <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {posts.map((post, i) => (
@@ -37,18 +43,18 @@ export function BlogRelatedPosts({ posts }: { posts: BlogPost[] }) {
                 <div className="flex flex-wrap items-center gap-2 text-[11.5px] text-ink/45">
                   <span className="inline-flex items-center gap-1">
                     <Calendar className="h-3 w-3" />
-                    {formatBlogDate(post.date)}
+                    {content.formatBlogDate(post.date)}
                   </span>
                   <span>·</span>
                   <span className="inline-flex items-center gap-1">
                     <Clock className="h-3 w-3" />
-                    {post.readTime} phút
+                    {post.readTime} {m.minRead}
                   </span>
                 </div>
                 <h3 className="mt-2.5 text-[16px] font-bold leading-snug text-ink">{post.title}</h3>
                 <p className="mt-2 flex-1 text-[13px] leading-relaxed text-ink/60 line-clamp-2">{post.excerpt}</p>
                 <span className="mt-4 inline-flex items-center gap-1 text-[13px] font-semibold text-primary">
-                  Đọc bài viết
+                  {m.readArticle}
                   <ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                 </span>
               </div>

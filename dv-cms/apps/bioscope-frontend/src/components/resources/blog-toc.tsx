@@ -3,12 +3,15 @@
 import { useEffect, useState } from 'react'
 import { cn } from '@/lib/utils'
 import type { BlogSection } from '@/lib/content'
+import { useLocale } from '@/lib/i18n/context'
 
 export function BlogTableOfContents({
   sections,
 }: {
   sections: BlogSection[]
 }) {
+  const { t } = useLocale()
+  const m = t.blogPage
   const [activeId, setActiveId] = useState(sections[0]?.id ?? '')
 
   useEffect(() => {
@@ -31,8 +34,8 @@ export function BlogTableOfContents({
   if (sections.length <= 1) return null
 
   return (
-    <nav aria-label="Mục lục" className="rounded-[1.5rem] border border-primary-border/60 bg-mist/40 p-6">
-      <h2 className="text-[11px] font-bold uppercase tracking-[0.14em] text-ink/45">Mục lục</h2>
+    <nav aria-label={m.toc} className="rounded-[1.5rem] border border-primary-border/60 bg-mist/40 p-6">
+      <h2 className="text-[11px] font-bold uppercase tracking-[0.14em] text-ink/45">{m.toc}</h2>
       <ol className="mt-4 space-y-1">
         {sections.map(({ id, title }, i) => (
           <li key={id}>

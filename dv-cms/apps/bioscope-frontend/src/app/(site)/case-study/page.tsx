@@ -1,38 +1,41 @@
-import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ArrowUpRight } from 'lucide-react'
 import { PageHero } from '@/components/ui/page-hero'
 import { Reveal } from '@/components/ui/reveal'
 import { CtaBand } from '@/components/home/cta-band'
-import { CASE_STUDIES } from '@/lib/content'
+import { getContent } from '@/lib/get-content'
+import { getLocale } from '@/lib/i18n/server'
+import { getPageI18n } from '@/lib/i18n/pages'
+import { getMessages } from '@/lib/i18n/messages'
 
-export const metadata: Metadata = {
-  title: 'Case Study — Giải pháp thật. Kết quả thật. Tăng trưởng thật.',
-  description: 'Những câu chuyện đồng kiến tạo đã tạo nên tác động đo lường được cùng các thương hiệu đối tác.',
+export async function generateMetadata() {
+  const locale = await getLocale()
+  return getPageI18n('caseStudies', locale).metadata
 }
 
-export default function CaseStudyList() {
+export default async function CaseStudyList() {
+  const locale = await getLocale()
+  const content = getContent(locale)
+  const { hero } = getPageI18n('caseStudies', locale)
+  const m = getMessages(locale)
+
   return (
     <>
-      <PageHero
-        eyebrow="Case Study"
-        title="Đổi mới tạo nên tác động"
-        description="Giải pháp thật. Kết quả thật. Tăng trưởng thật. Những câu chuyện đồng kiến tạo cùng các thương hiệu đối tác."
-        crumbs={[{ label: 'Case Study' }]}
-        image="oil"
-      />
+      <PageHero {...hero} image="oil" />
 
       <section className="border-b border-primary-border/40 bg-mist/30 py-10">
         <div className="container-bs">
           <p className="max-w-3xl text-[15px] leading-relaxed text-ink/70">
-            Mỗi case study theo cấu trúc storytelling: Vấn đề → Giải pháp đồng kiến tạo → Kết quả bằng số liệu → Lời chứng thực từ đối tác.
+            {locale === 'en'
+              ? 'Each case study follows a storytelling structure: Problem → Co-created solution → Measurable results → Partner testimonial.'
+              : 'Mỗi case study theo cấu trúc storytelling: Vấn đề → Giải pháp đồng kiến tạo → Kết quả bằng số liệu → Lời chứng thực từ đối tác.'}
           </p>
         </div>
       </section>
 
       <section className="bg-white pb-24 pt-16">
         <div className="container-bs grid gap-5 md:grid-cols-3">
-          {CASE_STUDIES.map((c, i) => (
+          {content.CASE_STUDIES.map((c, i) => (
             <Reveal key={c.slug} delay={i * 0.08}>
               <Link
                 href={`/case-study/${c.slug}`}
@@ -42,20 +45,23 @@ export default function CaseStudyList() {
                   <span className="text-[18px] font-bold text-ink">{c.brand}</span>
                   <span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-medium text-ink/50">{c.industry}</span>
                 </div>
-                {c.summary && (
-                  <p className="mt-3 text-[13.5px] leading-relaxed text-ink/60">{c.summary}</p>
-                )}
+                {c.summary && <p className="mt-3 text-[13.5px] leading-relaxed text-ink/60">{c.summary}</p>}
                 <div className="mt-6">
                   <div className="text-[38px] font-extrabold leading-none tracking-tight text-primary">{c.kpi}</div>
                   <div className="mt-2 text-[13px] font-medium text-ink/55">{c.kpiLabel}</div>
                 </div>
                 <div className="mt-6 flex flex-wrap gap-2">
-                  {c.tags.map((t) => (
-                    <span key={t} className="rounded-full bg-primary-tint px-3 py-1 text-[11px] font-semibold text-primary-dark">{t}</span>
+                  {c.tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="rounded-full bg-primary-tint px-3 py-1 text-[11px] font-semibold text-primary-dark"
+                    >
+                      {tag}
+                    </span>
                   ))}
                 </div>
                 <span className="mt-7 inline-flex items-center gap-1 text-[13.5px] font-semibold text-primary">
-                  Đọc câu chuyện
+                  {m.coCreatePage.readCase}
                   <ArrowUpRight className="h-4 w-4 transition-transform duration-500 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                 </span>
               </Link>

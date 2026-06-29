@@ -2,12 +2,13 @@
 
 import React, { useEffect, useState } from 'react'
 
-const greeting = () => {
-  const h = new Date().getHours()
-  if (h < 11) return 'Chào buổi sáng'
-  if (h < 14) return 'Chào buổi trưa'
-  if (h < 18) return 'Chào buổi chiều'
-  return 'Chào buổi tối'
+import { useDvTranslation } from '../i18n/useDvTranslation.js'
+
+const greetingKey = (hour: number) => {
+  if (hour < 11) return 'dv:dashboard.greetingMorning'
+  if (hour < 14) return 'dv:dashboard.greetingNoon'
+  if (hour < 18) return 'dv:dashboard.greetingAfternoon'
+  return 'dv:dashboard.greetingEvening'
 }
 
 /**
@@ -16,6 +17,7 @@ const greeting = () => {
  * dashboard below already lists them.
  */
 export const DashboardWelcome: React.FC = () => {
+  const { t } = useDvTranslation()
   const [name, setName] = useState<string>('')
 
   useEffect(() => {
@@ -38,10 +40,11 @@ export const DashboardWelcome: React.FC = () => {
       }}
     >
       <h2 style={{ margin: 0, fontSize: 24, fontWeight: 800, color: '#fff' }}>
-        👋 {greeting()}{name ? `, ${name}` : ''}
+        👋 {t(greetingKey(new Date().getHours()))}
+        {name ? `, ${name}` : ''}
       </h2>
       <p style={{ margin: '6px 0 0', fontSize: 14, color: 'rgba(255,255,255,0.85)' }}>
-        Bảng điều khiển quản trị Bioscope — chọn một mục bên dưới để bắt đầu.
+        {t('dv:dashboard.subtitle')}
       </p>
     </div>
   )

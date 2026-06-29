@@ -68,6 +68,7 @@ export interface Config {
   };
   blocks: {};
   collections: {
+    'staff-roles': StaffRole;
     users: User;
     media: Media;
     pages: Page;
@@ -77,6 +78,9 @@ export interface Config {
     forms: Form;
     'form-submissions': FormSubmission;
     redirects: Redirect;
+    'ct-definitions': CtDefinition;
+    'tax-definitions': TaxDefinition;
+    'field-groups': FieldGroup;
     partners: Partner;
     'ingredient-categories': IngredientCategory;
     ingredients: Ingredient;
@@ -87,13 +91,20 @@ export interface Config {
     faqs: Faq;
     members: Member;
     'gated-documents': GatedDocument;
+    languages: Language;
     'payload-kv': PayloadKv;
+    'payload-folders': FolderInterface;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
-  collectionsJoins: {};
+  collectionsJoins: {
+    'payload-folders': {
+      documentsAndFolders: 'payload-folders' | 'media';
+    };
+  };
   collectionsSelect: {
+    'staff-roles': StaffRolesSelect<false> | StaffRolesSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
@@ -103,6 +114,9 @@ export interface Config {
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
+    'ct-definitions': CtDefinitionsSelect<false> | CtDefinitionsSelect<true>;
+    'tax-definitions': TaxDefinitionsSelect<false> | TaxDefinitionsSelect<true>;
+    'field-groups': FieldGroupsSelect<false> | FieldGroupsSelect<true>;
     partners: PartnersSelect<false> | PartnersSelect<true>;
     'ingredient-categories': IngredientCategoriesSelect<false> | IngredientCategoriesSelect<true>;
     ingredients: IngredientsSelect<false> | IngredientsSelect<true>;
@@ -113,7 +127,9 @@ export interface Config {
     faqs: FaqsSelect<false> | FaqsSelect<true>;
     members: MembersSelect<false> | MembersSelect<true>;
     'gated-documents': GatedDocumentsSelect<false> | GatedDocumentsSelect<true>;
+    languages: LanguagesSelect<false> | LanguagesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
+    'payload-folders': PayloadFoldersSelect<false> | PayloadFoldersSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -134,6 +150,11 @@ export interface Config {
   };
   locale: 'vi' | 'en';
   widgets: {
+    'dv-welcome': DvWelcomeWidget;
+    'dv-shortcuts': DvShortcutsWidget;
+    'dv-stats': DvStatsWidget;
+    'dv-analytics': DvAnalyticsWidget;
+    'dv-seed': DvSeedWidget;
     collections: CollectionsWidget;
   };
   user: User | Member;
@@ -179,6 +200,50 @@ export interface MemberAuthOperations {
   };
 }
 /**
+ * Define staff roles and assign permissions per collection/global.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "staff-roles".
+ */
+export interface StaffRole {
+  id: number;
+  /**
+   * Display name
+   */
+  name: string;
+  /**
+   * Machine slug (admin, editor, custom-role). Synced to user.role when assigned.
+   */
+  slug: string;
+  /**
+   * Optional notes
+   */
+  description?: string | null;
+  /**
+   * System roles cannot be deleted.
+   */
+  isSystem?: boolean | null;
+  /**
+   * Use * as resource to grant on all collections/globals of that type.
+   */
+  permissions?:
+    | {
+        resourceType: 'collection' | 'global';
+        /**
+         * Slug (e.g. posts, pages, site-settings) or * for all resources of this type.
+         */
+        resource: string;
+        /**
+         * admin = show in sidebar; publish = publish drafts.
+         */
+        actions: ('read' | 'create' | 'update' | 'delete' | 'publish' | 'admin')[];
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users".
  */
@@ -186,10 +251,14 @@ export interface User {
   id: number;
   name: string;
   /**
-   * Phân quyền truy cập admin.
+   * Synced from Staff role (legacy field for API compat).
    */
   role: 'admin' | 'editor' | 'viewer';
   avatar?: (number | null) | Media;
+  /**
+   * Assigned role — overrides legacy role select when set.
+   */
+  staffRole?: (number | null) | StaffRole;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -210,6 +279,8 @@ export interface User {
   collection: 'users';
 }
 /**
+ * Upload and organize images, PDFs, and videos. Grid view shows thumbnails like a photo library.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "media".
  */
@@ -220,6 +291,7 @@ export interface Media {
    */
   alt?: string | null;
   caption?: string | null;
+  folder?: (number | null) | FolderInterface;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -257,6 +329,32 @@ export interface Media {
       filename?: string | null;
     };
   };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-folders".
+ */
+export interface FolderInterface {
+  id: number;
+  name: string;
+  folder?: (number | null) | FolderInterface;
+  documentsAndFolders?: {
+    docs?: (
+      | {
+          relationTo?: 'payload-folders';
+          value: number | FolderInterface;
+        }
+      | {
+          relationTo?: 'media';
+          value: number | Media;
+        }
+    )[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  folderType?: 'media'[] | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -650,6 +748,231 @@ export interface Redirect {
   createdAt: string;
 }
 /**
+ * Define custom post types. Set status to Published, then run `pnpm ct:apply` to create DB tables & REST API.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ct-definitions".
+ */
+export interface CtDefinition {
+  id: number;
+  /**
+   * Slug collection (vd: testimonials). Dùng cho REST /api/{slug}.
+   */
+  slug: string;
+  labels: {
+    singular: string;
+    plural: string;
+  };
+  status: 'draft' | 'published' | 'archived';
+  supports?: {
+    drafts?: boolean | null;
+    localization?: boolean | null;
+    slug?: boolean | null;
+    seo?: boolean | null;
+  };
+  /**
+   * Khai báo field riêng cho loại nội dung này. Field Groups dùng chung gắn thêm qua menu Nhóm field.
+   */
+  fields?:
+    | {
+        /**
+         * Khóa field (vd: subtitle, hero_image).
+         */
+        name: string;
+        /**
+         * Nhãn hiển thị trong admin.
+         */
+        label?: string | null;
+        type:
+          | 'text'
+          | 'textarea'
+          | 'number'
+          | 'email'
+          | 'checkbox'
+          | 'select'
+          | 'date'
+          | 'richText'
+          | 'upload'
+          | 'relationship'
+          | 'repeater'
+          | 'group';
+        required?: boolean | null;
+        localized?: boolean | null;
+        options?:
+          | {
+              label?: string | null;
+              value: string;
+              id?: string | null;
+            }[]
+          | null;
+        /**
+         * Slug collection đích: media, tax-xxx, hoặc CPT slug.
+         */
+        relationTo?: string | null;
+        /**
+         * Field con cho repeater / group (1 cấp lồng).
+         */
+        subFields?:
+          | {
+              /**
+               * Khóa field (vd: subtitle, hero_image).
+               */
+              name: string;
+              /**
+               * Nhãn hiển thị trong admin.
+               */
+              label?: string | null;
+              type:
+                | 'text'
+                | 'textarea'
+                | 'number'
+                | 'email'
+                | 'checkbox'
+                | 'select'
+                | 'date'
+                | 'richText'
+                | 'upload'
+                | 'relationship';
+              required?: boolean | null;
+              localized?: boolean | null;
+              options?:
+                | {
+                    label?: string | null;
+                    value: string;
+                    id?: string | null;
+                  }[]
+                | null;
+              /**
+               * Slug collection đích: media, tax-xxx, hoặc CPT slug.
+               */
+              relationTo?: string | null;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  description?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tax-definitions".
+ */
+export interface TaxDefinition {
+  id: number;
+  /**
+   * Slug taxonomy (vd: topic). Collection: tax-topic.
+   */
+  slug: string;
+  labels: {
+    singular: string;
+    plural: string;
+  };
+  status: 'draft' | 'published' | 'archived';
+  hierarchical?: boolean | null;
+  /**
+   * Chọn loại nội dung dùng taxonomy này (pages, posts, CPT tùy chỉnh, v.v.).
+   */
+  contentTypes?: string[] | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "field-groups".
+ */
+export interface FieldGroup {
+  id: number;
+  title: string;
+  fields?:
+    | {
+        /**
+         * Khóa field (vd: subtitle, hero_image).
+         */
+        name: string;
+        /**
+         * Nhãn hiển thị trong admin.
+         */
+        label?: string | null;
+        type:
+          | 'text'
+          | 'textarea'
+          | 'number'
+          | 'email'
+          | 'checkbox'
+          | 'select'
+          | 'date'
+          | 'richText'
+          | 'upload'
+          | 'relationship'
+          | 'repeater'
+          | 'group';
+        required?: boolean | null;
+        localized?: boolean | null;
+        options?:
+          | {
+              label?: string | null;
+              value: string;
+              id?: string | null;
+            }[]
+          | null;
+        /**
+         * Slug collection đích: media, tax-xxx, hoặc CPT slug.
+         */
+        relationTo?: string | null;
+        /**
+         * Field con cho repeater / group (1 cấp lồng).
+         */
+        subFields?:
+          | {
+              /**
+               * Khóa field (vd: subtitle, hero_image).
+               */
+              name: string;
+              /**
+               * Nhãn hiển thị trong admin.
+               */
+              label?: string | null;
+              type:
+                | 'text'
+                | 'textarea'
+                | 'number'
+                | 'email'
+                | 'checkbox'
+                | 'select'
+                | 'date'
+                | 'richText'
+                | 'upload'
+                | 'relationship';
+              required?: boolean | null;
+              localized?: boolean | null;
+              options?:
+                | {
+                    label?: string | null;
+                    value: string;
+                    id?: string | null;
+                  }[]
+                | null;
+              /**
+               * Slug collection đích: media, tax-xxx, hoặc CPT slug.
+               */
+              relationTo?: string | null;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Chọn loại nội dung nhận bộ field này (pages, posts, CPT tùy chỉnh, v.v.).
+   */
+  attachTo?: string[] | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "partners".
  */
@@ -1029,7 +1352,7 @@ export interface CaseStudy {
   _status?: ('draft' | 'published') | null;
 }
 /**
- * Hỏi đáp hiển thị ở trang Câu hỏi thường gặp và trang Liên hệ.
+ * Q&A shown on the FAQ and Contact pages.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "faqs".
@@ -1084,6 +1407,44 @@ export interface GatedDocument {
   createdAt: string;
 }
 /**
+ * Manage content locales. After changes, run sync (`pnpm lang:sync`) and restart the dev server.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "languages".
+ */
+export interface Language {
+  id: number;
+  /**
+   * Locale code (vi, en, en-US). Cannot change after create.
+   */
+  code: string;
+  /**
+   * Label in admin UI
+   */
+  label: string;
+  /**
+   * Name in that language (for frontend switcher)
+   */
+  nativeLabel?: string | null;
+  /**
+   * Emoji flag or icon code
+   */
+  flag?: string | null;
+  enabled?: boolean | null;
+  isDefault?: boolean | null;
+  rtl?: boolean | null;
+  /**
+   * Fallback locale code when translation is missing
+   */
+  fallbackLocale?: string | null;
+  /**
+   * Sort in switcher
+   */
+  sortOrder?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -1107,6 +1468,10 @@ export interface PayloadKv {
 export interface PayloadLockedDocument {
   id: number;
   document?:
+    | ({
+        relationTo: 'staff-roles';
+        value: number | StaffRole;
+      } | null)
     | ({
         relationTo: 'users';
         value: number | User;
@@ -1142,6 +1507,18 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'redirects';
         value: number | Redirect;
+      } | null)
+    | ({
+        relationTo: 'ct-definitions';
+        value: number | CtDefinition;
+      } | null)
+    | ({
+        relationTo: 'tax-definitions';
+        value: number | TaxDefinition;
+      } | null)
+    | ({
+        relationTo: 'field-groups';
+        value: number | FieldGroup;
       } | null)
     | ({
         relationTo: 'partners';
@@ -1182,6 +1559,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'gated-documents';
         value: number | GatedDocument;
+      } | null)
+    | ({
+        relationTo: 'languages';
+        value: number | Language;
+      } | null)
+    | ({
+        relationTo: 'payload-folders';
+        value: number | FolderInterface;
       } | null);
   globalSlug?: string | null;
   user:
@@ -1237,12 +1622,33 @@ export interface PayloadMigration {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "staff-roles_select".
+ */
+export interface StaffRolesSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  description?: T;
+  isSystem?: T;
+  permissions?:
+    | T
+    | {
+        resourceType?: T;
+        resource?: T;
+        actions?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
   name?: T;
   role?: T;
   avatar?: T;
+  staffRole?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -1267,6 +1673,7 @@ export interface UsersSelect<T extends boolean = true> {
 export interface MediaSelect<T extends boolean = true> {
   alt?: T;
   caption?: T;
+  folder?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
@@ -1584,6 +1991,131 @@ export interface RedirectsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ct-definitions_select".
+ */
+export interface CtDefinitionsSelect<T extends boolean = true> {
+  slug?: T;
+  labels?:
+    | T
+    | {
+        singular?: T;
+        plural?: T;
+      };
+  status?: T;
+  supports?:
+    | T
+    | {
+        drafts?: T;
+        localization?: T;
+        slug?: T;
+        seo?: T;
+      };
+  fields?:
+    | T
+    | {
+        name?: T;
+        label?: T;
+        type?: T;
+        required?: T;
+        localized?: T;
+        options?:
+          | T
+          | {
+              label?: T;
+              value?: T;
+              id?: T;
+            };
+        relationTo?: T;
+        subFields?:
+          | T
+          | {
+              name?: T;
+              label?: T;
+              type?: T;
+              required?: T;
+              localized?: T;
+              options?:
+                | T
+                | {
+                    label?: T;
+                    value?: T;
+                    id?: T;
+                  };
+              relationTo?: T;
+              id?: T;
+            };
+        id?: T;
+      };
+  description?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tax-definitions_select".
+ */
+export interface TaxDefinitionsSelect<T extends boolean = true> {
+  slug?: T;
+  labels?:
+    | T
+    | {
+        singular?: T;
+        plural?: T;
+      };
+  status?: T;
+  hierarchical?: T;
+  contentTypes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "field-groups_select".
+ */
+export interface FieldGroupsSelect<T extends boolean = true> {
+  title?: T;
+  fields?:
+    | T
+    | {
+        name?: T;
+        label?: T;
+        type?: T;
+        required?: T;
+        localized?: T;
+        options?:
+          | T
+          | {
+              label?: T;
+              value?: T;
+              id?: T;
+            };
+        relationTo?: T;
+        subFields?:
+          | T
+          | {
+              name?: T;
+              label?: T;
+              type?: T;
+              required?: T;
+              localized?: T;
+              options?:
+                | T
+                | {
+                    label?: T;
+                    value?: T;
+                    id?: T;
+                  };
+              relationTo?: T;
+              id?: T;
+            };
+        id?: T;
+      };
+  attachTo?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "partners_select".
  */
 export interface PartnersSelect<T extends boolean = true> {
@@ -1819,11 +2351,40 @@ export interface GatedDocumentsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "languages_select".
+ */
+export interface LanguagesSelect<T extends boolean = true> {
+  code?: T;
+  label?: T;
+  nativeLabel?: T;
+  flag?: T;
+  enabled?: T;
+  isDefault?: T;
+  rtl?: T;
+  fallbackLocale?: T;
+  sortOrder?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv_select".
  */
 export interface PayloadKvSelect<T extends boolean = true> {
   key?: T;
   data?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-folders_select".
+ */
+export interface PayloadFoldersSelect<T extends boolean = true> {
+  name?: T;
+  folder?: T;
+  documentsAndFolders?: T;
+  folderType?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1933,7 +2494,7 @@ export interface Navigation {
   createdAt?: string | null;
 }
 /**
- * Whitelabel: logo, màu sắc, bo góc cho trang quản trị.
+ * Logo, brand name, and separate style tokens for the website and admin dashboard.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "branding".
@@ -1942,24 +2503,66 @@ export interface Branding {
   id: number;
   brandName?: string | null;
   /**
-   * Logo hiển thị ở đăng nhập & menu.
+   * Used on the website, admin login, and sidebar.
    */
   logo?: (number | null) | Media;
   loginSubtitle?: string | null;
   /**
-   * Màu thương hiệu chính (hex).
+   * Maps to CSS variables on the public site (Tailwind tokens).
+   */
+  frontendTheme: {
+    primaryColor?: string | null;
+    primaryDark?: string | null;
+    primaryTint?: string | null;
+    primaryBorder?: string | null;
+    accentColor?: string | null;
+    accentSoft?: string | null;
+    ink?: string | null;
+    mist?: string | null;
+    /**
+     * Loaded from Google Fonts on the public website.
+     */
+    fontFamily:
+      | 'be-vietnam-pro'
+      | 'inter'
+      | 'plus-jakarta-sans'
+      | 'dm-sans'
+      | 'manrope'
+      | 'nunito-sans'
+      | 'open-sans'
+      | 'roboto'
+      | 'source-sans-3'
+      | 'work-sans'
+      | 'montserrat'
+      | 'lato';
+    radiusLg?: number | null;
+    radiusXl?: number | null;
+    radius2xl?: number | null;
+  };
+  /**
+   * Admin buttons, links, accents.
    */
   primaryColor?: string | null;
   primaryDark?: string | null;
   accentColor?: string | null;
-  /**
-   * Bo góc (px).
-   */
+  sidebarBackground?: string | null;
   radius?: number | null;
   /**
-   * Font CSS, vd: "Be Vietnam Pro", sans-serif.
+   * Admin dashboard typography.
    */
-  fontFamily?: string | null;
+  fontFamily:
+    | 'be-vietnam-pro'
+    | 'inter'
+    | 'plus-jakarta-sans'
+    | 'dm-sans'
+    | 'manrope'
+    | 'nunito-sans'
+    | 'open-sans'
+    | 'roboto'
+    | 'source-sans-3'
+    | 'work-sans'
+    | 'montserrat'
+    | 'lato';
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -2049,14 +2652,92 @@ export interface BrandingSelect<T extends boolean = true> {
   brandName?: T;
   logo?: T;
   loginSubtitle?: T;
+  frontendTheme?:
+    | T
+    | {
+        primaryColor?: T;
+        primaryDark?: T;
+        primaryTint?: T;
+        primaryBorder?: T;
+        accentColor?: T;
+        accentSoft?: T;
+        ink?: T;
+        mist?: T;
+        fontFamily?: T;
+        radiusLg?: T;
+        radiusXl?: T;
+        radius2xl?: T;
+      };
   primaryColor?: T;
   primaryDark?: T;
   accentColor?: T;
+  sidebarBackground?: T;
   radius?: T;
   fontFamily?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "dv-welcome_widget".
+ */
+export interface DvWelcomeWidget {
+  data?: {
+    [k: string]: unknown;
+  };
+  width: 'medium' | 'large' | 'x-large' | 'full';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "dv-shortcuts_widget".
+ */
+export interface DvShortcutsWidget {
+  data?: {
+    /**
+     * Danh sách slug collection hiển thị (để trống = 16 mặc định).
+     */
+    slugs?: string[] | null;
+  };
+  width: 'medium' | 'large' | 'x-large' | 'full';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "dv-stats_widget".
+ */
+export interface DvStatsWidget {
+  data?: {
+    range?: ('7d' | '30d' | '90d' | '365d') | null;
+    /**
+     * Slug collections cần đếm (vd: posts, pages, ingredients).
+     */
+    collections?: string[] | null;
+  };
+  width: 'small' | 'medium' | 'large' | 'x-large' | 'full';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "dv-analytics_widget".
+ */
+export interface DvAnalyticsWidget {
+  data?: {
+    range?: ('7d' | '30d' | '90d' | '365d') | null;
+    /**
+     * Collection slug để vẽ biểu đồ theo ngày tạo.
+     */
+    collection?: string | null;
+  };
+  width: 'medium' | 'large' | 'x-large' | 'full';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "dv-seed_widget".
+ */
+export interface DvSeedWidget {
+  data?: {
+    [k: string]: unknown;
+  };
+  width: 'medium' | 'large' | 'x-large' | 'full';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

@@ -1,2 +1,6 @@
 export { slugField } from './slug.js'
 export { seoField } from './seo.js'
+export { hexColorField } from './defineHexColorField.js'
+export { googleFontField } from './googleFontField.js'
+export { HexColorField } from './HexColorField.js'
+export { validateHexColor } from './validateHexColor.js'

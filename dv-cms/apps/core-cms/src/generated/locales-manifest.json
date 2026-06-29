@@ -1,0 +1,18 @@
+{
+  "defaultLocale": "vi",
+  "fallback": true,
+  "locales": [
+    {
+      "code": "vi",
+      "label": "Tiếng Việt",
+      "rtl": false,
+      "fallbackLocale": null
+    },
+    {
+      "code": "en",
+      "label": "English",
+      "rtl": false,
+      "fallbackLocale": "vi"
+    }
+  ]
+}

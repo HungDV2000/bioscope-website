@@ -17,7 +17,13 @@
     "cms:seed": "pnpm --filter @dv/core-cms seed",
     "cms:migrate": "pnpm --filter @dv/core-cms migrate",
     "cms:migrate:create": "pnpm --filter @dv/core-cms migrate:create",
+    "cms:lang:sync": "pnpm --filter @dv/core-cms lang:sync",
+    "cms:ct:sync": "pnpm --filter @dv/core-cms ct:sync",
+    "cms:ct:apply": "pnpm --filter @dv/core-cms ct:apply",
     "cms:types": "pnpm --filter @dv/core-cms generate:types",
+    "migrate": "pnpm cms:migrate",
+    "lang:sync": "pnpm cms:lang:sync",
+    "devsafe": "pnpm cms:devsafe",
     "fe:dev": "pnpm --filter @dv/bioscope-frontend dev",
     "fe:build": "pnpm --filter @dv/bioscope-frontend build",
     "fe:start": "pnpm --filter @dv/bioscope-frontend start",
@@ -28,5 +34,10 @@
   "devDependencies": {
     "turbo": "^2.3.3",
     "typescript": "5.9.3"
+  },
+  "pnpm": {
+    "patchedDependencies": {
+      "@payloadcms/next@3.85.1": "patches/@payloadcms__next@3.85.1.patch"
+    }
   }
 }

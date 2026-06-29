@@ -1,10 +1,11 @@
 import type { CollectionConfig } from 'payload'
 import { anyone, isAdminOrEditor } from '../access/index.js'
+import { ADMIN_GROUP_CONTENT } from '../i18n/admin-groups.js'
 
 /** Form builder — define arbitrary contact/lead forms in the admin. */
 export const Forms: CollectionConfig = {
   slug: 'forms',
-  admin: { useAsTitle: 'title', group: 'Nội dung' },
+  admin: { useAsTitle: 'title', group: ADMIN_GROUP_CONTENT },
   access: { read: anyone, create: isAdminOrEditor, update: isAdminOrEditor, delete: isAdminOrEditor },
   fields: [
     { name: 'title', type: 'text', required: true },

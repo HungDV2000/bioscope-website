@@ -9,10 +9,14 @@
     ".": "./src/index.ts",
     "./admin": "./src/admin/index.ts",
     "./fields": "./src/fields/index.ts",
-    "./access": "./src/access/index.ts"
+    "./fields/HexColorField": "./src/fields/HexColorField.tsx",
+    "./access": "./src/access/index.ts",
+    "./dashboard": "./src/dashboard/index.ts",
+    "./theme": "./src/theme/index.ts"
   },
   "peerDependencies": {
     "payload": "^3.0.0",
+    "@payloadcms/ui": "^3.0.0",
     "react": "^19.0.0"
   },
   "peerDependenciesMeta": {

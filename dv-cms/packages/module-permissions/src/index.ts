@@ -1,0 +1,5 @@
+export { permissionsPlugin, type PermissionsPluginOptions } from './plugin.js'
+export { StaffRoles } from './collections/StaffRoles.js'
+export { ADMIN_GROUP_PERMISSIONS } from './i18n/admin-groups.js'
+export * from './access/index.js'
+export type { PermissionAction, PermissionRule, PermissionResourceType, StaffRoleDoc } from './types.js'

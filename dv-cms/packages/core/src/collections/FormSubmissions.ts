@@ -1,12 +1,13 @@
 import type { CollectionConfig } from 'payload'
 import { anyone, isAdminOrEditor } from '../access/index.js'
+import { ADMIN_GROUP_CONTENT } from '../i18n/admin-groups.js'
 
 /** Stored submissions for any Form. Public create, staff-only read. */
 export const FormSubmissions: CollectionConfig = {
   slug: 'form-submissions',
   admin: {
     useAsTitle: 'id',
-    group: 'Nội dung',
+    group: ADMIN_GROUP_CONTENT,
     defaultColumns: ['form', 'createdAt'],
   },
   access: {

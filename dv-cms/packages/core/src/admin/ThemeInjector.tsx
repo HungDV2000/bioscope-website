@@ -2,42 +2,45 @@
 
 import React, { useEffect } from 'react'
 
-type Branding = {
-  primaryColor?: string
-  primaryDark?: string
-  accentColor?: string
-  radius?: number
-  fontFamily?: string
+import {
+  adminThemeToCssVars,
+  googleFontStylesheetUrl,
+  resolveAdminTheme,
+  type BrandingGlobal,
+} from '../theme/index.js'
+
+const FONT_LINK_ID = 'dv-google-font'
+
+const applyGoogleFont = (branding: BrandingGlobal) => {
+  const url = googleFontStylesheetUrl(branding.fontFamily)
+  let link = document.getElementById(FONT_LINK_ID) as HTMLLinkElement | null
+  if (!link) {
+    link = document.createElement('link')
+    link.id = FONT_LINK_ID
+    link.rel = 'stylesheet'
+    document.head.appendChild(link)
+  }
+  if (link.href !== url) link.href = url
+}
+
+const applyVars = (vars: Record<string, string>) => {
+  const root = document.documentElement
+  for (const [key, value] of Object.entries(vars)) {
+    root.style.setProperty(key, value)
+  }
 }
 
 /**
- * Admin provider: reads the Branding global and applies brand CSS variables to
- * the document root. Degrades gracefully — the static defaults in custom.scss
- * remain if the fetch fails. Registered in `admin.components.providers`.
+ * Admin provider: reads the Branding global and applies dashboard CSS variables.
+ * Registered in `admin.components.providers`.
  */
 export const ThemeInjector: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
   useEffect(() => {
-    fetch('/api/globals/branding')
+    fetch('/api/globals/branding?depth=1')
       .then((r) => r.json())
-      .then((b: Branding) => {
-        const root = document.documentElement
-        const set = (k: string, v?: string | number) => {
-          if (v !== undefined && v !== null && v !== '') root.style.setProperty(k, String(v))
-        }
-        // Brand tokens (used by our components + scss).
-        set('--dv-primary', b.primaryColor)
-        set('--dv-primary-dark', b.primaryDark)
-        set('--dv-accent', b.accentColor)
-        if (b.fontFamily) set('--dv-font', b.fontFamily)
-        // Best-effort mapping onto Payload's own accent scale.
-        set('--color-success-500', b.primaryColor)
-        set('--color-success-550', b.primaryColor)
-        set('--color-success-600', b.primaryDark)
-        if (b.radius != null) {
-          set('--style-radius-s', `${Math.max(4, b.radius - 4)}px`)
-          set('--style-radius-m', `${b.radius}px`)
-          set('--style-radius-l', `${b.radius + 6}px`)
-        }
+      .then((b: BrandingGlobal) => {
+        applyVars(adminThemeToCssVars(resolveAdminTheme(b)))
+        applyGoogleFont(b)
       })
       .catch(() => {})
   }, [])

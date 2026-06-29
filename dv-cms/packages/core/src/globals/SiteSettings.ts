@@ -1,9 +1,10 @@
 import type { GlobalConfig } from 'payload'
 import { anyone, isAdminOrEditor } from '../access/index.js'
+import { ADMIN_GROUP_SYSTEM } from '../i18n/admin-groups.js'
 
 export const SiteSettings: GlobalConfig = {
   slug: 'site-settings',
-  admin: { group: 'Hệ thống' },
+  admin: { group: ADMIN_GROUP_SYSTEM },
   access: { read: anyone, update: isAdminOrEditor },
   fields: [
     { name: 'siteName', type: 'text', localized: true },

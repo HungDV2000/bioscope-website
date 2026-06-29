@@ -2,6 +2,9 @@
 
 import React, { useEffect } from 'react'
 
+import { useBranding } from './useBranding.js'
+import { useDvTranslation } from '../i18n/useDvTranslation.js'
+
 /** Sets body class for login page styles. */
 export const LoginShell: React.FC = () => {
   useEffect(() => {
@@ -11,9 +14,12 @@ export const LoginShell: React.FC = () => {
   return null
 }
 
-/** Subtitle below logo. */
-export const LoginSubtitle: React.FC = () => (
-  <p className="dv-login-subtitle">Đăng nhập bằng tài khoản quản trị được cấp quyền</p>
-)
+/** Subtitle below logo — Branding global (localized) with i18n fallback. */
+export const LoginSubtitle: React.FC = () => {
+  const { t, lang } = useDvTranslation()
+  const branding = useBranding(lang)
+  const text = branding?.loginSubtitle?.trim() || t('dv:login.subtitle')
+  return <p className="dv-login-subtitle">{text}</p>
+}
 
 export default LoginShell

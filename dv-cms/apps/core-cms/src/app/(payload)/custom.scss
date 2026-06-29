@@ -1,27 +1,1047 @@
 /* =========================================================================
-   Bioscope admin theme
+   Bioscope admin — Claude-like sidebar + brand tokens (--dv-* from ThemeInjector)
    ========================================================================= */
 
-@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap');
-
 :root {
-  --dv-primary: #0e6147;
-  --dv-primary-dark: #00301a;
-  --dv-accent: #f7941d;
-  --dv-font: 'Be Vietnam Pro', system-ui, sans-serif;
+  --dv-primary: #008e4d;
+  --dv-primary-dark: #036f3d;
+  --dv-accent: #f58e33;
+  --dv-sidebar-bg: #f4f8f6;
+  --dv-font: 'Be Vietnam Pro', system-ui, -apple-system, sans-serif;
+  --dv-nav-width: 260px;
+  --dv-nav-collapsed-width: 3.5rem;
 
   --style-radius-s: 8px;
-  --style-radius-m: 12px;
-  --style-radius-l: 16px;
+  --style-radius-m: 10px;
+  --style-radius-l: 14px;
 
-  --color-success-500: #0e6147;
-  --color-success-550: #0e6147;
-  --color-success-600: #00301a;
-  --theme-success-500: #0e6147;
+  --color-success-500: #008e4d;
+  --color-success-550: #008e4d;
+  --color-success-600: #036f3d;
+  --theme-success-500: #008e4d;
 }
 
 body {
   font-family: var(--dv-font);
+}
+
+/* ── Scrollbar mảnh, bo tròn (sidebar + nội dung chính) ─────────────────── */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--dv-primary) 28%, #c5cdc8) transparent;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--dv-primary) 28%, #c5cdc8) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--dv-primary) 22%, #b8c4be);
+  border-radius: 99px;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--dv-primary) 38%, #9aada3);
+  background-clip: padding-box;
+}
+
+.nav__wrap,
+.template-default__wrap,
+.modular-dashboard,
+.dashboard {
+  scrollbar-gutter: stable;
+}
+
+/* ── Layout grid ─────────────────────────────────────────────────────────── */
+.template-default {
+  --nav-width: var(--dv-nav-width) !important;
+}
+
+.template-default__wrap {
+  background: var(--theme-bg) !important;
+}
+
+/* ── Sidebar shell (Claude: flat, warm gray, no heavy shadow) ─────────────── */
+.template-default__nav,
+.nav {
+  background: var(--dv-sidebar-bg) !important;
+  border-right: 1px solid color-mix(in srgb, var(--dv-primary) 8%, #e8ece9) !important;
+  box-shadow: none !important;
+}
+
+.nav__scroll {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding-top: 0 !important;
+}
+
+/* Ghi đè Payload mặc định height:0 trên toggler */
+.template-default__nav-toggler-wrapper {
+  height: var(--app-header-height) !important;
+  width: auto !important;
+}
+
+/* ── Nav toggler — desktop ≥1441px: logo trái, nút phải trong sidebar ───── */
+@media (min-width: 1441px) {
+  div:has(> .template-default--nav-open) > .template-default__nav-toggler-wrapper {
+    position: absolute !important;
+    top: 0 !important;
+    left: calc(var(--nav-width, var(--dv-nav-width)) - 3rem) !important;
+    right: auto !important;
+    width: 2.5rem !important;
+    min-width: 2.5rem !important;
+    height: var(--app-header-height) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    pointer-events: auto !important;
+    z-index: calc(var(--z-modal) + 3) !important;
+    background: transparent;
+  }
+}
+
+.template-default__nav-toggler-container,
+.template-default__nav-toggler {
+  pointer-events: auto !important;
+  height: auto !important;
+}
+
+.template-default__nav-toggler.nav-toggler {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.template-default__nav-toggler .hamburger {
+  width: 2rem;
+  height: 2rem;
+  min-width: 2rem;
+  left: unset !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--style-radius-s);
+  color: color-mix(in srgb, var(--dv-primary-dark) 75%, #3d4a44);
+  background: color-mix(in srgb, var(--dv-primary) 6%, white);
+  border: 1px solid color-mix(in srgb, var(--dv-primary) 12%, #e8ece9);
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+/* Tablet + mobile (≤1440px): menu drawer đè lên nội dung, một nút trong header ─ */
+@media (max-width: 1440px) {
+  .template-default,
+  .template-default--nav-hydrated,
+  .template-default--nav-open,
+  .template-default--nav-hydrated.template-default--nav-open {
+    grid-template-columns: 1fr !important;
+  }
+
+  .template-default__nav-toggler-wrapper {
+    display: none !important;
+  }
+
+  .app-header__mobile-nav-toggler {
+    display: flex !important;
+    align-items: center;
+  }
+
+  .app-header__mobile-nav-toggler .hamburger {
+    width: 2rem;
+    height: 2rem;
+    border-radius: var(--style-radius-s);
+    background: color-mix(in srgb, var(--dv-primary) 6%, white);
+    border: 1px solid color-mix(in srgb, var(--dv-primary) 12%, #e8ece9);
+  }
+
+  /* Payload ẩn .nav — luôn bật lại khi drawer */
+  .template-default .nav,
+  .template-default--nav-hydrated .nav,
+  .nav {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    z-index: 10050 !important;
+    height: 100dvh !important;
+    width: min(92vw, var(--dv-nav-width)) !important;
+    max-width: 320px;
+    opacity: 1 !important;
+    background: var(--dv-sidebar-bg) !important;
+    box-shadow: 4px 0 28px rgb(15 23 18 / 14%);
+    overflow: hidden;
+    display: flex !important;
+    flex-direction: column !important;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translate3d(-100%, 0, 0);
+    transition: transform var(--nav-trans-time) linear;
+    --nav-padding-inline-start: 0.75rem;
+    --nav-padding-inline-end: 0.75rem;
+  }
+
+  .template-default--nav-open .nav.nav--nav-open,
+  .template-default--nav-open aside.nav {
+    visibility: visible !important;
+    pointer-events: auto !important;
+    transform: translate3d(0, 0, 0) !important;
+    background: var(--dv-sidebar-bg) !important;
+    z-index: 10050 !important;
+  }
+
+  /* Backdrop chỉ phủ vùng nội dung (bên phải drawer), không đè lên menu */
+  .template-default--nav-open::after {
+    display: none !important;
+  }
+
+  .dv-nav-backdrop {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: min(92vw, var(--dv-nav-width));
+    z-index: 10040;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: rgb(15 23 18 / 42%);
+    cursor: pointer;
+    appearance: none;
+  }
+
+  .template-default--nav-open .template-default__wrap::before {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
+  /* Ẩn header Payload — dùng dv-nav-brand + nút đóng */
+  .nav__header {
+    display: none !important;
+  }
+
+  .nav__scroll {
+    --nav-padding-block-start: 0 !important;
+    padding-top: 0 !important;
+    flex: 1;
+    min-height: 0;
+  }
+
+  .nav__wrap {
+    padding: 0.35rem 0.5rem 1.25rem !important;
+    width: 100% !important;
+  }
+
+  .nav-group__toggle {
+    font-size: 0.8125rem !important;
+    padding: 0.55rem 0.65rem 0.35rem !important;
+  }
+
+  .nav__link {
+    font-size: 0.9375rem !important;
+    font-weight: 500 !important;
+    line-height: 1.35 !important;
+    padding: 0.65rem 0.75rem !important;
+    padding-inline-end: 0.75rem !important;
+    min-height: 2.75rem;
+    width: 100% !important;
+    box-sizing: border-box;
+  }
+
+  .nav__link-label {
+    flex: 1 1 auto;
+    min-width: 0;
+    white-space: normal;
+    word-break: break-word;
+  }
+
+  .dv-nav-brand {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    box-sizing: border-box;
+    width: 100%;
+    min-height: var(--app-header-height);
+    height: auto;
+    margin-inline: 0 !important;
+    padding: 0.65rem 0.75rem !important;
+    border-bottom: 1px solid color-mix(in srgb, var(--dv-primary) 8%, #e8ece9);
+    background: var(--dv-sidebar-bg) !important;
+  }
+
+  .dv-nav-brand__link {
+    flex: 1 1 auto;
+    min-width: 0;
+    margin: 0 !important;
+    padding: 0.2rem 0 !important;
+  }
+
+  .dv-nav-brand__close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-inline-start: auto;
+    margin-inline-end: 0;
+    width: 2.25rem;
+    height: 2.25rem;
+    padding: 0;
+    border: 1px solid color-mix(in srgb, var(--dv-primary) 12%, #e8ece9);
+    border-radius: var(--style-radius-s);
+    background: color-mix(in srgb, var(--dv-primary) 6%, white);
+    color: color-mix(in srgb, var(--dv-primary-dark) 75%, #3d4a44);
+    cursor: pointer;
+    transition:
+      background 0.15s ease,
+      color 0.15s ease,
+      border-color 0.15s ease;
+
+    &:hover {
+      background: color-mix(in srgb, var(--dv-primary) 12%, white);
+      color: var(--dv-primary-dark);
+    }
+
+    svg {
+      width: 1.125rem;
+      height: 1.125rem;
+    }
+  }
+}
+
+.template-default__nav-toggler .hamburger:hover {
+  background: color-mix(in srgb, var(--dv-primary) 12%, white);
+  color: var(--dv-primary-dark);
+  border-color: color-mix(in srgb, var(--dv-primary) 22%, #e8ece9);
+}
+
+.template-default__nav-toggler .hamburger__open-icon,
+.template-default__nav-toggler .hamburger__close-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.template-default__nav-toggler .hamburger__open-icon svg,
+.template-default__nav-toggler .hamburger__close-icon svg {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+@media (min-width: 1441px) {
+  .template-default__nav-toggler-wrapper .hamburger {
+    display: flex !important;
+  }
+
+  div:not(:has(> .template-default--nav-open)) > .template-default__nav-toggler-wrapper {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: auto !important;
+    width: var(--dv-nav-collapsed-width) !important;
+    min-width: var(--dv-nav-collapsed-width) !important;
+    height: var(--app-header-height) !important;
+    padding: 0 !important;
+    justify-content: center !important;
+    z-index: calc(var(--z-modal) + 3) !important;
+  }
+}
+
+/* ── Icon rail khi thu gọn (desktop ≥1441px) ───────────────────────────── */
+@media (min-width: 1441px) {
+  .template-default.dv-template--nav-collapsed,
+  .template-default:not(.template-default--nav-open) {
+    grid-template-columns: var(--dv-nav-collapsed-width) auto !important;
+  }
+
+  .dv-nav--icon-rail.nav {
+    opacity: 1 !important;
+    width: var(--dv-nav-collapsed-width) !important;
+    overflow-x: hidden;
+    overflow-y: auto;
+    --nav-padding-inline-start: 0.25rem;
+    --nav-padding-inline-end: 0.25rem;
+    --nav-padding-block-start: var(--app-header-height);
+  }
+
+  .dv-nav--icon-rail .nav__wrap {
+    padding: 0.2rem 0.1rem 0.75rem !important;
+  }
+
+  .dv-nav--icon-rail .dv-nav-brand {
+    height: auto;
+    min-height: unset;
+    margin-inline: 0;
+    padding: 2.85rem 0.15rem 0.45rem;
+    justify-content: center;
+    border-bottom: none;
+  }
+
+  .dv-nav--icon-rail .dv-nav-brand__link {
+    justify-content: center;
+    padding: 0.15rem;
+    margin: 0;
+  }
+
+  .dv-nav--icon-rail .dv-nav-brand__logo {
+    max-width: 1.5rem;
+    height: 1.5rem;
+    object-fit: contain;
+  }
+
+  .dv-nav--icon-rail .nav-group {
+    margin-bottom: 0.15rem !important;
+  }
+
+  .dv-nav--icon-rail .nav-group__toggle {
+    display: none !important;
+  }
+
+  .dv-nav--icon-rail .nav-group .rah-static {
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  .dv-nav--icon-rail .nav__link {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    width: 2.25rem;
+    height: 2.25rem;
+    min-height: 2.25rem;
+    margin: 0 auto 0.2rem !important;
+    padding: 0 !important;
+    gap: 0 !important;
+    border-radius: var(--style-radius-s) !important;
+  }
+
+  .dv-nav--icon-rail .nav__link-label {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+  }
+
+  .dv-nav--icon-rail .nav__link .dv-nav-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+
+    svg {
+      width: 1.125rem;
+      height: 1.125rem;
+    }
+  }
+
+  .dv-nav--icon-rail .nav__controls,
+  .dv-nav--icon-rail .nav__header {
+    padding-inline: 0.15rem !important;
+  }
+
+  .dv-nav--icon-rail .settings-menu-button {
+    width: 2.25rem;
+    margin: 0 auto;
+    justify-content: center;
+  }
+}
+
+/* ── Brand header — logo trái, link về /admin (desktop) ──────────────── */
+.dv-nav-brand {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  box-sizing: border-box;
+  width: 100%;
+  height: var(--app-header-height);
+  min-height: var(--app-header-height);
+  margin-bottom: 0.25rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--dv-primary) 8%, #e8ece9);
+  background: var(--dv-sidebar-bg);
+}
+
+@media (min-width: 1441px) {
+  .dv-nav-brand {
+    margin-inline-start: calc(-1 * var(--nav-padding-inline-start, var(--gutter-h)));
+    margin-inline-end: calc(-1 * var(--nav-padding-inline-end, var(--gutter-h)));
+    padding-inline: 0.85rem 3.25rem;
+    padding-block: 0;
+  }
+}
+
+.dv-nav-brand__link {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  min-width: 0;
+  flex: 1 1 auto;
+  text-decoration: none;
+  color: inherit;
+  border-radius: var(--style-radius-s);
+  padding: 0.2rem 0.35rem;
+  margin: -0.2rem -0.35rem;
+  position: relative;
+  z-index: 3;
+  cursor: pointer;
+  transition: background 0.15s ease;
+
+  &:hover {
+    background: color-mix(in srgb, var(--dv-primary) 8%, white);
+  }
+}
+
+.dv-nav-brand__logo {
+  display: block;
+  height: 26px;
+  width: auto;
+  max-width: 130px;
+  object-fit: contain;
+}
+
+/* ── Nav groups & links (Claude: soft labels, rounded rows) ─────────────── */
+.nav__wrap {
+  padding: 0.35rem 0.6rem 1rem !important;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.nav-group {
+  margin-bottom: 0.5rem !important;
+}
+
+.nav-group__toggle {
+  font-size: 0.6875rem !important;
+  font-weight: 600 !important;
+  text-transform: none !important;
+  letter-spacing: 0.02em !important;
+  color: color-mix(in srgb, var(--dv-primary-dark) 45%, #8a9690) !important;
+  padding: 0.5rem 0.55rem 0.25rem !important;
+  margin-bottom: 0.1rem !important;
+
+  &:hover,
+  &:focus-visible {
+    color: var(--dv-primary-dark) !important;
+  }
+}
+
+.nav__link {
+  border-radius: var(--style-radius-m) !important;
+  padding: 0.48rem 0.65rem !important;
+  margin-bottom: 1px !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  color: color-mix(in srgb, var(--dv-primary-dark) 55%, #3d4a44) !important;
+  transition:
+    background 0.12s ease,
+    color 0.12s ease !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.55rem;
+
+  .dv-nav-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.125rem;
+    height: 1.125rem;
+    flex-shrink: 0;
+    color: color-mix(in srgb, var(--dv-primary) 65%, #5a6b62);
+
+    svg {
+      display: block;
+      width: 1.125rem;
+      height: 1.125rem;
+    }
+  }
+
+  &:hover:not(.active) .dv-nav-icon,
+  &.active .dv-nav-icon {
+    color: var(--dv-primary);
+  }
+
+  &:hover:not(.active) {
+    background: color-mix(in srgb, var(--dv-primary) 6%, white) !important;
+    color: var(--dv-primary-dark) !important;
+  }
+}
+
+.nav__link.active {
+  background: color-mix(in srgb, var(--dv-primary) 11%, white) !important;
+  color: var(--dv-primary) !important;
+  font-weight: 600 !important;
+}
+
+.nav__link-indicator {
+  display: none !important;
+}
+
+.nav__header {
+  border-top: 1px solid color-mix(in srgb, var(--dv-primary) 8%, #e8ece9);
+  padding: 0.45rem 0.5rem !important;
+}
+
+.nav__controls {
+  margin-top: auto;
+  padding: 0.65rem 0.5rem !important;
+  border-top: 1px solid color-mix(in srgb, var(--dv-primary) 8%, #e8ece9);
+}
+
+/* ── App header (main) ───────────────────────────────────────────────────── */
+.app-header {
+  border-bottom: 1px solid color-mix(in srgb, var(--dv-primary) 6%, #e8ece9) !important;
+  background: var(--theme-bg) !important;
+  padding-top: 0.35rem !important;
+  padding-bottom: 0.35rem !important;
+}
+
+/* Avatar dropdown — không điều hướng thẳng khi click (Payload bọc trong Link) */
+.app-header__account {
+  pointer-events: none;
+}
+
+.dv-account-menu,
+.dv-account-menu * {
+  pointer-events: auto;
+}
+
+.dv-account-menu__popup {
+  display: flex;
+  align-items: center;
+}
+
+.dv-account-menu__logout {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dv-account-menu__popup .popup-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 999px;
+}
+
+.dv-account-menu__popup .popup-button:hover {
+  opacity: 0.9;
+}
+
+/* Ẩn đăng xuất sidebar (đã chuyển lên menu user) */
+.nav__controls .nav__log-out {
+  display: none !important;
+}
+
+/* Dashboard — full width */
+.dashboard,
+.dashboard__wrap,
+.dashboard-wrap {
+  width: 100% !important;
+  max-width: none !important;
+  padding-top: 1rem !important;
+  padding-bottom: 2rem !important;
+}
+
+.dashboard .dashboard__edit,
+.dashboard .dashboard-header {
+  margin-top: 0.25rem;
+}
+
+.template-default__wrap .dashboard {
+  padding-inline: var(--gutter-h, 1.25rem) !important;
+}
+
+/* Payload modular dashboard — ép full width (tránh widget medium 50% để trống nửa trái) */
+.modular-dashboard:not(.editing) {
+  gap: 0;
+  margin-inline: -4px;
+
+  .widget {
+    width: 100% !important;
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
+    padding: 6px 4px !important;
+    box-sizing: border-box;
+  }
+
+  /* Ẩn widget collections mặc định (layout cũ có thể còn slot 50% trống) */
+  .widget[data-slug^='collections'] {
+    display: none !important;
+    width: 0 !important;
+    flex: 0 0 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+  }
+
+  @media (min-width: 900px) {
+    .widget:has(.dv-dashboard-chart) {
+      width: 50% !important;
+      flex: 0 0 50% !important;
+    }
+  }
+}
+
+.modular-dashboard .widget-wrapper {
+  height: 100%;
+}
+
+.modular-dashboard .widget-content {
+  height: 100%;
+}
+
+.modular-dashboard .card {
+  border-radius: var(--style-radius-l) !important;
+  border: 1px solid color-mix(in srgb, var(--dv-primary) 8%, #e8ece9) !important;
+  box-shadow: 0 1px 2px color-mix(in srgb, #000 4%, transparent) !important;
+  overflow: hidden;
+}
+
+.dashboard [data-widget-slug='collections'] {
+  display: none !important;
+}
+
+.dashboard .card.dv-dashboard-welcome,
+.dashboard .card.dv-dashboard-shortcuts,
+.dashboard .card.dv-dashboard-stats,
+.dashboard .card.dv-dashboard-chart,
+.dashboard .dv-dashboard-seed {
+  margin-bottom: 0;
+  width: 100%;
+}
+
+.dv-dashboard-welcome {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 20px;
+  padding: 20px 24px;
+  background: linear-gradient(
+    100deg,
+    var(--dv-primary, #008e4d) 0%,
+    var(--dv-primary-dark, #036f3d) 100%
+  );
+  color: #fff;
+  border: none;
+
+  h2 {
+    margin: 0;
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.3;
+  }
+
+  p {
+    margin: 0;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.88);
+    max-width: 28rem;
+    line-height: 1.45;
+  }
+}
+
+@media (min-width: 768px) {
+  .dv-dashboard-welcome p {
+    text-align: right;
+  }
+}
+
+.dv-dashboard-empty {
+  margin: 0;
+  font-size: 13px;
+  color: var(--theme-elevation-500);
+}
+
+/* Biểu đồ */
+.dv-dashboard-chart {
+  padding: 18px 20px 14px;
+  display: flex;
+  flex-direction: column;
+  min-height: 220px;
+}
+
+.dv-dashboard-chart__header {
+  margin-bottom: 12px;
+}
+
+.dv-dashboard-chart__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.dv-dashboard-chart__subtitle {
+  margin: 3px 0 0;
+  font-size: 12px;
+  color: var(--theme-elevation-500);
+  text-transform: capitalize;
+}
+
+.dv-dashboard-chart__plot {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  border-radius: var(--style-radius-m);
+  background: color-mix(in srgb, var(--dv-sidebar-bg) 70%, white);
+  border: 1px solid color-mix(in srgb, var(--dv-primary) 6%, #e8ece9);
+  padding: 12px 10px 8px;
+}
+
+.dv-dashboard-chart__bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  min-height: 120px;
+  width: 100%;
+}
+
+.dv-dashboard-chart__bar-col {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+  height: 120px;
+}
+
+.dv-dashboard-chart__bar {
+  width: 100%;
+  max-width: 20px;
+  min-height: 3px;
+  border-radius: 4px 4px 2px 2px;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--dv-primary) 85%, white),
+    var(--dv-primary-dark, #036f3d)
+  );
+  transition: opacity 0.15s ease;
+}
+
+.dv-dashboard-chart__bar-col:hover .dv-dashboard-chart__bar {
+  opacity: 0.85;
+}
+
+.dv-dashboard-chart__bar--zero {
+  background: color-mix(in srgb, var(--dv-primary) 12%, #e8ece9);
+  min-height: 2px;
+}
+
+.dv-dashboard-chart__label {
+  font-size: 9px;
+  margin-top: 5px;
+  color: var(--theme-elevation-500);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.dv-dashboard-chart__label--empty {
+  visibility: hidden;
+  height: 12px;
+}
+
+/* Bảng thống kê — tiêu đề + mốc thời gian trên, KPI cards full width bên dưới */
+.dv-dashboard-stats {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 18px 20px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.dv-dashboard-stats__header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.dv-dashboard-stats__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.dv-dashboard-stats__range {
+  margin: 0;
+  font-size: 12px;
+  color: var(--theme-elevation-500);
+}
+
+.dv-dashboard-stats__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  width: 100%;
+}
+
+.dv-dashboard-stats__card {
+  padding: 14px 16px;
+  border-radius: var(--style-radius-m);
+  border: 1px solid color-mix(in srgb, var(--dv-primary) 8%, #e8ece9);
+  background: color-mix(in srgb, var(--dv-sidebar-bg) 55%, white);
+}
+
+.dv-dashboard-stats__card-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--theme-elevation-500);
+  margin-bottom: 6px;
+}
+
+.dv-dashboard-stats__card-total {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--theme-text);
+}
+
+.dv-dashboard-stats__card-new {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--dv-primary);
+  background: color-mix(in srgb, var(--dv-primary) 10%, white);
+  padding: 2px 8px;
+  border-radius: 99px;
+}
+
+/* Truy cập nhanh — tiêu đề + mô tả trên, menu grid full width dưới */
+.dv-dashboard-shortcuts {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 18px 20px;
+}
+
+.dv-dashboard-shortcuts__header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.dv-dashboard-shortcuts__title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.dv-dashboard-shortcuts__hint {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--theme-elevation-500);
+  max-width: 42rem;
+}
+
+.dv-dashboard-shortcuts__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+  width: 100%;
+}
+
+.dv-dashboard-shortcuts__link {
+  display: flex;
+  align-items: center;
+  min-height: 42px;
+  padding: 10px 12px;
+  border-radius: var(--style-radius-m, 10px);
+  border: 1px solid color-mix(in srgb, var(--dv-primary) 8%, #e8ece9);
+  background: var(--theme-elevation-0);
+  text-decoration: none;
+  color: var(--theme-text);
+  font-size: 13px;
+  font-weight: 600;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s,
+    background 0.15s;
+
+  &:hover {
+    border-color: var(--dv-primary);
+    background: color-mix(in srgb, var(--dv-primary) 4%, white);
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--dv-primary) 10%, transparent);
+  }
+}
+
+/* Seed widget — gọn, không chiếm nhiều chỗ */
+.dv-dashboard-seed {
+  padding: 16px 20px;
+  border-radius: var(--style-radius-l);
+  border: 1px dashed color-mix(in srgb, var(--dv-primary) 20%, #e8ece9);
+  background: color-mix(in srgb, var(--dv-sidebar-bg) 50%, white);
+}
+
+.dv-dashboard-seed__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.dv-dashboard-seed__title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.dv-dashboard-seed__desc {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--theme-elevation-500);
+}
+
+.step-nav {
+  padding-block: 0.35rem 0.15rem !important;
+}
+
+.step-nav__home {
+  display: none !important;
 }
 
 .btn--style-primary:not(.btn--disabled) {
@@ -32,11 +1052,6 @@ body {
 .btn--style-primary:not(.btn--disabled):hover {
   background-color: var(--dv-primary-dark);
   border-color: var(--dv-primary-dark);
-}
-
-.nav__link.active,
-.nav-group__toggle:hover {
-  color: var(--dv-primary);
 }
 
 /* =========================================================================
@@ -52,7 +1067,7 @@ body.dv-login-page .template-minimal {
   padding: 3rem 1.25rem;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(to bottom, rgba(244, 247, 245, 0.85), #fff);
+  background: linear-gradient(to bottom, color-mix(in srgb, var(--dv-sidebar-bg) 85%, white), #fff);
 }
 
 body.dv-login-page .template-minimal__wrap {
@@ -94,9 +1109,9 @@ body.dv-login-page .login__form {
   width: 100%;
   padding: 2rem;
   border-radius: 1.75rem;
-  border: 1px solid rgba(14, 97, 71, 0.15);
+  border: 1px solid color-mix(in srgb, var(--dv-primary) 18%, transparent);
   background: #fff;
-  box-shadow: 0 4px 24px -4px rgba(0, 48, 26, 0.1);
+  box-shadow: 0 18px 48px -24px rgba(16, 24, 20, 0.22);
 }
 
 body.dv-login-page .login-fields {
@@ -138,4 +1153,84 @@ body.dv-login-page .login__form a {
 
 .dv-login-footer__link:hover {
   color: var(--dv-primary-dark);
+}
+
+/* =========================================================================
+   Hex color picker (Branding global)
+   ========================================================================= */
+
+.dv-hex-color__row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-top: 0.35rem;
+}
+
+.dv-hex-color__picker {
+  flex-shrink: 0;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0.15rem;
+  border: 1px solid var(--theme-elevation-200, #d8e5de);
+  border-radius: var(--style-radius-m, 10px);
+  background: #fff;
+  cursor: pointer;
+
+  &::-webkit-color-swatch-wrapper {
+    padding: 0;
+  }
+
+  &::-webkit-color-swatch {
+    border: none;
+    border-radius: calc(var(--style-radius-m, 10px) - 3px);
+  }
+}
+
+.dv-hex-color__text {
+  flex: 1;
+  min-width: 0;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid var(--theme-elevation-200, #d8e5de);
+  border-radius: var(--style-radius-m, 10px);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9rem;
+  background: var(--theme-elevation-0, #fff);
+  color: var(--theme-elevation-900, #1a2e24);
+
+  &:focus {
+    outline: none;
+    border-color: var(--dv-primary, #008e4d);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--dv-primary, #008e4d) 18%, transparent);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.dv-hex-color__swatch {
+  flex-shrink: 0;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--style-radius-m, 10px);
+  border: 1px solid var(--theme-elevation-200, #d8e5de);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.04);
+}
+
+/* Media library — grid thumbnail lớn hơn (WordPress / Strapi style) */
+.collection-folder-list--media {
+  .item-card-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: calc(var(--base) * 0.75);
+  }
+
+  .folder-file-card--file .folder-file-card__preview-area {
+    aspect-ratio: 4 / 3;
+  }
+
+  .folder-file-card__name {
+    font-size: 0.8125rem;
+    font-weight: 600;
+  }
 }

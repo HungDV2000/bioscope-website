@@ -1,11 +1,8 @@
-import os from 'os'
-import path from 'path'
-import fs from 'fs'
 import type { Payload } from 'payload'
 
-// 1×1 transparent PNG used as a placeholder upload for the gated document.
-const PNG_B64 =
-  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='
+import { seedMediaLibrary } from './seedMedia.js'
+import { seedForms } from './seedForms.js'
+import { upsert, upsertLocalized, type Id } from './seedHelpers.js'
 
 /** Build a minimal Lexical editor state from plain paragraphs. */
 const lexical = (paragraphs: string[]) => ({
@@ -29,8 +26,6 @@ const lexical = (paragraphs: string[]) => ({
   },
 })
 
-type Id = string | number
-
 /**
  * Idempotent seed for Bioscope content. Safe to run repeatedly: existing
  * records are found (by a unique-ish field) and reused, globals are updated.
@@ -41,24 +36,6 @@ export async function runSeed(payload: Payload): Promise<string[]> {
   const log = (m: string) => {
     out.push(m)
     process.stderr.write(`[seed] ${m}\n`)
-  }
-
-  /** upsert by a unique-ish where clause; returns the doc id. */
-  const upsert = async (
-    collection: string,
-    where: Record<string, unknown>,
-    data: Record<string, unknown>,
-  ): Promise<Id> => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const c = collection as any
-    const found = await payload.find({ collection: c, where: where as never, limit: 1 })
-    if (found.totalDocs > 0) {
-      const id = (found.docs[0] as { id: Id }).id
-      await payload.update({ collection: c, id: id as never, data: data as never })
-      return id
-    }
-    const created = (await payload.create({ collection: c, data: data as never })) as { id: Id }
-    return created.id
   }
 
   /* ── 1. Admin user ─────────────────────────────────────── */
@@ -79,6 +56,12 @@ export async function runSeed(payload: Payload): Promise<string[]> {
     adminId = (admins.docs[0] as { id: Id }).id
     log('admin already exists')
   }
+
+  /* ── 1b. Media library (folders + sample images) ───────── */
+  const coaMediaId = await seedMediaLibrary(payload, log)
+
+  /* ── 1c. Forms (Liên hệ, mẫu thử, Bioscope AI) ─────────── */
+  await seedForms(payload, log)
 
   /* ── 2. Site settings ──────────────────────────────────── */
   await payload.updateGlobal({
@@ -133,10 +116,26 @@ export async function runSeed(payload: Payload): Promise<string[]> {
     data: {
       brandName: 'Bioscope',
       loginSubtitle: 'Hệ quản trị nội dung Bioscope',
-      primaryColor: '#0E6147',
-      primaryDark: '#00301A',
-      accentColor: '#F7941D',
+      primaryColor: '#008E4D',
+      primaryDark: '#036F3D',
+      accentColor: '#F58E33',
+      sidebarBackground: '#F4F8F6',
       radius: 12,
+      fontFamily: 'be-vietnam-pro',
+      frontendTheme: {
+        primaryColor: '#008E4D',
+        primaryDark: '#036F3D',
+        primaryTint: '#EEF6F1',
+        primaryBorder: '#CFE3D8',
+        accentColor: '#F58E33',
+        accentSoft: '#FFF4E8',
+        ink: '#101814',
+        mist: '#F4F8F6',
+        fontFamily: 'be-vietnam-pro',
+        radiusLg: 16,
+        radiusXl: 24,
+        radius2xl: 28,
+      },
     },
   })
 
@@ -148,7 +147,7 @@ export async function runSeed(payload: Payload): Promise<string[]> {
     { name: 'Naturex', country: 'FR', website: 'https://naturex.example' },
   ]
   const partners: Record<string, Id> = {}
-  for (const p of partnerData) partners[p.name] = await upsert('partners', { name: { equals: p.name } }, p)
+  for (const p of partnerData) partners[p.name] = await upsert(payload, 'partners', { name: { equals: p.name } }, p)
   log(`partners: ${partnerData.length}`)
 
   /* ── 4. Ingredient categories ──────────────────────────── */
@@ -158,7 +157,7 @@ export async function runSeed(payload: Payload): Promise<string[]> {
     { name: 'Vitamin & khoáng chất', scope: 'supplement', slug: 'vitamins' },
   ]
   const cats: Record<string, Id> = {}
-  for (const c of catData) cats[c.slug] = await upsert('ingredient-categories', { slug: { equals: c.slug } }, c)
+  for (const c of catData) cats[c.slug] = await upsertLocalized(payload, 'ingredient-categories', { slug: { equals: c.slug } }, { vi: c })
   log(`ingredient categories: ${catData.length}`)
 
   /* ── 5. Technologies ───────────────────────────────────── */
@@ -167,7 +166,7 @@ export async function runSeed(payload: Payload): Promise<string[]> {
     { name: 'Microencapsulation', slug: 'microencapsulation', tagline: 'Ổn định & bảo vệ hoạt chất', order: 2 },
     { name: 'Spray Drying', slug: 'spray-drying', tagline: 'Giữ trọn hoạt tính', order: 3 },
   ]
-  for (const t of techData) await upsert('technologies', { slug: { equals: t.slug } }, { ...t, _status: 'published' })
+  for (const t of techData) await upsertLocalized(payload, 'technologies', { slug: { equals: t.slug } }, { vi: { ...t, _status: 'published' } })
   log(`technologies: ${techData.length}`)
 
   /* ── 6. Ingredients ────────────────────────────────────── */
@@ -179,7 +178,7 @@ export async function runSeed(payload: Payload): Promise<string[]> {
     { name: 'Vitamin C (Coated)', slug: 'vitamin-c-coated', type: 'supplement', category: cats['vitamins'], originCountry: 'CH', moq: '25 kg', benefits: ['Phóng thích chậm 8h'], badges: ['Non-GMO', 'GMP', 'Kosher'] },
     { name: 'Marine Sweet® (NAG)', slug: 'marine-sweet-nag', type: 'supplement', category: cats['joint-health'], originCountry: 'JP', moq: '5 kg', benefits: ['Tái tạo sụn khớp', 'Dưỡng ẩm da'], badges: ['GMP', 'Halal'] },
   ]
-  for (const ing of ingredientData) await upsert('ingredients', { slug: { equals: ing.slug } }, { ...ing, _status: 'published' })
+  for (const ing of ingredientData) await upsertLocalized(payload, 'ingredients', { slug: { equals: ing.slug } }, { vi: { ...ing, _status: 'published' } })
   log(`ingredients: ${ingredientData.length}`)
 
   /* ── 7. Services ───────────────────────────────────────── */
@@ -189,7 +188,7 @@ export async function runSeed(payload: Payload): Promise<string[]> {
     { title: 'Hỗ trợ pháp lý & công bố', slug: 'regulatory-support', icon: 'ShieldCheck', order: 3 },
     { title: 'Chuỗi cung ứng toàn cầu', slug: 'global-supply', icon: 'Globe', order: 4 },
   ]
-  for (const s of serviceData) await upsert('services', { slug: { equals: s.slug } }, s)
+  for (const s of serviceData) await upsertLocalized(payload, 'services', { slug: { equals: s.slug } }, { vi: s })
   log(`services: ${serviceData.length}`)
 
   /* ── 8. Certifications ─────────────────────────────────── */
@@ -202,7 +201,7 @@ export async function runSeed(payload: Payload): Promise<string[]> {
     { title: 'USDA', kind: 'certificate', value: 'USDA', order: 6 },
     { title: 'NON-GMO', kind: 'certificate', value: 'NON GMO', order: 7 },
   ]
-  for (const c of certData) await upsert('certifications', { title: { equals: c.title } }, c)
+  for (const c of certData) await upsertLocalized(payload, 'certifications', { title: { equals: c.title } }, { vi: c })
   log(`certifications: ${certData.length}`)
 
   /* ── 9. B2B members ────────────────────────────────────── */
@@ -219,19 +218,29 @@ export async function runSeed(payload: Payload): Promise<string[]> {
   await ensureMember('pending@acme.com', 'pending', 'Pending Co')
   log('members: member@acme.com (approved) + pending@acme.com (pending)')
 
-  /* ── 10. Gated document (with placeholder upload) ──────── */
-  const gated = await payload.find({ collection: 'gated-documents', limit: 1 })
-  if (gated.totalDocs === 0) {
-    const tmp = path.join(os.tmpdir(), 'seed-coa.png')
-    fs.writeFileSync(tmp, Buffer.from(PNG_B64, 'base64'))
-    const media = await payload.create({ collection: 'media', data: { alt: 'Sample CoA' }, filePath: tmp })
-    await payload.create({
-      collection: 'gated-documents',
-      data: { title: 'CoA mẫu – Curcumin 95%', docType: 'COA', file: media.id, visibility: 'approved_members' },
+  /* ── 10. Gated document ────────────────────────────────── */
+  let mediaId = coaMediaId
+  if (!mediaId) {
+    const coaMedia = await payload.find({
+      collection: 'media',
+      where: { filename: { equals: 'seed-coa-sample.webp' } },
+      limit: 1,
     })
-    log('gated-document created')
+    mediaId = coaMedia.totalDocs > 0 ? (coaMedia.docs[0] as { id: Id }).id : null
+  }
+  if (!mediaId) {
+    log('gated-document skipped — chưa có ảnh CoA trong media seed')
   } else {
-    log('gated-document already exists')
+    await upsertLocalized(
+      payload,
+      'gated-documents',
+      { title: { equals: 'CoA mẫu – Curcumin 95%' } },
+      {
+        vi: { title: 'CoA mẫu – Curcumin 95%', docType: 'COA', file: mediaId as never, visibility: 'approved_members' },
+        en: { title: 'Sample CoA – Curcumin 95%' },
+      },
+    )
+    log('gated-document ready')
   }
 
   /* ── 11. Case studies ──────────────────────────────────── */
@@ -270,7 +279,7 @@ export async function runSeed(payload: Payload): Promise<string[]> {
       tags: ['Công nghệ độc quyền', 'Da liễu'], featured: true, order: 3,
     },
   ]
-  for (const cs of caseData) await upsert('case-studies', { slug: { equals: cs.slug } }, { ...cs, _status: 'published' })
+  for (const cs of caseData) await upsertLocalized(payload, 'case-studies', { slug: { equals: cs.slug } }, { vi: { ...cs, _status: 'published' } })
   log(`case studies: ${caseData.length}`)
 
   /* ── 12. FAQs ──────────────────────────────────────────── */
@@ -285,29 +294,43 @@ export async function runSeed(payload: Payload): Promise<string[]> {
     { category: 'support', question: 'Thời gian phản hồi dự kiến là bao lâu?', answer: 'Trong vòng 24 giờ làm việc. Đội ngũ chuyên gia sẽ liên hệ để hiểu rõ nhu cầu và đề xuất bước tiếp theo.', showOnContact: true, order: 8 },
     { category: 'support', question: 'Tôi có thể liên hệ qua kênh nào?', answer: 'Qua form Liên hệ trên website, email công việc hoặc Zalo OA (sắp tích hợp). Hotline và địa chỉ văn phòng đang được cập nhật.', order: 9 },
   ]
-  for (const f of faqData) await upsert('faqs', { question: { equals: f.question } }, { ...f, _status: 'published' })
+  for (const f of faqData) await upsertLocalized(payload, 'faqs', { question: { equals: f.question } }, { vi: { ...f, _status: 'published' } })
   log(`faqs: ${faqData.length}`)
 
   /* ── 13. Categories & Tags (taxonomy for posts) ────────── */
   const categoryData = [
-    { name: 'Whitepaper', slug: 'whitepaper' },
-    { name: 'Blog chuyên môn', slug: 'blog' },
-    { name: 'Webinar', slug: 'webinar' },
-    { name: 'Hướng dẫn Formulator', slug: 'formulator' },
-    { name: 'Infographic', slug: 'infographic' },
+    { slug: 'whitepaper', nameVi: 'Whitepaper', nameEn: 'Whitepaper' },
+    { slug: 'blog', nameVi: 'Blog chuyên môn', nameEn: 'Expert blog' },
+    { slug: 'webinar', nameVi: 'Webinar', nameEn: 'Webinar' },
+    { slug: 'formulator', nameVi: 'Hướng dẫn Formulator', nameEn: 'Formulator guide' },
+    { slug: 'infographic', nameVi: 'Infographic', nameEn: 'Infographic' },
   ]
   const categoryIds: Record<string, Id> = {}
-  for (const c of categoryData) categoryIds[c.slug] = await upsert('categories', { slug: { equals: c.slug } }, c)
+  for (const c of categoryData) {
+    categoryIds[c.slug] = await upsertLocalized(
+      payload,
+      'categories',
+      { slug: { equals: c.slug } },
+      { vi: { name: c.nameVi, slug: c.slug }, en: { name: c.nameEn } },
+    )
+  }
   log(`categories: ${categoryData.length}`)
 
   const tagData = [
-    { name: 'Phát triển nhãn hàng', slug: 'phat-trien-nhan-hang' },
-    { name: 'Omega-3', slug: 'omega-3' },
-    { name: 'Chứng nhận', slug: 'chung-nhan' },
-    { name: 'Đồng kiến tạo', slug: 'dong-kien-tao' },
+    { slug: 'phat-trien-nhan-hang', nameVi: 'Phát triển nhãn hàng', nameEn: 'Brand development' },
+    { slug: 'omega-3', nameVi: 'Omega-3', nameEn: 'Omega-3' },
+    { slug: 'chung-nhan', nameVi: 'Chứng nhận', nameEn: 'Certifications' },
+    { slug: 'dong-kien-tao', nameVi: 'Đồng kiến tạo', nameEn: 'Co-creation' },
   ]
   const tagIds: Record<string, Id> = {}
-  for (const t of tagData) tagIds[t.slug] = await upsert('tags', { slug: { equals: t.slug } }, t)
+  for (const t of tagData) {
+    tagIds[t.slug] = await upsertLocalized(
+      payload,
+      'tags',
+      { slug: { equals: t.slug } },
+      { vi: { name: t.nameVi, slug: t.slug }, en: { name: t.nameEn } },
+    )
+  }
   log(`tags: ${tagData.length}`)
 
   /* ── 14. Posts (blog / tài nguyên) ─────────────────────── */
@@ -349,10 +372,19 @@ export async function runSeed(payload: Payload): Promise<string[]> {
   ]
   for (const p of postData) {
     const { body, ...rest } = p
-    await upsert(
+    await upsertLocalized(
+      payload,
       'posts',
       { slug: { equals: p.slug } },
-      { ...rest, author: adminId, content: lexical(body), publishedAt: new Date().toISOString(), _status: 'published' },
+      {
+        vi: {
+          ...rest,
+          author: adminId,
+          content: lexical(body),
+          publishedAt: new Date().toISOString(),
+          _status: 'published',
+        },
+      },
     )
   }
   log(`posts: ${postData.length}`)

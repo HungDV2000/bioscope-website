@@ -13,7 +13,13 @@
     "generate:importmap": "cross-env NODE_OPTIONS=--no-deprecation payload generate:importmap",
     "migrate": "cross-env NODE_OPTIONS=--no-deprecation payload migrate",
     "migrate:create": "cross-env NODE_OPTIONS=--no-deprecation payload migrate:create",
-    "seed": "cross-env NODE_OPTIONS=--no-deprecation payload run src/seed/index.ts"
+    "db:branding": "sh -c 'set -a && [ -f .env ] && . ./.env && set +a && exec psql \"$DATABASE_URI\" -f scripts/migrate-branding-theme.sql'",
+    "db:fix-branding-font": "sh -c 'set -a && [ -f .env ] && . ./.env && set +a && exec psql \"$DATABASE_URI\" -f scripts/migrate-branding-font-fix.sql'",
+    "db:sync-folders-schema": "sh -c 'set -a && [ -f .env ] && . ./.env && set +a && exec psql \"$DATABASE_URI\" -f scripts/migrate-folders-schema.sql'",
+    "seed": "cross-env NODE_OPTIONS=--no-deprecation payload run src/seed/index.ts",
+    "ct:sync": "cross-env NODE_OPTIONS=--no-deprecation PAYLOAD_MIGRATING=true payload run src/scripts/ct-sync.ts",
+    "ct:apply": "cross-env NODE_OPTIONS=--no-deprecation PAYLOAD_MIGRATING=true payload run src/scripts/ct-apply.ts",
+    "lang:sync": "cross-env NODE_OPTIONS=--no-deprecation PAYLOAD_MIGRATING=true payload run src/scripts/lang-sync.ts"
   },
   "dependencies": {
     "@dv/cms-core": "workspace:*",
@@ -21,6 +27,9 @@
     "@dv/module-blocks": "workspace:*",
     "@dv/module-bioscope": "workspace:*",
     "@dv/module-catalog": "workspace:*",
+    "@dv/module-custom-types": "workspace:*",
+    "@dv/module-languages": "workspace:*",
+    "@dv/module-permissions": "workspace:*",
     "@payloadcms/db-postgres": "3.85.1",
     "@payloadcms/next": "3.85.1",
     "@payloadcms/richtext-lexical": "3.85.1",

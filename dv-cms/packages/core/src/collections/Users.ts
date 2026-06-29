@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import { isAdmin, isAdminFieldLevel, isStaffUser } from '../access/index.js'
+import { ADMIN_GROUP_SYSTEM } from '../i18n/admin-groups.js'
 
 /** Staff accounts for the admin panel (separate from B2B `members`). */
 export const Users: CollectionConfig = {
@@ -8,7 +9,7 @@ export const Users: CollectionConfig = {
   admin: {
     useAsTitle: 'name',
     defaultColumns: ['name', 'email', 'role'],
-    group: 'Hệ thống',
+    group: ADMIN_GROUP_SYSTEM,
   },
   access: {
     read: isStaffUser,

@@ -1,14 +1,8 @@
-import type { Metadata } from 'next'
-import { Be_Vietnam_Pro } from 'next/font/google'
+import type { Metadata, Viewport } from 'next'
+import { CmsThemeStyle } from '@/components/theme/cms-theme-style'
+import { getFrontendThemeColor } from '@/lib/branding'
 import { getLocale } from '@/lib/i18n/server'
 import './globals.css'
-
-const beVietnam = Be_Vietnam_Pro({
-  subsets: ['latin', 'vietnamese'],
-  weight: ['400', '500', '600', '700', '800'],
-  variable: '--font-be-vietnam',
-  display: 'swap',
-})
 
 const SITE_URL = 'https://web.bioscope.vn'
 const DESCRIPTION =
@@ -40,8 +34,9 @@ export const metadata: Metadata = {
   },
 }
 
-export const viewport = {
-  themeColor: '#008e4d',
+export async function generateViewport(): Promise<Viewport> {
+  const themeColor = await getFrontendThemeColor()
+  return { themeColor }
 }
 
 const JSON_LD = {
@@ -72,8 +67,9 @@ export default async function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   const locale = await getLocale()
   return (
-    <html lang={locale} className={beVietnam.variable} suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <body suppressHydrationWarning>
+        <CmsThemeStyle />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }}

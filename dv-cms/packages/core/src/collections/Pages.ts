@@ -2,6 +2,7 @@ import type { CollectionConfig } from 'payload'
 import { isAdminOrEditor, readPublishedOrStaff } from '../access/index.js'
 import { slugField } from '../fields/slug.js'
 import { seoField } from '../fields/seo.js'
+import { ADMIN_GROUP_CONTENT } from '../i18n/admin-groups.js'
 
 /**
  * Composable marketing/content pages. The block-based `layout` field is added
@@ -13,7 +14,7 @@ export const Pages: CollectionConfig = {
   admin: {
     useAsTitle: 'title',
     defaultColumns: ['title', 'slug', '_status', 'updatedAt'],
-    group: 'Nội dung',
+    group: ADMIN_GROUP_CONTENT,
     livePreview: undefined,
   },
   versions: { drafts: { autosave: false }, maxPerDoc: 20 },

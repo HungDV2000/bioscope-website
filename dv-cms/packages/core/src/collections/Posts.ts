@@ -2,6 +2,7 @@ import type { CollectionConfig } from 'payload'
 import { isAdminOrEditor, readPublishedOrStaff } from '../access/index.js'
 import { slugField } from '../fields/slug.js'
 import { seoField } from '../fields/seo.js'
+import { ADMIN_GROUP_CONTENT } from '../i18n/admin-groups.js'
 
 /** Blog / news articles. */
 export const Posts: CollectionConfig = {
@@ -9,7 +10,7 @@ export const Posts: CollectionConfig = {
   admin: {
     useAsTitle: 'title',
     defaultColumns: ['title', 'author', '_status', 'publishedAt'],
-    group: 'Nội dung',
+    group: ADMIN_GROUP_CONTENT,
   },
   versions: { drafts: { autosave: false }, maxPerDoc: 20 },
   access: {

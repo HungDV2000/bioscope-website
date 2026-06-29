@@ -1,5 +1,6 @@
 import type { GlobalConfig } from 'payload'
 import { anyone, isAdminOrEditor } from '../access/index.js'
+import { ADMIN_GROUP_SYSTEM } from '../i18n/admin-groups.js'
 
 const navItems = (name: string, label: string) => ({
   name,
@@ -22,7 +23,7 @@ const navItems = (name: string, label: string) => ({
 
 export const Navigation: GlobalConfig = {
   slug: 'navigation',
-  admin: { group: 'Hệ thống' },
+  admin: { group: ADMIN_GROUP_SYSTEM },
   access: { read: anyone, update: isAdminOrEditor },
   fields: [navItems('header', 'Menu đầu trang'), navItems('footer', 'Menu chân trang')],
 }

@@ -1,10 +1,11 @@
 import type { CollectionConfig } from 'payload'
 import { anyone, isAdminOrEditor } from '../access/index.js'
+import { ADMIN_GROUP_SYSTEM } from '../i18n/admin-groups.js'
 
 /** URL redirects consumed by the frontend middleware. */
 export const Redirects: CollectionConfig = {
   slug: 'redirects',
-  admin: { useAsTitle: 'from', group: 'Hệ thống', defaultColumns: ['from', 'to', 'type'] },
+  admin: { useAsTitle: 'from', group: ADMIN_GROUP_SYSTEM, defaultColumns: ['from', 'to', 'type'] },
   access: { read: anyone, create: isAdminOrEditor, update: isAdminOrEditor, delete: isAdminOrEditor },
   fields: [
     { name: 'from', type: 'text', required: true, index: true, admin: { description: 'Đường dẫn nguồn, vd /cu' } },

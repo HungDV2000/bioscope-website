@@ -6,7 +6,7 @@ export type BrandingPluginOptions = {
   brandName?: string
   /** Admin browser tab title suffix, e.g. "· Bioscope CMS". */
   titleSuffix?: string
-  /** Admin meta description. */
+  /** Admin meta description (HTML meta tag; English recommended). */
   description?: string
   /** Register the editable Branding global (default: true). */
   enableGlobal?: boolean
@@ -44,9 +44,24 @@ export const brandingPlugin =
       Logo: `${C}#BrandLogo`,
       Icon: `${C}#BrandIcon`,
     }
+    admin.avatar = {
+      Component: `${C}#AccountMenu`,
+    }
+    components.logout = {
+      ...(components.logout ?? {}),
+      Button: `${C}#HiddenLogout`,
+    }
+    components.beforeNav = [...(components.beforeNav ?? []), `${C}#NavBrand`]
     components.beforeLogin = [...(components.beforeLogin ?? []), `${C}#LoginShell`, `${C}#LoginSubtitle`]
     components.afterLogin = [...(components.afterLogin ?? []), `${C}#LoginFooter`]
-    components.providers = [...(components.providers ?? []), `${C}#ThemeInjector`]
+    components.providers = [
+      ...(components.providers ?? []),
+      `${C}#ThemeInjector`,
+      `${C}#AdminLocaleSync`,
+      `${C}#NavIconRail`,
+      `${C}#NavIcons`,
+      `${C}#NavMobileDrawer`,
+    ]
     if (options.enableDashboard !== false) {
       components.beforeDashboard = [...(components.beforeDashboard ?? []), `${C}#DashboardWelcome`]
     }

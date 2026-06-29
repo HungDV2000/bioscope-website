@@ -7,8 +7,10 @@ export const metadata = {
 
 export default function FrontendLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="vi">
-      <body style={{ margin: 0 }}>{children}</body>
+    <html lang="vi" suppressHydrationWarning>
+      <body style={{ margin: 0 }} suppressHydrationWarning>
+        {children}
+      </body>
     </html>
   )
 }

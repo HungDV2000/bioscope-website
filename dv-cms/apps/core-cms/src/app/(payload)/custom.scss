@@ -1,28 +1,29 @@
 /* =========================================================================
-   Bioscope admin theme (light "soft SaaS").
-   Static defaults; the ThemeInjector overrides these live from the Branding
-   global, so changing colors in the admin does not require a redeploy.
+   Bioscope admin theme
    ========================================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap');
+
 :root {
-  /* Brand tokens consumed by our admin components. */
   --dv-primary: #0e6147;
   --dv-primary-dark: #00301a;
   --dv-accent: #f7941d;
   --dv-font: 'Be Vietnam Pro', system-ui, sans-serif;
 
-  /* Larger, friendlier corners. */
   --style-radius-s: 8px;
   --style-radius-m: 12px;
   --style-radius-l: 16px;
 
-  /* Best-effort mapping onto Payload's accent (success) scale. */
   --color-success-500: #0e6147;
   --color-success-550: #0e6147;
   --color-success-600: #00301a;
   --theme-success-500: #0e6147;
 }
 
-/* Brand the primary action buttons + active links. */
+body {
+  font-family: var(--dv-font);
+}
+
 .btn--style-primary:not(.btn--disabled) {
   --color: #fff;
   background-color: var(--dv-primary);
@@ -33,13 +34,108 @@
   border-color: var(--dv-primary-dark);
 }
 
-/* Nav active item accent. */
 .nav__link.active,
 .nav-group__toggle:hover {
   color: var(--dv-primary);
 }
 
-/* Login screen brand spacing. */
-.login__brand {
-  margin-bottom: 1.5rem;
+/* =========================================================================
+   Login — centered card (giống frontend member login)
+   ========================================================================= */
+
+body.dv-login-page {
+  font-family: var(--dv-font);
+}
+
+body.dv-login-page .template-minimal {
+  min-height: 100vh;
+  padding: 3rem 1.25rem;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(to bottom, rgba(244, 247, 245, 0.85), #fff);
+}
+
+body.dv-login-page .template-minimal__wrap {
+  width: 100%;
+  max-width: 28rem;
+  min-height: auto;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+body.dv-login-page .login__brand {
+  display: flex !important;
+  justify-content: center !important;
+  margin-bottom: 1.5rem !important;
+}
+
+.dv-login__logo {
+  display: flex;
+  justify-content: center;
+}
+
+.dv-login__logo-img {
+  display: block;
+  height: 40px;
+  width: auto;
+}
+
+.dv-login-subtitle {
+  margin: 0 0 1.5rem;
+  text-align: center;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: #5b6661;
+}
+
+body.dv-login-page .login__form {
+  width: 100%;
+  padding: 2rem;
+  border-radius: 1.75rem;
+  border: 1px solid rgba(14, 97, 71, 0.15);
+  background: #fff;
+  box-shadow: 0 4px 24px -4px rgba(0, 48, 26, 0.1);
+}
+
+body.dv-login-page .login-fields {
+  gap: 1.1rem;
+}
+
+body.dv-login-page .field-type input {
+  border-radius: var(--style-radius-m) !important;
+  padding: 0.7rem 0.9rem !important;
+  font-size: 0.95rem !important;
+}
+
+body.dv-login-page .btn--style-primary {
+  width: 100%;
+  margin-top: 0.5rem;
+  padding: 0.8rem 1rem !important;
+  border-radius: 999px !important;
+  font-size: 0.95rem !important;
+  font-weight: 600 !important;
+}
+
+body.dv-login-page .login__form a {
+  font-size: 0.85rem;
+  color: var(--dv-primary) !important;
+}
+
+.dv-login-footer {
+  margin: 1.25rem 0 0;
+  text-align: center;
+}
+
+.dv-login-footer__link {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--dv-primary);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.dv-login-footer__link:hover {
+  color: var(--dv-primary-dark);
 }

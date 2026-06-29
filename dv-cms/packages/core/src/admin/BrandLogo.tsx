@@ -1,30 +1,20 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React from 'react'
+import { resolveLogoUrl } from './brand-assets.js'
+import { useBranding } from './useBranding.js'
 
-type Branding = { brandName?: string; logo?: { url?: string } | null }
-
-/** Logo on the login screen + nav. Reads the Branding global at runtime. */
+/** Logo on the login screen + nav. Uses Branding global or default Bioscope logo. */
 export const BrandLogo: React.FC = () => {
-  const [b, setB] = useState<Branding | null>(null)
+  const branding = useBranding()
+  const logoUrl = resolveLogoUrl(branding)
+  const name = branding?.brandName ?? 'Bioscope'
 
-  useEffect(() => {
-    fetch('/api/globals/branding?depth=1')
-      .then((r) => r.json())
-      .then(setB)
-      .catch(() => {})
-  }, [])
-
-  if (b?.logo?.url) {
-    return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img src={b.logo.url} alt={b.brandName ?? 'Logo'} style={{ maxHeight: 42, width: 'auto' }} />
-    )
-  }
   return (
-    <span style={{ fontWeight: 800, fontSize: 24, color: 'var(--dv-primary, #0E6147)' }}>
-      {b?.brandName ?? 'Bioscope'}
-    </span>
+    <div className="dv-login__logo">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={logoUrl} alt={name} className="dv-login__logo-img" />
+    </div>
   )
 }
 

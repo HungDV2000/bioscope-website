@@ -44,6 +44,8 @@ export const brandingPlugin =
       Logo: `${C}#BrandLogo`,
       Icon: `${C}#BrandIcon`,
     }
+    components.beforeLogin = [...(components.beforeLogin ?? []), `${C}#LoginShell`, `${C}#LoginSubtitle`]
+    components.afterLogin = [...(components.afterLogin ?? []), `${C}#LoginFooter`]
     components.providers = [...(components.providers ?? []), `${C}#ThemeInjector`]
     if (options.enableDashboard !== false) {
       components.beforeDashboard = [...(components.beforeDashboard ?? []), `${C}#DashboardWelcome`]

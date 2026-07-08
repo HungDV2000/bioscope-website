@@ -5,6 +5,7 @@ import { ArrowRight, Clock, FileText, FlaskConical, Lightbulb, Sparkles } from '
 import { Reveal } from '@/components/ui/reveal'
 import { useLocale } from '@/lib/i18n/context'
 import { AiChatDemo } from '@/components/home/ai-chat-demo'
+import { AiChatFloatingWidget } from '@/components/home/ai-chat-widget'
 
 const FEATURE_ICONS = [FlaskConical, Lightbulb, FileText, Clock]
 
@@ -69,6 +70,9 @@ export function AiChatPromo() {
           </div>
         </Reveal>
       </div>
+
+      {/* Once this section is scrolled past → a view-only chat widget docks bottom-right. */}
+      <AiChatFloatingWidget copy={c} />
     </section>
   )
 }

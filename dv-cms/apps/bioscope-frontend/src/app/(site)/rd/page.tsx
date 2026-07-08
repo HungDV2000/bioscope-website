@@ -6,7 +6,7 @@ import { Counter } from '@/components/ui/counter'
 import { CtaBand } from '@/components/home/cta-band'
 import { getContent } from '@/lib/get-content'
 import { getLocale } from '@/lib/i18n/server'
-import { getPageI18n } from '@/lib/i18n/pages'
+import { getPageContent } from '@/lib/cms/page'
 import { getMessages } from '@/lib/i18n/messages'
 
 const STAT_VALUES = [
@@ -18,13 +18,13 @@ const STAT_VALUES = [
 
 export async function generateMetadata() {
   const locale = await getLocale()
-  return getPageI18n('rd', locale).metadata
+  return (await getPageContent('rd', locale)).metadata
 }
 
 export default async function RDPage() {
   const locale = await getLocale()
   const content = getContent(locale)
-  const { hero } = getPageI18n('rd', locale)
+  const { hero } = await getPageContent('rd', locale)
   const m = getMessages(locale)
   const p = m.rdPage
   const { TECHNOLOGIES, RD_RESEARCH_AREAS, RD_WHITEPAPERS, CLIENT_LOGOS } = content

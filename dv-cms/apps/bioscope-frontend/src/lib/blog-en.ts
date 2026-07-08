@@ -260,8 +260,8 @@ export function translateBlogPost(post: BlogPost): BlogPost {
     title: slugEn?.title ?? post.title,
     excerpt: slugEn?.excerpt ?? post.excerpt,
     body: slugEn?.body ?? post.body,
-    topic: (TOPIC_VI_TO_EN[post.topic] ?? post.topic) as any,
-    industry: (INDUSTRY_VI_TO_EN[post.industry] ?? post.industry) as any,
+    topic: (TOPIC_VI_TO_EN[post.topic] ?? post.topic) as BlogPost['topic'],
+    industry: (INDUSTRY_VI_TO_EN[post.industry] ?? post.industry) as BlogPost['industry'],
     author: BLOG_AUTHOR_EN,
   }
 }

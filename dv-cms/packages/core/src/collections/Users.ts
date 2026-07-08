@@ -5,7 +5,11 @@ import { ADMIN_GROUP_SYSTEM } from '../i18n/admin-groups.js'
 /** Staff accounts for the admin panel (separate from B2B `members`). */
 export const Users: CollectionConfig = {
   slug: 'users',
-  auth: true,
+  // Brute-force protection: lock an account for 15 min after 5 failed logins.
+  auth: {
+    maxLoginAttempts: 5,
+    lockTime: 15 * 60 * 1000,
+  },
   admin: {
     useAsTitle: 'name',
     defaultColumns: ['name', 'email', 'role'],

@@ -5,19 +5,22 @@ import { Reveal } from '@/components/ui/reveal'
 import { CtaBand } from '@/components/home/cta-band'
 import { getContent } from '@/lib/get-content'
 import { getLocale } from '@/lib/i18n/server'
-import { getPageI18n } from '@/lib/i18n/pages'
+import { getPageContent } from '@/lib/cms/page'
+import { getCaseStudies } from '@/lib/cms/collections'
 import { getMessages } from '@/lib/i18n/messages'
 
 export async function generateMetadata() {
   const locale = await getLocale()
-  return getPageI18n('caseStudies', locale).metadata
+  return (await getPageContent('case-study', locale)).metadata
 }
 
 export default async function CaseStudyList() {
   const locale = await getLocale()
   const content = getContent(locale)
-  const { hero } = getPageI18n('caseStudies', locale)
+  const { hero } = await getPageContent('case-study', locale)
   const m = getMessages(locale)
+  // Case studies from the CMS `case-studies` collection (fallback to static).
+  const cases = (await getCaseStudies(locale)) ?? content.CASE_STUDIES
 
   return (
     <>
@@ -35,7 +38,7 @@ export default async function CaseStudyList() {
 
       <section className="bg-white pb-24 pt-16">
         <div className="container-bs grid gap-5 md:grid-cols-3">
-          {content.CASE_STUDIES.map((c, i) => (
+          {cases.map((c, i) => (
             <Reveal key={c.slug} delay={i * 0.08}>
               <Link
                 href={`/case-study/${c.slug}`}

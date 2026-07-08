@@ -3,18 +3,31 @@ import { SiteFooter } from '@/components/site-footer'
 import { LocaleProvider } from '@/lib/i18n/context'
 import { getMessages } from '@/lib/i18n/messages'
 import { getLocale } from '@/lib/i18n/server'
+import { getNavigation } from '@/lib/cms/navigation'
 
 export default async function SiteLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const locale = await getLocale()
   const messages = getMessages(locale)
+  // Header menu + footer columns from the CMS (falls back to static i18n).
+  const nav = await getNavigation(locale)
+
+  const skipLabel = locale === 'en' ? 'Skip to main content' : 'Bỏ qua tới nội dung chính'
 
   return (
     <LocaleProvider locale={locale} messages={messages}>
-      <SiteHeader />
-      <main className="min-h-[60vh]">{children}</main>
-      <SiteFooter />
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-primary focus:px-4 focus:py-2 focus:text-[14px] focus:font-semibold focus:text-white"
+      >
+        {skipLabel}
+      </a>
+      <SiteHeader items={nav?.header} />
+      <main id="main-content" className="min-h-[60vh]">
+        {children}
+      </main>
+      <SiteFooter columns={nav?.footerColumns} />
     </LocaleProvider>
   )
 }

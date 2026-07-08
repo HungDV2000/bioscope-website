@@ -1,4 +1,5 @@
 import type { Config, Plugin } from 'payload'
+import { HOME_BLOCKS } from './blocks/home.js'
 import { IngredientCategories } from './collections/IngredientCategories.js'
 import { Technologies } from './collections/Technologies.js'
 import { Ingredients } from './collections/Ingredients.js'
@@ -6,6 +7,8 @@ import { Services } from './collections/Services.js'
 import { Certifications } from './collections/Certifications.js'
 import { CaseStudies } from './collections/CaseStudies.js'
 import { Faqs } from './collections/Faqs.js'
+import { Home } from './globals/Home.js'
+import { BioscopeAi } from './globals/BioscopeAi.js'
 
 export type BioscopePluginOptions = {
   /** Override which collections to register (all by default). */
@@ -17,6 +20,10 @@ export type BioscopePluginOptions = {
     caseStudies?: boolean
     faqs?: boolean
   }
+  /** Register the Home page global (default true). */
+  home?: boolean
+  /** Append home-section blocks to the Pages layout field (default true). */
+  homeBlocks?: boolean
 }
 
 /**
@@ -38,5 +45,24 @@ export const bioscopePlugin =
     if (c.faqs !== false) add.push(Faqs)
 
     config.collections = [...(config.collections ?? []), ...add]
+
+    // Append home-section blocks to the Pages `layout` field so the home page
+    // can be composed in the Pages collection. Requires blocksPlugin to have
+    // run first (it creates the layout field).
+    if (options.homeBlocks !== false) {
+      config.collections = config.collections.map((col) => {
+        if (col.slug !== 'pages') return col
+        const fields = (col.fields ?? []).map((f) => {
+          if (!('name' in f) || f.name !== 'layout' || f.type !== 'blocks') return f
+          return { ...f, blocks: [...f.blocks, ...HOME_BLOCKS] }
+        })
+        return { ...col, fields }
+      })
+    }
+
+    if (options.home !== false) {
+      config.globals = [...(config.globals ?? []), Home]
+    }
+    config.globals = [...(config.globals ?? []), BioscopeAi]
     return config
   }

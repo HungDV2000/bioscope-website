@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@dv/cms-core": "workspace:*",
+    "@payloadcms/live-preview-react": "^3.85.2",
     "clsx": "2.1.1",
     "lucide-react": "1.21.0",
     "motion": "12.42.0",

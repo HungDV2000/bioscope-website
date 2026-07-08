@@ -24,9 +24,11 @@ import { StrikethroughFeatureClient as StrikethroughFeatureClient_e70f5e05f09f93
 import { UnderlineFeatureClient as UnderlineFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { BoldFeatureClient as BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { ItalicFeatureClient as ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
+import { LiveEditorToggle as LiveEditorToggle_d26de2934fab2f5e50b16fb3e402473a } from 'payload-better-editor/client'
 import { ContentCollectionSlugsField as ContentCollectionSlugsField_f8b2c5cd74f162a2f9852cdf8f8c19f7 } from '@dv/module-custom-types/fields'
 import { FolderTypeField as FolderTypeField_2b8867833a34864a02ddf429b0728a40 } from '@payloadcms/next/client'
 import { HexColorField as HexColorField_c3949c88f94613bf8ab39d0e00ee34b2 } from '@dv/cms-core/fields'
+import { SettingsBanner as SettingsBanner_d26de2934fab2f5e50b16fb3e402473a } from 'payload-better-editor/client'
 import { AccountMenu as AccountMenu_00843a5f229f2e31dd95960baf9412a3 } from '@dv/cms-core/admin'
 import { HiddenLogout as HiddenLogout_00843a5f229f2e31dd95960baf9412a3 } from '@dv/cms-core/admin'
 import { BrandIcon as BrandIcon_00843a5f229f2e31dd95960baf9412a3 } from '@dv/cms-core/admin'
@@ -75,9 +77,11 @@ export const importMap = {
   "@payloadcms/richtext-lexical/client#UnderlineFeatureClient": UnderlineFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#BoldFeatureClient": BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#ItalicFeatureClient": ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
+  "payload-better-editor/client#LiveEditorToggle": LiveEditorToggle_d26de2934fab2f5e50b16fb3e402473a,
   "@dv/module-custom-types/fields#ContentCollectionSlugsField": ContentCollectionSlugsField_f8b2c5cd74f162a2f9852cdf8f8c19f7,
   "@payloadcms/next/client#FolderTypeField": FolderTypeField_2b8867833a34864a02ddf429b0728a40,
   "@dv/cms-core/fields#HexColorField": HexColorField_c3949c88f94613bf8ab39d0e00ee34b2,
+  "payload-better-editor/client#SettingsBanner": SettingsBanner_d26de2934fab2f5e50b16fb3e402473a,
   "@dv/cms-core/admin#AccountMenu": AccountMenu_00843a5f229f2e31dd95960baf9412a3,
   "@dv/cms-core/admin#HiddenLogout": HiddenLogout_00843a5f229f2e31dd95960baf9412a3,
   "@dv/cms-core/admin#BrandIcon": BrandIcon_00843a5f229f2e31dd95960baf9412a3,

@@ -5,7 +5,12 @@ import Link from 'next/link'
 import { Globe, MessageCircle, Share2, Send } from 'lucide-react'
 import { useLocale } from '@/lib/i18n/context'
 
-const SOCIAL = [Globe, MessageCircle, Share2, Send]
+const SOCIAL: { Icon: typeof Globe; label: string }[] = [
+  { Icon: Globe, label: 'Website' },
+  { Icon: MessageCircle, label: 'Zalo' },
+  { Icon: Share2, label: 'LinkedIn' },
+  { Icon: Send, label: 'Telegram' },
+]
 
 const FOOTER_HREFS = [
   ['/nguyen-lieu', '/nguyen-lieu', '/nguyen-lieu', '/nguyen-lieu'],
@@ -14,14 +19,16 @@ const FOOTER_HREFS = [
   ['/lien-he', '/lien-he', '/cau-hoi-thuong-gap', '/chinh-sach-bao-mat', '/member/login'],
 ] as const
 
-export function SiteFooter() {
+type Col = { title: string; links: { label: string; href: string }[] }
+
+export function SiteFooter({ columns }: { columns?: Col[] }) {
   const { t } = useLocale()
-  const cols = [
-    { title: t.footer.cols.ingredients.title, links: t.footer.cols.ingredients.links, hrefs: FOOTER_HREFS[0] },
-    { title: t.footer.cols.solutions.title, links: t.footer.cols.solutions.links, hrefs: FOOTER_HREFS[1] },
-    { title: t.footer.cols.company.title, links: t.footer.cols.company.links, hrefs: FOOTER_HREFS[2] },
-    { title: t.footer.cols.support.title, links: t.footer.cols.support.links, hrefs: FOOTER_HREFS[3] },
-  ]
+  // Footer columns from the CMS `navigation` global (falls back to static i18n).
+  const fallback: Col[] = (['ingredients', 'solutions', 'company', 'support'] as const).map((key, c) => ({
+    title: t.footer.cols[key].title,
+    links: t.footer.cols[key].links.map((label, i) => ({ label, href: FOOTER_HREFS[c][i] ?? '#' })),
+  }))
+  const cols = columns && columns.length > 0 ? columns : fallback
 
   return (
     <footer className="border-t border-primary-border/50 bg-mist">
@@ -30,10 +37,11 @@ export function SiteFooter() {
           <Image src="/logo.avif" alt="Bioscope" width={150} height={42} className="h-10 w-auto" />
           <p className="mt-5 text-[14px] leading-relaxed text-ink/60">{t.footer.tagline}</p>
           <div className="mt-6 flex gap-2">
-            {SOCIAL.map((Icon, i) => (
+            {SOCIAL.map(({ Icon, label }) => (
               <a
-                key={i}
+                key={label}
                 href="#"
+                aria-label={label}
                 className="grid h-9 w-9 place-items-center rounded-full border border-primary-border bg-white text-ink/50 transition-colors duration-300 hover:text-primary"
               >
                 <Icon className="h-4 w-4" strokeWidth={1.6} />
@@ -46,10 +54,10 @@ export function SiteFooter() {
           <div key={col.title}>
             <h4 className="text-[13px] font-bold uppercase tracking-[0.14em] text-ink/45">{col.title}</h4>
             <ul className="mt-4 space-y-2.5">
-              {col.links.map((label, i) => (
-                <li key={label}>
-                  <Link href={col.hrefs[i]} className="text-[14px] text-ink/65 transition-colors hover:text-primary">
-                    {label}
+              {col.links.map((link) => (
+                <li key={link.label}>
+                  <Link href={link.href} className="text-[14px] text-ink/65 transition-colors hover:text-primary">
+                    {link.label}
                   </Link>
                 </li>
               ))}

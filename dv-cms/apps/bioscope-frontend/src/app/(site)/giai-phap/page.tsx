@@ -5,19 +5,19 @@ import { Reveal } from '@/components/ui/reveal'
 import { CtaBand } from '@/components/home/cta-band'
 import { getContent } from '@/lib/get-content'
 import { getLocale } from '@/lib/i18n/server'
-import { getPageI18n } from '@/lib/i18n/pages'
+import { getPageContent } from '@/lib/cms/page'
 import { getMessages } from '@/lib/i18n/messages'
 import { cn } from '@/lib/utils'
 
 export async function generateMetadata() {
   const locale = await getLocale()
-  return getPageI18n('solutions', locale).metadata
+  return (await getPageContent('giai-phap', locale)).metadata
 }
 
 export default async function SolutionsPage() {
   const locale = await getLocale()
   const content = getContent(locale)
-  const { hero } = getPageI18n('solutions', locale)
+  const { hero } = await getPageContent('giai-phap', locale)
   const m = getMessages(locale)
   const { SOLUTIONS, SOLUTIONS_ICP } = content
 

@@ -44,7 +44,19 @@ export async function seedDefaultStaffRoles(payload: Payload): Promise<void> {
         overrideAccess: true,
       })
 
-      if (existing.docs.length > 0) continue
+      if (existing.docs.length > 0) {
+        // Keep built-in system roles in sync with the code presets so permission
+        // changes (e.g. a new global) apply on the next init without re-seeding.
+        if (role.isSystem) {
+          await payload.update({
+            collection: STAFF_ROLES_SLUG,
+            id: existing.docs[0]!.id,
+            data: { permissions: role.permissions.map((p) => ({ ...p, actions: [...p.actions] })) },
+            overrideAccess: true,
+          })
+        }
+        continue
+      }
 
       await payload.create({
         collection: STAFF_ROLES_SLUG,

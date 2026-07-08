@@ -15,7 +15,7 @@ import { Reveal } from '@/components/ui/reveal'
 import { ResourceItemCard } from '@/components/resources/item-card'
 import { getContent } from '@/lib/get-content'
 import { getLocale } from '@/lib/i18n/server'
-import { getPageI18n } from '@/lib/i18n/pages'
+import { getPageContent } from '@/lib/cms/page'
 import { getMessages } from '@/lib/i18n/messages'
 
 const CATEGORY_ICONS: Record<string, LucideIcon> = {
@@ -29,13 +29,13 @@ const CATEGORY_ICONS: Record<string, LucideIcon> = {
 
 export async function generateMetadata() {
   const locale = await getLocale()
-  return getPageI18n('resources', locale).metadata
+  return (await getPageContent('tai-nguyen', locale)).metadata
 }
 
 export default async function ResourcesPage() {
   const locale = await getLocale()
   const content = getContent(locale)
-  const { hero } = getPageI18n('resources', locale)
+  const { hero } = await getPageContent('tai-nguyen', locale)
   const m = getMessages(locale)
   const { RESOURCE_CATEGORIES, RESOURCE_ITEMS } = content
 

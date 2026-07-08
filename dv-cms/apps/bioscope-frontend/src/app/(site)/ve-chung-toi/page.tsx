@@ -7,16 +7,16 @@ import { AboutProductProcess } from '@/components/about/product-process'
 import { AboutJourney } from '@/components/about/journey'
 import { AboutPartners } from '@/components/about/partners'
 import { getLocale } from '@/lib/i18n/server'
-import { getPageI18n } from '@/lib/i18n/pages'
+import { getPageContent } from '@/lib/cms/page'
 
 export async function generateMetadata() {
   const locale = await getLocale()
-  return getPageI18n('about', locale).metadata
+  return (await getPageContent('ve-chung-toi', locale)).metadata
 }
 
 export default async function AboutPage() {
   const locale = await getLocale()
-  const { hero } = getPageI18n('about', locale)
+  const { hero } = await getPageContent('ve-chung-toi', locale)
 
   return (
     <>

@@ -2,17 +2,17 @@ import { PageHero } from '@/components/ui/page-hero'
 import { LegalContent } from '@/components/legal-content'
 import { getContent } from '@/lib/get-content'
 import { getLocale } from '@/lib/i18n/server'
-import { getPageI18n } from '@/lib/i18n/pages'
+import { getPageContent } from '@/lib/cms/page'
 
 export async function generateMetadata() {
   const locale = await getLocale()
-  return getPageI18n('terms', locale).metadata
+  return (await getPageContent('dieu-khoan-su-dung', locale)).metadata
 }
 
 export default async function TermsPage() {
   const locale = await getLocale()
   const terms = getContent(locale).TERMS_OF_USE
-  const { hero } = getPageI18n('terms', locale)
+  const { hero } = await getPageContent('dieu-khoan-su-dung', locale)
 
   return (
     <>

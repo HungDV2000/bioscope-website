@@ -29,7 +29,7 @@ services:
     environment:
       DATABASE_URI: postgres://dvcms:${POSTGRES_PASSWORD:-dvcms}@db:5432/dvcms
       PAYLOAD_SECRET: ${PAYLOAD_SECRET:-please-change-this-to-a-long-random-secret}
-      PAYLOAD_PUBLIC_SERVER_URL: ${PAYLOAD_PUBLIC_SERVER_URL:-https://cms.bioscope.vn}
+      PAYLOAD_PUBLIC_SERVER_URL: ${PAYLOAD_PUBLIC_SERVER_URL:-https://admin.bioscope.vn}
       FRONTEND_URL: ${FRONTEND_URL:-https://web.bioscope.vn}
       REVALIDATE_SECRET: ${REVALIDATE_SECRET:-}
       B2B_COOKIE: ${B2B_COOKIE:-bio-token}
@@ -46,14 +46,22 @@ services:
       context: .
       dockerfile: apps/bioscope-frontend/Dockerfile
       args:
-        NEXT_PUBLIC_CMS_URL: ${NEXT_PUBLIC_CMS_URL:-https://cms.bioscope.vn}
+        # Baked into the client bundle at build time.
+        NEXT_PUBLIC_CMS_URL: ${NEXT_PUBLIC_CMS_URL:-https://admin.bioscope.vn}
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-https://web.bioscope.vn}
     container_name: dvcms-frontend
     restart: unless-stopped
     depends_on:
       cms:
         condition: service_started
     environment:
+      NODE_ENV: production
       PORT: "3000"
+      # Runtime: next.config CSP (frame-ancestors → admin), robots/sitemap, and the
+      # revalidate endpoint the CMS calls (secret must match the cms service).
+      NEXT_PUBLIC_CMS_URL: ${NEXT_PUBLIC_CMS_URL:-https://admin.bioscope.vn}
+      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-https://web.bioscope.vn}
+      REVALIDATE_SECRET: ${REVALIDATE_SECRET:-}
     ports:
       - "127.0.0.1:${DVCMS_FRONTEND_HOST_PORT:-26000}:3000"
 

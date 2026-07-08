@@ -142,11 +142,19 @@ export interface Config {
     'site-settings': SiteSetting;
     navigation: Navigation;
     branding: Branding;
+    home: Home;
+    'bioscope-ai': BioscopeAi;
+    'seo-settings': SeoSetting;
+    'better-editor-settings': BetterEditorSetting;
   };
   globalsSelect: {
     'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
     navigation: NavigationSelect<false> | NavigationSelect<true>;
     branding: BrandingSelect<false> | BrandingSelect<true>;
+    home: HomeSelect<false> | HomeSelect<true>;
+    'bioscope-ai': BioscopeAiSelect<false> | BioscopeAiSelect<true>;
+    'seo-settings': SeoSettingsSelect<false> | SeoSettingsSelect<true>;
+    'better-editor-settings': BetterEditorSettingsSelect<false> | BetterEditorSettingsSelect<true>;
   };
   locale: 'vi' | 'en';
   widgets: {
@@ -381,6 +389,15 @@ export interface Page {
         | CTABlock
         | VideoEmbedBlock
         | LogoCloudBlock
+        | HomeHeroBlock
+        | HomeBrandsBlock
+        | HomeProcessBlock
+        | HomeCategoriesBlock
+        | HomeCaseStudiesBlock
+        | HomeCertificationsBlock
+        | HomeExpertsBlock
+        | HomeAiPromoBlock
+        | HomeCtaBlock
       )[]
     | null;
   /**
@@ -568,6 +585,168 @@ export interface LogoCloudBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'logoCloud';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "HomeHeroBlock".
+ */
+export interface HomeHeroBlock {
+  eyebrow?: string | null;
+  titleBefore?: string | null;
+  titleHighlight?: string | null;
+  titleMid?: string | null;
+  titleAccent?: string | null;
+  description?: string | null;
+  ctaPrimary?: string | null;
+  ctaSecondary?: string | null;
+  trust?: string[] | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'homeHero';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "HomeBrandsBlock".
+ */
+export interface HomeBrandsBlock {
+  title?: string | null;
+  categories?: string[] | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'homeBrands';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "HomeProcessBlock".
+ */
+export interface HomeProcessBlock {
+  title?: string | null;
+  description?: string | null;
+  steps?:
+    | {
+        title?: string | null;
+        desc?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'homeProcess';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "HomeCategoriesBlock".
+ */
+export interface HomeCategoriesBlock {
+  title?: string | null;
+  description?: string | null;
+  viewAll?: string | null;
+  featured?: {
+    name?: string | null;
+    desc?: string | null;
+    cta?: string | null;
+  };
+  items?:
+    | {
+        name?: string | null;
+        desc?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'homeCategories';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "HomeCaseStudiesBlock".
+ */
+export interface HomeCaseStudiesBlock {
+  title?: string | null;
+  viewAll?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'homeCaseStudies';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "HomeCertificationsBlock".
+ */
+export interface HomeCertificationsBlock {
+  title?: string | null;
+  description?: string | null;
+  countries?: string | null;
+  items?:
+    | {
+        name?: string | null;
+        sub?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'homeCertifications';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "HomeExpertsBlock".
+ */
+export interface HomeExpertsBlock {
+  eyebrow?: string | null;
+  title?: string | null;
+  paragraphs?: string[] | null;
+  cta?: string | null;
+  imageAlt?: string | null;
+  /**
+   * Numbers are fixed in the design; edit labels only.
+   */
+  stats?:
+    | {
+        label?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'homeExperts';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "HomeAiPromoBlock".
+ */
+export interface HomeAiPromoBlock {
+  badge?: string | null;
+  titleBefore?: string | null;
+  titleHighlight?: string | null;
+  description?: string | null;
+  features?: string[] | null;
+  cta?: string | null;
+  ctaHref?: string | null;
+  chatName?: string | null;
+  chatStatus?: string | null;
+  typing?: string | null;
+  suggestions?: string[] | null;
+  demoUser?: string | null;
+  demoAi1?: string | null;
+  demoAi2?: string | null;
+  replyAntiAging?: string | null;
+  replyOmega3?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'homeAiPromo';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "HomeCtaBlock".
+ */
+export interface HomeCtaBlock {
+  title?: string | null;
+  description?: string | null;
+  primary?: string | null;
+  secondary?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'homeCta';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1212,6 +1391,52 @@ export interface Service {
    * Để trống sẽ tự tạo từ tiêu đề.
    */
   slug?: string | null;
+  /**
+   * Đối tượng phù hợp (mô tả ngắn dưới tiêu đề).
+   */
+  forWho?: string | null;
+  /**
+   * Tóm tắt hiển thị dưới hero.
+   */
+  summary?: string | null;
+  /**
+   * Trích dẫn nổi bật (tùy chọn).
+   */
+  heroQuote?: string | null;
+  /**
+   * Nhãn nút CTA.
+   */
+  cta?: string | null;
+  /**
+   * Bạn nhận được gì.
+   */
+  receive?: string[] | null;
+  /**
+   * Ai phù hợp.
+   */
+  idealFor?: string[] | null;
+  /**
+   * Kết quả kỳ vọng.
+   */
+  expectedOutcomes?: string[] | null;
+  process?:
+    | {
+        step: string;
+        desc?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  faq?:
+    | {
+        q: string;
+        a?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Slug case study liên quan (vd: vivomega).
+   */
+  relatedCaseSlugs?: string[] | null;
   description?: {
     root: {
       type: string;
@@ -1284,7 +1509,7 @@ export interface Certification {
   createdAt: string;
 }
 /**
- * Câu chuyện thương hiệu đã đồng kiến tạo cùng Bioscope.
+ * Brand stories co-created with Bioscope.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "case-studies".
@@ -1297,26 +1522,26 @@ export interface CaseStudy {
    */
   slug?: string | null;
   /**
-   * Đối tác nguyên liệu hoặc công nghệ áp dụng (vd GC Rieber Oils, Phytosome ướt).
+   * Ingredient partner or applied technology (e.g. GC Rieber Oils, wet Phytosome).
    */
   partner?: string | null;
   industry?: ('Thực phẩm chức năng' | 'Dược phẩm' | 'Mỹ phẩm' | 'Dinh dưỡng') | null;
   summary?: string | null;
   /**
-   * vd 500K USD, 70%+, #1
+   * e.g. 500K USD, 70%+, #1
    */
   kpi?: string | null;
   kpiLabel?: string | null;
   problem?: string | null;
   solution?: string | null;
   /**
-   * Mỗi mục là một kết quả đo lường được.
+   * One measurable result per item.
    */
   results?: string[] | null;
   coCreateSteps?: string[] | null;
   testimonial?: string | null;
   /**
-   * Nhãn hiển thị trên thẻ (vd Đồng kiến tạo, Dầu & Omega).
+   * Chips shown on the card (e.g. Co-creation, Oil & Omega).
    */
   tags?: string[] | null;
   coverImage?: (number | null) | Media;
@@ -1739,6 +1964,15 @@ export interface PagesSelect<T extends boolean = true> {
         cta?: T | CTABlockSelect<T>;
         videoEmbed?: T | VideoEmbedBlockSelect<T>;
         logoCloud?: T | LogoCloudBlockSelect<T>;
+        homeHero?: T | HomeHeroBlockSelect<T>;
+        homeBrands?: T | HomeBrandsBlockSelect<T>;
+        homeProcess?: T | HomeProcessBlockSelect<T>;
+        homeCategories?: T | HomeCategoriesBlockSelect<T>;
+        homeCaseStudies?: T | HomeCaseStudiesBlockSelect<T>;
+        homeCertifications?: T | HomeCertificationsBlockSelect<T>;
+        homeExperts?: T | HomeExpertsBlockSelect<T>;
+        homeAiPromo?: T | HomeAiPromoBlockSelect<T>;
+        homeCta?: T | HomeCtaBlockSelect<T>;
       };
   seo?:
     | T
@@ -1879,6 +2113,158 @@ export interface LogoCloudBlockSelect<T extends boolean = true> {
         url?: T;
         id?: T;
       };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "HomeHeroBlock_select".
+ */
+export interface HomeHeroBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  titleBefore?: T;
+  titleHighlight?: T;
+  titleMid?: T;
+  titleAccent?: T;
+  description?: T;
+  ctaPrimary?: T;
+  ctaSecondary?: T;
+  trust?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "HomeBrandsBlock_select".
+ */
+export interface HomeBrandsBlockSelect<T extends boolean = true> {
+  title?: T;
+  categories?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "HomeProcessBlock_select".
+ */
+export interface HomeProcessBlockSelect<T extends boolean = true> {
+  title?: T;
+  description?: T;
+  steps?:
+    | T
+    | {
+        title?: T;
+        desc?: T;
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "HomeCategoriesBlock_select".
+ */
+export interface HomeCategoriesBlockSelect<T extends boolean = true> {
+  title?: T;
+  description?: T;
+  viewAll?: T;
+  featured?:
+    | T
+    | {
+        name?: T;
+        desc?: T;
+        cta?: T;
+      };
+  items?:
+    | T
+    | {
+        name?: T;
+        desc?: T;
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "HomeCaseStudiesBlock_select".
+ */
+export interface HomeCaseStudiesBlockSelect<T extends boolean = true> {
+  title?: T;
+  viewAll?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "HomeCertificationsBlock_select".
+ */
+export interface HomeCertificationsBlockSelect<T extends boolean = true> {
+  title?: T;
+  description?: T;
+  countries?: T;
+  items?:
+    | T
+    | {
+        name?: T;
+        sub?: T;
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "HomeExpertsBlock_select".
+ */
+export interface HomeExpertsBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  title?: T;
+  paragraphs?: T;
+  cta?: T;
+  imageAlt?: T;
+  stats?:
+    | T
+    | {
+        label?: T;
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "HomeAiPromoBlock_select".
+ */
+export interface HomeAiPromoBlockSelect<T extends boolean = true> {
+  badge?: T;
+  titleBefore?: T;
+  titleHighlight?: T;
+  description?: T;
+  features?: T;
+  cta?: T;
+  ctaHref?: T;
+  chatName?: T;
+  chatStatus?: T;
+  typing?: T;
+  suggestions?: T;
+  demoUser?: T;
+  demoAi1?: T;
+  demoAi2?: T;
+  replyAntiAging?: T;
+  replyOmega3?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "HomeCtaBlock_select".
+ */
+export interface HomeCtaBlockSelect<T extends boolean = true> {
+  title?: T;
+  description?: T;
+  primary?: T;
+  secondary?: T;
   id?: T;
   blockName?: T;
 }
@@ -2236,6 +2622,28 @@ export interface TechnologiesSelect<T extends boolean = true> {
 export interface ServicesSelect<T extends boolean = true> {
   title?: T;
   slug?: T;
+  forWho?: T;
+  summary?: T;
+  heroQuote?: T;
+  cta?: T;
+  receive?: T;
+  idealFor?: T;
+  expectedOutcomes?: T;
+  process?:
+    | T
+    | {
+        step?: T;
+        desc?: T;
+        id?: T;
+      };
+  faq?:
+    | T
+    | {
+        q?: T;
+        a?: T;
+        id?: T;
+      };
+  relatedCaseSlugs?: T;
   description?: T;
   icon?: T;
   image?: T;
@@ -2425,6 +2833,10 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
 export interface SiteSetting {
   id: number;
   siteName?: string | null;
+  /**
+   * The Page rendered at the site root (/).
+   */
+  homePage?: (number | null) | Page;
   logo?: (number | null) | Media;
   logoDark?: (number | null) | Media;
   contact?: {
@@ -2567,11 +2979,266 @@ export interface Branding {
   createdAt?: string | null;
 }
 /**
+ * Home page content (all sections).
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "home".
+ */
+export interface Home {
+  id: number;
+  hero?: {
+    eyebrow?: string | null;
+    titleBefore?: string | null;
+    titleHighlight?: string | null;
+    titleMid?: string | null;
+    titleAccent?: string | null;
+    description?: string | null;
+    ctaPrimary?: string | null;
+    ctaSecondary?: string | null;
+    trust?: string[] | null;
+    bannerImage?: (number | null) | Media;
+  };
+  brands?: {
+    title?: string | null;
+    categories?: string[] | null;
+  };
+  process?: {
+    title?: string | null;
+    description?: string | null;
+    steps?:
+      | {
+          title?: string | null;
+          desc?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  categories?: {
+    title?: string | null;
+    description?: string | null;
+    viewAll?: string | null;
+    featured?: {
+      name?: string | null;
+      desc?: string | null;
+      cta?: string | null;
+    };
+    items?:
+      | {
+          name?: string | null;
+          desc?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  certifications?: {
+    title?: string | null;
+    description?: string | null;
+    countries?: string | null;
+    items?:
+      | {
+          name?: string | null;
+          sub?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  caseStudies?: {
+    title?: string | null;
+    viewAll?: string | null;
+  };
+  experts?: {
+    eyebrow?: string | null;
+    title?: string | null;
+    paragraphs?: string[] | null;
+    cta?: string | null;
+    imageAlt?: string | null;
+    /**
+     * Numbers are fixed in the design; edit labels only.
+     */
+    stats?:
+      | {
+          label?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  aiChat?: {
+    badge?: string | null;
+    titleBefore?: string | null;
+    titleHighlight?: string | null;
+    description?: string | null;
+    features?: string[] | null;
+    cta?: string | null;
+    ctaHref?: string | null;
+    chatName?: string | null;
+    chatStatus?: string | null;
+    typing?: string | null;
+    suggestions?: string[] | null;
+    demoUser?: string | null;
+    demoAi1?: string | null;
+    demoAi2?: string | null;
+    replyAntiAging?: string | null;
+    replyOmega3?: string | null;
+  };
+  cta?: {
+    title?: string | null;
+    description?: string | null;
+    primary?: string | null;
+    secondary?: string | null;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * Bioscope AI page content.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "bioscope-ai".
+ */
+export interface BioscopeAi {
+  id: number;
+  status?: string | null;
+  statusDesc?: string | null;
+  introQuote?: string | null;
+  stats?:
+    | {
+        value?: string | null;
+        label?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  previewEyebrow?: string | null;
+  previewTitle?: string | null;
+  previewDesc?: string | null;
+  useCasesTitle?: string | null;
+  useCasesDesc?: string | null;
+  useCases?:
+    | {
+        persona?: string | null;
+        scenario?: string | null;
+        example?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  capabilitiesTitle?: string | null;
+  capabilitiesDesc?: string | null;
+  capabilities?:
+    | {
+        title?: string | null;
+        desc?: string | null;
+        bullets?: string[] | null;
+        id?: string | null;
+      }[]
+    | null;
+  compareTitle?: string | null;
+  compareDesc?: string | null;
+  compareGeneric?: string | null;
+  compareBioscope?: string | null;
+  genericItems?: string[] | null;
+  bioscopeItems?: string[] | null;
+  strengthsTitle?: string | null;
+  strengthsDesc?: string | null;
+  strengths?:
+    | {
+        title?: string | null;
+        desc?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  notifyTitle?: string | null;
+  notifyDesc?: string | null;
+  notifyPlaceholder?: string | null;
+  notifyButton?: string | null;
+  contactCta?: string | null;
+  backHome?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * Site-wide search appearance & indexing.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "seo-settings".
+ */
+export interface SeoSetting {
+  id: number;
+  /**
+   * https://… (không dấu / cuối). Cũng đọc từ NEXT_PUBLIC_SITE_URL.
+   */
+  siteUrl?: string | null;
+  siteName?: string | null;
+  titleSeparator?: ('-' | '–' | '—' | '·' | '•' | '|' | '»' | '~') | null;
+  homeTitle?: string | null;
+  homeDescription?: string | null;
+  defaultImage?: (number | null) | Media;
+  siteRepresents?: ('organization' | 'person') | null;
+  orgName?: string | null;
+  orgLogo?: (number | null) | Media;
+  social?: {
+    facebook?: string | null;
+    x?: string | null;
+    linkedin?: string | null;
+    youtube?: string | null;
+    instagram?: string | null;
+    tiktok?: string | null;
+  };
+  /**
+   * Bật khi site chưa ra mắt. TẮT trước khi go-live.
+   */
+  discourageSearchEngines?: boolean | null;
+  googleVerification?: string | null;
+  bingVerification?: string | null;
+  enableSitemap?: boolean | null;
+  /**
+   * vd /lien-he
+   */
+  sitemapExclude?: string[] | null;
+  /**
+   * Thêm dòng thô vào robots.txt.
+   */
+  robotsExtra?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * Editor-wide preferences for the Better Editor overlay.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "better-editor-settings".
+ */
+export interface BetterEditorSetting {
+  id: number;
+  sidebarPosition?: ('right' | 'left') | null;
+  /**
+   * Override admin.width on sidebar fields so they always span the full row.
+   */
+  forceFullWidthFields?: boolean | null;
+  tabletWidth?: number | null;
+  mobileWidth?: number | null;
+  /**
+   * Hex color (e.g. `#3b82f6`).
+   */
+  hoverColorTopLevel?: string | null;
+  /**
+   * Hex color for blocks nested inside another block.
+   */
+  hoverColorNested?: string | null;
+  /**
+   * Outline thickness in pixels (1–5).
+   */
+  hoverOutlineWidth?: number | null;
+  showHoverToolbar?: boolean | null;
+  hoverToolbarPosition?: ('top-right' | 'top-left' | 'bottom-right' | 'bottom-left') | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "site-settings_select".
  */
 export interface SiteSettingsSelect<T extends boolean = true> {
   siteName?: T;
+  homePage?: T;
   logo?: T;
   logoDark?: T;
   contact?:
@@ -2674,6 +3341,247 @@ export interface BrandingSelect<T extends boolean = true> {
   sidebarBackground?: T;
   radius?: T;
   fontFamily?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "home_select".
+ */
+export interface HomeSelect<T extends boolean = true> {
+  hero?:
+    | T
+    | {
+        eyebrow?: T;
+        titleBefore?: T;
+        titleHighlight?: T;
+        titleMid?: T;
+        titleAccent?: T;
+        description?: T;
+        ctaPrimary?: T;
+        ctaSecondary?: T;
+        trust?: T;
+        bannerImage?: T;
+      };
+  brands?:
+    | T
+    | {
+        title?: T;
+        categories?: T;
+      };
+  process?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        steps?:
+          | T
+          | {
+              title?: T;
+              desc?: T;
+              id?: T;
+            };
+      };
+  categories?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        viewAll?: T;
+        featured?:
+          | T
+          | {
+              name?: T;
+              desc?: T;
+              cta?: T;
+            };
+        items?:
+          | T
+          | {
+              name?: T;
+              desc?: T;
+              id?: T;
+            };
+      };
+  certifications?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        countries?: T;
+        items?:
+          | T
+          | {
+              name?: T;
+              sub?: T;
+              id?: T;
+            };
+      };
+  caseStudies?:
+    | T
+    | {
+        title?: T;
+        viewAll?: T;
+      };
+  experts?:
+    | T
+    | {
+        eyebrow?: T;
+        title?: T;
+        paragraphs?: T;
+        cta?: T;
+        imageAlt?: T;
+        stats?:
+          | T
+          | {
+              label?: T;
+              id?: T;
+            };
+      };
+  aiChat?:
+    | T
+    | {
+        badge?: T;
+        titleBefore?: T;
+        titleHighlight?: T;
+        description?: T;
+        features?: T;
+        cta?: T;
+        ctaHref?: T;
+        chatName?: T;
+        chatStatus?: T;
+        typing?: T;
+        suggestions?: T;
+        demoUser?: T;
+        demoAi1?: T;
+        demoAi2?: T;
+        replyAntiAging?: T;
+        replyOmega3?: T;
+      };
+  cta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        primary?: T;
+        secondary?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "bioscope-ai_select".
+ */
+export interface BioscopeAiSelect<T extends boolean = true> {
+  status?: T;
+  statusDesc?: T;
+  introQuote?: T;
+  stats?:
+    | T
+    | {
+        value?: T;
+        label?: T;
+        id?: T;
+      };
+  previewEyebrow?: T;
+  previewTitle?: T;
+  previewDesc?: T;
+  useCasesTitle?: T;
+  useCasesDesc?: T;
+  useCases?:
+    | T
+    | {
+        persona?: T;
+        scenario?: T;
+        example?: T;
+        id?: T;
+      };
+  capabilitiesTitle?: T;
+  capabilitiesDesc?: T;
+  capabilities?:
+    | T
+    | {
+        title?: T;
+        desc?: T;
+        bullets?: T;
+        id?: T;
+      };
+  compareTitle?: T;
+  compareDesc?: T;
+  compareGeneric?: T;
+  compareBioscope?: T;
+  genericItems?: T;
+  bioscopeItems?: T;
+  strengthsTitle?: T;
+  strengthsDesc?: T;
+  strengths?:
+    | T
+    | {
+        title?: T;
+        desc?: T;
+        id?: T;
+      };
+  notifyTitle?: T;
+  notifyDesc?: T;
+  notifyPlaceholder?: T;
+  notifyButton?: T;
+  contactCta?: T;
+  backHome?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "seo-settings_select".
+ */
+export interface SeoSettingsSelect<T extends boolean = true> {
+  siteUrl?: T;
+  siteName?: T;
+  titleSeparator?: T;
+  homeTitle?: T;
+  homeDescription?: T;
+  defaultImage?: T;
+  siteRepresents?: T;
+  orgName?: T;
+  orgLogo?: T;
+  social?:
+    | T
+    | {
+        facebook?: T;
+        x?: T;
+        linkedin?: T;
+        youtube?: T;
+        instagram?: T;
+        tiktok?: T;
+      };
+  discourageSearchEngines?: T;
+  googleVerification?: T;
+  bingVerification?: T;
+  enableSitemap?: T;
+  sitemapExclude?: T;
+  robotsExtra?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "better-editor-settings_select".
+ */
+export interface BetterEditorSettingsSelect<T extends boolean = true> {
+  sidebarPosition?: T;
+  forceFullWidthFields?: T;
+  tabletWidth?: T;
+  mobileWidth?: T;
+  hoverColorTopLevel?: T;
+  hoverColorNested?: T;
+  hoverOutlineWidth?: T;
+  showHoverToolbar?: T;
+  hoverToolbarPosition?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

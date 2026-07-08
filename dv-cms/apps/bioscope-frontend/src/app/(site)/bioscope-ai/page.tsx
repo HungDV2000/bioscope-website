@@ -21,8 +21,9 @@ import { Reveal } from '@/components/ui/reveal'
 import { AiNotifyForm } from '@/components/ai-assistant/notify-form'
 import { AiChatPreview } from '@/components/ai-assistant/chat-preview'
 import { getLocale } from '@/lib/i18n/server'
-import { getPageI18n } from '@/lib/i18n/pages'
+import { getPageContent } from '@/lib/cms/page'
 import { getMessages } from '@/lib/i18n/messages'
+import { getAiPage } from '@/lib/cms/ai-page'
 
 const CAPABILITY_ICONS = [FlaskConical, Lightbulb, FileText, Clock]
 const STRENGTH_ICONS = [Brain, Zap, Layers, Sparkles]
@@ -34,14 +35,15 @@ const USE_CASE_ACCENTS = [
 
 export async function generateMetadata() {
   const locale = await getLocale()
-  return getPageI18n('bioscopeAi', locale).metadata
+  return (await getPageContent('bioscope-ai', locale)).metadata
 }
 
 export default async function BioscopeAiPage() {
   const locale = await getLocale()
-  const { hero } = getPageI18n('bioscopeAi', locale)
+  const { hero } = await getPageContent('bioscope-ai', locale)
   const m = getMessages(locale)
-  const p = m.aiAssistantPage
+  // Page content from the `bioscope-ai` global (overlaid on static i18n).
+  const p = await getAiPage(locale)
   const chatCopy = m.home.aiChat
 
   return (

@@ -9,6 +9,9 @@ import { getContent } from '@/lib/get-content'
 import { getLocale } from '@/lib/i18n/server'
 import { getMessages } from '@/lib/i18n/messages'
 import { ingredientImg } from '@/lib/images'
+import { getIngredient } from '@/lib/cms/ingredients'
+import { JsonLd } from '@/components/seo/json-ld'
+import { absUrl, DEFAULT_OG_IMAGE } from '@/lib/seo'
 
 export function generateStaticParams() {
   return INGREDIENTS.map((it) => ({ slug: it.slug }))
@@ -17,7 +20,7 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   const locale = await getLocale()
-  const it = getContent(locale).INGREDIENTS.find((x) => x.slug === slug)
+  const it = (await getIngredient(slug, locale)) ?? getContent(locale).INGREDIENTS.find((x) => x.slug === slug)
   if (!it) return {}
   return { title: it.name, description: it.shortDesc }
 }
@@ -26,13 +29,39 @@ export default async function IngredientDetail({ params }: { params: Promise<{ s
   const { slug } = await params
   const locale = await getLocale()
   const m = getMessages(locale)
-  const it = getContent(locale).INGREDIENTS.find((x) => x.slug === slug)
+  // Prefer the CMS `ingredients` collection; fall back to static content.
+  const it = (await getIngredient(slug, locale)) ?? getContent(locale).INGREDIENTS.find((x) => x.slug === slug)
   if (!it) notFound()
 
   const askExpert = locale === 'en' ? 'Ask an expert' : 'Hỏi chuyên gia'
 
+  const url = absUrl(`/nguyen-lieu/${it.slug}`)
+  const jsonLd = [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'Product',
+      name: it.name,
+      description: it.shortDesc,
+      image: it.imageSrc ?? absUrl(DEFAULT_OG_IMAGE),
+      category: it.category,
+      ...(it.manufacturer ? { brand: { '@type': 'Brand', name: it.manufacturer } } : {}),
+      ...(it.origin ? { countryOfOrigin: it.origin } : {}),
+      url,
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: m.nav.home, item: absUrl('/') },
+        { '@type': 'ListItem', position: 2, name: m.nav.ingredients, item: absUrl('/nguyen-lieu') },
+        { '@type': 'ListItem', position: 3, name: it.name, item: url },
+      ],
+    },
+  ]
+
   return (
     <article className="bg-white pt-32 lg:pt-40">
+      <JsonLd data={jsonLd} />
       <div className="container-bs pb-24">
         <nav className="flex items-center gap-1.5 text-[13px] text-ink/45">
           <Link href="/" className="hover:text-primary">

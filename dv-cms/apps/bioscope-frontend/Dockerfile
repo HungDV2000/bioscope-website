@@ -9,8 +9,11 @@ COPY apps/bioscope-frontend/package.json ./apps/bioscope-frontend/package.json
 RUN pnpm install --frozen-lockfile
 
 FROM base AS build
+# Public URLs are inlined into the bundle at build time — must be passed as args.
 ARG NEXT_PUBLIC_CMS_URL=http://localhost:3001
+ARG NEXT_PUBLIC_SITE_URL=https://web.bioscope.vn
 ENV NEXT_PUBLIC_CMS_URL=$NEXT_PUBLIC_CMS_URL
+ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL
 ENV NEXT_TELEMETRY_DISABLED=1
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/apps/bioscope-frontend/node_modules ./apps/bioscope-frontend/node_modules

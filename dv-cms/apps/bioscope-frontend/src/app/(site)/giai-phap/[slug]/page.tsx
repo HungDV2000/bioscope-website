@@ -8,6 +8,7 @@ import { SOLUTIONS } from '@/lib/content'
 import { getContent } from '@/lib/get-content'
 import { getLocale } from '@/lib/i18n/server'
 import { getMessages } from '@/lib/i18n/messages'
+import { getSolution } from '@/lib/cms/solutions'
 
 export function generateStaticParams() {
   return SOLUTIONS.map((s) => ({ slug: s.slug }))
@@ -16,7 +17,7 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   const locale = await getLocale()
-  const s = getContent(locale).SOLUTIONS.find((x) => x.slug === slug)
+  const s = (await getSolution(slug, locale)) ?? getContent(locale).SOLUTIONS.find((x) => x.slug === slug)
   if (!s) return {}
   return { title: s.title, description: s.forWho }
 }
@@ -26,7 +27,8 @@ export default async function SolutionLanding({ params }: { params: Promise<{ sl
   const locale = await getLocale()
   const content = getContent(locale)
   const m = getMessages(locale)
-  const s = content.SOLUTIONS.find((x) => x.slug === slug)
+  // Prefer the CMS `services` collection; fall back to static content.
+  const s = (await getSolution(slug, locale)) ?? content.SOLUTIONS.find((x) => x.slug === slug)
   if (!s) notFound()
 
   const relatedCases = (s.relatedCaseSlugs ?? [])

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Search, ArrowUpRight, ChevronLeft, ChevronRight, Clock, Calendar, X } from 'lucide-react'
@@ -116,7 +116,7 @@ export function BlogList({ posts }: { posts: BlogPost[] }) {
       counts[t] = posts.filter((p) => p.topic === t).length
     })
     return counts
-  }, [posts])
+  }, [posts, BLOG_TOPICS])
 
   const industryCounts = useMemo(() => {
     const counts: Record<string, number> = {}
@@ -124,7 +124,7 @@ export function BlogList({ posts }: { posts: BlogPost[] }) {
       counts[ind] = posts.filter((p) => p.industry === ind).length
     })
     return counts
-  }, [posts])
+  }, [posts, BLOG_INDUSTRIES])
 
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase()
@@ -141,20 +141,21 @@ export function BlogList({ posts }: { posts: BlogPost[] }) {
     })
   }, [posts, q, topic, industry])
 
+  // Reset to page 1 when the active filters change (render-time, not an effect).
+  const filterKey = `${q}|${topic}|${industry}`
+  const [prevFilterKey, setPrevFilterKey] = useState(filterKey)
+  if (filterKey !== prevFilterKey) {
+    setPrevFilterKey(filterKey)
+    setPage(1)
+  }
+
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  // `safePage` clamps a stale-high page without needing a sync effect.
   const safePage = Math.min(page, totalPages)
   const paginated = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
   const featured = !q && !topic && !industry && safePage === 1 ? paginated[0] : null
   const gridPosts = featured ? paginated.slice(1) : paginated
   const hasFilters = Boolean(topic || industry || q)
-
-  useEffect(() => {
-    setPage(1)
-  }, [q, topic, industry])
-
-  useEffect(() => {
-    if (page > totalPages) setPage(totalPages)
-  }, [page, totalPages])
 
   const clearFilters = () => {
     setQ('')

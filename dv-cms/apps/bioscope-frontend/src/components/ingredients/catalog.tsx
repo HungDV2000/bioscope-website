@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { Children, useMemo, useState, type ReactNode } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Search, ArrowUpRight, SlidersHorizontal, X, ChevronLeft, ChevronRight } from 'lucide-react'
@@ -92,6 +92,27 @@ export function Catalog({ items }: { items: Ingredient[] }) {
   const [advancedDraft, setAdvancedDraft] = useState<AdvancedFilters>(EMPTY_ADVANCED)
   const [advancedApplied, setAdvancedApplied] = useState<AdvancedFilters>(EMPTY_ADVANCED)
 
+  // Filter options derived from the actual items so every chip maps to ≥1 result
+  // (keeps the static ordering, drops dead options, surfaces CMS-only values).
+  const facets = useMemo(() => {
+    const uniq = (vals: (string | undefined)[]) => [...new Set(vals.filter((v): v is string => Boolean(v)))]
+    const ordered = (present: string[], order: readonly string[]) => [
+      ...order.filter((v) => present.includes(v)),
+      ...present.filter((v) => !order.includes(v)),
+    ]
+    return {
+      industries: ordered(uniq(items.map((it) => it.industry)), INDUSTRIES),
+      categories: ordered(uniq(items.map((it) => it.category)), INGREDIENT_CATEGORIES),
+      origins: ordered(uniq(items.map((it) => it.origin)), ORIGINS),
+      forms: ordered(uniq(items.map((it) => ingredientForm(it))), PRODUCT_FORMS),
+      tags: INGREDIENT_TAGS.filter((tg) => items.some((it) => it.tag === tg)),
+      certs: CERT_FILTERS.filter((c) => items.some((it) => it.badges.some((b) => b.toLowerCase().includes(c.toLowerCase())))),
+      applications: APPLICATION_TYPES.filter((app) =>
+        items.some((it) => it.applications.some((a) => a.includes(app) || app.includes(a))),
+      ),
+    }
+  }, [items, INDUSTRIES, INGREDIENT_CATEGORIES, ORIGINS, PRODUCT_FORMS, INGREDIENT_TAGS, CERT_FILTERS, APPLICATION_TYPES])
+
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase()
     return items.filter((it) => {
@@ -108,18 +129,19 @@ export function Catalog({ items }: { items: Ingredient[] }) {
     })
   }, [items, q, industry, cert, advancedApplied])
 
+  // Reset to page 1 when the active filters change (render-time, not an effect).
+  const filterKey = `${q}|${industry}|${cert}|${JSON.stringify(advancedApplied)}`
+  const [prevFilterKey, setPrevFilterKey] = useState(filterKey)
+  if (filterKey !== prevFilterKey) {
+    setPrevFilterKey(filterKey)
+    setPage(1)
+  }
+
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  // `safePage` clamps a stale-high page without needing a sync effect.
   const safePage = Math.min(page, totalPages)
   const paginated = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
   const advancedCount = countAdvanced(advancedApplied)
-
-  useEffect(() => {
-    setPage(1)
-  }, [q, industry, cert, advancedApplied])
-
-  useEffect(() => {
-    if (page > totalPages) setPage(totalPages)
-  }, [page, totalPages])
 
   const openAdvanced = () => {
     setAdvancedDraft(advancedApplied)
@@ -174,11 +196,11 @@ export function Catalog({ items }: { items: Ingredient[] }) {
 
             <div className="flex flex-wrap items-center gap-2">
               <Filter label={cat.allIndustries} active={!industry} onClick={() => setIndustry(null)} />
-              {INDUSTRIES.map((ind) => (
+              {facets.industries.map((ind) => (
                 <Filter key={ind} label={ind} active={industry === ind} onClick={() => setIndustry(ind)} />
               ))}
               <span className="mx-1 hidden h-5 w-px bg-primary-border sm:block" />
-              {CERT_FILTERS.map((c) => (
+              {facets.certs.map((c) => (
                 <Filter key={c} label={c} subtle active={cert === c} onClick={() => setCert(cert === c ? null : c)} />
               ))}
               {advancedCount > 0 && (
@@ -264,6 +286,7 @@ export function Catalog({ items }: { items: Ingredient[] }) {
 
       {advancedOpen && (
         <AdvancedSearchModal
+          facets={facets}
           draft={advancedDraft}
           onChange={setAdvancedDraft}
           onClose={() => setAdvancedOpen(false)}
@@ -328,31 +351,35 @@ function Pagination({
   )
 }
 
+type Facets = {
+  industries: string[]
+  categories: string[]
+  origins: string[]
+  forms: string[]
+  tags: string[]
+  certs: string[]
+  applications: string[]
+}
+
 function AdvancedSearchModal({
+  facets,
   draft,
   onChange,
   onClose,
   onApply,
   onReset,
 }: {
+  facets: Facets
   draft: AdvancedFilters
   onChange: (f: AdvancedFilters) => void
   onClose: () => void
   onApply: () => void
   onReset: () => void
 }) {
-  const { content, t } = useLocale()
+  const { t } = useLocale()
   const cat = t.ingredientsCatalog
   const f = cat.filters
-  const {
-    INDUSTRIES,
-    CERT_FILTERS,
-    INGREDIENT_TAGS,
-    INGREDIENT_CATEGORIES,
-    ORIGINS,
-    PRODUCT_FORMS,
-    APPLICATION_TYPES,
-  } = content
+  const { industries: INDUSTRIES, certs: CERT_FILTERS, tags: INGREDIENT_TAGS, categories: INGREDIENT_CATEGORIES, origins: ORIGINS, forms: PRODUCT_FORMS, applications: APPLICATION_TYPES } = facets
 
   const toggle = <K extends keyof AdvancedFilters>(key: K, value: string) => {
     const list = draft[key] as string[]
@@ -473,6 +500,8 @@ function AdvancedSearchModal({
 }
 
 function FilterSection({ title, children }: { title: string; children: ReactNode }) {
+  // Hide the whole group when the facet has no options for the current dataset.
+  if (Children.toArray(children).length === 0) return null
   return (
     <div>
       <p className="mb-3 text-[13px] font-bold uppercase tracking-wide text-ink/45">{title}</p>

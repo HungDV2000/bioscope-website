@@ -2,17 +2,17 @@ import { PageHero } from '@/components/ui/page-hero'
 import { LegalContent } from '@/components/legal-content'
 import { getContent } from '@/lib/get-content'
 import { getLocale } from '@/lib/i18n/server'
-import { getPageI18n } from '@/lib/i18n/pages'
+import { getPageContent } from '@/lib/cms/page'
 
 export async function generateMetadata() {
   const locale = await getLocale()
-  return getPageI18n('privacy', locale).metadata
+  return (await getPageContent('chinh-sach-bao-mat', locale)).metadata
 }
 
 export default async function PrivacyPage() {
   const locale = await getLocale()
   const policy = getContent(locale).PRIVACY_POLICY
-  const { hero } = getPageI18n('privacy', locale)
+  const { hero } = await getPageContent('chinh-sach-bao-mat', locale)
 
   return (
     <>

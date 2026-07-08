@@ -71,6 +71,8 @@ export function AiChatDemo({
   const loopRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const userInteracted = useRef(false)
   const scrollRef = useRef<HTMLDivElement>(null)
+  // Holds the latest runAutoScript so the loop can recurse without a TDZ self-reference.
+  const runAutoScriptRef = useRef<() => void>(() => {})
 
   const clearTimers = useCallback(() => {
     timers.current.forEach(clearTimeout)
@@ -124,7 +126,7 @@ export function AiChatDemo({
           schedule(() => {
             pushAi(copy.demoAi2, () => {
               if (!userInteracted.current) {
-                loopRef.current = setTimeout(() => runAutoScript(), LOOP_MS)
+                loopRef.current = setTimeout(() => runAutoScriptRef.current(), LOOP_MS)
               }
             })
           }, PAUSE_MS)
@@ -158,6 +160,11 @@ export function AiChatDemo({
     [clearTimers, copy, pushAi, pushUser, resetConversation, schedule],
   )
 
+  // Keep the ref pointed at the latest runAutoScript for the recursive loop.
+  useEffect(() => {
+    runAutoScriptRef.current = runAutoScript
+  }, [runAutoScript])
+
   const replay = useCallback(() => {
     userInteracted.current = false
     runAutoScript()
@@ -168,9 +175,13 @@ export function AiChatDemo({
   }, [onReady, replay, sendSuggestion])
 
   useEffect(() => {
-    runAutoScript()
-    return clearTimers
-  }, [runAutoScript, clearTimers])
+    // Defer one tick so the initial reset isn't a synchronous set-state-in-effect.
+    const id = setTimeout(() => runAutoScriptRef.current(), 0)
+    return () => {
+      clearTimeout(id)
+      clearTimers()
+    }
+  }, [clearTimers])
 
   useEffect(() => {
     scrollToBottom()

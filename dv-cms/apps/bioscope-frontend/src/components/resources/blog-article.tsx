@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState, useSyncExternalStore } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowLeft, Calendar, Clock, Copy, Check, Share2, User } from 'lucide-react'
@@ -27,11 +27,12 @@ export function BlogArticle({
   const sampleComments = comments ?? content.BLOG_SAMPLE_COMMENTS
   const tags = post.tags ?? [post.topic, post.industry]
   const [copied, setCopied] = useState(false)
-  const [pageUrl, setPageUrl] = useState('')
-
-  useEffect(() => {
-    setPageUrl(window.location.href)
-  }, [])
+  // Client-only page URL (empty on the server) without a set-state-in-effect.
+  const pageUrl = useSyncExternalStore(
+    () => () => {},
+    () => window.location.href,
+    () => '',
+  )
 
   const copyLink = useCallback(() => {
     if (typeof window === 'undefined') return

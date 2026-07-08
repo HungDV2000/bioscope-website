@@ -1,19 +1,36 @@
 'use client'
 
-import { Award, Globe2 } from 'lucide-react'
+import Image from 'next/image'
 import { Reveal } from '@/components/ui/reveal'
 import { useLocale } from '@/lib/i18n/context'
+import { useTrackScroll } from '@/lib/use-track-scroll'
 
-const CERT_ICON = Award
+/** Certification logos from /public/images/certificates (drag + auto-scroll, full colour). */
+const CERTS = [
+  { src: 'Goed-omega-3.png', alt: 'GOED Omega-3' },
+  { src: 'ISO-Certified-01-1.webp', alt: 'ISO Certified' },
+  { src: 'Konsultan-ISO-22000.png', alt: 'ISO 22000' },
+  { src: 'gmp.png', alt: 'GMP' },
+  { src: 'haccp.jpg', alt: 'HACCP' },
+  { src: 'halal.webp', alt: 'Halal' },
+  { src: 'KOHER-1.jpg', alt: 'Kosher' },
+  { src: 'nsf-international-logo.jpg', alt: 'NSF International' },
+  { src: 'friend_of_the_sea-02.png', alt: 'Friend of the Sea' },
+  { src: 'cropped-v-label-logo-1.webp', alt: 'V-Label Vegan' },
+  { src: 'csm_2017-global-compact-logo_93e4bff8ac.webp', alt: 'UN Global Compact' },
+  { src: 'global.jpg', alt: 'Global G.A.P' },
+  { src: 'E_SDG-goals_icons-individual-rgb-03-300x300.png', alt: 'SDG 3 — Good health' },
+  { src: 'E_SDG-goals_icons-individual-rgb-09.png', alt: 'SDG 9 — Industry & innovation' },
+  { src: 'E_SDG-goals_icons-individual-rgb-12-300x300.png', alt: 'SDG 12 — Responsible consumption' },
+  { src: 'E_SDG-goals_icons-individual-rgb-14-300x300.png', alt: 'SDG 14 — Life below water' },
+]
 
 export function Certifications() {
   const { t } = useLocale()
   const c = t.home.certifications
-
-  const certs = [
-    ...c.items.map((item) => ({ ...item, icon: undefined as typeof Globe2 | undefined })),
-    { name: '50+', sub: c.countries, icon: Globe2 },
-  ]
+  const { ref, dragProps, hoverProps } = useTrackScroll(true, 0.4)
+  // Duplicate the list so the auto-scroll loops seamlessly.
+  const track = [...CERTS, ...CERTS]
 
   return (
     <section className="bg-white py-10">
@@ -22,22 +39,36 @@ export function Certifications() {
           <h2 className="text-[15px] font-extrabold uppercase tracking-[0.1em] text-ink">{c.title}</h2>
           <p className="mt-2 text-[14px] text-ink/55">{c.description}</p>
         </Reveal>
+
         <Reveal delay={0.08}>
-          <div className="mt-5 grid grid-cols-2 gap-y-6 rounded-[1.75rem] border border-primary-border/60 bg-mist/40 px-6 py-7 sm:grid-cols-3 lg:grid-cols-6">
-            {certs.map(({ name, sub, icon: ItemIcon }) => {
-              const Icon = ItemIcon ?? CERT_ICON
-              return (
-                <div key={name} className="flex items-center gap-3 px-2">
-                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-primary-border bg-white text-primary">
-                    <Icon className="h-5 w-5" strokeWidth={1.6} />
-                  </span>
-                  <div>
-                    <div className="text-[15px] font-extrabold leading-none text-ink">{name}</div>
-                    <div className="mt-1 text-[11.5px] font-medium leading-tight text-ink/50">{sub}</div>
-                  </div>
+          <div className="group/marquee relative mt-6 overflow-hidden rounded-[1.75rem] border border-primary-border/60 bg-mist/40 py-7">
+            {/* fade edges */}
+            <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-mist/90 to-transparent" />
+            <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-mist/90 to-transparent" />
+
+            <div
+              ref={ref}
+              {...dragProps}
+              {...hoverProps}
+              className="flex cursor-grab select-none items-center gap-4 overflow-x-auto px-4 [scrollbar-width:none] active:cursor-grabbing [&::-webkit-scrollbar]:hidden"
+            >
+              {track.map((cert, i) => (
+                <div
+                  key={`${cert.src}-${i}`}
+                  className="flex h-20 w-[150px] shrink-0 items-center justify-center rounded-2xl border border-primary-border/50 bg-white px-5"
+                >
+                  <Image
+                    src={`/images/certificates/${cert.src}`}
+                    alt={cert.alt}
+                    width={130}
+                    height={64}
+                    unoptimized
+                    draggable={false}
+                    className="max-h-14 w-auto max-w-full object-contain"
+                  />
                 </div>
-              )
-            })}
+              ))}
+            </div>
           </div>
         </Reveal>
       </div>

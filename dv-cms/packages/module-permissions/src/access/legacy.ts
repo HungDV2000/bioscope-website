@@ -3,7 +3,7 @@ import { ALL_PERMISSION_ACTIONS } from '../lib/constants.js'
 
 const allActions = [...ALL_PERMISSION_ACTIONS]
 
-const contentGlobals = ['site-settings', 'navigation', 'branding']
+const contentGlobals = ['site-settings', 'navigation', 'branding', 'home']
 
 const rulesFor = (
   resourceType: PermissionRule['resourceType'],
@@ -16,7 +16,10 @@ const rulesFor = (
  * Wildcard `*` skips sensitive collections (`users`, `staff-roles`) — see checkPermissionRules.
  */
 export const LEGACY_ROLE_PRESETS: Record<string, PermissionRule[]> = {
-  admin: [{ resourceType: 'collection', resource: '*', actions: allActions }],
+  admin: [
+    { resourceType: 'collection', resource: '*', actions: allActions },
+    { resourceType: 'global', resource: '*', actions: allActions },
+  ],
   editor: [
     {
       resourceType: 'collection',

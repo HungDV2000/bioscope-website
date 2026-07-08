@@ -39,6 +39,13 @@
     background-color: color-mix(in oklab, var(--color-primary) 18%, white);
     color: var(--color-primary-dark);
   }
+  /* Visible keyboard focus for interactive elements (mouse clicks unaffected).
+     :where() keeps specificity at 0 so components can still override. */
+  :where(a, button, input, textarea, select, summary, [tabindex]):focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
 }
 
 @layer components {
@@ -95,5 +102,25 @@
 
   .animate-bs-ripple {
     animation: bs-ripple 2s ease-out infinite;
+  }
+
+  /* Chat card popping into the bottom-right corner when it docks. */
+  @keyframes bs-dock-in {
+    from {
+      opacity: 0;
+      transform: translateY(16px) scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+  .animate-bs-dock-in {
+    animation: bs-dock-in 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .animate-bs-dock-in {
+      animation: none;
+    }
   }
 }

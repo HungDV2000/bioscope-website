@@ -6,15 +6,23 @@ import { Button } from '@/components/ui/button'
 import { CASE_STUDIES } from '@/lib/content'
 import { getContent } from '@/lib/get-content'
 import { getLocale } from '@/lib/i18n/server'
+import { getCaseStudy } from '@/lib/cms/collections'
 
 export function generateStaticParams() {
   return CASE_STUDIES.map((c) => ({ slug: c.slug }))
 }
 
+/** CMS case study (fallback to static). `image` ImgKey only exists on static docs. */
+async function resolveCase(slug: string, locale: 'vi' | 'en') {
+  const cms = await getCaseStudy(slug, locale)
+  if (cms) return cms as typeof cms & { image?: undefined }
+  return getContent(locale).CASE_STUDIES.find((x) => x.slug === slug)
+}
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   const locale = await getLocale()
-  const c = getContent(locale).CASE_STUDIES.find((x) => x.slug === slug)
+  const c = await resolveCase(slug, locale)
   if (!c) return {}
   return { title: `${c.brand} — Case Study`, description: c.problem }
 }
@@ -22,7 +30,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 export default async function CaseStudyDetail({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   const locale = await getLocale()
-  const c = getContent(locale).CASE_STUDIES.find((x) => x.slug === slug)
+  const c = await resolveCase(slug, locale)
   if (!c) notFound()
 
   const labels =
@@ -60,7 +68,7 @@ export default async function CaseStudyDetail({ params }: { params: Promise<{ sl
         title={`${c.brand} — ${c.kpiLabel}`}
         description={c.summary}
         crumbs={[{ label: labels.crumb, href: '/case-study' }, { label: c.brand }]}
-        image={c.coverImage ? undefined : c.image}
+        image={c.coverImage ? undefined : ('image' in c && c.image ? c.image : 'oil')}
         coverImage={c.coverImage}
       />
 

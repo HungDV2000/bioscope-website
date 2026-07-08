@@ -5,20 +5,20 @@ import { Reveal } from '@/components/ui/reveal'
 import { CtaBand } from '@/components/home/cta-band'
 import { getContent } from '@/lib/get-content'
 import { getLocale } from '@/lib/i18n/server'
-import { getPageI18n } from '@/lib/i18n/pages'
+import { getPageContent } from '@/lib/cms/page'
 import { getMessages } from '@/lib/i18n/messages'
 
 const JOURNEY_ICONS = [Lightbulb, FlaskConical, ShieldCheck, Rocket, TrendingUp]
 
 export async function generateMetadata() {
   const locale = await getLocale()
-  return getPageI18n('coCreate', locale).metadata
+  return (await getPageContent('dong-kien-tao', locale)).metadata
 }
 
 export default async function CoCreatePage() {
   const locale = await getLocale()
   const content = getContent(locale)
-  const { hero } = getPageI18n('coCreate', locale)
+  const { hero } = await getPageContent('dong-kien-tao', locale)
   const m = getMessages(locale)
   const p = m.coCreatePage
   const { CO_CREATE_COMPARISON, CO_CREATE_STEP_DURATIONS, CASE_STUDIES } = content

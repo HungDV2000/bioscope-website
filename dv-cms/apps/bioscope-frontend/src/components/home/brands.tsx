@@ -1,6 +1,7 @@
 'use client'
 
-import { useCallback, useEffect, useRef } from 'react'
+import Image from 'next/image'
+import { useCallback } from 'react'
 import {
   ChevronLeft,
   ChevronRight,
@@ -13,67 +14,10 @@ import {
 } from 'lucide-react'
 import { CLIENT_LOGOS } from '@/lib/content'
 import { useLocale } from '@/lib/i18n/context'
+import { useTrackScroll } from '@/lib/use-track-scroll'
 import { cn } from '@/lib/utils'
 
 const CATEGORY_ICONS = [Sprout, Sparkles, Leaf, FlaskConical, HeartPulse, Pill] as const
-
-/** Drag-to-scroll + optional auto-loop marquee (pauses on hover/drag). */
-function useTrackScroll(autoLoop = false) {
-  const ref = useRef<HTMLDivElement>(null)
-  const drag = useRef({ down: false, startX: 0, startLeft: 0 })
-  const paused = useRef(false)
-
-  const onPointerDown = (e: React.PointerEvent) => {
-    const el = ref.current
-    if (!el) return
-    drag.current = { down: true, startX: e.clientX, startLeft: el.scrollLeft }
-    el.setPointerCapture?.(e.pointerId)
-  }
-  const onPointerMove = (e: React.PointerEvent) => {
-    const el = ref.current
-    if (!el || !drag.current.down) return
-    el.scrollLeft = drag.current.startLeft - (e.clientX - drag.current.startX)
-  }
-  const end = (e: React.PointerEvent) => {
-    drag.current.down = false
-    ref.current?.releasePointerCapture?.(e.pointerId)
-  }
-
-  useEffect(() => {
-    if (!autoLoop) return
-    const el = ref.current
-    if (!el) return
-    let raf = 0
-    let pos = 0
-    el.scrollLeft = 0
-    const tick = () => {
-      // nội dung nhân đôi → một nửa = đúng 1 bộ logo; reset tại nửa để liền mạch
-      const half = el.scrollWidth / 2
-      if (!paused.current && half > 0 && el.scrollWidth > el.clientWidth) {
-        // tăng scrollLeft → nội dung trôi từ phải sang trái
-        pos += 0.45
-        if (pos >= half) pos -= half
-        el.scrollLeft = pos
-      } else {
-        pos = el.scrollLeft % (half || 1) // resync after hover/drag
-      }
-      raf = requestAnimationFrame(tick)
-    }
-    raf = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(raf)
-  }, [autoLoop])
-
-  const dragProps = { onPointerDown, onPointerMove, onPointerUp: end }
-  const hoverProps = {
-    onMouseEnter: () => {
-      paused.current = true
-    },
-    onMouseLeave: () => {
-      paused.current = false
-    },
-  }
-  return { ref, dragProps, hoverProps }
-}
 
 const track =
   'flex gap-3 overflow-x-auto cursor-grab select-none [scrollbar-width:none] [&::-webkit-scrollbar]:hidden active:cursor-grabbing'
@@ -140,13 +84,13 @@ export function Brands() {
                   key={`${c.name}-${i}`}
                   className="flex h-[104px] w-[170px] shrink-0 items-center justify-center rounded-2xl border border-primary-border/70 bg-white px-4"
                 >
-                  <img
+                  <Image
                     src={c.logo}
                     alt={c.name}
                     width={140}
                     height={56}
                     loading="lazy"
-                    decoding="async"
+                    unoptimized
                     className="max-h-11 w-auto max-w-full object-contain"
                   />
                 </div>

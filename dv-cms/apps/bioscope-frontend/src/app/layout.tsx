@@ -2,36 +2,57 @@ import type { Metadata, Viewport } from 'next'
 import { CmsThemeStyle } from '@/components/theme/cms-theme-style'
 import { getFrontendThemeColor } from '@/lib/branding'
 import { getLocale } from '@/lib/i18n/server'
+import { DEFAULT_OG_IMAGE } from '@/lib/seo'
+import { getSeoSettings } from '@/lib/cms/seo-settings'
+import { Analytics, GtmNoScript } from '@/components/analytics'
+import { getTracking } from '@/lib/cms/site-settings'
 import './globals.css'
 
-const SITE_URL = 'https://web.bioscope.vn'
 const DESCRIPTION =
   'Không chỉ nguyên liệu — Bioscope đồng kiến tạo những giải pháp đột phá cho ngành Dược phẩm, Thực phẩm chức năng và Mỹ phẩm tại Việt Nam.'
+const KEYWORDS = [
+  'nguyên liệu thực phẩm chức năng',
+  'nguyên liệu mỹ phẩm',
+  'nguyên liệu dược phẩm',
+  'gia công ODM',
+  'đồng kiến tạo sản phẩm',
+]
 
-export const metadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
-  title: {
-    default: 'Bioscope — Đối tác đổi mới y tế · Nguyên liệu & Đồng kiến tạo',
-    template: '%s · Bioscope',
-  },
-  description: DESCRIPTION,
-  keywords: [
-    'nguyên liệu thực phẩm chức năng',
-    'nguyên liệu mỹ phẩm',
-    'nguyên liệu dược phẩm',
-    'gia công ODM',
-    'đồng kiến tạo sản phẩm',
-  ],
-  alternates: { canonical: '/' },
-  robots: { index: true, follow: true },
-  openGraph: {
-    type: 'website',
-    locale: 'vi_VN',
-    url: SITE_URL,
-    siteName: 'Bioscope',
-    title: 'Bioscope — Đối tác đổi mới y tế',
-    description: DESCRIPTION,
-  },
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale()
+  const s = await getSeoSettings(locale)
+  const siteName = s.siteName ?? 'Bioscope'
+  const homeTitle = s.homeTitle ?? 'Bioscope — Đối tác đổi mới y tế · Nguyên liệu & Đồng kiến tạo'
+  const description = s.homeDescription ?? DESCRIPTION
+  const ogImage = s.defaultImage ?? DEFAULT_OG_IMAGE
+
+  return {
+    metadataBase: new URL(s.siteUrl),
+    title: { default: homeTitle, template: `%s ${s.titleSeparator} ${siteName}` },
+    description,
+    keywords: KEYWORDS,
+    alternates: { canonical: '/' },
+    // Yoast "discourage search engines" → noindex the whole site.
+    robots: s.discourageSearchEngines ? { index: false, follow: false } : { index: true, follow: true },
+    openGraph: {
+      type: 'website',
+      locale: locale === 'en' ? 'en_US' : 'vi_VN',
+      url: s.siteUrl,
+      siteName,
+      title: homeTitle,
+      description,
+      images: [{ url: ogImage, alt: siteName }],
+    },
+    twitter: { card: 'summary_large_image', title: homeTitle, description, images: [ogImage] },
+    ...(s.googleVerification || s.bingVerification
+      ? {
+          verification: {
+            ...(s.googleVerification ? { google: s.googleVerification } : {}),
+            ...(s.bingVerification ? { other: { 'msvalidate.01': s.bingVerification } } : {}),
+          },
+        }
+      : {}),
+  }
 }
 
 export async function generateViewport(): Promise<Viewport> {
@@ -39,42 +60,43 @@ export async function generateViewport(): Promise<Viewport> {
   return { themeColor }
 }
 
-const JSON_LD = {
-  '@context': 'https://schema.org',
-  '@graph': [
-    {
-      '@type': 'Organization',
-      '@id': `${SITE_URL}/#organization`,
-      name: 'Bioscope',
-      url: SITE_URL,
-      logo: `${SITE_URL}/logo.avif`,
-      description: DESCRIPTION,
-      slogan: 'Đối tác được lựa chọn của Việt Nam cho nguyên liệu cao cấp và đổi mới đột phá.',
-    },
-    {
-      '@type': 'WebSite',
-      '@id': `${SITE_URL}/#website`,
-      url: SITE_URL,
-      name: 'Bioscope',
-      inLanguage: 'vi-VN',
-      publisher: { '@id': `${SITE_URL}/#organization` },
-    },
-  ],
-}
-
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const locale = await getLocale()
+  const [tracking, seo] = await Promise.all([getTracking(), getSeoSettings(locale)])
+
+  const identityType = seo.siteRepresents === 'person' ? 'Person' : 'Organization'
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': identityType,
+        '@id': `${seo.siteUrl}/#identity`,
+        name: seo.orgName ?? seo.siteName ?? 'Bioscope',
+        url: seo.siteUrl,
+        ...(seo.orgLogo ? { logo: seo.orgLogo } : { logo: `${seo.siteUrl}/logo.avif` }),
+        ...(seo.sameAs.length ? { sameAs: seo.sameAs } : {}),
+      },
+      {
+        '@type': 'WebSite',
+        '@id': `${seo.siteUrl}/#website`,
+        url: seo.siteUrl,
+        name: seo.siteName ?? 'Bioscope',
+        inLanguage: locale === 'en' ? 'en-US' : 'vi-VN',
+        publisher: { '@id': `${seo.siteUrl}/#identity` },
+      },
+    ],
+  }
+
   return (
     <html lang={locale} suppressHydrationWarning>
       <body suppressHydrationWarning>
+        <GtmNoScript gtm={tracking.gtm} />
         <CmsThemeStyle />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }}
-        />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
         {children}
+        <Analytics tracking={tracking} />
       </body>
     </html>
   )

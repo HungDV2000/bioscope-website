@@ -4,17 +4,17 @@ import { Reveal } from '@/components/ui/reveal'
 import { ContactWizard } from '@/components/contact/wizard'
 import { getContent } from '@/lib/get-content'
 import { getLocale } from '@/lib/i18n/server'
-import { getPageI18n } from '@/lib/i18n/pages'
+import { getPageContent } from '@/lib/cms/page'
 
 export async function generateMetadata() {
   const locale = await getLocale()
-  return getPageI18n('contact', locale).metadata
+  return (await getPageContent('lien-he', locale)).metadata
 }
 
 export default async function ContactPage() {
   const locale = await getLocale()
   const content = getContent(locale)
-  const { hero } = getPageI18n('contact', locale)
+  const { hero } = await getPageContent('lien-he', locale)
   const FAQ = content.CONTACT_FAQ
   const labels =
     locale === 'en'

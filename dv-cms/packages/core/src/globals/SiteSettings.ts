@@ -8,6 +8,18 @@ export const SiteSettings: GlobalConfig = {
   access: { read: anyone, update: isAdminOrEditor },
   fields: [
     { name: 'siteName', type: 'text', localized: true },
+    {
+      name: 'homePage',
+      type: 'relationship',
+      relationTo: 'pages',
+      label: { en: 'Home page', vi: 'Trang chủ' },
+      admin: {
+        description: {
+          en: 'The Page rendered at the site root (/).',
+          vi: 'Trang được hiển thị ở đường dẫn gốc (/).',
+        },
+      },
+    },
     { name: 'logo', type: 'upload', relationTo: 'media' },
     { name: 'logoDark', type: 'upload', relationTo: 'media' },
     {

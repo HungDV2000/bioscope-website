@@ -11,19 +11,42 @@ const NEED_ICONS = [Boxes, FlaskConical, Handshake]
 type Form = { need: string; name: string; company: string; email: string; phone: string; message: string }
 
 export function ContactWizard() {
-  const { t } = useLocale()
+  const { t, locale } = useLocale()
   const w = t.contact.wizard
+  const ui = {
+    sending: locale === 'en' ? 'Sending…' : 'Đang gửi…',
+    error: locale === 'en' ? 'Something went wrong. Please try again.' : 'Có lỗi xảy ra. Vui lòng thử lại.',
+  }
   const needs = NEED_KEYS.map((key, i) => ({ key, icon: NEED_ICONS[i], ...w.needs[i] }))
 
   const [step, setStep] = useState(1)
   const [done, setDone] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState(false)
+  const [honeypot, setHoneypot] = useState('')
   const [form, setForm] = useState<Form>({ need: '', name: '', company: '', email: '', phone: '', message: '' })
 
   const set = (k: keyof Form, v: string) => setForm((f) => ({ ...f, [k]: v }))
   const canNext = step === 1 ? !!form.need : step === 2 ? form.name && form.email.includes('@') : true
 
-  const submit = () => {
-    setDone(true)
+  const submit = async () => {
+    if (submitting) return
+    setSubmitting(true)
+    setError(false)
+    try {
+      const res = await fetch('/api/forms/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ formTitle: 'Liên hệ Bioscope', website: honeypot, data: form }),
+      })
+      const json = (await res.json().catch(() => ({}))) as { ok?: boolean }
+      if (!res.ok || !json.ok) throw new Error('submit failed')
+      setDone(true)
+    } catch {
+      setError(true)
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   if (done) {
@@ -129,12 +152,27 @@ export function ContactWizard() {
         ) : (
           <button
             onClick={submit}
-            className="rounded-full bg-primary px-7 py-3 text-[14px] font-semibold text-white transition-colors duration-300 hover:bg-primary-dark"
+            disabled={submitting}
+            className="rounded-full bg-primary px-7 py-3 text-[14px] font-semibold text-white transition-colors duration-300 hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {w.submit}
+            {submitting ? ui.sending : w.submit}
           </button>
         )}
       </div>
+
+      {error && <p className="mt-4 text-center text-[13.5px] font-medium text-red-600">{ui.error}</p>}
+
+      {/* Honeypot — hidden from users, catches bots. */}
+      <input
+        type="text"
+        name="website"
+        tabIndex={-1}
+        autoComplete="off"
+        value={honeypot}
+        onChange={(e) => setHoneypot(e.target.value)}
+        aria-hidden="true"
+        className="absolute left-[-9999px] h-0 w-0 opacity-0"
+      />
     </div>
   )
 }

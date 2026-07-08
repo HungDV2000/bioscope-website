@@ -1,21 +1,23 @@
-import type { SelectField } from 'payload'
+import type { TextField } from 'payload'
 
 const FIELD = '@dv/module-custom-types/fields#ContentCollectionSlugsField'
 
-type Overrides = Omit<Partial<SelectField>, 'type' | 'options'>
+type Overrides = Omit<Partial<TextField>, 'type' | 'hasMany'>
 
-/** Multi-select collection slugs — mọi content type trong hệ thống (core + custom CPT). */
+/**
+ * Multi-select collection slugs — options load runtime từ config.
+ * Dùng `text` + hasMany (không dùng `select`) để tránh Postgres ENUM rỗng khi push schema.
+ */
 export const contentCollectionSlugsField = (
   name: string,
   overrides: Overrides = {},
-): SelectField => {
+): TextField => {
   const { admin, ...rest } = overrides
 
   return {
     name,
-    type: 'select',
+    type: 'text',
     hasMany: true,
-    options: [],
     ...rest,
     admin: {
       ...admin,

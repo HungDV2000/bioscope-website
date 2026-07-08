@@ -8,6 +8,7 @@ import { getContent } from '@/lib/get-content'
 import { getLocale } from '@/lib/i18n/server'
 import { getMessages } from '@/lib/i18n/messages'
 import { getPageI18n } from '@/lib/i18n/pages'
+import { getPosts } from '@/lib/cms/blog'
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale()
@@ -26,6 +27,8 @@ export default async function BlogPage() {
   const t = getMessages(locale)
   const { hero } = getPageI18n('resources', locale)
   const cat = content.getResourceCategory('blog-chuyen-mon')!
+  // Blog posts from the CMS `posts` collection; falls back to static content.
+  const posts = (await getPosts(locale)) ?? content.BLOG_POSTS
 
   return (
     <>
@@ -48,7 +51,7 @@ export default async function BlogPage() {
         </div>
       </Reveal>
 
-      <BlogList posts={content.BLOG_POSTS} />
+      <BlogList posts={posts} />
 
       <div className="container-bs -mt-12 pb-16">
         <Link

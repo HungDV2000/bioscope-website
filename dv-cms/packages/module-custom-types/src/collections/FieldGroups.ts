@@ -2,7 +2,7 @@ import type { CollectionConfig } from 'payload'
 import { isAdminOrEditor } from '@dv/cms-core'
 
 import { ADMIN_GROUP_CUSTOM_TYPES } from '../i18n/admin-groups.js'
-import { contentCollectionSlugsField } from '../fields/contentCollectionSlugsField.js'
+import { contentCollectionSlugsField } from '../fields/defineContentCollectionSlugsField.js'
 import { customFieldDefFields } from '../fields/customFieldDefFields.js'
 import { cascadeDeleteContentType } from '../hooks/cascadeDeleteContentType.js'
 import { syncManifestAfterChange, syncManifestAfterDelete } from '../hooks/syncManifest.js'

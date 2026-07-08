@@ -2,11 +2,11 @@
 
 import React, { useCallback, useMemo } from 'react'
 import { SelectInput, useConfig, useField } from '@payloadcms/ui'
-import type { SelectFieldClientProps } from 'payload'
+import type { TextFieldClientProps } from 'payload'
 
 import { listSelectableContentCollections } from '../lib/collection-options.js'
 
-export const ContentCollectionSlugsField: React.FC<SelectFieldClientProps> = (props) => {
+export const ContentCollectionSlugsField: React.FC<TextFieldClientProps> = (props) => {
   const { field, path: pathFromProps, readOnly, validate } = props
   const { config } = useConfig()
 

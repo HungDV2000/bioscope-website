@@ -27,6 +27,24 @@ const lexical = (paragraphs: string[]) => ({
 })
 
 /**
+ * Recursively copy ids (nested groups + array rows) from a saved vi tree onto
+ * an en tree by index, so an en-locale update writes the SAME rows/blocks.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const copyIds = (vi: any, en: any): any => {
+  if (Array.isArray(en) && Array.isArray(vi)) return en.map((e, i) => copyIds(vi[i], e))
+  if (en && typeof en === 'object' && vi && typeof vi === 'object') {
+    const out: Record<string, unknown> = { ...en }
+    if (vi.id != null) out.id = vi.id
+    for (const k of Object.keys(en)) {
+      if (en[k] && typeof en[k] === 'object') out[k] = copyIds(vi[k], en[k])
+    }
+    return out
+  }
+  return en
+}
+
+/**
  * Idempotent seed for Bioscope content. Safe to run repeatedly: existing
  * records are found (by a unique-ish field) and reused, globals are updated.
  * Returns a list of human-readable log lines for the caller to surface.
@@ -88,27 +106,66 @@ export async function runSeed(payload: Payload): Promise<string[]> {
   })
   log('site-settings updated')
 
-  /* ── 2b. Navigation ────────────────────────────────────── */
-  await payload.updateGlobal({
-    slug: 'navigation',
-    data: {
-      header: [
-        { label: 'Nguyên liệu', url: '/nguyen-lieu' },
-        { label: 'Giải pháp', url: '/giai-phap' },
+  /* ── 2b. Navigation (song ngữ: menu đầu trang + 4 cột chân trang) ── */
+  const navVi = {
+    header: [
+      { label: 'Nguyên liệu', url: '/nguyen-lieu' },
+      { label: 'Giải pháp', url: '/giai-phap' },
+      { label: 'Đồng kiến tạo', url: '/dong-kien-tao' },
+      { label: 'Nghiên cứu & Phát triển', url: '/rd' },
+      { label: 'Tài nguyên', url: '/tai-nguyen' },
+      { label: 'Về chúng tôi', url: '/ve-chung-toi' },
+    ],
+    footer: [
+      { label: 'Nguyên liệu', url: '#', children: [
+        { label: 'Thực phẩm chức năng', url: '/nguyen-lieu' }, { label: 'Mỹ phẩm', url: '/nguyen-lieu' },
+        { label: 'Dược phẩm', url: '/nguyen-lieu' }, { label: 'Chiết xuất thực vật', url: '/nguyen-lieu' },
+      ] },
+      { label: 'Giải pháp', url: '#', children: [
+        { label: 'Cung cấp nguyên liệu', url: '/giai-phap' }, { label: 'Phát triển công thức ODM', url: '/giai-phap' },
         { label: 'Đồng kiến tạo', url: '/dong-kien-tao' },
-        { label: 'Nghiên cứu & Phát triển', url: '/rd' },
-        { label: 'Tài nguyên', url: '/tai-nguyen' },
-        { label: 'Về chúng tôi', url: '/ve-chung-toi' },
-      ],
-      footer: [
-        { label: 'Câu hỏi thường gặp', url: '/cau-hoi-thuong-gap' },
-        { label: 'Chính sách bảo mật', url: '/chinh-sach-bao-mat' },
-        { label: 'Điều khoản sử dụng', url: '/dieu-khoan-su-dung' },
-        { label: 'Liên hệ', url: '/lien-he' },
-      ],
-    },
-  })
-  log('navigation updated')
+      ] },
+      { label: 'Công ty', url: '#', children: [
+        { label: 'Về chúng tôi', url: '/ve-chung-toi' }, { label: 'Nghiên cứu & Phát triển', url: '/rd' },
+        { label: 'Case study', url: '/case-study' }, { label: 'Tài nguyên', url: '/tai-nguyen' },
+      ] },
+      { label: 'Hỗ trợ', url: '#', children: [
+        { label: 'Liên hệ', url: '/lien-he' }, { label: 'Yêu cầu mẫu thử', url: '/lien-he' },
+        { label: 'Câu hỏi thường gặp', url: '/cau-hoi-thuong-gap' }, { label: 'Chính sách bảo mật', url: '/chinh-sach-bao-mat' },
+        { label: 'Cổng đối tác', url: '/lien-he' },
+      ] },
+    ],
+  }
+  const navEn = {
+    header: [
+      { label: 'Ingredients', url: '/nguyen-lieu' }, { label: 'Solutions', url: '/giai-phap' },
+      { label: 'Co-creation', url: '/dong-kien-tao' }, { label: 'R&D', url: '/rd' },
+      { label: 'Resources', url: '/tai-nguyen' }, { label: 'About us', url: '/ve-chung-toi' },
+    ],
+    footer: [
+      { label: 'Ingredients', url: '#', children: [
+        { label: 'Nutraceuticals', url: '/nguyen-lieu' }, { label: 'Cosmetics', url: '/nguyen-lieu' },
+        { label: 'Pharmaceuticals', url: '/nguyen-lieu' }, { label: 'Botanical extracts', url: '/nguyen-lieu' },
+      ] },
+      { label: 'Solutions', url: '#', children: [
+        { label: 'Ingredient supply', url: '/giai-phap' }, { label: 'ODM formulation', url: '/giai-phap' },
+        { label: 'Co-creation', url: '/dong-kien-tao' },
+      ] },
+      { label: 'Company', url: '#', children: [
+        { label: 'About us', url: '/ve-chung-toi' }, { label: 'R&D', url: '/rd' },
+        { label: 'Case studies', url: '/case-study' }, { label: 'Resources', url: '/tai-nguyen' },
+      ] },
+      { label: 'Support', url: '#', children: [
+        { label: 'Contact', url: '/lien-he' }, { label: 'Request samples', url: '/lien-he' },
+        { label: 'FAQ', url: '/cau-hoi-thuong-gap' }, { label: 'Privacy policy', url: '/chinh-sach-bao-mat' },
+        { label: 'Partner portal', url: '/lien-he' },
+      ] },
+    ],
+  }
+  await payload.updateGlobal({ slug: 'navigation', data: navVi as never, locale: 'vi' })
+  const navDoc = await payload.findGlobal({ slug: 'navigation', locale: 'vi', depth: 0 })
+  await payload.updateGlobal({ slug: 'navigation', data: copyIds(navDoc, navEn) as never, locale: 'en' })
+  log('navigation updated (song ngữ vi + en)')
 
   /* ── 2c. Branding (whitelabel theme) ───────────────────── */
   await payload.updateGlobal({
@@ -181,15 +238,310 @@ export async function runSeed(payload: Payload): Promise<string[]> {
   for (const ing of ingredientData) await upsertLocalized(payload, 'ingredients', { slug: { equals: ing.slug } }, { vi: { ...ing, _status: 'published' } })
   log(`ingredients: ${ingredientData.length}`)
 
-  /* ── 7. Services ───────────────────────────────────────── */
-  const serviceData = [
-    { title: 'Nghiên cứu & Phát triển công thức', slug: 'rnd-formulation', icon: 'FlaskConical', order: 1 },
-    { title: 'Sản xuất ODM', slug: 'odm-manufacturing', icon: 'Factory', order: 2 },
-    { title: 'Hỗ trợ pháp lý & công bố', slug: 'regulatory-support', icon: 'ShieldCheck', order: 3 },
-    { title: 'Chuỗi cung ứng toàn cầu', slug: 'global-supply', icon: 'Globe', order: 4 },
+  /* ── 7. Services (giải pháp — nuôi trang /giai-phap/[slug]) ─ */
+  const serviceData: { slug: string; order: number; icon: string; vi: Record<string, unknown>; en: Record<string, unknown> }[] = [
+    {
+      slug: 'cung-cap-nguyen-lieu',
+      order: 1,
+      icon: 'FlaskConical',
+      vi: {
+        title: 'Cung cấp nguyên liệu đặc biệt',
+        forWho: 'Doanh nghiệp đã có đội R&D, cần nguồn nguyên liệu hiếm, chất lượng cao, đầy đủ tài liệu pháp lý.',
+        cta: 'Khám phá nguyên liệu',
+        summary: 'Danh mục hoạt chất hiếm, hiệu quả đã kiểm chứng — phù hợp khi bạn đã có năng lực phát triển sản phẩm và cần nguồn cung đáng tin.',
+        receive: ['100+ nguyên liệu chuyên biệt', 'COA / TDS / SDS đầy đủ', 'Mẫu thử nhanh', 'Nguồn cung ổn định từ 50+ quốc gia'],
+        idealFor: ['Nhà sản xuất đã có dây chuyền và đội R&D nội bộ', 'Thương hiệu cần nguyên liệu hiếm hoặc chuẩn hóa cao', 'Formulator cần COA/TDS đầy đủ cho hồ sơ công bố'],
+        expectedOutcomes: ['Rút ngắn thời gian sourcing từ tuần xuống vài ngày', 'Giảm rủi ro chất lượng nhờ nguồn gốc minh bạch', 'Ổn định chuỗi cung ứng dài hạn'],
+        process: [
+          { step: 'Tư vấn kỹ thuật', desc: 'Xác định nguyên liệu, hàm lượng và chứng nhận phù hợp công thức & thị trường mục tiêu.' },
+          { step: 'Gửi mẫu & tài liệu', desc: 'Cung cấp mẫu thử, TDS public và COA/SDS qua form gating khi cần đánh giá sâu.' },
+          { step: 'Đàm phán & cung ứng', desc: 'Thống nhất MOQ, lịch giao hàng và hỗ trợ pháp lý nhập khẩu nếu cần.' },
+          { step: 'Đồng hành sau bán', desc: 'Cập nhật batch mới, thay thế tương đương và tư vấn tối ưu công thức khi scale.' },
+        ],
+        faq: [
+          { q: 'Bioscope có niêm yết giá công khai không?', a: 'Không — giá phụ thuộc MOQ, lô hàng và đàm phán. Vui lòng liên hệ để nhận báo giá phù hợp.' },
+          { q: 'MOQ tối thiểu là bao nhiêu?', a: 'Tùy nguyên liệu, thường từ 5–25 kg. Một số mặt hàng độc quyền có MOQ thấp hơn cho mẫu thử.' },
+          { q: 'TDS và COA lấy ở đâu?', a: 'TDS có thể xem/tải tại trang chi tiết nguyên liệu. COA và SDS yêu cầu email công việc qua form tải tài liệu.' },
+        ],
+        relatedCaseSlugs: ['vivomega'],
+      },
+      en: {
+        title: 'Specialty ingredient supply',
+        forWho: 'Companies with in-house R&D teams needing rare, high-quality ingredients with full regulatory documentation.',
+        cta: 'Explore ingredients',
+        summary: 'A catalog of rare, proven-performance actives — ideal when you already have product development capability and need a trusted supply source.',
+        receive: ['100+ specialty ingredients', 'Complete COA / TDS / SDS', 'Fast sample delivery', 'Stable supply from 50+ countries'],
+        idealFor: ['Manufacturers with production lines and internal R&D', 'Brands needing rare or highly standardized ingredients', 'Formulators requiring complete COA/TDS for product registration'],
+        expectedOutcomes: ['Reduce sourcing time from weeks to days', 'Lower quality risk through transparent traceability', 'Long-term supply chain stability'],
+        process: [
+          { step: 'Technical consultation', desc: 'Identify ingredients, assay levels, and certifications aligned with your formula and target market.' },
+          { step: 'Samples & documentation', desc: 'Provide trial samples, public TDS, and gated COA/SDS for in-depth evaluation.' },
+          { step: 'Negotiation & supply', desc: 'Agree on MOQ, delivery schedule, and import compliance support when needed.' },
+          { step: 'Post-sale partnership', desc: 'New batch updates, equivalent substitutions, and formula optimization advice as you scale.' },
+        ],
+        faq: [
+          { q: 'Does Bioscope publish prices publicly?', a: 'No — pricing depends on MOQ, batch, and negotiation. Please contact us for a tailored quote.' },
+          { q: 'What is the minimum MOQ?', a: 'Varies by ingredient, typically 5–25 kg. Some exclusive items have lower MOQs for trial evaluation.' },
+          { q: 'Where can I get TDS and COA?', a: 'TDS is available on each ingredient page. COA and SDS require a business email via the document download form.' },
+        ],
+        relatedCaseSlugs: ['vivomega'],
+      },
+    },
+    {
+      slug: 'phat-trien-cong-thuc-odm',
+      order: 2,
+      icon: 'Factory',
+      vi: {
+        title: 'Phát triển công thức & ODM',
+        forWho: 'Thương hiệu có ý tưởng nhưng cần đối tác xây dựng công thức và sản xuất.',
+        cta: 'Tìm hiểu dịch vụ ODM',
+        summary: 'Từ ý tưởng đến công thức hoàn chỉnh — Bioscope đồng hành formulator, kiểm chứng hiệu quả và hỗ trợ thương mại hóa.',
+        receive: ['Đội ngũ R&D đồng hành', 'Công thức tối ưu hiệu quả/chi phí', 'Kiểm chứng & tạo mẫu', 'Hỗ trợ pháp lý, sản xuất'],
+        idealFor: ['Startup brand có concept rõ nhưng thiếu lab nội bộ', 'Thương hiệu muốn mở dòng sản phẩm mới nhanh', 'Doanh nghiệp cần ODM trọn gói từ công thức đến bao bì'],
+        expectedOutcomes: ['Công thức khác biệt nhờ nguyên liệu & công nghệ độc quyền', 'Giảm vòng lặp thử-sai nhờ kinh nghiệm 23+ dự án R&D', 'Lộ trình rõ ràng từ mẫu đến sản xuất hàng loạt'],
+        process: [
+          { step: 'Brief & mục tiêu', desc: 'Làm rõ phân khúc, claim, ngân sách và ràng buộc pháp lý (TPCN, mỹ phẩm, dược phẩm).' },
+          { step: 'Đề xuất công thức', desc: 'Chọn nguyên liệu & công nghệ (Phytosome, nano…) tối ưu hiệu quả/chi phí.' },
+          { step: 'Tạo mẫu & kiểm nghiệm', desc: 'Pilot batch, test cảm quan, ổn định và an toàn theo chuẩn ngành.' },
+          { step: 'Scale-up & ra mắt', desc: 'Hỗ trợ chọn nhà máy GMP, hồ sơ công bố và triển khai sản xuất thương mại.' },
+        ],
+        faq: [
+          { q: 'ODM khác gì mua nguyên liệu thuần?', a: 'ODM bao gồm nghiên cứu công thức, tạo mẫu, kiểm chứng và hỗ trợ sản xuất — không chỉ giao nguyên liệu.' },
+          { q: 'Bao lâu có mẫu thử?', a: 'Thường 4–8 tuần tùy độ phức tạp; timeline cụ thể được ước lượng sau buổi brief đầu tiên.' },
+          { q: 'Bioscope có hỗ trợ hồ sơ công bố không?', a: 'Có — hỗ trợ tài liệu kỹ thuật, COA và phối hợp với đơn vị công bố theo quy định Việt Nam.' },
+        ],
+        relatedCaseSlugs: ['gastroheal'],
+      },
+      en: {
+        title: 'Formulation development & ODM',
+        forWho: 'Brands with a concept who need a partner to build formulas and manufacture.',
+        cta: 'Learn about ODM services',
+        summary: 'From idea to finished formula — Bioscope partners with formulators, validates efficacy, and supports commercialization.',
+        receive: ['Dedicated R&D team', 'Efficacy/cost-optimized formulas', 'Validation & prototyping', 'Regulatory and production support'],
+        idealFor: ['Startup brands with a clear concept but no internal lab', 'Brands launching new product lines quickly', 'Companies needing end-to-end ODM from formula to packaging'],
+        expectedOutcomes: ['Differentiated formulas through proprietary ingredients and technology', 'Fewer trial-and-error cycles thanks to 23+ R&D projects', 'Clear roadmap from prototype to mass production'],
+        process: [
+          { step: 'Brief & objectives', desc: 'Clarify segment, claims, budget, and regulatory constraints (nutraceuticals, cosmetics, pharmaceuticals).' },
+          { step: 'Formula proposal', desc: 'Select ingredients and technologies (Phytosome, nano…) optimized for efficacy and cost.' },
+          { step: 'Prototyping & testing', desc: 'Pilot batches, sensory, stability, and safety testing to industry standards.' },
+          { step: 'Scale-up & launch', desc: 'GMP factory selection, registration dossiers, and commercial production rollout.' },
+        ],
+        faq: [
+          { q: 'How is ODM different from buying raw ingredients?', a: 'ODM includes formula research, prototyping, validation, and production support — not just ingredient delivery.' },
+          { q: 'How long until I receive a prototype?', a: 'Typically 4–8 weeks depending on complexity; a specific timeline is estimated after the initial brief.' },
+          { q: 'Does Bioscope support product registration?', a: 'Yes — we provide technical documents, COA, and coordinate with registration bodies per Vietnamese regulations.' },
+        ],
+        relatedCaseSlugs: ['gastroheal'],
+      },
+    },
+    {
+      slug: 'dong-kien-tao-toan-hanh-trinh',
+      order: 3,
+      icon: 'Sparkles',
+      vi: {
+        title: 'Đồng kiến tạo toàn hành trình',
+        forWho: 'Nhà phát triển nhãn hàng muốn xây thương hiệu lớn, bền vững từ con số 0.',
+        cta: 'Bắt đầu hành trình',
+        summary: 'Đối tác chiến lược từ ý tưởng đến tăng trưởng — nghiên cứu thị trường trước, chỉ sản xuất khi có tín hiệu rõ.',
+        heroQuote: 'Bạn có ý tưởng thương hiệu. Chúng tôi có khoa học và kinh nghiệm thị trường. Nhiều nhà phát triển nhãn hàng thất bại vì làm sản phẩm trước, tìm thị trường sau.',
+        receive: ['Phân tích thị trường & định giá', 'Xây dựng công thức', 'Test thị trường trước sản xuất', 'Thương mại hóa & tăng trưởng'],
+        idealFor: ['Nhà phát triển nhãn hàng muốn launch từ con số 0', 'Founder cần đối tác chiến lược, không chỉ nhà cung ứng', 'Thương hiệu hướng tới tăng trưởng bền vững, biên cao'],
+        expectedOutcomes: ['Giảm rủi ro tồn kho nhờ validate thị trường trước', 'Tăng tỷ lệ thành công sản phẩm mới', 'Xây dựng ngành hàng có lợi thế cạnh tranh lâu dài'],
+        process: [
+          { step: 'Khám phá thị trường', desc: 'Phân tích phân khúc, đối thủ, kênh bán và mức giá trước khi cam kết sản xuất.' },
+          { step: 'Thiết kế giá trị', desc: 'Định vị thương hiệu, công thức và câu chuyện khoa học khác biệt.' },
+          { step: 'Test tín hiệu', desc: 'Thử nghiệm online/offline với batch nhỏ để xác nhận nhu cầu thực.' },
+          { step: 'Thương mại hóa', desc: 'Scale sản xuất, phân phối và tối ưu danh mục theo dữ liệu bán hàng.' },
+          { step: 'Tăng trưởng dài hạn', desc: 'Mở rộng SKU, tối ưu chi phí và đồng hành marketing khoa học.' },
+        ],
+        faq: [
+          { q: '"Đồng kiến tạo" khác ODM thế nào?', a: 'Đồng kiến tạo bao trùm chiến lược thị trường, định giá và tăng trưởng — ODM tập trung vào công thức & sản xuất.' },
+          { q: 'Bioscope có tham gia phân phối không?', a: 'Chúng tôi hỗ trợ chiến lược kênh và thương mại hóa; mô hình cụ thể được thống nhất theo từng dự án.' },
+          { q: 'Ví dụ thành công?', a: 'vivomega® (0 → 500K USD/năm), Gastroheal (70%+ truyền miệng), PEA (Category Creator tại Việt Nam).' },
+        ],
+        relatedCaseSlugs: ['vivomega', 'pea', 'gastroheal'],
+      },
+      en: {
+        title: 'End-to-end co-creation',
+        forWho: 'Brand developers building large, sustainable brands from scratch.',
+        cta: 'Start your journey',
+        summary: 'A strategic partner from idea to growth — market research first, production only when signals are clear.',
+        heroQuote: 'You have a brand idea. We have the science and market experience. Many brand developers fail by making product first and finding the market later.',
+        receive: ['Market analysis & pricing', 'Formula development', 'Pre-production market testing', 'Commercialization & growth'],
+        idealFor: ['Brand developers launching from zero', 'Founders needing a strategic partner, not just a supplier', 'Brands targeting sustainable growth with healthy margins'],
+        expectedOutcomes: ['Lower inventory risk by validating the market first', 'Higher new product success rates', 'Build categories with lasting competitive advantage'],
+        process: [
+          { step: 'Market discovery', desc: 'Analyze segments, competitors, sales channels, and pricing before committing to production.' },
+          { step: 'Value design', desc: 'Brand positioning, formula, and differentiated science storytelling.' },
+          { step: 'Signal testing', desc: 'Online/offline trials with small batches to confirm real demand.' },
+          { step: 'Commercialization', desc: 'Scale production, distribution, and portfolio optimization based on sales data.' },
+          { step: 'Long-term growth', desc: 'SKU expansion, cost optimization, and science-led marketing partnership.' },
+        ],
+        faq: [
+          { q: 'How is co-creation different from ODM?', a: 'Co-creation covers market strategy, pricing, and growth — ODM focuses on formulation and manufacturing.' },
+          { q: 'Does Bioscope participate in distribution?', a: 'We support channel strategy and commercialization; specific models are agreed per project.' },
+          { q: 'Success examples?', a: 'vivomega® (0 → USD 500K/year), Gastroheal (70%+ word of mouth), PEA (Category Creator in Vietnam).' },
+        ],
+        relatedCaseSlugs: ['vivomega', 'pea', 'gastroheal'],
+      },
+    },
   ]
-  for (const s of serviceData) await upsertLocalized(payload, 'services', { slug: { equals: s.slug } }, { vi: s })
+  for (const s of serviceData) {
+    await upsertLocalized(
+      payload,
+      'services',
+      { slug: { equals: s.slug } },
+      { vi: { ...s.vi, slug: s.slug, icon: s.icon, order: s.order }, en: { ...s.en, slug: s.slug, icon: s.icon, order: s.order } },
+    )
+  }
+  // Remove legacy placeholder services (superseded by the solution landing pages above).
+  await payload.delete({
+    collection: 'services',
+    where: { slug: { in: ['rnd-formulation', 'odm-manufacturing', 'regulatory-support', 'global-supply'] } },
+  })
   log(`services: ${serviceData.length}`)
+
+  /* ── 7b. Redirects (mẫu — middleware frontend tiêu thụ) ── */
+  const redirectData = [{ from: '/san-pham', to: '/nguyen-lieu', type: '301' }]
+  for (const r of redirectData) await upsert(payload, 'redirects', { from: { equals: r.from } }, r)
+  log(`redirects: ${redirectData.length}`)
+
+  /* ── 7c. Bioscope AI global (song ngữ) ────────────────── */
+  const aiVi = {
+    status: 'Sắp ra mắt',
+    statusDesc:
+      'Trợ lý AI chuyên biệt cho ngành nguyên liệu chức năng — được huấn luyện trên catalog, tài liệu R&D và kinh nghiệm tư vấn thực tế của Bioscope.',
+    introQuote: '“Từ câu hỏi đầu tiên đến danh sách hoạt chất ứng viên — trong vài phút, không vài ngày.”',
+    stats: [
+      { value: '500+', label: 'Nguyên liệu trong catalog' },
+      { value: '24/7', label: 'Tra cứu mọi lúc' },
+      { value: '3', label: 'Ngành: DP · TPCN · Mỹ phẩm' },
+    ],
+    previewEyebrow: 'Xem trước',
+    previewTitle: 'Hỏi như đang chat với chuyên gia Bioscope',
+    previewDesc:
+      'Mô tả sản phẩm bạn đang phát triển — AI gợi ý hoạt chất, giải thích lý do lựa chọn và hỏi bạn muốn xem TDS hay đặt mẫu thử.',
+    useCasesTitle: 'Ai sẽ dùng Bioscope AI?',
+    useCasesDesc: 'Thiết kế cho mọi vai trò trong chuỗi phát triển sản phẩm — từ ý tưởng ban đầu đến quyết định mua nguyên liệu.',
+    useCases: [
+      { persona: 'Formulator / R&D', scenario: 'Cần shortlist hoạt chất cho concept mới', example: '“Serum chống lão hóa, phân khúc premium, ưu tiên peptide và botanical có bằng chứng lâm sàng.”' },
+      { persona: 'Product Manager', scenario: 'So sánh phương án trước khi họp với supplier', example: '“Omega-3 dạng TG vs EE cho softgel — khác biệt sinh khả dụng và định vị giá?”' },
+      { persona: 'QA / Regulatory', scenario: 'Tra cứu chứng nhận và tài liệu nhanh', example: '“Gửi TDS và COA của Curcumin Phytosome — có Halal và non-GMO không?”' },
+    ],
+    capabilitiesTitle: 'Tính năng chính',
+    capabilitiesDesc: 'Mọi bước trong quy trình nghiên cứu nguyên liệu — gom vào một giao diện hội thoại.',
+    capabilities: [
+      { title: 'Tư vấn nguyên liệu thông minh', desc: 'Hiểu mục tiêu sản phẩm và đề xuất hoạt chất có căn cứ từ dữ liệu Bioscope.', bullets: ['Lọc theo ngành hàng, công dụng, ngân sách', 'Giải thích cơ chế và ưu điểm từng hoạt chất', 'Gợi ý thay thế khi MOQ hoặc nguồn cung hạn chế'] },
+      { title: 'Gợi ý công thức & phối hợp', desc: 'Đề xuất kết hợp hoạt chất với liều tham khảo và lưu ý tương thích.', bullets: ['Phối hợp đa hoạt chất theo mục tiêu', 'Liều dùng tham khảo và cảnh báo tương tác', 'Liên kết công cụ gợi ý công thức Bioscope'] },
+      { title: 'Tài liệu kỹ thuật tức thì', desc: 'Yêu cầu TDS, COA, SDS ngay trong chat — không cần email qua lại.', bullets: ['TDS / COA / SDS theo từng mã nguyên liệu', 'Thông tin chứng nhận (Halal, organic, non-GMO…)', 'Luồng gated cho tài liệu nhạy cảm'] },
+      { title: 'Hỗ trợ 24/7', desc: 'Tra cứu nhanh trước khi liên hệ sales — lý tưởng cho giai đoạn brainstorm.', bullets: ['Phản hồi tức thì, không chờ giờ hành chính', 'Lưu ngữ cảnh cuộc hội thoại', 'Chuyển tiếp mượt sang đội tư vấn khi cần'] },
+    ],
+    compareTitle: 'Khác gì so với chatbot thông thường?',
+    compareDesc: 'ChatGPT biết nhiều thứ — nhưng Bioscope AI biết đúng thứ bạn cần khi phát triển sản phẩm.',
+    compareGeneric: 'Chatbot AI chung',
+    compareBioscope: 'Bioscope AI',
+    genericItems: ['Trả lời chung chung, thiếu dữ liệu catalog cụ thể', 'Không liên kết TDS/COA thật từ Bioscope', 'Dễ “ảo giác” tên hoạt chất hoặc liều dùng', 'Không hiểu MOQ, chứng nhận, nguồn cung Bioscope'],
+    bioscopeItems: ['Gợi ý từ catalog và tài liệu kỹ thuật Bioscope', 'Yêu cầu & nhận TDS/COA qua luồng chuẩn', 'Ngôn ngữ chuyên môn DP · TPCN · Mỹ phẩm', 'Kết nối sales, mẫu thử và cổng đối tác B2B'],
+    strengthsTitle: 'Điểm mạnh cốt lõi',
+    strengthsDesc: 'Xây dựng trên nền tảng dữ liệu và kinh nghiệm tư vấn thực chiến — không phải wrapper ChatGPT.',
+    strengths: [
+      { title: 'Dữ liệu catalog thật', desc: 'Huấn luyện trên hàng trăm nguyên liệu, case study và whitepaper — câu trả lời có nguồn, không đoán mò.' },
+      { title: 'Ngôn ngữ formulator', desc: 'Hiểu INCI, liều dùng, dạng bào chế, claim — nói đúng ngôn ngữ R&D và regulatory.' },
+      { title: 'Một luồng, nhiều công cụ', desc: 'Từ chat → gợi ý công thức → tài liệu → liên hệ mẫu thử — không phải nhảy qua 4 tab.' },
+      { title: 'Rút ngắn vòng R&D', desc: 'Giảm thời gian từ brief sản phẩm đến shortlist hoạt chất — formulator tập trung vào thử nghiệm.' },
+    ],
+    notifyTitle: 'Nhận thông báo khi ra mắt',
+    notifyDesc: 'Để lại email công việc — chúng tôi ưu tiên mời các nhãn hàng và formulator đăng ký sớm.',
+    notifyPlaceholder: 'Email công việc của bạn',
+    notifyButton: 'Đăng ký nhận tin',
+    contactCta: 'Liên hệ tư vấn ngay',
+    backHome: '← Về trang chủ',
+  }
+  const aiEn = {
+    status: 'Coming soon',
+    statusDesc:
+      'A specialized AI assistant for functional ingredients — trained on Bioscope catalog, R&D documents, and real advisory experience.',
+    introQuote: '“From your first question to a shortlist of candidate actives — in minutes, not days.”',
+    stats: [
+      { value: '500+', label: 'Ingredients in catalog' },
+      { value: '24/7', label: 'Always available' },
+      { value: '3', label: 'Industries: Pharma · Nutraceutical · Cosmetics' },
+    ],
+    previewEyebrow: 'Preview',
+    previewTitle: 'Chat like you are talking to a Bioscope expert',
+    previewDesc: 'Describe the product you are developing — AI suggests actives, explains why, and asks if you want TDS or samples.',
+    useCasesTitle: 'Who is Bioscope AI for?',
+    useCasesDesc: 'Built for every role in product development — from early ideation to ingredient sourcing decisions.',
+    useCases: [
+      { persona: 'Formulator / R&D', scenario: 'Need a shortlist of actives for a new concept', example: '“Premium anti-aging serum — prioritize peptides and botanicals with clinical evidence.”' },
+      { persona: 'Product Manager', scenario: 'Compare options before supplier meetings', example: '“TG vs EE omega-3 for softgels — bioavailability and price positioning differences?”' },
+      { persona: 'QA / Regulatory', scenario: 'Quick lookup for certifications and documents', example: '“Send TDS and COA for Curcumin Phytosome — Halal and non-GMO certified?”' },
+    ],
+    capabilitiesTitle: 'Core features',
+    capabilitiesDesc: 'Every step in ingredient research — unified in one conversational interface.',
+    capabilities: [
+      { title: 'Smart ingredient guidance', desc: 'Understands product goals and suggests actives backed by Bioscope data.', bullets: ['Filter by industry, benefit, budget', 'Explain mechanism and advantages per active', 'Suggest alternatives when MOQ or supply is limited'] },
+      { title: 'Formula & combination ideas', desc: 'Proposes active pairings with reference dosing and compatibility notes.', bullets: ['Multi-active stacks by product goal', 'Reference dosing and interaction warnings', 'Links to Bioscope formulation tools'] },
+      { title: 'Instant technical documents', desc: 'Request TDS, COA, SDS in chat — no back-and-forth emails.', bullets: ['TDS / COA / SDS per ingredient code', 'Certification info (Halal, organic, non-GMO…)', 'Gated flow for sensitive documents'] },
+      { title: '24/7 support', desc: 'Quick lookup before contacting sales — ideal for brainstorming.', bullets: ['Instant responses, any time zone', 'Conversation context retained', 'Smooth handoff to advisory team when needed'] },
+    ],
+    compareTitle: 'How is it different from a generic chatbot?',
+    compareDesc: 'ChatGPT knows a lot — Bioscope AI knows what you need when developing products.',
+    compareGeneric: 'Generic AI chatbot',
+    compareBioscope: 'Bioscope AI',
+    genericItems: ['Generic answers without specific catalog data', 'No link to real Bioscope TDS/COA documents', 'Risk of hallucinated actives or dosing', 'No understanding of MOQ, certs, or Bioscope supply'],
+    bioscopeItems: ['Suggestions from Bioscope catalog and technical docs', 'Request & receive TDS/COA through standard flow', 'Pharma · nutraceutical · cosmetics terminology', 'Connects to sales, samples, and B2B partner portal'],
+    strengthsTitle: 'Core strengths',
+    strengthsDesc: 'Built on real data and advisory experience — not a ChatGPT wrapper.',
+    strengths: [
+      { title: 'Real catalog data', desc: 'Trained on hundreds of ingredients, case studies, and whitepapers — sourced answers, not guesses.' },
+      { title: 'Formulator language', desc: 'Understands INCI, dosing, dosage forms, claims — speaks R&D and regulatory fluently.' },
+      { title: 'One flow, many tools', desc: 'Chat → formula ideas → documents → sample requests — no jumping across four tabs.' },
+      { title: 'Shorter R&D cycles', desc: 'Less time from product brief to active shortlist — formulators focus on testing.' },
+    ],
+    notifyTitle: 'Get notified at launch',
+    notifyDesc: 'Leave your work email — we will prioritize early access for registered brands and formulators.',
+    notifyPlaceholder: 'Your work email',
+    notifyButton: 'Notify me',
+    contactCta: 'Contact us now',
+    backHome: '← Back to home',
+  }
+  await payload.updateGlobal({ slug: 'bioscope-ai', data: aiVi as never, locale: 'vi' })
+  const aiDoc = await payload.findGlobal({ slug: 'bioscope-ai', locale: 'vi', depth: 0 })
+  await payload.updateGlobal({ slug: 'bioscope-ai', data: copyIds(aiDoc, aiEn) as never, locale: 'en' })
+  log('bioscope-ai global: song ngữ vi + en')
+
+  /* ── 7d. SEO settings global (Yoast-style, song ngữ) ──── */
+  const seoBase = {
+    siteUrl: 'https://web.bioscope.vn',
+    titleSeparator: '·',
+    siteRepresents: 'organization',
+    orgName: 'Bioscope',
+    discourageSearchEngines: false,
+    enableSitemap: true,
+  }
+  await payload.updateGlobal({
+    slug: 'seo-settings',
+    locale: 'vi',
+    data: {
+      ...seoBase,
+      siteName: 'Bioscope',
+      homeTitle: 'Bioscope — Đối tác đổi mới y tế · Nguyên liệu & Đồng kiến tạo',
+      homeDescription:
+        'Không chỉ nguyên liệu — Bioscope đồng kiến tạo những giải pháp đột phá cho ngành Dược phẩm, Thực phẩm chức năng và Mỹ phẩm tại Việt Nam.',
+    } as never,
+  })
+  await payload.updateGlobal({
+    slug: 'seo-settings',
+    locale: 'en',
+    data: {
+      siteName: 'Bioscope',
+      homeTitle: 'Bioscope — Healthcare innovation partner · Ingredients & Co-creation',
+      homeDescription:
+        'Beyond ingredients — Bioscope co-creates breakthrough solutions for the pharmaceutical, nutraceutical, and cosmetics industries in Vietnam.',
+    } as never,
+  })
+  log('seo-settings global: song ngữ vi + en')
 
   /* ── 8. Certifications ─────────────────────────────────── */
   const certData = [
@@ -445,37 +797,10 @@ export async function runSeed(payload: Payload): Promise<string[]> {
     })
   }
 
+  // NOTE: home page is NOT a generic block Page — it is driven by the `home`
+  // global (structured sections that match the real design). Do not seed a
+  // `trang-chu` Page here; it would duplicate/confuse the home editor.
   const pages: { slug: string; vi: { title: string; layout: Block[] }; en: { title: string; layout: Block[] } }[] = [
-    // ── Trang chủ / Home ──
-    {
-      slug: 'trang-chu',
-      vi: { title: 'Trang chủ', layout: [
-        hero('Nguyên liệu chuyên biệt · Thành công đồng kiến tạo', 'Không chỉ là nguyên liệu. Chúng tôi đồng kiến tạo giải pháp đột phá.', 'Nguyên liệu cao cấp, dựa trên khoa học. Chuyên môn kỹ thuật sâu. Khả năng không giới hạn — cùng nhau.', [link('Khám phá nguyên liệu', '/nguyen-lieu', 'primary'), link('Đồng kiến tạo cùng chúng tôi', '/dong-kien-tao', 'outline')]),
-        stats('Bioscope qua những con số', [
-          { value: '15+', label: 'Năm kinh nghiệm' }, { value: '23+', label: 'Dự án R&D' },
-          { value: '14', label: 'Đơn sáng chế' }, { value: '100+', label: 'Nguyên liệu mới' },
-        ]),
-        features('Vì sao chọn Bioscope?', '3', [
-          { icon: 'FlaskConical', title: 'Nguyên liệu chuyên biệt', description: 'Danh mục hoạt chất hiếm, hiệu quả đã được kiểm chứng — từ chiết xuất thực vật đến công nghệ nano.' },
-          { icon: 'ShieldCheck', title: 'Đảm bảo chất lượng toàn cầu', description: 'Đầy đủ chứng nhận GMP, ISO 22000, HACCP, Halal, Kosher và tài liệu kỹ thuật minh bạch.' },
-          { icon: 'Truck', title: 'Nguồn cung ổn định', description: 'Hợp tác trực tiếp với nhà sản xuất R&D tại hơn 50 quốc gia — ổn định chuỗi cung dài hạn.' },
-        ]),
-        cta('Sẵn sàng đồng kiến tạo thương hiệu tiếp theo?', 'Đặt lịch tư vấn cùng đội ngũ chuyên gia Bioscope.', [link('Liên hệ ngay', '/lien-he', 'primary')]),
-      ] },
-      en: { title: 'Home', layout: [
-        hero('Specialty ingredients · Co-created success', 'More than ingredients. We co-create breakthrough solutions.', 'Premium, science-based ingredients. Deep technical expertise. Limitless possibilities — together.', [link('Explore ingredients', '/nguyen-lieu', 'primary'), link('Co-create with us', '/dong-kien-tao', 'outline')]),
-        stats('Bioscope by the numbers', [
-          { value: '15+', label: 'Years of experience' }, { value: '23+', label: 'R&D projects' },
-          { value: '14', label: 'Patents' }, { value: '100+', label: 'New ingredients' },
-        ]),
-        features('Why choose Bioscope?', '3', [
-          { icon: 'FlaskConical', title: 'Specialty ingredients', description: 'A catalog of rare, proven actives — from botanical extracts to nano technology.' },
-          { icon: 'ShieldCheck', title: 'Global quality assurance', description: 'Full GMP, ISO 22000, HACCP, Halal, Kosher certifications and transparent technical documents.' },
-          { icon: 'Truck', title: 'Stable supply', description: 'Direct partnerships with R&D manufacturers in 50+ countries — a stable long-term supply chain.' },
-        ]),
-        cta('Ready to co-create your next brand?', 'Book a consultation with the Bioscope team.', [link('Contact us', '/lien-he', 'primary')]),
-      ] },
-    },
     // ── Về chúng tôi / About ──
     {
       slug: 've-chung-toi',
@@ -719,6 +1044,171 @@ export async function runSeed(payload: Payload): Promise<string[]> {
   ]
   for (const pg of pages) await upsertPage(pg.slug, pg.vi, pg.en)
   log(`pages: ${pages.length} (song ngữ vi + en)`)
+
+  /* ── 16. Trang chủ = Page ghép từ 9 home block (song ngữ) ── */
+  // Content mirrors the real home design 1:1; the page is then selected as
+  // Site Settings → homePage so `/` renders it.
+  const homeVi = {
+    hero: {
+      eyebrow: 'Nguyên liệu chuyên biệt · Thành công đồng kiến tạo',
+      titleBefore: 'Không chỉ là nguyên liệu. Chúng tôi', titleHighlight: 'đồng kiến tạo', titleMid: 'giải pháp', titleAccent: 'đột phá',
+      description: 'Nguyên liệu cao cấp, dựa trên khoa học. Chuyên môn kỹ thuật sâu. Khả năng không giới hạn — cùng nhau.',
+      ctaPrimary: 'Khám phá nguyên liệu', ctaSecondary: 'Đồng kiến tạo cùng chúng tôi',
+      trust: ['Nguyên liệu chuyên biệt', 'Đảm bảo chất lượng toàn cầu', 'Nguồn cung ổn định'],
+    },
+    brands: { title: 'Đã đồng hành cùng hơn 50 thương hiệu', categories: ['Thực phẩm chức năng', 'Mỹ phẩm', 'Dinh dưỡng', 'Dược phẩm', 'Tim mạch', 'Vitamin & Khoáng'] },
+    process: {
+      title: 'Chúng tôi đồng hành như thế nào?',
+      description: 'Chúng tôi không chỉ cung cấp. Chúng tôi đồng kiến tạo — từ ý tưởng đến thành công thị trường, Bioscope đồng hành cùng bạn ở mọi bước.',
+      steps: [
+        { title: 'Ý tưởng', desc: 'Thấu hiểu nhu cầu và nắm bắt xu hướng thị trường.' },
+        { title: 'Phát triển', desc: 'Nghiên cứu công thức, lựa chọn nguyên liệu tối ưu.' },
+        { title: 'Kiểm chứng', desc: 'Đánh giá hiệu quả, độ an toàn và tính ổn định.' },
+        { title: 'Ra mắt', desc: 'Hỗ trợ sản xuất và đưa sản phẩm ra thị trường.' },
+        { title: 'Tăng trưởng', desc: 'Tối ưu và đồng hành tăng trưởng dài hạn.' },
+      ],
+    },
+    categories: {
+      title: 'Danh mục nguyên liệu',
+      description: 'Hơn 100 nguyên liệu hiệu suất cao — Dược phẩm, TPCN, Mỹ phẩm. Đầy đủ TDS, COA, sẵn mẫu thử.',
+      viewAll: 'Xem tất cả nguyên liệu',
+      featured: { name: 'Chiết xuất thực vật', desc: 'Nguồn gốc tự nhiên, hiệu quả đã được khoa học chứng minh.', cta: 'Khám phá ngay' },
+      items: [
+        { name: 'Omega & dầu cá', desc: 'Hỗ trợ tim mạch, não bộ, lựa sức khỏe toàn diện.' },
+        { name: 'Nấm dược liệu', desc: 'Tăng cường miễn dịch, bảo vệ và phục hồi cơ thể.' },
+        { name: 'Hoạt chất công nghệ cao', desc: 'Hiệu quả vượt trội, ứng dụng đa dạng.' },
+        { name: 'Axit amin & vitamin', desc: 'Nền tảng cho sức khỏe và hiệu suất tối ưu.' },
+      ],
+    },
+    certifications: {
+      title: 'Chất lượng bạn có thể tin tưởng',
+      description: 'Đạt chuẩn toàn cầu cao nhất — GMP, ISO 22000, HACCP, Halal, Kosher.',
+      countries: 'Quốc gia phân phối',
+      items: [
+        { name: 'GMP', sub: 'Nhà máy đạt chuẩn' }, { name: 'ISO 22000', sub: 'Quản lý an toàn thực phẩm' },
+        { name: 'HACCP', sub: 'Hệ thống quản lý ATTP' }, { name: 'Halal', sub: 'Đạt chứng nhận' }, { name: 'Kosher', sub: 'Đạt chứng nhận' },
+      ],
+    },
+    caseStudies: { title: 'Đổi mới tạo nên tác động — Giải pháp thật. Kết quả thật. Tăng trưởng thật.', viewAll: 'Xem tất cả câu chuyện' },
+    experts: {
+      eyebrow: 'Đội ngũ chuyên gia', title: 'Khoa học là nền tảng, con người là giá trị cốt lõi',
+      paragraphs: [
+        'Đội ngũ chuyên gia R&D giàu kinh nghiệm, tâm huyết và luôn tiên phong trong nghiên cứu ứng dụng.',
+        'Chúng tôi đồng hành từ chọn nguyên liệu, phát triển công thức và kiểm chứng hiệu quả — đến khi sản phẩm của bạn sẵn sàng ra thị trường.',
+      ],
+      cta: 'Tìm hiểu về chúng tôi', imageAlt: 'Đội ngũ chuyên gia Bioscope',
+      stats: [{ label: 'năm kinh nghiệm' }, { label: 'dự án nghiên cứu' }, { label: 'đơn sáng chế' }, { label: 'dự án R&D' }],
+    },
+    aiChat: {
+      badge: 'Mới — Trợ lý AI', titleBefore: 'Gặp gỡ', titleHighlight: 'Bioscope AI',
+      description: 'Hỏi bất cứ điều gì về nguyên liệu — trợ lý AI gợi ý hoạt chất phù hợp, đề xuất công thức và gửi tài liệu kỹ thuật cho bạn ngay lập tức.',
+      features: ['Tư vấn nguyên liệu', 'Gợi ý công thức', 'Tải TDS / COA', '24/7'],
+      cta: 'Tìm hiểu thêm', ctaHref: '/bioscope-ai', chatName: 'Bioscope AI', chatStatus: 'Đang hoạt động', typing: 'Đang nhập',
+      suggestions: ['Chống lão hóa da', 'Omega-3 dạng TG'], demoUser: 'Serum chống lão hóa da',
+      demoAi1: 'Chào bạn, tôi là Bioscope AI. Bạn đang phát triển sản phẩm gì?',
+      demoAi2: 'Gợi ý 3 hoạt chất: NMN, Bacopa và Curcumin Phytosome. Bạn muốn xem TDS hay yêu cầu mẫu thử?',
+      replyAntiAging: 'Gợi ý 3 hoạt chất: NMN, Bacopa và Curcumin Phytosome. Bạn muốn xem TDS hay yêu cầu mẫu thử?',
+      replyOmega3: 'Omega-3 dạng TG có sinh khả dụng cao hơn EE — phù hợp phân khúc premium. Bạn muốn xem catalog vivomega® hay nhận TDS?',
+    },
+    cta: {
+      title: 'Sẵn sàng bắt đầu dự án của bạn?',
+      description: 'Chia sẻ ý tưởng hoặc thách thức của bạn — đội ngũ chuyên gia của Bioscope đã sẵn sàng đồng hành cùng bạn từ hôm nay.',
+      primary: 'Nhận tư vấn miễn phí', secondary: 'Yêu cầu mẫu thử',
+    },
+  }
+
+  const homeEn = {
+    hero: {
+      eyebrow: 'Specialty ingredients · Co-created success',
+      titleBefore: 'More than ingredients. We', titleHighlight: 'co-create', titleMid: 'breakthrough', titleAccent: 'solutions',
+      description: 'Premium, science-backed ingredients. Deep technical expertise. Limitless potential — together.',
+      ctaPrimary: 'Explore ingredients', ctaSecondary: 'Co-create with us',
+      trust: ['Specialty ingredients', 'Global quality assurance', 'Stable supply chain'],
+    },
+    brands: { title: 'Trusted by 50+ brands', categories: ['Nutraceuticals', 'Cosmetics', 'Nutrition', 'Pharmaceuticals', 'Cardiovascular', 'Vitamins & minerals'] },
+    process: {
+      title: 'How do we partner with you?',
+      description: 'We do not just supply. We co-create — from idea to market success, Bioscope walks with you at every step.',
+      steps: [
+        { title: 'Ideation', desc: 'Understand needs and capture market trends.' },
+        { title: 'Development', desc: 'Research formulations and select optimal ingredients.' },
+        { title: 'Validation', desc: 'Assess efficacy, safety, and stability.' },
+        { title: 'Launch', desc: 'Support production and go-to-market.' },
+        { title: 'Growth', desc: 'Optimize and sustain long-term growth.' },
+      ],
+    },
+    categories: {
+      title: 'Ingredient categories',
+      description: '100+ high-performance ingredients — pharmaceuticals, nutraceuticals, cosmetics. Full TDS, COA, samples available.',
+      viewAll: 'View all ingredients',
+      featured: { name: 'Botanical extracts', desc: 'Natural origin with scientifically proven efficacy.', cta: 'Explore now' },
+      items: [
+        { name: 'Omega & fish oils', desc: 'Cardiovascular, brain, and whole-body wellness support.' },
+        { name: 'Medicinal mushrooms', desc: 'Immune support, protection, and recovery.' },
+        { name: 'High-tech actives', desc: 'Superior efficacy, diverse applications.' },
+        { name: 'Amino acids & vitamins', desc: 'Foundation for health and peak performance.' },
+      ],
+    },
+    certifications: {
+      title: 'Quality you can trust',
+      description: 'Highest global standards — GMP, ISO 22000, HACCP, Halal, Kosher.',
+      countries: 'Countries served',
+      items: [
+        { name: 'GMP', sub: 'Certified facilities' }, { name: 'ISO 22000', sub: 'Food safety management' },
+        { name: 'HACCP', sub: 'Food safety system' }, { name: 'Halal', sub: 'Certified' }, { name: 'Kosher', sub: 'Certified' },
+      ],
+    },
+    caseStudies: { title: 'Innovation that drives impact — Real solutions. Real results. Real growth.', viewAll: 'View all stories' },
+    experts: {
+      eyebrow: 'Expert team', title: 'Science is the foundation, people are the core value',
+      paragraphs: [
+        'An experienced, passionate R&D team pioneering applied research.',
+        'We partner from ingredient selection and formulation development through efficacy validation — until your product is market-ready.',
+      ],
+      cta: 'Learn about us', imageAlt: 'Bioscope expert team',
+      stats: [{ label: 'years of experience' }, { label: 'research projects' }, { label: 'patents' }, { label: 'R&D projects' }],
+    },
+    aiChat: {
+      badge: 'New — AI assistant', titleBefore: 'Meet', titleHighlight: 'Bioscope AI',
+      description: 'Ask anything about ingredients — our AI suggests suitable actives, proposes formulas, and sends technical documents instantly.',
+      features: ['Ingredient advice', 'Formula suggestions', 'Download TDS / COA', '24/7'],
+      cta: 'Learn more', ctaHref: '/bioscope-ai', chatName: 'Bioscope AI', chatStatus: 'Online', typing: 'Typing',
+      suggestions: ['Anti-aging serum', 'Omega-3 TG form'], demoUser: 'Anti-aging facial serum',
+      demoAi1: "Hi, I'm Bioscope AI. What product are you developing?",
+      demoAi2: 'I suggest 3 actives: NMN, Bacopa, and Curcumin Phytosome. Would you like to view TDS or request samples?',
+      replyAntiAging: 'I suggest 3 actives: NMN, Bacopa, and Curcumin Phytosome. Would you like to view TDS or request samples?',
+      replyOmega3: 'TG-form omega-3 offers higher bioavailability than EE — ideal for premium positioning. View the vivomega® catalog or get TDS?',
+    },
+    cta: {
+      title: 'Ready to start your project?',
+      description: 'Share your idea or challenge — Bioscope experts are ready to partner with you from today.',
+      primary: 'Get free consultation', secondary: 'Request samples',
+    },
+  }
+
+  // Section content → ordered block layout (order = the real home design).
+  const toHomeLayout = (d: typeof homeVi): Block[] => [
+    { blockType: 'homeHero', ...d.hero },
+    { blockType: 'homeBrands', ...d.brands },
+    { blockType: 'homeProcess', ...d.process },
+    { blockType: 'homeCategories', ...d.categories },
+    { blockType: 'homeCaseStudies', ...d.caseStudies },
+    { blockType: 'homeCertifications', ...d.certifications },
+    { blockType: 'homeExperts', ...d.experts },
+    { blockType: 'homeAiPromo', ...d.aiChat },
+    { blockType: 'homeCta', ...d.cta },
+  ]
+  await upsertPage(
+    'trang-chu',
+    { title: 'Trang chủ', layout: toHomeLayout(homeVi) },
+    { title: 'Home', layout: toHomeLayout(homeEn as typeof homeVi) },
+  )
+  const homePageDoc = await payload.find({ collection: 'pages', where: { slug: { equals: 'trang-chu' } }, limit: 1 })
+  const homePageId = (homePageDoc.docs[0] as { id: string | number } | undefined)?.id
+  if (homePageId) {
+    await payload.updateGlobal({ slug: 'site-settings', data: { homePage: homePageId } })
+  }
+  log('trang chủ: Page 9 block (song ngữ) + site-settings.homePage')
 
   log('✅ seed hoàn tất')
   return out

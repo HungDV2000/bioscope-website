@@ -8,40 +8,44 @@ import { LanguageSwitcher } from '@/components/language-switcher'
 import { useLocale } from '@/lib/i18n/context'
 import { cn } from '@/lib/utils'
 
-export function SiteHeader() {
+export function SiteHeader({ items }: { items?: { label: string; href: string }[] }) {
   const [open, setOpen] = useState(false)
   const { t } = useLocale()
 
-  const NAV = [
-    { label: t.nav.ingredients, href: '/nguyen-lieu' },
-    { label: t.nav.solutions, href: '/giai-phap' },
-    { label: t.nav.coCreate, href: '/dong-kien-tao' },
-    { label: t.nav.rd, href: '/rd' },
-    { label: t.nav.resources, href: '/tai-nguyen' },
-    { label: t.nav.about, href: '/ve-chung-toi' },
-  ]
+  // Menu from the CMS `navigation` global (falls back to the static i18n menu).
+  const NAV =
+    items && items.length > 0
+      ? items
+      : [
+          { label: t.nav.ingredients, href: '/nguyen-lieu' },
+          { label: t.nav.solutions, href: '/giai-phap' },
+          { label: t.nav.coCreate, href: '/dong-kien-tao' },
+          { label: t.nav.rd, href: '/rd' },
+          { label: t.nav.resources, href: '/tai-nguyen' },
+          { label: t.nav.about, href: '/ve-chung-toi' },
+        ]
 
   return (
     <>
       <header className="fixed inset-x-0 top-0 z-40 border-b border-primary-border/40 bg-white/90 backdrop-blur-md">
-        <div className="container-bs flex h-[72px] items-center justify-between gap-6">
+        <div className="container-bs flex h-[72px] items-center justify-between gap-3 xl:gap-5">
           <Link href="/" className="flex shrink-0 items-center">
-            <Image src="/logo.avif" alt="Bioscope" width={150} height={42} priority className="h-10 w-auto" />
+            <Image src="/logo.avif" alt="Bioscope" width={180} height={50} priority className="h-11 w-auto sm:h-12 xl:h-[52px]" />
           </Link>
 
-          <nav className="hidden items-center gap-1 lg:flex">
+          <nav className="hidden shrink-0 items-center gap-0.5 lg:flex">
             {NAV.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="rounded-full px-3.5 py-2 text-[14px] font-medium text-ink/75 transition-colors duration-300 hover:bg-primary-tint hover:text-primary-dark"
+                className="whitespace-nowrap rounded-full px-2.5 py-2 text-[13.5px] font-medium text-ink/75 transition-colors duration-300 hover:bg-primary-tint hover:text-primary-dark xl:px-3.5 xl:text-[14px]"
               >
                 {item.label}
               </Link>
             ))}
           </nav>
 
-          <div className="flex items-center gap-3">
+          <div className="flex shrink-0 items-center gap-2.5">
             <LanguageSwitcher className="hidden sm:inline-flex" />
             <Link
               href="/lien-he"

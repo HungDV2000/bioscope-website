@@ -13,8 +13,10 @@ import { catalogPlugin } from '@dv/module-catalog'
 import { bioscopePlugin } from '@dv/module-bioscope'
 import { b2bPlugin } from '@dv/module-b2b'
 import { customTypesPlugin } from '@dv/module-custom-types'
+import { seoPlugin } from '@dv/module-seo'
 import { languagesPlugin, resolveLocalizationConfig } from '@dv/module-languages'
 import { permissionsPlugin } from '@dv/module-permissions'
+import { betterEditor } from 'payload-better-editor'
 
 import { seedEndpoint } from './endpoints/seed.js'
 
@@ -26,7 +28,16 @@ const frontendUrl = process.env.FRONTEND_URL || ''
 const serverURL = process.env.PAYLOAD_PUBLIC_SERVER_URL || 'http://localhost:3001'
 // Origins allowed for CORS + CSRF (cookie auth only honored for these origins).
 const corsOrigins = Array.from(
-  new Set([frontendUrl, serverURL, 'http://localhost:3000', 'http://localhost:3001'].filter(Boolean)),
+  new Set(
+    [
+      frontendUrl,
+      serverURL,
+      'http://localhost:3000',
+      'http://localhost:3001',
+      // Same-origin Better Editor preview proxy (scripts/preview-proxy.mjs).
+      process.env.PREVIEW_PROXY_URL || 'http://localhost:8080',
+    ].filter(Boolean),
+  ),
 )
 
 const db = postgresAdapter({
@@ -91,11 +102,18 @@ export default buildConfig({
     // Generic catalog primitives (Partners only — Bioscope has its own categories).
     catalogPlugin({ productCategories: false }),
     // Bioscope-specific collections.
+    // Home page is composed in Pages (home blocks) + Site Settings → homePage.
+    // The legacy Home global stays registered (schema kept) but is hidden in admin.
     bioscopePlugin(),
     // B2B portal; gated documents may relate to ingredients.
     b2bPlugin({ relatesTo: 'ingredients' }),
+    // Yoast-style SEO settings global (search appearance, schema, sitemap, robots).
+    seoPlugin(),
     // Site languages — manifest drives `localization` config above.
     languagesPlugin({ manifestPath: localesManifestPath }),
+    // Visual "Better Editor" preview toggle on Pages (needs admin.preview URL +
+    // same-origin frontend proxy — see next.config rewrites).
+    betterEditor({ collections: ['pages'] }),
     // RBAC — must be last so it wraps all collections/globals.
     permissionsPlugin(),
   ],

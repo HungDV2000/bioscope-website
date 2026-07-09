@@ -7,6 +7,8 @@ export type DashboardPluginOptions = {
   enabled?: boolean
   /** Client seed card — path tới component trong app (vd. /components/SeedButton#SeedButton). */
   seedComponent?: string
+  /** Client CMS sync panel — path tới component (vd. /components/CmsSyncPanel#CmsSyncPanel). */
+  cmsSyncComponent?: string
 }
 
 /**
@@ -19,10 +21,20 @@ export const dashboardPlugin =
     if (options.enabled === false) return incoming
 
     const widgets: Widget[] = [...dvDashboardWidgets]
+
     if (options.seedComponent) {
       widgets.push({
         slug: 'dv-seed',
         Component: options.seedComponent,
+        minWidth: 'medium',
+        maxWidth: 'full',
+      })
+    }
+
+    if (options.cmsSyncComponent) {
+      widgets.push({
+        slug: 'dv-cms-sync',
+        Component: options.cmsSyncComponent,
         minWidth: 'medium',
         maxWidth: 'full',
       })
@@ -39,6 +51,7 @@ export const dashboardPlugin =
           const slug = w.widgetSlug as string
           if (slug === 'collections') return false
           if (!options.seedComponent && slug === 'dv-seed') return false
+          if (!options.cmsSyncComponent && slug === 'dv-cms-sync') return false
           return true
         })
       },

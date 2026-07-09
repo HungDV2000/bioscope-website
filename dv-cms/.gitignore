@@ -16,6 +16,13 @@ media
 apps/**/media
 build
 
+# secrets — KHÔNG BAO GIỜ commit
+**/credentials/
+**/credentials/**/*
+**/service-account.json
+**/*-credentials.json
+**/*-sa.json
+
 # logs
 *.log
 npm-debug.log*

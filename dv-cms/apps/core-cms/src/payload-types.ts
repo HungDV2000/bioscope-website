@@ -84,6 +84,8 @@ export interface Config {
     partners: Partner;
     'ingredient-categories': IngredientCategory;
     ingredients: Ingredient;
+    'drive-sync-jobs': DriveSyncJob;
+    'cms-sync-runs': CmsSyncRun;
     technologies: Technology;
     services: Service;
     certifications: Certification;
@@ -120,6 +122,8 @@ export interface Config {
     partners: PartnersSelect<false> | PartnersSelect<true>;
     'ingredient-categories': IngredientCategoriesSelect<false> | IngredientCategoriesSelect<true>;
     ingredients: IngredientsSelect<false> | IngredientsSelect<true>;
+    'drive-sync-jobs': DriveSyncJobsSelect<false> | DriveSyncJobsSelect<true>;
+    'cms-sync-runs': CmsSyncRunsSelect<false> | CmsSyncRunsSelect<true>;
     technologies: TechnologiesSelect<false> | TechnologiesSelect<true>;
     services: ServicesSelect<false> | ServicesSelect<true>;
     certifications: CertificationsSelect<false> | CertificationsSelect<true>;
@@ -163,6 +167,7 @@ export interface Config {
     'dv-stats': DvStatsWidget;
     'dv-analytics': DvAnalyticsWidget;
     'dv-seed': DvSeedWidget;
+    'dv-cms-sync': DvCmsSyncWidget;
     collections: CollectionsWidget;
   };
   user: User | Member;
@@ -1178,6 +1183,15 @@ export interface IngredientCategory {
    * Để trống sẽ tự tạo từ tiêu đề.
    */
   slug?: string | null;
+  /**
+   * Google Drive folder ID của danh mục này.
+   */
+  driveId?: string | null;
+  driveParentId?: string | null;
+  /**
+   * Dùng driveId hoặc slugify(name).
+   */
+  externalId?: string | null;
   scope?: ('supplement' | 'cosmetic' | 'both') | null;
   updatedAt: string;
   createdAt: string;
@@ -1193,6 +1207,10 @@ export interface Ingredient {
    * Để trống sẽ tự tạo từ tiêu đề.
    */
   slug?: string | null;
+  /**
+   * Khóa duy nhất từ hệ thống ngoài. Đồng bộ tự động.
+   */
+  externalId?: string | null;
   subtitle?: string | null;
   type: 'supplement' | 'cosmetic';
   category?: (number | null) | IngredientCategory;
@@ -1255,6 +1273,47 @@ export interface Ingredient {
       }[]
     | null;
   featured?: boolean | null;
+  /**
+   * Danh sách file ID (cũ) — tương thích ngược với DB.
+   */
+  sourceFileIds?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Timestamp lần index cuối (cũ) — tương thích ngược với DB.
+   */
+  lastIndexedAt?: string | null;
+  /**
+   * Google Drive folder ID của nguyên liệu này.
+   */
+  driveId?: string | null;
+  driveParentId?: string | null;
+  /**
+   * [{fileId, fileName, mimeType, webViewLink, webContentLink, size, modifiedTime}]
+   */
+  driveFiles?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Số file trong Drive folder.
+   */
+  fileCount?: number | null;
+  /**
+   * Lần cuối sync từ Google Drive.
+   */
+  lastDriveSyncAt?: string | null;
   /**
    * Meta cho công cụ tìm kiếm & mạng xã hội.
    */
@@ -1379,6 +1438,116 @@ export interface Technology {
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
+}
+/**
+ * Trạng thái sync sản phẩm & danh mục từ Google Drive. Tự động cập nhật khi sync đang chạy.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "drive-sync-jobs".
+ */
+export interface DriveSyncJob {
+  id: number;
+  status: 'queued' | 'running' | 'crawling' | 'upserting' | 'done' | 'error' | 'cancelled';
+  /**
+   * Bước hiện tại: "Crawl categories...", "Upsert ingredients (3/50)..."
+   */
+  phase?: string | null;
+  totalItems?: number | null;
+  processedItems?: number | null;
+  /**
+   * { categories: {found, created, updated, skipped}, ingredients: {found, created, updated, skipped}, errors: n }
+   */
+  totals?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Chi tiết tiến trình. Append-only.
+   */
+  logs?:
+    | {
+        ts: string;
+        level?: ('info' | 'warn' | 'error') | null;
+        message: string;
+        /**
+         * Data phụ (vd: {ingredientId, name})
+         */
+        data?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Admin đã bấm nút.
+   */
+  triggeredBy?: (number | null) | User;
+  createdAt: string;
+  startedAt?: string | null;
+  finishedAt?: string | null;
+  errorMessage?: string | null;
+  /**
+   * Google Drive root folder ID.
+   */
+  rootFolderId?: string | null;
+  updatedAt: string;
+}
+/**
+ * Lịch sử đồng bộ sản phẩm/danh mục từ RAG DB sang CMS.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "cms-sync-runs".
+ */
+export interface CmsSyncRun {
+  id: number;
+  source?: ('rag' | 'qdrant') | null;
+  status: 'queued' | 'running' | 'done' | 'partial' | 'error';
+  /**
+   * Admin đã bấm nút.
+   */
+  triggeredBy?: (number | null) | User;
+  startedAt: string;
+  finishedAt?: string | null;
+  /**
+   * Snapshot số liệu cuối: { categories: {created, updated, skipped}, products: {...}, errors: n }.
+   */
+  totals?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Tóm tắt lỗi (nếu status=error).
+   */
+  errorMessage?: string | null;
+  /**
+   * Từng dòng log ghi theo thời gian.
+   */
+  log?:
+    | {
+        ts: string;
+        level?: ('info' | 'warn' | 'error') | null;
+        message: string;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1756,6 +1925,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'ingredients';
         value: number | Ingredient;
+      } | null)
+    | ({
+        relationTo: 'drive-sync-jobs';
+        value: number | DriveSyncJob;
+      } | null)
+    | ({
+        relationTo: 'cms-sync-runs';
+        value: number | CmsSyncRun;
       } | null)
     | ({
         relationTo: 'technologies';
@@ -2519,6 +2696,9 @@ export interface PartnersSelect<T extends boolean = true> {
 export interface IngredientCategoriesSelect<T extends boolean = true> {
   name?: T;
   slug?: T;
+  driveId?: T;
+  driveParentId?: T;
+  externalId?: T;
   scope?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -2530,6 +2710,7 @@ export interface IngredientCategoriesSelect<T extends boolean = true> {
 export interface IngredientsSelect<T extends boolean = true> {
   name?: T;
   slug?: T;
+  externalId?: T;
   subtitle?: T;
   type?: T;
   category?: T;
@@ -2560,6 +2741,13 @@ export interface IngredientsSelect<T extends boolean = true> {
         id?: T;
       };
   featured?: T;
+  sourceFileIds?: T;
+  lastIndexedAt?: T;
+  driveId?: T;
+  driveParentId?: T;
+  driveFiles?: T;
+  fileCount?: T;
+  lastDriveSyncAt?: T;
   seo?:
     | T
     | {
@@ -2572,6 +2760,56 @@ export interface IngredientsSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "drive-sync-jobs_select".
+ */
+export interface DriveSyncJobsSelect<T extends boolean = true> {
+  status?: T;
+  phase?: T;
+  totalItems?: T;
+  processedItems?: T;
+  totals?: T;
+  logs?:
+    | T
+    | {
+        ts?: T;
+        level?: T;
+        message?: T;
+        data?: T;
+        id?: T;
+      };
+  triggeredBy?: T;
+  createdAt?: T;
+  startedAt?: T;
+  finishedAt?: T;
+  errorMessage?: T;
+  rootFolderId?: T;
+  updatedAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "cms-sync-runs_select".
+ */
+export interface CmsSyncRunsSelect<T extends boolean = true> {
+  source?: T;
+  status?: T;
+  triggeredBy?: T;
+  startedAt?: T;
+  finishedAt?: T;
+  totals?: T;
+  errorMessage?: T;
+  log?:
+    | T
+    | {
+        ts?: T;
+        level?: T;
+        message?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -3642,6 +3880,16 @@ export interface DvAnalyticsWidget {
  * via the `definition` "dv-seed_widget".
  */
 export interface DvSeedWidget {
+  data?: {
+    [k: string]: unknown;
+  };
+  width: 'medium' | 'large' | 'x-large' | 'full';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "dv-cms-sync_widget".
+ */
+export interface DvCmsSyncWidget {
   data?: {
     [k: string]: unknown;
   };

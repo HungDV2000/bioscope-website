@@ -1,7 +1,7 @@
 'use client'
 
 import { useNav } from '@payloadcms/ui'
-import { usePathname } from 'next/navigation.js'
+import { usePathname } from 'next/navigation'
 import React, { useEffect } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 

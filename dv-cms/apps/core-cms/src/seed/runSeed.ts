@@ -1206,7 +1206,7 @@ export async function runSeed(payload: Payload): Promise<string[]> {
   const homePageDoc = await payload.find({ collection: 'pages', where: { slug: { equals: 'trang-chu' } }, limit: 1 })
   const homePageId = (homePageDoc.docs[0] as { id: string | number } | undefined)?.id
   if (homePageId) {
-    await payload.updateGlobal({ slug: 'site-settings', data: { homePage: homePageId } })
+    await payload.updateGlobal({ slug: 'site-settings', data: { homePage: homePageId } as unknown as Record<string, unknown> })
   }
   log('trang chủ: Page 9 block (song ngữ) + site-settings.homePage')
 

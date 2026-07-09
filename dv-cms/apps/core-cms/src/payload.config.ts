@@ -19,6 +19,16 @@ import { permissionsPlugin } from '@dv/module-permissions'
 import { betterEditor } from 'payload-better-editor'
 
 import { seedEndpoint } from './endpoints/seed.js'
+import { cmsSyncSourceEndpoint } from './endpoints/cmsSyncSource.js'
+import { cmsSyncEndpoint } from './endpoints/cmsSync.js'
+import { cmsSyncRunsEndpoint } from './endpoints/cmsSyncRuns.js'
+import {
+  driveSyncTriggerEndpoint,
+  driveSyncListEndpoint,
+  driveSyncGetEndpoint,
+  driveSyncCancelEndpoint,
+} from './endpoints/driveSync.js'
+import { csvImportEndpoint } from './endpoints/csvImport.js'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -59,8 +69,8 @@ export default buildConfig({
     supportedLanguages: { en, vi },
     fallbackLanguage: 'en',
     translations: {
-      en: { ...en, ...dvTranslations.en, general: { ...en.general, ...dvTranslations.en.general } },
-      vi: { ...vi, ...dvTranslations.vi, general: { ...vi.general, ...dvTranslations.vi.general } },
+      en: { ...en, ...dvTranslations.en } as typeof en & typeof dvTranslations.en,
+      vi: { ...vi, ...dvTranslations.vi } as typeof vi & typeof dvTranslations.vi,
     },
   },
   cors: corsOrigins,
@@ -72,7 +82,7 @@ export default buildConfig({
     collectionSpecific: true,
   },
   typescript: { outputFile: path.resolve(dirname, 'payload-types.ts') },
-  endpoints: [seedEndpoint],
+  endpoints: [seedEndpoint, cmsSyncSourceEndpoint, cmsSyncEndpoint, cmsSyncRunsEndpoint, driveSyncTriggerEndpoint, driveSyncListEndpoint, driveSyncGetEndpoint, driveSyncCancelEndpoint, csvImportEndpoint],
   collections: [],
   plugins: [
     // Tier 1 — generic core (must come first: users + media).
@@ -92,6 +102,7 @@ export default buildConfig({
     }),
     dashboardPlugin({
       seedComponent: '/components/SeedButton#SeedButton',
+      cmsSyncComponent: '/components/CmsSyncPanel/CmsSyncPanel#CmsSyncPanel',
     }),
     // Custom content types (ACF-like) — after core (needs users/media/access).
     customTypesPlugin(),

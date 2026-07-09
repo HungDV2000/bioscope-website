@@ -2,7 +2,7 @@
 
 import { useConfig, usePreferences } from '@payloadcms/ui'
 import { formatAdminURL } from 'payload/shared'
-import { useRouter } from 'next/navigation.js'
+import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 
 /** Mở Media bằng chế độ thư mục (grid thumbnail) thay vì bảng danh sách. */

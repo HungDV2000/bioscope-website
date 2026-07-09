@@ -20,6 +20,20 @@ export const Ingredients: CollectionConfig = {
   fields: [
     { name: 'name', type: 'text', localized: true, required: true },
     slugField('name'),
+    {
+      // Stable key used by CMS sync to upsert without duplicating records.
+      // Drawn from external source (e.g. RAG product_name field).
+      name: 'externalId',
+      label: 'External ID (CMS Sync)',
+      type: 'text',
+      index: true,
+      unique: true,
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+        description: 'Khóa duy nhất từ hệ thống ngoài. Đồng bộ tự động.',
+      },
+    },
     { name: 'subtitle', type: 'text', localized: true },
     {
       name: 'type',
@@ -82,6 +96,83 @@ export const Ingredients: CollectionConfig = {
     },
     specsField('specs'),
     { name: 'featured', type: 'checkbox', defaultValue: false, admin: { position: 'sidebar' } },
+
+    // ─── Google Drive Sync fields ─────────────────────────────────────────────
+    // Legacy aliases (DB có sẵn cột sourceFileIds/lastIndexedAt từ schema cũ).
+    {
+      name: 'sourceFileIds',
+      label: 'Source File IDs (Legacy)',
+      type: 'json',
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+        description: 'Danh sách file ID (cũ) — tương thích ngược với DB.',
+      },
+    },
+    {
+      name: 'lastIndexedAt',
+      label: 'Last Indexed At (Legacy)',
+      type: 'date',
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+        description: 'Timestamp lần index cuối (cũ) — tương thích ngược với DB.',
+      },
+    },
+    {
+      // Drive folder ID cấp 2 (ingredient)
+      name: 'driveId',
+      label: 'Drive Folder ID',
+      type: 'text',
+      index: true,
+      unique: true,
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+        description: 'Google Drive folder ID của nguyên liệu này.',
+      },
+    },
+    {
+      // Drive folder ID cấp 1 (category)
+      name: 'driveParentId',
+      label: 'Drive Category ID',
+      type: 'text',
+      index: true,
+      admin: { position: 'sidebar', readOnly: true },
+    },
+    {
+      // Danh sách file từ Google Drive
+      name: 'driveFiles',
+      label: 'Drive Files (CMS Sync)',
+      type: 'json',
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+        description: '[{fileId, fileName, mimeType, webViewLink, webContentLink, size, modifiedTime}]',
+      },
+    },
+    {
+      name: 'fileCount',
+      label: 'File Count',
+      type: 'number',
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+        description: 'Số file trong Drive folder.',
+      },
+    },
+    {
+      name: 'lastDriveSyncAt',
+      label: 'Last Drive Sync At',
+      type: 'date',
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+        date: { pickerAppearance: 'dayAndTime' },
+        description: 'Lần cuối sync từ Google Drive.',
+      },
+    },
+
     seoField(),
   ],
 }

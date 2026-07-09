@@ -47,6 +47,7 @@ import { ShortcutsWidget as ShortcutsWidget_0c869148cc3ac91aff1eb6410b91e9ab } f
 import { StatsOverviewWidget as StatsOverviewWidget_0c869148cc3ac91aff1eb6410b91e9ab } from '@dv/cms-core/dashboard'
 import { AnalyticsChartWidget as AnalyticsChartWidget_0c869148cc3ac91aff1eb6410b91e9ab } from '@dv/cms-core/dashboard'
 import { SeedButton as SeedButton_fcf13aba43db26699925682d82e9535d } from '../../../components/SeedButton'
+import { CmsSyncPanel as CmsSyncPanel_d5ca907242d376a736aefb95b63de448 } from '../../../components/CmsSyncPanel/CmsSyncPanel'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
 /** @type import('payload').ImportMap */
@@ -100,5 +101,6 @@ export const importMap = {
   "@dv/cms-core/dashboard#StatsOverviewWidget": StatsOverviewWidget_0c869148cc3ac91aff1eb6410b91e9ab,
   "@dv/cms-core/dashboard#AnalyticsChartWidget": AnalyticsChartWidget_0c869148cc3ac91aff1eb6410b91e9ab,
   "/components/SeedButton#SeedButton": SeedButton_fcf13aba43db26699925682d82e9535d,
+  "/components/CmsSyncPanel/CmsSyncPanel#CmsSyncPanel": CmsSyncPanel_d5ca907242d376a736aefb95b63de448,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }

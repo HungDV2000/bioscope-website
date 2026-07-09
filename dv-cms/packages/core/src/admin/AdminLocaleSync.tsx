@@ -24,7 +24,7 @@ export const AdminLocaleSync: React.FC<{ children?: React.ReactNode }> = ({ chil
     const timer = window.setTimeout(() => {
       if (syncing.current || i18n.language === code) return
       syncing.current = true
-      void switchLanguage(code).finally(() => {
+      void switchLanguage(code as 'vi').finally(() => {
         syncing.current = false
       })
     }, 0)

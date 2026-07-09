@@ -36,11 +36,11 @@ export const AccountMenu: React.FC = () => {
         verticalAlign="bottom"
       >
         <PopupList.ButtonGroup>
-          <PopupList.Button href={profileHref} prefetch={false}>
+          <PopupList.Button href={profileHref}>
             {t('authentication:account')}
           </PopupList.Button>
           <PopupList.Divider />
-          <PopupList.Button href={logoutHref} prefetch={false}>
+          <PopupList.Button href={logoutHref}>
             <span className="dv-account-menu__logout">
               <LogOutIcon />
               {t('authentication:logOut')}

@@ -13,7 +13,7 @@ COPY pnpm-workspace.yaml pnpm-lock.yaml package.json tsconfig.base.json ./
 COPY patches ./patches
 COPY packages ./packages
 COPY apps/core-cms ./apps/core-cms
-RUN pnpm install --no-frozen-lockfile
+RUN pnpm install --filter @dv/core-cms... --no-frozen-lockfile
 WORKDIR /app/apps/core-cms
 RUN pnpm exec next build --webpack
 

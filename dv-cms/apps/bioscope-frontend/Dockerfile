@@ -20,9 +20,11 @@ COPY pnpm-workspace.yaml pnpm-lock.yaml package.json tsconfig.base.json ./
 COPY patches ./patches
 COPY packages ./packages
 COPY apps/bioscope-frontend ./apps/bioscope-frontend
-# Use --no-frozen-lockfile so pnpm recreates workspace symlinks each build,
-# not just reports "already up to date" from cache.
-RUN pnpm install --no-frozen-lockfile
+# Filter by app so pnpm only walks the frontend's dep graph. The root
+# package.json has a patchedDependencies entry for @payloadcms/next which is
+# only installed by core-cms — without --filter, pnpm would refuse to install
+# because the patched package isn't in the resolved graph.
+RUN pnpm install --filter @dv/bioscope-frontend... --no-frozen-lockfile
 WORKDIR /app/apps/bioscope-frontend
 RUN pnpm exec next build --webpack
 

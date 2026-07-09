@@ -5,6 +5,7 @@ WORKDIR /app
 
 FROM base AS deps
 COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
+COPY patches ./patches
 COPY packages ./packages
 COPY apps/core-cms/package.json ./apps/core-cms/package.json
 RUN pnpm install --frozen-lockfile
@@ -16,6 +17,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/packages ./packages
 COPY --from=deps /app/apps/core-cms/node_modules ./apps/core-cms/node_modules
 COPY pnpm-workspace.yaml pnpm-lock.yaml package.json tsconfig.base.json ./
+COPY patches ./patches
 COPY packages ./packages
 COPY apps/core-cms ./apps/core-cms
 WORKDIR /app/apps/core-cms

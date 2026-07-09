@@ -5,6 +5,7 @@ WORKDIR /app
 
 FROM base AS deps
 COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
+COPY patches ./patches
 COPY apps/bioscope-frontend/package.json ./apps/bioscope-frontend/package.json
 RUN pnpm install --frozen-lockfile
 
@@ -18,6 +19,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/apps/bioscope-frontend/node_modules ./apps/bioscope-frontend/node_modules
 COPY pnpm-workspace.yaml pnpm-lock.yaml package.json tsconfig.base.json ./
+COPY patches ./patches
 COPY apps/bioscope-frontend ./apps/bioscope-frontend
 WORKDIR /app/apps/bioscope-frontend
 RUN pnpm exec next build --webpack

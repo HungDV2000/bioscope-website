@@ -3,28 +3,17 @@ FROM node:20-alpine AS base
 RUN corepack enable
 WORKDIR /app
 
-FROM base AS deps
-COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
-COPY patches ./patches
-COPY packages ./packages
-COPY apps/core-cms/package.json ./apps/core-cms/package.json
-RUN pnpm install --frozen-lockfile
-
+# Single stage build — see comment in apps/bioscope-frontend/Dockerfile for why
+# we don't use a separate `deps` stage (pnpm workspace symlinks break otherwise).
 FROM base AS build
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_OPTIONS=--no-deprecation
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/packages ./packages
-COPY --from=deps /app/apps/core-cms/node_modules ./apps/core-cms/node_modules
+
 COPY pnpm-workspace.yaml pnpm-lock.yaml package.json tsconfig.base.json ./
 COPY patches ./patches
 COPY packages ./packages
 COPY apps/core-cms ./apps/core-cms
-# Re-run install to regenerate pnpm workspace symlinks for @dv/* packages.
-# Without this, pnpm symlinks from monorepo install point to absolute paths that
-# break when copied between Docker stages → "Module not found: @dv/...".
-WORKDIR /app
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --no-frozen-lockfile
 WORKDIR /app/apps/core-cms
 RUN pnpm exec next build --webpack
 

@@ -3,29 +3,26 @@ FROM node:20-alpine AS base
 RUN corepack enable
 WORKDIR /app
 
-FROM base AS deps
-COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
-COPY patches ./patches
-COPY apps/bioscope-frontend/package.json ./apps/bioscope-frontend/package.json
-RUN pnpm install --frozen-lockfile
-
+# Single stage build — pnpm workspace symlinks must be created in the same
+# filesystem tree where the actual source files live. Copying node_modules
+# between stages (via --from=deps) breaks workspace symlinks for monorepo
+# packages like @dv/cms-core and causes "Module not found" at build time.
+# We accept the longer install time in exchange for build reliability.
 FROM base AS build
-# Public URLs are inlined into the bundle at build time — must be passed as args.
 ARG NEXT_PUBLIC_CMS_URL=http://localhost:3001
 ARG NEXT_PUBLIC_SITE_URL=https://web.bioscope.vn
 ENV NEXT_PUBLIC_CMS_URL=$NEXT_PUBLIC_CMS_URL
 ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL
 ENV NEXT_TELEMETRY_DISABLED=1
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/apps/bioscope-frontend/node_modules ./apps/bioscope-frontend/node_modules
+
+# Copy everything needed for pnpm install — lockfile + all source
 COPY pnpm-workspace.yaml pnpm-lock.yaml package.json tsconfig.base.json ./
 COPY patches ./patches
+COPY packages ./packages
 COPY apps/bioscope-frontend ./apps/bioscope-frontend
-# Re-run install to regenerate pnpm workspace symlinks for @dv/* packages.
-# Without this, pnpm symlinks from monorepo install point to absolute paths that
-# break when copied between Docker stages → "Module not found: @dv/cms-core".
-WORKDIR /app
-RUN pnpm install --frozen-lockfile
+# Use --no-frozen-lockfile so pnpm recreates workspace symlinks each build,
+# not just reports "already up to date" from cache.
+RUN pnpm install --no-frozen-lockfile
 WORKDIR /app/apps/bioscope-frontend
 RUN pnpm exec next build --webpack
 

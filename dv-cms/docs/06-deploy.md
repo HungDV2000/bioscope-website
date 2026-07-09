@@ -593,6 +593,47 @@ dig +short admin.bioscope.vn
 # Nếu không trả IP: DNS chưa propagate hoặc A record sai
 ```
 
+### Lỗi: `dvcms-db unhealthy` — `initdb: error: could not create directory ".../pg_wal": No space left on device`
+Postgres không thể init data directory vì ổ `/var/lib/docker` đầy. Nguyên nhân phổ biến: build `--no-cache` nhiều lần + dangling images từ các project khác (BioBot, dv-cms cũ, ...).
+
+```bash
+# 1. Kiểm tra disk
+df -h /var/lib/docker
+docker system df
+
+# 2. Dọn toàn bộ (giữ volumes — volumes này sẽ bị xóa theo nếu -v)
+cd /www/wwwroot/bioscope-website/dv-cms
+docker compose down -v          # tắt containers + xóa volumes dv-cms (OK vì chưa có data)
+docker system prune -af --volumes
+docker builder prune -af
+
+# 3. Logs Docker containers cũng chiếm chỗ — clear
+truncate -s 0 /var/lib/docker/containers/*/*-json.log 2>/dev/null
+
+# 4. Kiểm tra lại disk — cần ≥ 5 GB trống cho Postgres + image layers
+df -h /var/lib/docker
+
+# 5. Tìm thư mục lớn nhất nếu vẫn đầy
+sudo du -sh /var/lib/docker/* 2>/dev/null | sort -hr | head -10
+sudo du -sh /opt/* /www/* /home/* /root/* 2>/dev/null | sort -hr | head -10
+```
+
+Sau khi giải phóng ≥ 5 GB:
+```bash
+docker compose build
+docker compose up -d
+docker compose ps    # cả 3 services phải Up + Healthy
+```
+
+### Lỗi: `dvcms-db` restart liên tục, không bao giờ ready
+Hai nguyên nhân:
+- (A) Disk đầy → xem mục trên
+- (B) `POSTGRES_PASSWORD` trong `.env` thay đổi nhưng volume cũ vẫn giữ user cũ. Fix: xóa volume (MẤT DATA nếu đã có):
+```bash
+docker compose down -v
+docker compose up -d
+```
+
 ---
 
 ## 10. Tóm tắt 3 lệnh "must-run" sau khi setup

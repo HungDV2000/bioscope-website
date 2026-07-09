@@ -634,6 +634,21 @@ docker compose down -v
 docker compose up -d
 ```
 
+### Lỗi: CMS / Frontend restart loop với `Error: Cannot find module '/app/node_modules/next/dist/bin/next'`
+Dockerfile CMD sai path. pnpm hoist `next` vào `apps/<name>/node_modules/next` (symlink tới `.pnpm/next@...`), không phải `/app/node_modules/next`. Đã fix: chạy `./node_modules/next/dist/bin/next` tương đối với WORKDIR.
+
+```bash
+# Pull fix
+git pull origin main
+# Build lại image (chỉ rebuild 2 service này)
+docker compose build cms frontend
+# Up
+docker compose up -d
+# Verify
+docker compose ps      # cả 3 phải Up + Healthy
+docker compose logs cms --tail 20     # thấy "Ready in" là thành công
+```
+
 ---
 
 ## 10. Tóm tắt 3 lệnh "must-run" sau khi setup

@@ -8,6 +8,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dvcms}
       POSTGRES_DB: dvcms
     ports:
+      # Host port dải 26xxx để chạy song song với BioBot (đang chiếm 5432/6379/...)
       - "127.0.0.1:${DVCMS_DB_HOST_PORT:-26432}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
@@ -74,15 +75,16 @@ services:
       - cms
       - frontend
     ports:
-      - "127.0.0.1:${NGINX_HOST_PORT:-80}:80"
-      - "${NGINX_HTTPS_HOST_PORT:-443}:443"
+      # Host ports dải 26xxx — không xung đột với BioBot (5432/6379/80/443/15678/...)
+      - "127.0.0.1:${DVCMS_HTTP_HOST_PORT:-26080}:80"
+      - "127.0.0.1:${DVCMS_HTTPS_HOST_PORT:-26443}:443"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - /etc/letsencrypt:/etc/letsencrypt:ro
       - /var/www/certbot:/var/www/certbot:ro
-    # Health check (HTTPS endpoint)
+    # Health check (HTTP fallback khi chưa có cert)
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "https://admin.bioscope.vn/admin"]
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost/admin"]
       interval: 30s
       timeout: 10s
       retries: 5

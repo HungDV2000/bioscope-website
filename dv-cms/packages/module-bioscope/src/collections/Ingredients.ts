@@ -43,8 +43,38 @@ export const Ingredients: CollectionConfig = {
       options: [
         { label: 'Supplement (TPCN)', value: 'supplement' },
         { label: 'Cosmetic (Mỹ phẩm)', value: 'cosmetic' },
+        { label: 'Both (Đa ngành)', value: 'both' },
       ],
       admin: { position: 'sidebar' },
+    },
+    {
+      // Marketing badge hiển thị trên catalog card + advanced filter.
+      // 'NEW' / 'TRENDING' / 'EXCLUSIVE' — match FE Ingredient.tag enum.
+      name: 'tag',
+      type: 'select',
+      options: [
+        { label: 'NEW', value: 'NEW' },
+        { label: 'TRENDING', value: 'TRENDING' },
+        { label: 'EXCLUSIVE', value: 'EXCLUSIVE' },
+      ],
+      admin: {
+        position: 'sidebar',
+        description: 'Badge hiển thị trên thẻ nguyên liệu (NEW / TRENDING / EXCLUSIVE).',
+      },
+    },
+    {
+      // Tên khoa học / INCI — hiển thị dưới tên nguyên liệu trên trang detail.
+      name: 'inci',
+      type: 'text',
+      localized: true,
+      admin: { description: 'Tên khoa học / INCI.' },
+    },
+    {
+      // Liều dùng gợi ý — hiển thị ở tab "Ứng dụng" trên trang detail.
+      name: 'suggestedDosage',
+      type: 'text',
+      localized: true,
+      admin: { description: 'Liều dùng gợi ý — tab Ứng dụng.' },
     },
     {
       name: 'category',

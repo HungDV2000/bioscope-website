@@ -1212,7 +1212,19 @@ export interface Ingredient {
    */
   externalId?: string | null;
   subtitle?: string | null;
-  type: 'supplement' | 'cosmetic';
+  type: 'supplement' | 'cosmetic' | 'both';
+  /**
+   * Badge hiển thị trên thẻ nguyên liệu (NEW / TRENDING / EXCLUSIVE).
+   */
+  tag?: ('NEW' | 'TRENDING' | 'EXCLUSIVE') | null;
+  /**
+   * Tên khoa học / INCI.
+   */
+  inci?: string | null;
+  /**
+   * Liều dùng gợi ý — tab Ứng dụng.
+   */
+  suggestedDosage?: string | null;
   category?: (number | null) | IngredientCategory;
   /**
    * Mã quốc gia, vd JP.
@@ -2713,6 +2725,9 @@ export interface IngredientsSelect<T extends boolean = true> {
   externalId?: T;
   subtitle?: T;
   type?: T;
+  tag?: T;
+  inci?: T;
+  suggestedDosage?: T;
   category?: T;
   originCountry?: T;
   brandName?: T;

@@ -1,10 +1,12 @@
-# Triển khai bioscope-website lên VPS (Docker + 2 domain)
+# Triển khai bioscope-website lên VPS (Docker + aaPanel + 2 domain)
 
-> **Stack production:** Docker Compose + nginx container nội bộ + Let's Encrypt + 2 domain.
+> **Stack production:** Docker Compose (cms + frontend + db) **+ aaPanel nginx** làm reverse proxy + Let's Encrypt.
 > - **web.bioscope.vn** — frontend Next.js (storefront).
 > - **admin.bioscope.vn** — Payload CMS + admin UI.
 >
-> Toàn bộ stack chạy bằng Docker; **không cần aaPanel/nginx ngoài** — `install.sh` tự xin SSL, mount cert vào nginx container, expose ra host ở dải port `26xxx` để không xung đột với BioBot (đang chiếm `5432/6379/80/443/15678/...`).
+> **Kiến trúc:** aaPanel (host) nhận HTTPS public (port 443), reverse proxy `http://127.0.0.1:26080` (web) / `127.0.0.1:26081` (admin) → Docker containers. Docker KHÔNG tự xin cert, KHÔNG tự handle TLS — đó là việc của aaPanel.
+>
+> Port dải `26xxx` (không xung đột với BioBot đang chiếm `5432/6379/80/443/15678/...`).
 
 ---
 
@@ -14,44 +16,46 @@
 Internet
    │  (DNS A record → IP VPS)
    ▼
-┌────────────────────────────────────────────┐
-│ Host (VPS)                                 │
-│                                            │
-│  127.0.0.1:26080  ─┐                      │
-│  127.0.0.1:26443  ─┤  →  nginx container  │
-│                    │     (dvcms-nginx)     │
-│                    │     - ACME challenge  │
-│                    │     - TLS terminate   │
-│                    │     - route theo Host │
-│                    │                       │
-│                    │     web.bioscope.vn   │──→ frontend:26300
-│                    │     admin.bioscope.vn │──→ cms:26301
-│                    │                       │
-│  127.0.0.1:26432  ──→ db (postgres:16)    │
-│                                            │
-│  Volumes: pgdata (DB), media (uploads)     │
-└────────────────────────────────────────────┘
+┌────────────────────────────────────────────────┐
+│ Host (VPS)                                     │
+│                                                │
+│  aaPanel (nginx host-level)                    │
+│   - Let's Encrypt cert cho 2 domain           │
+│   - Listen 80/443 public                       │
+│   - Reverse proxy theo Host header:            │
+│       web.bioscope.vn   → 127.0.0.1:26080      │
+│       admin.bioscope.vn → 127.0.0.1:26081      │
+│                                                │
+│  Docker (3 services)                            │
+│   - frontend  : 127.0.0.1:26080 → :26300       │
+│   - cms       : 127.0.0.1:26081 → :26301       │
+│   - db        : 127.0.0.1:26432 → :5432        │
+│                                                │
+│  Volumes: pgdata (DB), media (uploads)         │
+└────────────────────────────────────────────────┘
 ```
 
 **Port quy ước** (dải `26xxx` tránh xung đột):
 
-| Service | Container port | Host port (chỉ nginx) |
+| Service | Container port | Host port (chỉ localhost) |
 |---|---|---|
-| nginx (public) | 80 + 443 | `26080` / `26443` |
-| core-cms (Payload) | `26301` | (chỉ nginx mới truy cập) |
-| frontend (Next) | `26300` | (chỉ nginx mới truy cập) |
-| postgres | 5432 | `26432` (chỉ `127.0.0.1`) |
+| Frontend (Next.js) | `26300` | `127.0.0.1:26080` |
+| Core CMS (Payload) | `26301` | `127.0.0.1:26081` |
+| Postgres | `5432` | `127.0.0.1:26432` |
+
+> Host ports `26080/26081/26432` **chỉ bind `127.0.0.1`** — KHÔNG lộ ra ngoài Internet. aaPanel (cũng ở host) mới là layer duy nhất được expose public qua 80/443.
 
 ---
 
 ## 1. Chuẩn bị VPS
 
 ### 1.1. Yêu cầu tối thiểu
-- **OS:** Ubuntu 22.04+ / Debian 12+
+- **OS:** Ubuntu 22.04+ / Debian 12+ (Ubuntu 20.04 OK nếu apt mirror ổn định)
 - **RAM:** ≥ 2 GB (khuyến nghị 4 GB nếu chạy song song BioBot)
 - **Disk:** ≥ 20 GB trống
+- **aaPanel:** đã cài (Website module + Nginx)
 - **User:** có quyền `sudo` (KHÔNG chạy root trực tiếp)
-- **Cổng mở ngoài:** `22` (SSH), `26080` (HTTP), `26443` (HTTPS) — KHÔNG cần mở `80/443`
+- **Cổng mở ngoài:** `22` (SSH), `80` (HTTP), `443` (HTTPS) — chỉ aaPanel cần
 
 ### 1.2. Trỏ DNS
 Tạo **2 bản ghi A** trỏ về IP server (TTL 300–600):
@@ -71,13 +75,13 @@ dig +short admin.bioscope.vn
 ### 1.3. Mở firewall
 ```bash
 sudo ufw allow OpenSSH
-sudo ufw allow 26080/tcp comment "bioscope HTTP"
-sudo ufw allow 26443/tcp comment "bioscope HTTPS"
+sudo ufw allow 80/tcp comment "aaPanel HTTP (Let's Encrypt ACME + redirect)"
+sudo ufw allow 443/tcp comment "aaPanel HTTPS"
 sudo ufw enable
 sudo ufw status
 ```
 
-> Lưu ý: KHÔNG mở `80/443` vì nginx container lắng nghe ở `26080/26443` (để tránh xung đột với BioBot).
+> Lưu ý: **KHÔNG cần** mở `26080/26081/26432` ra ngoài Internet — Docker chỉ bind `127.0.0.1`. aaPanel (cũng ở host) tự kết nối nội bộ.
 
 ---
 
@@ -132,9 +136,15 @@ bash scripts/install.sh
 Output mong đợi cuối script:
 ```
 ✅ CÀI ĐẶT HOÀN TẤT
-Internal ports: 26432, 26080, 26443
-URLs: https://admin.bioscope.vn/admin, https://web.bioscope.vn
-BƯỚC TIẾP THEO: bash scripts/seed.sh
+Stack đang chạy ở host port (HTTP, nội bộ):
+  - Frontend   : 127.0.0.1:26080  (chỉ aaPanel proxy)
+  - CMS        : 127.0.0.1:26081  (chỉ aaPanel proxy)
+  - Postgres   : 127.0.0.1:26432  (chỉ ops)
+
+BƯỚC TIẾP THEO:
+  1. Sửa secrets trong .env
+  2. bash scripts/seed.sh
+  3. Cấu hình aaPanel reverse proxy (mục 5)
 ```
 
 ### 3.2. Sau khi install: sửa secrets
@@ -231,67 +241,112 @@ docker compose exec cms \
 
 ---
 
-## 5. Cấu hình tên miền + proxy
+## 5. Cấu hình aaPanel reverse proxy
 
-> **Lưu ý quan trọng:** Trong setup này, **nginx container nội bộ đã đảm nhận reverse proxy + TLS**. Bạn **KHÔNG cần** cấu hình aaPanel/nginx ngoài trỏ vào 26000/26001 như tài liệu cũ.
->
-> Chỉ cần:
-> 1. DNS A record trỏ về IP VPS (mục 1.2)
-> 2. Firewall mở 26080/26443 (mục 1.3)
-> 3. Cert Let's Encrypt đã được `install.sh` xin sẵn (mount vào nginx container)
-> 4. nginx container tự động:
->    - ACME challenge → trỏ vào `/var/www/certbot`
->    - HTTP (26080) → 301 redirect → HTTPS
->    - HTTPS (26443) → route theo `Host` header về `frontend:26300` hoặc `cms:26301`
+Sau khi Docker stack đã chạy (mục 3.3 verify OK), tiến hành cấu hình **aaPanel** để nhận HTTPS public + reverse proxy về Docker host port.
 
-### 5.1. Nếu ĐÃ có aaPanel/nginx trên host (xung đột 80/443)
-Nếu trước đó bạn dùng aaPanel proxy `26000/26001` (theo setup cũ), hãy **gỡ bỏ** trước khi cài Docker nginx:
-```bash
-# Vào aaPanel → Website → xoá site web.bioscope.vn + admin.bioscope.vn
-# (xoá cả reverse proxy + SSL Let's Encrypt cũ)
+### 5.1. Tạo 2 Website trong aaPanel
+Vào **aaPanel → Website → Add site** (LAMP/LNMP không cần — chỉ cần Website module):
+
+| Site | Domain | PHP | Database |
+|---|---|---|---|
+| web | `web.bioscope.vn` | Pure-Static Host (hoặc tắt) | (bỏ qua) |
+| admin | `admin.bioscope.vn` | Pure-Static Host (hoặc tắt) | (bỏ qua) |
+
+> **Mẹo:** Bỏ chọn "Create database" và "Create FTP" — không cần.
+
+### 5.2. Xin SSL Let's Encrypt cho từng site
+Với **mỗi site** vừa tạo:
+1. Vào **Site settings → SSL → Let's Encrypt** → bật **Force HTTPS**.
+2. aaPanel tự động xin cert + auto-renew.
+
+Sau bước này, browser truy cập `https://web.bioscope.vn` sẽ có khóa SSL hợp lệ (không cảnh báo).
+
+### 5.3. Cấu hình Reverse Proxy
+Với **mỗi site** (web + admin), vào **Site settings → Reverse proxy → Add reverse proxy**:
+
+| Site | Proxy name | Target URL | Send domain |
+|---|---|---|---|
+| web.bioscope.vn | `frontend` | `http://127.0.0.1:26080` | `$host` |
+| admin.bioscope.vn | `cms` | `http://127.0.0.1:26081` | `$host` |
+
+> **Send domain** để `$host` (mặc định) — để backend biết domain gốc. Không cần đổi.
+
+### 5.4. Chèn thêm Nginx config (đặc biệt quan trọng với admin)
+aaPanel Reverse Proxy mặc định KHÔNG chuyển `X-Forwarded-For` (rate-limit sẽ sai IP) và `client_max_body_size` chỉ 1 MB (upload ảnh lớn sẽ fail).
+
+Với **mỗi site** (đặc biệt admin), vào **Site settings → Config file** (file nginx conf), tìm block `location /` của reverse proxy vừa tạo, **CHÈN** thêm:
+
+```nginx
+proxy_set_header Host              $host;
+proxy_set_header X-Real-IP         $remote_addr;
+proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;   # rate-limit theo IP thật
+proxy_set_header X-Forwarded-Proto $scheme;
+proxy_http_version 1.1;
+client_max_body_size 50M;            # cho upload ảnh/tài liệu trong admin (mặc định 1M sẽ 413)
+proxy_read_timeout 300s;
+proxy_send_timeout 300s;
 ```
 
-Lý do: nginx container cần bind trực tiếp port `26080/26443` trên host (đã map qua `127.0.0.1`), và cert Let's Encrypt mount từ `/etc/letsencrypt` (certbot host-level). Nếu aaPanel vẫn giữ cert ở path khác, dùng certbot host-level (mặc định `install.sh` dùng) là đủ.
+**Mẫu config đầy đủ** (copy vào config site trong aaPanel):
+```nginx
+# web.bioscope.vn — reverse proxy → frontend
+location / {
+    proxy_pass http://127.0.0.1:26080;
+    proxy_set_header Host              $host;
+    proxy_set_header X-Real-IP         $remote_addr;
+    proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_http_version 1.1;
+    client_max_body_size 50M;
+    proxy_read_timeout 300s;
+    proxy_send_timeout 300s;
+}
+```
 
-### 5.2. Kiểm tra route đang hoạt động
+```nginx
+# admin.bioscope.vn — reverse proxy → cms
+location / {
+    proxy_pass http://127.0.0.1:26081;
+    proxy_set_header Host              $host;
+    proxy_set_header X-Real-IP         $remote_addr;
+    proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_http_version 1.1;
+    client_max_body_size 50M;            # QUAN TRỌNG: Payload admin upload media
+    proxy_read_timeout 300s;
+    proxy_send_timeout 300s;
+}
+```
+
+Sau khi sửa xong, **Save** và **Reload Nginx** (nút reload trong aaPanel hoặc `sudo nginx -t && sudo systemctl reload nginx`).
+
+### 5.5. Kiểm tra route
 ```bash
-# Host -> nginx (HTTP)
-curl -v http://127.0.0.1:26080/ 2>&1 | grep -E "^< (HTTP|Location)"
-# Expect: 301 + Location: https://...
+# Host → Docker trực tiếp (HTTP)
+curl -sS -o /dev/null -w "Frontend (26080) : HTTP %{http_code}\n" http://127.0.0.1:26080/
+curl -sS -o /dev/null -w "CMS (26081)      : HTTP %{http_code}\n" http://127.0.0.1:26081/admin
 
-# Host -> nginx -> frontend
-curl -sS https://web.bioscope.vn/ | head -20
-# Expect: HTML của trang chủ (9 block)
-
-# Host -> nginx -> admin
-curl -sS https://admin.bioscope.vn/admin | head -20
-# Expect: HTML của Payload admin login
+# Public → aaPanel → Docker (HTTPS)
+curl -sS -o /dev/null -w "web.bioscope.vn   : HTTP %{http_code}\n" https://web.bioscope.vn/
+curl -sS -o /dev/null -w "admin.bioscope.vn : HTTP %{http_code}\n" https://admin.bioscope.vn/admin
 
 # SSL chain
-openssl s_client -connect admin.bioscope.vn:26443 -servername admin.bioscope.vn < /dev/null 2>/dev/null \
+openssl s_client -connect admin.bioscope.vn:443 -servername admin.bioscope.vn < /dev/null 2>/dev/null \
   | openssl x509 -noout -subject -dates
 ```
 
-### 5.3. Gia hạn SSL tự động
-`install.sh` tạo cert qua certbot standalone, cert nằm ở `/etc/letsencrypt/live/{web,admin}.bioscope.vn/`. Auto-renew:
-```bash
-# Certbot tự cài cronjob timer. Kiểm tra:
-sudo systemctl list-timers | grep certbot
-# Test renew thử:
-sudo certbot renew --dry-run
-```
-Mount vào container qua `docker-compose.yml`:
-```yaml
-volumes:
-  - /etc/letsencrypt:/etc/letsencrypt:ro
-  - /var/www/certbot:/var/www/certbot:ro
-```
-Đã có sẵn — không cần sửa.
+Nếu `HTTPS` trả về `200/301/302/401/403` → thành công.
 
-> Nếu cert được renew, nginx container tự động pick up cert mới (certbot reload nginx-host). **Để nginx container nhận cert mới**, restart:
-> ```bash
-> docker compose restart nginx
-> ```
+### 5.6. Gia hạn SSL tự động
+aaPanel **tự động** tạo cronjob renew Let's Encrypt. Kiểm tra:
+```bash
+# Xem cronjob
+crontab -l | grep -i acme
+# hoặc
+ls -la /www/server/panel/cron/*.json
+```
+Không cần cài certbot host-level, không cần acme.sh.
 
 ---
 
@@ -430,54 +485,94 @@ bash scripts/install.sh   # có prompt "XÓA data cũ?"
 | Rate-limit API công khai (5 req/phút/IP) | ✅ | `/api/forms/submit` |
 | `.env` đã `.gitignore` | ✅ | root repo |
 | Postgres chỉ bind `127.0.0.1:26432` | ✅ | `docker-compose.yml` |
-| nginx chỉ bind `127.0.0.1:26080/26443` (không lộ ra ngoài) | ✅ | `docker-compose.yml` |
-| `cms` + `frontend` không publish port (chỉ nginx mới truy cập) | ✅ | `docker-compose.yml` (`expose` không `ports`) |
+| `cms` + `frontend` chỉ bind `127.0.0.1:26080/26081` (không lộ ra ngoài) | ✅ | `docker-compose.yml` |
+| aaPanel là lớp public + TLS duy nhất | ✅ | reverse proxy |
 | Secret được generate ngẫu nhiên | ✅ | `openssl rand -hex 32` |
-| SSL Let's Encrypt auto-renew | ✅ | certbot timer |
-| Firewall chỉ mở 22/26080/26443 | ✅ | UFW |
+| SSL Let's Encrypt auto-renew | ✅ | aaPanel cronjob |
+| Firewall chỉ mở 22/80/443 | ✅ | UFW |
 | service-account.json không commit git | ✅ | `.gitignore` + `chmod 600` |
 
 **Lưu ý vận hành:**
-- **Xoay secret** định kỳ (≥ 6 tháng): regen `POSTGRES_PASSWORD` + `PAYLOAD_SECRET` + `REVALIDATE_SECRET` → cập nhật `.env` → `docker compose down && up -d`. Lưu ý đổi `POSTGRES_PASSWORD` cần reset password role trong DB.
+- **Xoay secret** định kỳ (≥ 6 tháng): regen `POSTGRES_PASSWORD` + `PAYLOAD_SECRET` + `REVALIDATE_SECRET` → cập nhật `.env` → `docker compose restart cms frontend`. Lưu ý đổi `POSTGRES_PASSWORD` cần reset password role trong DB.
 - **Đổi mật khẩu admin** ngay sau lần đăng nhập đầu tiên.
 - **Không commit** `.env`, `service-account.json` lên git.
+- **aaPanel config** backup định kỳ (aaPanel → Settings → Backup).
 
 ---
 
 ## 9. Troubleshooting thường gặp
 
-### Lỗi: `502 Bad Gateway` từ nginx container
+### Lỗi: `https://web.bioscope.vn` trả về 502 Bad Gateway
+aaPanel proxy tới Docker nhưng container chưa chạy/sai port. Check:
 ```bash
-# Check container backend
-docker compose ps
-docker compose logs cms --tail 50
-docker compose logs frontend --tail 50
-```
-Thường do: app chưa ready, sai env var, hoặc DB chưa migrate.
-
-### Lỗi: SSL cert expired / không nhận cert mới
-```bash
-sudo certbot renew
-docker compose restart nginx   # reload cert
+docker compose ps                    # 3 services Up
+curl -sS -o /dev/null -w "%{http_code}\n" http://127.0.0.1:26080/   # expect 200
+curl -sS -o /dev/null -w "%{http_code}\n" http://127.0.0.1:26081/admin  # expect 200/301
+# Nếu cả 2 OK mà vẫn 502 → check aaPanel config:
+#   - proxy_pass đúng 127.0.0.1:26080/26081
+#   - proxy_set_header Host $host có
+sudo nginx -t && sudo systemctl reload nginx
 ```
 
-### Lỗi: `permission denied` trên `/etc/letsencrypt`
-Cert được mount `:ro` — chỉ nginx (user `nginx` trong container) đọc được. Nếu container fail start:
-```bash
-ls -la /etc/letsencrypt/live/
-sudo chmod 755 /etc/letsencrypt/live
-```
+### Lỗi: 413 Request Entity Too Large khi upload ảnh trong admin
+aaPanel mặc định `client_max_body_size 1M`. Fix:
+- Vào **aaPanel → Site admin.bioscope.vn → Config** → thêm `client_max_body_size 50M;` vào block `location /`.
+- Reload nginx.
 
-### Lỗi: Domain không resolve
-```bash
-dig +short web.bioscope.vn
-# Nếu không trả IP: DNS chưa propagate hoặc A record sai
-```
+### Lỗi: SSL cert Let's Encrypt fail
+Vào **aaPanel → Site → SSL → Let's Encrypt** → xem log. Nguyên nhân thường gặp:
+- DNS chưa trỏ về IP VPS: `dig +short web.bioscope.vn`
+- Port 80 bị block: `sudo ufw status` (phải mở 80)
+- aaPanel nginx đang chiếm port 80 của host: bình thường, không sao.
 
 ### Lỗi: Container `cms` restart liên tục
 ```bash
 docker compose logs cms --tail 100
 # Thường do PAYLOAD_SECRET rỗng, hoặc DB URI sai
+```
+Check env:
+```bash
+docker compose exec cms printenv PAYLOAD_SECRET DATABASE_URI
+```
+
+### Lỗi: `fe_sendauth: no password supplied` (postgres)
+`POSTGRES_PASSWORD` trong `.env` khác với user `dvcms` trong DB volume cũ. Fix:
+```bash
+# Option A: dùng lại password cũ
+docker volume inspect dv-cms_pgdata
+# Option B: xóa volume và re-seed (MẤT DATA)
+docker compose down -v
+bash scripts/install.sh
+bash scripts/seed.sh
+```
+
+### Lỗi: Không truy cập được `https://admin.bioscope.vn/admin` (timeout)
+```bash
+# 1. DNS chưa resolve
+dig +short admin.bioscope.vn
+# 2. aaPanel proxy có target đúng
+cat /www/server/panel/vhost/nginx/admin.bioscope.vn.conf 2>/dev/null | grep proxy_pass
+# 3. Docker container đang chạy
+docker compose ps
+# 4. Network từ host tới container
+curl -v http://127.0.0.1:26081/admin
+```
+
+### Lỗi: `seed.sh` fail ở "Đợi CMS ready" (timeout 120s)
+CMS chưa migrate xong schema. Check:
+```bash
+docker compose logs cms --tail 50
+# Thấy dòng "Payload Admin URL: http://...:26301/admin" → ready
+# Nếu thấy lỗi DB → check POSTGRES_PASSWORD / DATABASE_URI
+```
+
+### Lỗi: `E: Failed to fetch ... python3-cryptography ...` khi `apt install` (trên host)
+Nếu VPS là Ubuntu 20.04 và `apt-get update` fail ở package Python cũ:
+```bash
+# Fix mirror
+sudo apt-get update
+# Hoặc skip certbot (không cần — aaPanel xử lý SSL)
+# Script install.sh hiện tại KHÔNG cài certbot (đã bỏ) → không cần fix.
 ```
 
 ### Lỗi: `fe_sendauth: no password supplied` (postgres)
@@ -491,19 +586,39 @@ bash scripts/install.sh
 bash scripts/seed.sh
 ```
 
+### Lỗi: Domain không resolve
+```bash
+dig +short web.bioscope.vn
+dig +short admin.bioscope.vn
+# Nếu không trả IP: DNS chưa propagate hoặc A record sai
+```
+
 ---
 
 ## 10. Tóm tắt 3 lệnh "must-run" sau khi setup
 
 ```bash
-# 1. Cài đặt (1 lần)
+# 1. Cài đặt (1 lần) — build + start Docker
 cd /opt/bioscope-website/dv-cms && bash scripts/install.sh
 
-# 2. Seed data (sau khi sửa secret trong .env)
+# 2. Sửa secrets trong .env (nếu chưa)
+nano /opt/bioscope-website/dv-cms/.env   # paste POSTGRES_PASSWORD, PAYLOAD_SECRET, REVALIDATE_SECRET
+docker compose restart cms frontend
+
+# 3. Seed data (admin + 13 trang song ngữ + 1594 ingredients)
 bash scripts/seed.sh
 
-# 3. Verify
-curl -I https://web.bioscope.vn/ && curl -I https://admin.bioscope.vn/admin
+# 4. Cấu hình aaPanel reverse proxy (mục 5)
+#   - Tạo 2 website trong aaPanel
+#   - Bật Let's Encrypt
+#   - Add reverse proxy web→26080, admin→26081
+#   - Chèn proxy_set_header + client_max_body_size 50M
+
+# 5. Verify
+curl -I http://127.0.0.1:26080/    # Docker frontend (expect 200)
+curl -I http://127.0.0.1:26081/admin  # Docker CMS (expect 200/301)
+curl -I https://web.bioscope.vn/    # public (expect 200/301)
+curl -I https://admin.bioscope.vn/admin  # public (expect 200/301)
 ```
 
-Sau 3 bước trên, toàn bộ stack đã sẵn sàng production. Mọi thay đổi nội dung thực hiện trong `https://admin.bioscope.vn/admin` và sẽ reflect lên `https://web.bioscope.vn` trong vòng 60s (ISR).
+Sau 5 bước trên, toàn bộ stack đã sẵn sàng production. Mọi thay đổi nội dung thực hiện trong `https://admin.bioscope.vn/admin` và sẽ reflect lên `https://web.bioscope.vn` trong vòng 60s (ISR).

@@ -68,11 +68,17 @@ if [ $ELAPSED -ge $TIMEOUT ]; then
 fi
 
 # ─── 2. Đợi CMS ready (Payload phải migrate trước) ────────────
+# Kiến trúc: aaPanel proxy → 127.0.0.1:26081 (CMS) / 26080 (frontend)
+# Ưu tiên check CMS port 26081, fallback về 26080 nếu chưa có.
 echo "→ Đợi CMS ready (Payload migrate)..."
 TIMEOUT=120
 ELAPSED=0
 while [ $ELAPSED -lt $TIMEOUT ]; do
-  HTTP=$(curl -sS -o /dev/null -w "%{http_code}" "http://127.0.0.1:26080/api/users/me" 2>/dev/null || echo "000")
+  HTTP=$(curl -sS -o /dev/null -w "%{http_code}" "http://127.0.0.1:26081/api/users/me" 2>/dev/null || echo "000")
+  if [ "$HTTP" = "000" ]; then
+    # Fallback: nếu đang chạy kiến trúc cũ (nginx container → 26080 là CMS)
+    HTTP=$(curl -sS -o /dev/null -w "%{http_code}" "http://127.0.0.1:26080/api/users/me" 2>/dev/null || echo "000")
+  fi
   if echo "$HTTP" | grep -qE "^(200|401|403)$"; then
     echo "→ CMS OK (HTTP $HTTP)"
     break

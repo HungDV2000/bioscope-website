@@ -30,19 +30,20 @@ services:
     environment:
       DATABASE_URI: postgres://dvcms:${POSTGRES_PASSWORD:-dvcms}@db:5432/dvcms
       PAYLOAD_SECRET: ${PAYLOAD_SECRET:-please-change-this-to-a-long-random-secret}
-      # Public URLs (used by Payload cookies + revalidate hook). Match nginx hostnames.
-      PAYLOAD_PUBLIC_SERVER_URL: ${PAYLOAD_PUBLIC_SERVER_URL:-http://admin.bioscope.vn}
-      FRONTEND_URL: ${FRONTEND_URL:-http://web.bioscope.vn}
+      # Public URLs (used by Payload cookies + revalidate hook). Match aaPanel proxy hostnames.
+      PAYLOAD_PUBLIC_SERVER_URL: ${PAYLOAD_PUBLIC_SERVER_URL:-https://admin.bioscope.vn}
+      FRONTEND_URL: ${FRONTEND_URL:-https://web.bioscope.vn}
       REVALIDATE_SECRET: ${REVALIDATE_SECRET:-}
       B2B_COOKIE: ${B2B_COOKIE:-bio-token}
       GOOGLE_DRIVE_ROOT_FOLDER_ID: ${GOOGLE_DRIVE_ROOT_FOLDER_ID:-}
       GOOGLE_APPLICATION_CREDENTIALS: ${GOOGLE_APPLICATION_CREDENTIALS:-/app/apps/core-cms/credentials/service-account.json}
       NODE_ENV: production
       NODE_OPTIONS: --no-deprecation
-      # Container port dải 26xxx (tránh xung đột 3000/3001 nếu chạy network=host)
+      # Container internal port dải 26xxx (tránh xung đột 3000/3001)
       PORT: "26301"
-    expose:
-      - "26301"
+    ports:
+      # Bind 127.0.0.1:26081 → container:26301 (chỉ aaPanel proxy mới truy cập được)
+      - "127.0.0.1:${DVCMS_CMS_HOST_PORT:-26081}:26301"
     volumes:
       - media:/app/apps/core-cms/media
 
@@ -52,8 +53,8 @@ services:
       dockerfile: apps/bioscope-frontend/Dockerfile
       args:
         # Baked into the client bundle at build time.
-        NEXT_PUBLIC_CMS_URL: ${NEXT_PUBLIC_CMS_URL:-http://admin.bioscope.vn}
-        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://web.bioscope.vn}
+        NEXT_PUBLIC_CMS_URL: ${NEXT_PUBLIC_CMS_URL:-https://admin.bioscope.vn}
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-https://web.bioscope.vn}
     container_name: dvcms-frontend
     restart: unless-stopped
     depends_on:
@@ -61,36 +62,14 @@ services:
         condition: service_started
     environment:
       NODE_ENV: production
-      # Container port dải 26xxx
+      # Container internal port dải 26xxx
       PORT: "26300"
-      NEXT_PUBLIC_CMS_URL: ${NEXT_PUBLIC_CMS_URL:-http://admin.bioscope.vn}
-      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://web.bioscope.vn}
+      NEXT_PUBLIC_CMS_URL: ${NEXT_PUBLIC_CMS_URL:-https://admin.bioscope.vn}
+      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-https://web.bioscope.vn}
       REVALIDATE_SECRET: ${REVALIDATE_SECRET:-}
-    expose:
-      - "26300"
-
-  nginx:
-    image: nginx:1.27-alpine
-    container_name: dvcms-nginx
-    restart: unless-stopped
-    depends_on:
-      - cms
-      - frontend
     ports:
-      # Host ports dải 26xxx — không xung đột với BioBot (5432/6379/80/443/15678/...)
-      - "127.0.0.1:${DVCMS_HTTP_HOST_PORT:-26080}:80"
-      - "127.0.0.1:${DVCMS_HTTPS_HOST_PORT:-26443}:443"
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - /etc/letsencrypt:/etc/letsencrypt:ro
-      - /var/www/certbot:/var/www/certbot:ro
-    # Health check (HTTP fallback khi chưa có cert)
-    healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost/admin"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 30s
+      # Bind 127.0.0.1:26080 → container:26300 (chỉ aaPanel proxy mới truy cập được)
+      - "127.0.0.1:${DVCMS_FRONTEND_HOST_PORT:-26080}:26300"
 
 volumes:
   pgdata:

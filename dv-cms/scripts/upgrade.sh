@@ -110,15 +110,18 @@ echo "→ [5/6] Rolling restart services..."
 
 # Frontend + CMS: recreate (downtime ~30s)
 # DB: KHÔNG restart (giữ data)
-docker compose up -d --no-deps --force-recreate --build cms frontend nginx
+# nginx container KHÔNG còn — aaPanel (host) xử lý reverse proxy + TLS.
+docker compose up -d --no-deps --force-recreate --build cms frontend
 
-# Đợi healthy
+# Đợi healthy (check cả frontend 26080 + CMS 26081 — kiến trúc aaPanel proxy)
 echo "  Đợi services healthy..."
 TIMEOUT=90
 ELAPSED=0
 while [ $ELAPSED -lt $TIMEOUT ]; do
-  if curl -sS -o /dev/null -w "%{http_code}" "http://127.0.0.1:26080/admin" 2>/dev/null | grep -qE "^(200|301|302|401|403)$"; then
-    echo "  ✓ Services healthy!"
+  HTTP_FRONT=$(curl -sS -o /dev/null -w "%{http_code}" "http://127.0.0.1:26080/"          2>/dev/null || echo "000")
+  HTTP_CMS=$(curl   -sS -o /dev/null -w "%{http_code}" "http://127.0.0.1:26081/admin"      2>/dev/null || echo "000")
+  if echo "$HTTP_FRONT" | grep -qE "^(200|301|302)$" && echo "$HTTP_CMS" | grep -qE "^(200|301|302|401|403)$"; then
+    echo "  ✓ Services healthy! (frontend=$HTTP_FRONT, cms=$HTTP_CMS)"
     break
   fi
   sleep 3
@@ -142,11 +145,9 @@ echo "→ [6/6] Verify..."
 docker compose ps
 
 echo ""
-echo "  Health checks:"
-curl -sS -o /dev/null -w "    CMS (HTTP)   : %{http_code}\n" "http://127.0.0.1:26080/admin" || true
-curl -sS -o /dev/null -w "    Web (HTTP)   : %{http_code}\n" "http://127.0.0.1:26080/" || true
-curl -sS -o /dev/null -w "    CMS (HTTPS)  : %{http_code}\n" "https://admin.bioscope.vn/admin" 2>/dev/null || true
-curl -sS -o /dev/null -w "    Web (HTTPS)  : %{http_code}\n" "https://web.bioscope.vn/" 2>/dev/null || true
+echo "  Health checks (kiến trúc aaPanel proxy → Docker host port):"
+curl -sS -o /dev/null -w "    Frontend (26080)  : HTTP %{http_code}\n" "http://127.0.0.1:26080/" || true
+curl -sS -o /dev/null -w "    CMS (26081)       : HTTP %{http_code}\n" "http://127.0.0.1:26081/admin" || true
 
 echo ""
 echo "  Data integrity:"

@@ -207,36 +207,244 @@ export async function runSeed(payload: Payload): Promise<string[]> {
   for (const p of partnerData) partners[p.name] = await upsert(payload, 'partners', { name: { equals: p.name } }, p)
   log(`partners: ${partnerData.length}`)
 
-  /* ── 4. Ingredient categories ──────────────────────────── */
+  /* ── 4. Ingredient categories (song ngữ) ──────────────── */
+  // name là field localized, slugField auto-generate từ name (dùng bản VI).
   const catData = [
-    { name: 'Hỗ trợ xương khớp', scope: 'supplement', slug: 'joint-health' },
-    { name: 'Làm đẹp & chống lão hóa', scope: 'both', slug: 'beauty' },
-    { name: 'Vitamin & khoáng chất', scope: 'supplement', slug: 'vitamins' },
+    { name: { vi: 'Hỗ trợ xương khớp', en: 'Joint & bone health' }, scope: 'supplement', slug: 'joint-health' },
+    { name: { vi: 'Làm đẹp & chống lão hóa', en: 'Beauty & anti-aging' }, scope: 'both', slug: 'beauty' },
+    { name: { vi: 'Vitamin & khoáng chất', en: 'Vitamins & minerals' }, scope: 'supplement', slug: 'vitamins' },
+    { name: { vi: 'Tiêu hóa & gan mật', en: 'Digestion & liver' }, scope: 'supplement', slug: 'digestion' },
+    { name: { vi: 'Não bộ & thần kinh', en: 'Brain & nervous system' }, scope: 'supplement', slug: 'brain' },
+    { name: { vi: 'Tim mạch & tuần hoàn', en: 'Cardiovascular' }, scope: 'supplement', slug: 'cardio' },
+    { name: { vi: 'Miễn dịch & chống viêm', en: 'Immunity & anti-inflammation' }, scope: 'both', slug: 'immunity' },
   ]
   const cats: Record<string, Id> = {}
-  for (const c of catData) cats[c.slug] = await upsertLocalized(payload, 'ingredient-categories', { slug: { equals: c.slug } }, { vi: c })
-  log(`ingredient categories: ${catData.length}`)
+  for (const c of catData) {
+    cats[c.slug] = await upsertLocalized(
+      payload,
+      'ingredient-categories',
+      { slug: { equals: c.slug } },
+      {
+        vi: { name: c.name.vi, slug: c.slug, scope: c.scope },
+        en: { name: c.name.en, slug: c.slug, scope: c.scope },
+      },
+    )
+  }
+  log(`ingredient categories: ${catData.length} (vi + en)`)
 
-  /* ── 5. Technologies ───────────────────────────────────── */
+  /* ── 5. Technologies (song ngữ) ───────────────────────── */
   const techData = [
-    { name: 'Liposome Technology', slug: 'liposome', tagline: 'Tăng sinh khả dụng tới 3.8x', order: 1 },
-    { name: 'Microencapsulation', slug: 'microencapsulation', tagline: 'Ổn định & bảo vệ hoạt chất', order: 2 },
-    { name: 'Spray Drying', slug: 'spray-drying', tagline: 'Giữ trọn hoạt tính', order: 3 },
+    {
+      name: { vi: 'Liposome Technology', en: 'Liposome Technology' },
+      slug: 'liposome',
+      tagline: { vi: 'Tăng sinh khả dụng tới 3.8x', en: 'Up to 3.8x higher bioavailability' },
+      order: 1,
+    },
+    {
+      name: { vi: 'Microencapsulation', en: 'Microencapsulation' },
+      slug: 'microencapsulation',
+      tagline: { vi: 'Ổn định & bảo vệ hoạt chất', en: 'Stabilize and protect actives' },
+      order: 2,
+    },
+    {
+      name: { vi: 'Spray Drying', en: 'Spray Drying' },
+      slug: 'spray-drying',
+      tagline: { vi: 'Giữ trọn hoạt tính', en: 'Preserve full bioactivity' },
+      order: 3,
+    },
+    {
+      name: { vi: 'Phytosome ướt', en: 'Wet Phytosome' },
+      slug: 'wet-phytosome',
+      tagline: { vi: 'Công nghệ độc quyền cho phytosome dạng lỏng', en: 'Proprietary liquid-form phytosome technology' },
+      order: 4,
+    },
   ]
-  for (const t of techData) await upsertLocalized(payload, 'technologies', { slug: { equals: t.slug } }, { vi: { ...t, _status: 'published' } })
-  log(`technologies: ${techData.length}`)
+  for (const t of techData) {
+    await upsertLocalized(
+      payload,
+      'technologies',
+      { slug: { equals: t.slug } },
+      {
+        vi: { name: t.name.vi, slug: t.slug, tagline: t.tagline.vi, order: t.order, _status: 'published' },
+        en: { name: t.name.en, slug: t.slug, tagline: t.tagline.en, order: t.order, _status: 'published' },
+      },
+    )
+  }
+  log(`technologies: ${techData.length} (vi + en)`)
 
-  /* ── 6. Ingredients ────────────────────────────────────── */
+  /* ── 6. Ingredients (song ngữ — mẫu demo) ─────────────── */
+  // Lưu ý: danh sách 1594 ingredients thật từ Google Drive
+  // được import qua `importCsvRun.ts` → `runCsvImport()` (chạy SAU runSeed).
+  // Ở đây chỉ seed 10 mẫu "showcase" đầy đủ vi + en để demo UI / sitemap.
+  const techIds = {
+    liposome: techData.find((t) => t.slug === 'liposome')!,
+    microencapsulation: techData.find((t) => t.slug === 'microencapsulation')!,
+    sprayDrying: techData.find((t) => t.slug === 'spray-drying')!,
+    wetPhytosome: techData.find((t) => t.slug === 'wet-phytosome')!,
+  }
+  // Lookup technology ID từ DB
+  const techDbIds: Record<string, Id> = {}
+  for (const slug of Object.keys(techIds)) {
+    const r = await payload.find({ collection: 'technologies', where: { slug: { equals: slug } }, limit: 1, depth: 0 })
+    if (r.totalDocs > 0) techDbIds[slug] = (r.docs[0] as { id: Id }).id
+  }
+
   const ingredientData = [
-    { name: 'Curcumin Extract 95%', slug: 'curcumin-extract-95', type: 'supplement', category: cats['joint-health'], originCountry: 'IN', moq: '25 kg', featured: true, benefits: ['Kháng viêm', 'Chống oxy hoá'], badges: ['Halal', 'Non-GMO', 'GMP'] },
-    { name: 'Omega 3 Fish Oil', slug: 'omega-3-fish-oil', type: 'supplement', partner: partners['GC Rieber Oils'], originCountry: 'NO', moq: '20 kg', featured: true, benefits: ['Tốt cho tim mạch'], badges: ['IFOS 5-Star', 'GMP', 'Halal'] },
-    { name: 'Collagen Peptide', slug: 'collagen-peptide', type: 'cosmetic', category: cats['beauty'], originCountry: 'AR', moq: '25 kg', featured: true, benefits: ['Tăng đàn hồi da'], badges: ['Halal', 'BSE/TSE Free', 'GMP'] },
-    { name: 'NMN', slug: 'nmn', type: 'supplement', originCountry: 'JP', moq: '10 kg', featured: true, benefits: ['Hỗ trợ chống lão hoá'], badges: ['≥ 99% Purity', 'Non-GMO', 'GMP'] },
-    { name: 'Vitamin C (Coated)', slug: 'vitamin-c-coated', type: 'supplement', category: cats['vitamins'], originCountry: 'CH', moq: '25 kg', benefits: ['Phóng thích chậm 8h'], badges: ['Non-GMO', 'GMP', 'Kosher'] },
-    { name: 'Marine Sweet® (NAG)', slug: 'marine-sweet-nag', type: 'supplement', category: cats['joint-health'], originCountry: 'JP', moq: '5 kg', benefits: ['Tái tạo sụn khớp', 'Dưỡng ẩm da'], badges: ['GMP', 'Halal'] },
+    {
+      name: { vi: 'Curcumin Extract 95%', en: 'Curcumin Extract 95%' },
+      slug: 'curcumin-extract-95',
+      type: 'supplement',
+      category: cats['joint-health'],
+      originCountry: 'IN',
+      moq: '25 kg',
+      featured: true,
+      benefits: { vi: ['Kháng viêm', 'Chống oxy hoá'], en: ['Anti-inflammatory', 'Antioxidant'] },
+      applications: { vi: ['Viên nang', 'Viên nén'], en: ['Capsules', 'Tablets'] },
+      badges: ['Halal', 'Non-GMO', 'GMP'],
+      technologySlugs: ['wet-phytosome'],
+    },
+    {
+      name: { vi: 'Omega 3 Fish Oil', en: 'Omega-3 Fish Oil' },
+      slug: 'omega-3-fish-oil',
+      type: 'supplement',
+      partner: partners['GC Rieber Oils'],
+      originCountry: 'NO',
+      moq: '20 kg',
+      featured: true,
+      benefits: { vi: ['Tốt cho tim mạch', 'Hỗ trợ não bộ'], en: ['Cardiovascular health', 'Brain support'] },
+      applications: { vi: ['Softgel', 'Dầu dạng lỏng'], en: ['Softgel', 'Liquid oil'] },
+      badges: ['IFOS 5-Star', 'GMP', 'Halal'],
+      technologySlugs: ['microencapsulation'],
+    },
+    {
+      name: { vi: 'Collagen Peptide', en: 'Collagen Peptide' },
+      slug: 'collagen-peptide',
+      type: 'cosmetic',
+      category: cats['beauty'],
+      originCountry: 'AR',
+      moq: '25 kg',
+      featured: true,
+      benefits: { vi: ['Tăng đàn hồi da'], en: ['Improves skin elasticity'] },
+      applications: { vi: ['Bột uống', 'Dạng bào chế'], en: ['Powder drink', 'Various forms'] },
+      badges: ['Halal', 'BSE/TSE Free', 'GMP'],
+      technologySlugs: [],
+    },
+    {
+      name: { vi: 'NMN', en: 'NMN (Nicotinamide Mononucleotide)' },
+      slug: 'nmn',
+      type: 'supplement',
+      originCountry: 'JP',
+      moq: '10 kg',
+      featured: true,
+      benefits: { vi: ['Hỗ trợ chống lão hoá'], en: ['Anti-aging support'] },
+      applications: { vi: ['Viên nang'], en: ['Capsules'] },
+      badges: ['≥ 99% Purity', 'Non-GMO', 'GMP'],
+      technologySlugs: ['liposome'],
+    },
+    {
+      name: { vi: 'Vitamin C (Coated)', en: 'Coated Vitamin C' },
+      slug: 'vitamin-c-coated',
+      type: 'supplement',
+      category: cats['vitamins'],
+      originCountry: 'CH',
+      moq: '25 kg',
+      benefits: { vi: ['Phóng thích chậm 8h'], en: ['8-hour sustained release'] },
+      applications: { vi: ['Viên nén'], en: ['Tablets'] },
+      badges: ['Non-GMO', 'GMP', 'Kosher'],
+      technologySlugs: ['spray-drying'],
+    },
+    {
+      name: { vi: 'Marine Sweet® (NAG)', en: 'Marine Sweet® (NAG)' },
+      slug: 'marine-sweet-nag',
+      type: 'supplement',
+      category: cats['joint-health'],
+      originCountry: 'JP',
+      moq: '5 kg',
+      benefits: { vi: ['Tái tạo sụn khớp', 'Dưỡng ẩm da'], en: ['Cartilage regeneration', 'Skin hydration'] },
+      applications: { vi: ['Bột uống', 'Serum'], en: ['Powder drink', 'Serum'] },
+      badges: ['GMP', 'Halal'],
+      technologySlugs: [],
+    },
+    {
+      name: { vi: 'Bacopa Monnieri Extract', en: 'Bacopa Monnieri Extract' },
+      slug: 'bacopa-monnieri',
+      type: 'supplement',
+      category: cats['brain'],
+      originCountry: 'IN',
+      moq: '10 kg',
+      benefits: { vi: ['Tăng cường trí nhớ', 'Hỗ trợ tập trung'], en: ['Memory enhancement', 'Focus support'] },
+      applications: { vi: ['Viên nang', 'Bột'], en: ['Capsules', 'Powder'] },
+      badges: ['GMP', 'Non-GMO'],
+      technologySlugs: ['spray-drying'],
+    },
+    {
+      name: { vi: 'Astaxanthin 5%', en: 'Astaxanthin 5%' },
+      slug: 'astaxanthin-5',
+      type: 'both',
+      category: cats['immunity'],
+      originCountry: 'JP',
+      moq: '5 kg',
+      benefits: { vi: ['Chống oxy hoá mạnh', 'Bảo vệ da khỏi UV'], en: ['Strong antioxidant', 'UV skin protection'] },
+      applications: { vi: ['Softgel', 'Serum'], en: ['Softgel', 'Serum'] },
+      badges: ['GMP', 'Non-GMO', 'Halal'],
+      technologySlugs: ['liposome'],
+    },
+    {
+      name: { vi: 'Coenzyme Q10', en: 'Coenzyme Q10' },
+      slug: 'coq10',
+      type: 'supplement',
+      category: cats['cardio'],
+      originCountry: 'JP',
+      moq: '10 kg',
+      benefits: { vi: ['Hỗ trợ tim mạch', 'Tăng năng lượng tế bào'], en: ['Cardiovascular support', 'Cellular energy'] },
+      applications: { vi: ['Softgel', 'Viên nang'], en: ['Softgel', 'Capsules'] },
+      badges: ['GMP', 'Kosher', 'Halal'],
+      technologySlugs: ['microencapsulation'],
+    },
+    {
+      name: { vi: 'Hyaluronic Acid (Low MW)', en: 'Hyaluronic Acid (Low MW)' },
+      slug: 'hyaluronic-acid-low-mw',
+      type: 'cosmetic',
+      category: cats['beauty'],
+      originCountry: 'KR',
+      moq: '5 kg',
+      benefits: { vi: ['Cấp ẩm sâu', 'Làm mịn nếp nhăn'], en: ['Deep hydration', 'Smooths fine lines'] },
+      applications: { vi: ['Serum', 'Kem dưỡng', 'Mask'], en: ['Serum', 'Cream', 'Mask'] },
+      badges: ['GMP', 'Non-GMO', 'Vegan'],
+      technologySlugs: [],
+    },
   ]
-  for (const ing of ingredientData) await upsertLocalized(payload, 'ingredients', { slug: { equals: ing.slug } }, { vi: { ...ing, _status: 'published' } })
-  log(`ingredients: ${ingredientData.length}`)
+  for (const ing of ingredientData) {
+    await upsertLocalized(
+      payload,
+      'ingredients',
+      { slug: { equals: ing.slug } },
+      {
+        vi: {
+          name: ing.name.vi,
+          slug: ing.slug,
+          type: ing.type,
+          ...(ing.category ? { category: ing.category } : {}),
+          ...(ing.partner ? { partner: ing.partner } : {}),
+          originCountry: ing.originCountry,
+          moq: ing.moq,
+          featured: ing.featured ?? false,
+          benefits: ing.benefits.vi,
+          applications: ing.applications.vi,
+          badges: ing.badges,
+          technologies: ing.technologySlugs.map((s) => techDbIds[s]).filter(Boolean),
+          _status: 'published',
+        },
+        en: {
+          name: ing.name.en,
+          benefits: ing.benefits.en,
+          applications: ing.applications.en,
+          _status: 'published',
+        },
+      },
+    )
+  }
+  log(`ingredients (showcase): ${ingredientData.length} (vi + en) — full 1594 sẽ import qua importCsvRun.ts`)
 
   /* ── 7. Services (giải pháp — nuôi trang /giai-phap/[slug]) ─ */
   const serviceData: { slug: string; order: number; icon: string; vi: Record<string, unknown>; en: Record<string, unknown> }[] = [
@@ -543,18 +751,49 @@ export async function runSeed(payload: Payload): Promise<string[]> {
   })
   log('seo-settings global: song ngữ vi + en')
 
-  /* ── 8. Certifications ─────────────────────────────────── */
+  /* ── 8. Certifications (song ngữ) ─────────────────────── */
   const certData = [
-    { title: 'GMP', kind: 'certificate', value: 'GMP', order: 1 },
-    { title: 'ISO 22000', kind: 'certificate', value: 'ISO 22000', order: 2 },
-    { title: 'HACCP', kind: 'certificate', value: 'HACCP', order: 3 },
-    { title: 'HALAL', kind: 'certificate', value: 'HALAL', order: 4 },
-    { title: 'KOSHER', kind: 'certificate', value: 'K', order: 5 },
-    { title: 'USDA', kind: 'certificate', value: 'USDA', order: 6 },
-    { title: 'NON-GMO', kind: 'certificate', value: 'NON GMO', order: 7 },
+    { title: { vi: 'GMP', en: 'GMP' }, kind: 'certificate', value: 'GMP', order: 1 },
+    { title: { vi: 'ISO 22000', en: 'ISO 22000' }, kind: 'certificate', value: 'ISO 22000', order: 2 },
+    { title: { vi: 'HACCP', en: 'HACCP' }, kind: 'certificate', value: 'HACCP', order: 3 },
+    { title: { vi: 'HALAL', en: 'Halal' }, kind: 'certificate', value: 'HALAL', order: 4 },
+    { title: { vi: 'KOSHER', en: 'Kosher' }, kind: 'certificate', value: 'K', order: 5 },
+    { title: { vi: 'USDA', en: 'USDA' }, kind: 'certificate', value: 'USDA', order: 6 },
+    { title: { vi: 'NON-GMO', en: 'Non-GMO' }, kind: 'certificate', value: 'NON GMO', order: 7 },
+    {
+      title: { vi: '15+ năm', en: '15+ years' },
+      kind: 'stat',
+      value: '15+',
+      suffix: { vi: 'năm kinh nghiệm', en: 'years of experience' },
+      order: 8,
+    },
+    {
+      title: { vi: '23+ dự án', en: '23+ projects' },
+      kind: 'stat',
+      value: '23+',
+      suffix: { vi: 'dự án R&D', en: 'R&D projects' },
+      order: 9,
+    },
+    {
+      title: { vi: '14 sáng chế', en: '14 patents' },
+      kind: 'stat',
+      value: '14',
+      suffix: { vi: 'đơn sáng chế', en: 'patents filed' },
+      order: 10,
+    },
   ]
-  for (const c of certData) await upsertLocalized(payload, 'certifications', { title: { equals: c.title } }, { vi: c })
-  log(`certifications: ${certData.length}`)
+  for (const c of certData) {
+    await upsertLocalized(
+      payload,
+      'certifications',
+      { title: { equals: c.title.vi } },
+      {
+        vi: { title: c.title.vi, kind: c.kind, value: c.value, ...(c.suffix ? { suffix: c.suffix.vi } : {}), order: c.order },
+        en: { title: c.title.en, ...(c.suffix ? { suffix: c.suffix.en } : {}) },
+      },
+    )
+  }
+  log(`certifications: ${certData.length} (vi + en)`)
 
   /* ── 9. B2B members ────────────────────────────────────── */
   const ensureMember = async (email: string, status: 'approved' | 'pending', company: string) => {
@@ -595,67 +834,276 @@ export async function runSeed(payload: Payload): Promise<string[]> {
     log('gated-document ready')
   }
 
-  /* ── 11. Case studies ──────────────────────────────────── */
+  /* ── 11. Case studies (song ngữ) ───────────────────────── */
   const caseData = [
     {
-      brand: 'vivomega®', slug: 'vivomega', partner: 'GC Rieber Oils', industry: 'Thực phẩm chức năng',
-      kpi: '500K USD', kpiLabel: 'doanh thu/năm — từ con số 0',
-      summary: 'Xây dựng ngành hàng omega-3 cao cấp tại Việt Nam cùng GC Rieber Oils.',
-      problem: 'Thị trường Việt Nam thiếu một dòng omega-3 chất lượng cao, minh bạch nguồn gốc và đạt chuẩn quốc tế.',
-      solution: 'Bioscope đồng kiến tạo cùng GC Rieber Oils: chọn nguyên liệu dạng TG tinh khiết IFOS 5★, xây dựng định vị và câu chuyện thương hiệu, hỗ trợ pháp lý và thương mại hóa.',
-      results: ['Từ 0 → 500.000 USD doanh thu/năm', 'Xây dựng ngành hàng omega-3 cao cấp', 'Hệ thống phân phối ổn định'],
-      coCreateSteps: ['Phân tích phân khúc omega-3 cao cấp', 'Chọn dầu cá TG IFOS 5★', 'Xây dựng thương hiệu & kênh phân phối', 'Scale doanh thu bền vững'],
-      testimonial: 'Bioscope không chỉ cung cấp nguyên liệu — họ đồng hành từ định vị đến thương mại hóa, giúp chúng tôi tạo ra một ngành hàng mới tại Việt Nam.',
-      tags: ['Đồng kiến tạo', 'Dầu & Omega'], featured: true, order: 1,
+      brand: { vi: 'vivomega®', en: 'vivomega®' },
+      slug: 'vivomega',
+      partner: { vi: 'GC Rieber Oils', en: 'GC Rieber Oils' },
+      industry: 'Thực phẩm chức năng',
+      kpi: '500K USD',
+      kpiLabel: { vi: 'doanh thu/năm — từ con số 0', en: 'annual revenue — from zero' },
+      summary: {
+        vi: 'Xây dựng ngành hàng omega-3 cao cấp tại Việt Nam cùng GC Rieber Oils.',
+        en: 'Building the premium omega-3 category in Vietnam with GC Rieber Oils.',
+      },
+      problem: {
+        vi: 'Thị trường Việt Nam thiếu một dòng omega-3 chất lượng cao, minh bạch nguồn gốc và đạt chuẩn quốc tế.',
+        en: 'The Vietnamese market lacked a high-quality, transparent, internationally-certified omega-3 line.',
+      },
+      solution: {
+        vi: 'Bioscope đồng kiến tạo cùng GC Rieber Oils: chọn nguyên liệu dạng TG tinh khiết IFOS 5★, xây dựng định vị và câu chuyện thương hiệu, hỗ trợ pháp lý và thương mại hóa.',
+        en: 'Bioscope co-created with GC Rieber Oils: selected IFOS 5★ pure TG fish oil, built brand positioning and storytelling, supported regulatory and commercialization.',
+      },
+      results: {
+        vi: ['Từ 0 → 500.000 USD doanh thu/năm', 'Xây dựng ngành hàng omega-3 cao cấp', 'Hệ thống phân phối ổn định'],
+        en: ['From 0 → USD 500,000 annual revenue', 'Built the premium omega-3 category', 'Stable distribution network'],
+      },
+      coCreateSteps: {
+        vi: ['Phân tích phân khúc omega-3 cao cấp', 'Chọn dầu cá TG IFOS 5★', 'Xây dựng thương hiệu & kênh phân phối', 'Scale doanh thu bền vững'],
+        en: ['Premium omega-3 segment analysis', 'Selected IFOS 5★ TG fish oil', 'Brand and distribution build-out', 'Sustainable revenue scaling'],
+      },
+      testimonial: {
+        vi: 'Bioscope không chỉ cung cấp nguyên liệu — họ đồng hành từ định vị đến thương mại hóa, giúp chúng tôi tạo ra một ngành hàng mới tại Việt Nam.',
+        en: 'Bioscope did not just supply ingredients — they partnered with us from positioning to commercialization, helping us create a new category in Vietnam.',
+      },
+      tags: ['Co-creation', 'Oil & Omega'],
+      featured: true,
+      order: 1,
     },
     {
-      brand: 'Gastroheal', slug: 'gastroheal', partner: 'Phytosome ướt', industry: 'Dược phẩm',
-      kpi: '70%+', kpiLabel: 'doanh thu đến từ truyền miệng',
-      summary: 'Giải pháp dạ dày được tin dùng — giảm đau nhanh, phục hồi niêm mạc.',
-      problem: 'Thị trường thiếu giải pháp dạ dày vừa giảm đau nhanh vừa thực sự phục hồi tổn thương niêm mạc.',
-      solution: 'Ứng dụng công nghệ Phytosome ướt độc quyền — phức chất curcuminoid + phosphatidylcholine, tăng sinh khả dụng và phục hồi niêm mạc.',
-      results: ['Dứt cơn đau trong 30 phút', '53%+ lành loét sau 2 tháng', '70%+ doanh thu từ truyền miệng'],
-      coCreateSteps: ['Nghiên cứu cơ chế Phytosome ướt', 'Tối ưu công thức & claim', 'Kiểm chứng lâm sàng thực tế', 'Ra mắt & tăng trưởng truyền miệng'],
-      testimonial: 'Công nghệ Phytosome ướt tạo ra sự khác biệt rõ rệt — người dùng cảm nhận hiệu quả nhanh và tin tưởng giới thiệu cho người thân.',
-      tags: ['Phytosome ướt', 'Tiêu hóa'], featured: true, order: 2,
+      brand: { vi: 'Gastroheal', en: 'Gastroheal' },
+      slug: 'gastroheal',
+      partner: { vi: 'Phytosome ướt', en: 'Wet Phytosome' },
+      industry: 'Dược phẩm',
+      kpi: '70%+',
+      kpiLabel: { vi: 'doanh thu đến từ truyền miệng', en: 'of revenue from word of mouth' },
+      summary: {
+        vi: 'Giải pháp dạ dày được tin dùng — giảm đau nhanh, phục hồi niêm mạc.',
+        en: 'A trusted gastric solution — fast pain relief and mucosal recovery.',
+      },
+      problem: {
+        vi: 'Thị trường thiếu giải pháp dạ dày vừa giảm đau nhanh vừa thực sự phục hồi tổn thương niêm mạc.',
+        en: 'The market lacked a gastric solution that both relieved pain quickly and actually healed mucosal damage.',
+      },
+      solution: {
+        vi: 'Ứng dụng công nghệ Phytosome ướt độc quyền — phức chất curcuminoid + phosphatidylcholine, tăng sinh khả dụng và phục hồi niêm mạc.',
+        en: 'Applied proprietary wet Phytosome technology — a curcuminoid + phosphatidylcholine complex, improving bioavailability and mucosal recovery.',
+      },
+      results: {
+        vi: ['Dứt cơn đau trong 30 phút', '53%+ lành loét sau 2 tháng', '70%+ doanh thu từ truyền miệng'],
+        en: ['Pain relief within 30 minutes', '53%+ ulcer healing in 2 months', '70%+ revenue from word of mouth'],
+      },
+      coCreateSteps: {
+        vi: ['Nghiên cứu cơ chế Phytosome ướt', 'Tối ưu công thức & claim', 'Kiểm chứng lâm sàng thực tế', 'Ra mắt & tăng trưởng truyền miệng'],
+        en: ['Wet Phytosome mechanism research', 'Formula and claim optimization', 'Real-world clinical validation', 'Launch and word-of-mouth growth'],
+      },
+      testimonial: {
+        vi: 'Công nghệ Phytosome ướt tạo ra sự khác biệt rõ rệt — người dùng cảm nhận hiệu quả nhanh và tin tưởng giới thiệu cho người thân.',
+        en: 'Wet Phytosome technology creates a clear difference — users feel the effects quickly and confidently refer their family and friends.',
+      },
+      tags: ['Wet Phytosome', 'Digestion'],
+      featured: true,
+      order: 2,
     },
     {
-      brand: 'PEA', slug: 'pea', partner: 'PolymerSolution', industry: 'Mỹ phẩm',
-      kpi: '#1', kpiLabel: 'người tạo ngành hàng (Category Creator) tại Việt Nam',
-      summary: 'Tiên phong giải pháp kháng viêm qua da với công nghệ phóng thích chậm 24h.',
-      problem: 'Chưa có giải pháp kháng viêm qua da phóng thích chậm, hiệu quả kéo dài tại thị trường Việt Nam.',
-      solution: 'Tiên phong đưa công nghệ phân phối thuốc qua da Polymerit, tạo ra ngành hàng mới với trị liệu liên tục 24h.',
-      results: ['Người tạo ngành hàng (Category Creator)', 'Trị liệu liên tục 24h', 'Ứng dụng đa dạng da liễu & mỹ phẩm'],
-      coCreateSteps: ['Đánh giá khoảng trống thị trường da liễu', 'Ứng dụng Polymerit', 'Tạo category mới', 'Mở rộng danh mục sản phẩm'],
-      testimonial: 'Polymerit giúp chúng tôi không chỉ bán sản phẩm mà tạo ra một ngách mới — trị liệu liên tục 24 giờ qua da.',
-      tags: ['Công nghệ độc quyền', 'Da liễu'], featured: true, order: 3,
+      brand: { vi: 'PEA', en: 'PEA' },
+      slug: 'pea',
+      partner: { vi: 'PolymerSolution', en: 'PolymerSolution' },
+      industry: 'Mỹ phẩm',
+      kpi: '#1',
+      kpiLabel: {
+        vi: 'người tạo ngành hàng (Category Creator) tại Việt Nam',
+        en: 'Category Creator in Vietnam',
+      },
+      summary: {
+        vi: 'Tiên phong giải pháp kháng viêm qua da với công nghệ phóng thích chậm 24h.',
+        en: 'Pioneering a transdermal anti-inflammatory solution with 24-hour sustained-release technology.',
+      },
+      problem: {
+        vi: 'Chưa có giải pháp kháng viêm qua da phóng thích chậm, hiệu quả kéo dài tại thị trường Việt Nam.',
+        en: 'No transdermal anti-inflammatory solution with sustained release and lasting efficacy existed in Vietnam.',
+      },
+      solution: {
+        vi: 'Tiên phong đưa công nghệ phân phối thuốc qua da Polymerit, tạo ra ngành hàng mới với trị liệu liên tục 24h.',
+        en: 'Pioneered the Polymerit transdermal delivery technology, creating a new category with 24-hour continuous therapy.',
+      },
+      results: {
+        vi: ['Người tạo ngành hàng (Category Creator)', 'Trị liệu liên tục 24h', 'Ứng dụng đa dạng da liễu & mỹ phẩm'],
+        en: ['Category Creator', 'Continuous 24-hour therapy', 'Diverse dermatology and cosmetic applications'],
+      },
+      coCreateSteps: {
+        vi: ['Đánh giá khoảng trống thị trường da liễu', 'Ứng dụng Polymerit', 'Tạo category mới', 'Mở rộng danh mục sản phẩm'],
+        en: ['Dermatology market gap analysis', 'Polymerit application', 'New category creation', 'Product line expansion'],
+      },
+      testimonial: {
+        vi: 'Polymerit giúp chúng tôi không chỉ bán sản phẩm mà tạo ra một ngách mới — trị liệu liên tục 24 giờ qua da.',
+        en: 'Polymerit helped us not just sell products but create a new niche — continuous 24-hour transdermal therapy.',
+      },
+      tags: ['Proprietary technology', 'Dermatology'],
+      featured: true,
+      order: 3,
     },
   ]
-  for (const cs of caseData) await upsertLocalized(payload, 'case-studies', { slug: { equals: cs.slug } }, { vi: { ...cs, _status: 'published' } })
-  log(`case studies: ${caseData.length}`)
+  for (const cs of caseData) {
+    await upsertLocalized(
+      payload,
+      'case-studies',
+      { slug: { equals: cs.slug } },
+      {
+        vi: {
+          brand: cs.brand.vi,
+          slug: cs.slug,
+          partner: cs.partner.vi,
+          industry: cs.industry,
+          kpi: cs.kpi,
+          kpiLabel: cs.kpiLabel.vi,
+          summary: cs.summary.vi,
+          problem: cs.problem.vi,
+          solution: cs.solution.vi,
+          results: cs.results.vi,
+          coCreateSteps: cs.coCreateSteps.vi,
+          testimonial: cs.testimonial.vi,
+          tags: cs.tags,
+          featured: cs.featured,
+          order: cs.order,
+          _status: 'published',
+        },
+        en: {
+          brand: cs.brand.en,
+          partner: cs.partner.en,
+          kpiLabel: cs.kpiLabel.en,
+          summary: cs.summary.en,
+          problem: cs.problem.en,
+          solution: cs.solution.en,
+          results: cs.results.en,
+          coCreateSteps: cs.coCreateSteps.en,
+          testimonial: cs.testimonial.en,
+          _status: 'published',
+        },
+      },
+    )
+  }
+  log(`case studies: ${caseData.length} (vi + en)`)
 
-  /* ── 12. FAQs ──────────────────────────────────────────── */
+  /* ── 12. FAQs (song ngữ) ──────────────────────────────── */
   const faqData = [
-    { category: 'ingredients', question: 'Bioscope có nhận đơn nhỏ / mẫu thử không?', answer: 'Có, đa số nguyên liệu có MOQ linh hoạt (5–25 kg) và sẵn mẫu thử. Một số mặt hàng độc quyền có MOQ thấp hơn cho đánh giá ban đầu.', order: 1 },
-    { category: 'ingredients', question: 'Tài liệu kỹ thuật (TDS, COA) lấy như thế nào?', answer: 'TDS có thể xem tại trang nguyên liệu. COA và SDS yêu cầu email công việc — hệ thống gửi file tự động sau khi điền form.', order: 2 },
-    { category: 'ingredients', question: 'Giá nguyên liệu có hiển thị trên website không?', answer: 'Không — giá phụ thuộc volume, thời hạn hợp đồng và điều kiện giao hàng. Vui lòng liên hệ hoặc yêu cầu báo giá qua form Liên hệ.', order: 3 },
-    { category: 'solutions', question: 'Quy trình đồng kiến tạo mất bao lâu?', answer: 'Tùy độ phức tạp; thường 4–6 tháng từ ý tưởng đến ra mắt. Timeline cụ thể được ước lượng ngay sau buổi tư vấn đầu tiên.', order: 4 },
-    { category: 'solutions', question: 'Bioscope khác gì nhà cung nguyên liệu thông thường?', answer: 'Chúng tôi là đối tác chiến lược — đồng hành từ phân tích thị trường, chọn phân khúc, xây công thức, test nhu cầu đến thương mại hóa — không chỉ giao hàng rồi kết thúc.', order: 5 },
-    { category: 'solutions', question: 'Bioscope có hỗ trợ hồ sơ công bố TPCN/mỹ phẩm không?', answer: 'Có — cung cấp tài liệu kỹ thuật, COA và phối hợp với đơn vị công bố theo quy định Việt Nam.', order: 6 },
-    { category: 'support', question: 'Có thể yêu cầu báo giá qua website không?', answer: 'Có — dùng form Liên hệ hoặc "Yêu cầu mẫu thử" trên header. Đội ngũ phản hồi trong 24 giờ làm việc.', showOnContact: true, order: 7 },
-    { category: 'support', question: 'Thời gian phản hồi dự kiến là bao lâu?', answer: 'Trong vòng 24 giờ làm việc. Đội ngũ chuyên gia sẽ liên hệ để hiểu rõ nhu cầu và đề xuất bước tiếp theo.', showOnContact: true, order: 8 },
-    { category: 'support', question: 'Tôi có thể liên hệ qua kênh nào?', answer: 'Qua form Liên hệ trên website, email công việc hoặc Zalo OA (sắp tích hợp). Hotline và địa chỉ văn phòng đang được cập nhật.', order: 9 },
+    {
+      category: 'ingredients',
+      question: { vi: 'Bioscope có nhận đơn nhỏ / mẫu thử không?', en: 'Does Bioscope accept small orders or samples?' },
+      answer: {
+        vi: 'Có, đa số nguyên liệu có MOQ linh hoạt (5–25 kg) và sẵn mẫu thử. Một số mặt hàng độc quyền có MOQ thấp hơn cho đánh giá ban đầu.',
+        en: 'Yes — most ingredients have flexible MOQs (5–25 kg) and samples are available. Some exclusive items have lower MOQs for initial evaluation.',
+      },
+      order: 1,
+    },
+    {
+      category: 'ingredients',
+      question: { vi: 'Tài liệu kỹ thuật (TDS, COA) lấy như thế nào?', en: 'How do I get technical documents (TDS, COA)?' },
+      answer: {
+        vi: 'TDS có thể xem tại trang nguyên liệu. COA và SDS yêu cầu email công việc — hệ thống gửi file tự động sau khi điền form.',
+        en: 'TDS is available on each ingredient page. COA and SDS require a business email — the system emails the files automatically after the form is submitted.',
+      },
+      order: 2,
+    },
+    {
+      category: 'ingredients',
+      question: { vi: 'Giá nguyên liệu có hiển thị trên website không?', en: 'Are ingredient prices shown on the website?' },
+      answer: {
+        vi: 'Không — giá phụ thuộc volume, thời hạn hợp đồng và điều kiện giao hàng. Vui lòng liên hệ hoặc yêu cầu báo giá qua form Liên hệ.',
+        en: 'No — pricing depends on volume, contract term, and shipping terms. Please contact us or request a quote via the Contact form.',
+      },
+      order: 3,
+    },
+    {
+      category: 'solutions',
+      question: { vi: 'Quy trình đồng kiến tạo mất bao lâu?', en: 'How long does the co-creation process take?' },
+      answer: {
+        vi: 'Tùy độ phức tạp; thường 4–6 tháng từ ý tưởng đến ra mắt. Timeline cụ thể được ước lượng ngay sau buổi tư vấn đầu tiên.',
+        en: 'Depends on complexity; usually 4–6 months from idea to launch. A specific timeline is estimated right after the first consultation.',
+      },
+      order: 4,
+    },
+    {
+      category: 'solutions',
+      question: { vi: 'Bioscope khác gì nhà cung nguyên liệu thông thường?', en: 'How is Bioscope different from a typical ingredient supplier?' },
+      answer: {
+        vi: 'Chúng tôi là đối tác chiến lược — đồng hành từ phân tích thị trường, chọn phân khúc, xây công thức, test nhu cầu đến thương mại hóa — không chỉ giao hàng rồi kết thúc.',
+        en: 'We are a strategic partner — accompanying you from market analysis, segment selection, formula development, and demand testing through commercialization — not just delivering and leaving.',
+      },
+      order: 5,
+    },
+    {
+      category: 'solutions',
+      question: { vi: 'Bioscope có hỗ trợ hồ sơ công bố TPCN/mỹ phẩm không?', en: 'Does Bioscope support product registration for nutraceuticals or cosmetics?' },
+      answer: {
+        vi: 'Có — cung cấp tài liệu kỹ thuật, COA và phối hợp với đơn vị công bố theo quy định Việt Nam.',
+        en: 'Yes — we provide technical documents, COA, and coordinate with registration bodies per Vietnamese regulations.',
+      },
+      order: 6,
+    },
+    {
+      category: 'support',
+      question: { vi: 'Có thể yêu cầu báo giá qua website không?', en: 'Can I request a quote through the website?' },
+      answer: {
+        vi: 'Có — dùng form Liên hệ hoặc "Yêu cầu mẫu thử" trên header. Đội ngũ phản hồi trong 24 giờ làm việc.',
+        en: 'Yes — use the Contact form or "Request samples" button in the header. Our team replies within 24 business hours.',
+      },
+      showOnContact: true,
+      order: 7,
+    },
+    {
+      category: 'support',
+      question: { vi: 'Thời gian phản hồi dự kiến là bao lâu?', en: 'What is the expected response time?' },
+      answer: {
+        vi: 'Trong vòng 24 giờ làm việc. Đội ngũ chuyên gia sẽ liên hệ để hiểu rõ nhu cầu và đề xuất bước tiếp theo.',
+        en: 'Within 24 business hours. Our expert team will contact you to understand your needs and propose the next step.',
+      },
+      showOnContact: true,
+      order: 8,
+    },
+    {
+      category: 'support',
+      question: { vi: 'Tôi có thể liên hệ qua kênh nào?', en: 'What channels can I use to contact you?' },
+      answer: {
+        vi: 'Qua form Liên hệ trên website, email công việc hoặc Zalo OA (sắp tích hợp). Hotline và địa chỉ văn phòng đang được cập nhật.',
+        en: 'Via the Contact form on the website, your work email, or Zalo OA (integration coming soon). Hotline and office address are being updated.',
+      },
+      order: 9,
+    },
   ]
-  for (const f of faqData) await upsertLocalized(payload, 'faqs', { question: { equals: f.question } }, { vi: { ...f, _status: 'published' } })
-  log(`faqs: ${faqData.length}`)
+  for (const f of faqData) {
+    await upsertLocalized(
+      payload,
+      'faqs',
+      { question: { equals: f.question.vi } },
+      {
+        vi: {
+          question: f.question.vi,
+          answer: f.answer.vi,
+          category: f.category,
+          showOnContact: f.showOnContact ?? false,
+          order: f.order,
+          _status: 'published',
+        },
+        en: {
+          question: f.question.en,
+          answer: f.answer.en,
+          _status: 'published',
+        },
+      },
+    )
+  }
+  log(`faqs: ${faqData.length} (vi + en)`)
 
-  /* ── 13. Categories & Tags (taxonomy for posts) ────────── */
+  /* ── 13. Categories & Tags (taxonomy for posts, song ngữ) ─ */
   const categoryData = [
     { slug: 'whitepaper', nameVi: 'Whitepaper', nameEn: 'Whitepaper' },
     { slug: 'blog', nameVi: 'Blog chuyên môn', nameEn: 'Expert blog' },
     { slug: 'webinar', nameVi: 'Webinar', nameEn: 'Webinar' },
     { slug: 'formulator', nameVi: 'Hướng dẫn Formulator', nameEn: 'Formulator guide' },
     { slug: 'infographic', nameVi: 'Infographic', nameEn: 'Infographic' },
+    { slug: 'case-study', nameVi: 'Case study', nameEn: 'Case study' },
   ]
   const categoryIds: Record<string, Id> = {}
   for (const c of categoryData) {
@@ -663,16 +1111,18 @@ export async function runSeed(payload: Payload): Promise<string[]> {
       payload,
       'categories',
       { slug: { equals: c.slug } },
-      { vi: { name: c.nameVi, slug: c.slug }, en: { name: c.nameEn } },
+      { vi: { name: c.nameVi, slug: c.slug }, en: { name: c.nameEn, slug: c.slug } },
     )
   }
-  log(`categories: ${categoryData.length}`)
+  log(`categories: ${categoryData.length} (vi + en)`)
 
   const tagData = [
     { slug: 'phat-trien-nhan-hang', nameVi: 'Phát triển nhãn hàng', nameEn: 'Brand development' },
     { slug: 'omega-3', nameVi: 'Omega-3', nameEn: 'Omega-3' },
     { slug: 'chung-nhan', nameVi: 'Chứng nhận', nameEn: 'Certifications' },
     { slug: 'dong-kien-tao', nameVi: 'Đồng kiến tạo', nameEn: 'Co-creation' },
+    { slug: 'cong-thuc', nameVi: 'Công thức', nameEn: 'Formulation' },
+    { slug: 'thuong-mai-hoa', nameVi: 'Thương mại hoá', nameEn: 'Commercialization' },
   ]
   const tagIds: Record<string, Id> = {}
   for (const t of tagData) {
@@ -680,66 +1130,138 @@ export async function runSeed(payload: Payload): Promise<string[]> {
       payload,
       'tags',
       { slug: { equals: t.slug } },
-      { vi: { name: t.nameVi, slug: t.slug }, en: { name: t.nameEn } },
+      { vi: { name: t.nameVi, slug: t.slug }, en: { name: t.nameEn, slug: t.slug } },
     )
   }
-  log(`tags: ${tagData.length}`)
+  log(`tags: ${tagData.length} (vi + en)`)
 
-  /* ── 14. Posts (blog / tài nguyên) ─────────────────────── */
+  /* ── 14. Posts (blog / tài nguyên, song ngữ) ──────────── */
   const postData = [
     {
       slug: 'test-thi-truong-truoc-khi-lam-hang',
-      title: 'Vì sao nên test thị trường trước khi làm hàng?',
-      excerpt: 'Quy trình validate nhu cầu giúp giảm rủi ro đầu tư cho nhãn hàng mới — chỉ sản xuất khi có tín hiệu rõ.',
+      title: { vi: 'Vì sao nên test thị trường trước khi làm hàng?', en: 'Why test the market before manufacturing?' },
+      excerpt: {
+        vi: 'Quy trình validate nhu cầu giúp giảm rủi ro đầu tư cho nhãn hàng mới — chỉ sản xuất khi có tín hiệu rõ.',
+        en: 'Demand validation reduces investment risk for new brands — produce only when signals are clear.',
+      },
       categories: [categoryIds['blog']],
       tags: [tagIds['phat-trien-nhan-hang'], tagIds['dong-kien-tao']],
-      body: [
-        'Nhiều nhãn hàng mới thất bại không phải vì sản phẩm kém, mà vì sản xuất trước khi hiểu nhu cầu thị trường. Tồn kho lớn, dòng tiền kẹt, định vị sai — tất cả đều có thể tránh được.',
-        'Bioscope đề xuất quy trình validate: phân tích phân khúc, dựng concept và claim, đo tín hiệu thị trường ở quy mô nhỏ trước khi scale. Chỉ khi có dữ liệu tốt mới đầu tư sản xuất.',
-        'Kết quả là giảm rủi ro tồn kho, tối ưu chi phí R&D và rút ngắn thời gian đến điểm hòa vốn.',
-      ],
+      body: {
+        vi: [
+          'Nhiều nhãn hàng mới thất bại không phải vì sản phẩm kém, mà vì sản xuất trước khi hiểu nhu cầu thị trường. Tồn kho lớn, dòng tiền kẹt, định vị sai — tất cả đều có thể tránh được.',
+          'Bioscope đề xuất quy trình validate: phân tích phân khúc, dựng concept và claim, đo tín hiệu thị trường ở quy mô nhỏ trước khi scale. Chỉ khi có dữ liệu tốt mới đầu tư sản xuất.',
+          'Kết quả là giảm rủi ro tồn kho, tối ưu chi phí R&D và rút ngắn thời gian đến điểm hòa vốn.',
+        ],
+        en: [
+          'Many new brands fail not because of a weak product, but because they manufacture before understanding the market. Inventory pile-ups, cash flow crunches, wrong positioning — all avoidable.',
+          'Bioscope recommends a validation workflow: segment analysis, concept and claims design, small-scale demand signals before scaling. Only invest in production when the data supports it.',
+          'The result is reduced inventory risk, optimized R&D spend, and a shorter path to breakeven.',
+        ],
+      },
     },
     {
       slug: 'omega-3-tg-vs-ee',
-      title: 'Omega-3 dạng TG vs EE: điều gì quan trọng với người tiêu dùng?',
-      excerpt: 'So sánh sinh khả dụng và định vị thương hiệu cho dòng sản phẩm omega-3 cao cấp.',
+      title: {
+        vi: 'Omega-3 dạng TG vs EE: điều gì quan trọng với người tiêu dùng?',
+        en: 'Omega-3 TG vs EE: what matters to consumers?',
+      },
+      excerpt: {
+        vi: 'So sánh sinh khả dụng và định vị thương hiệu cho dòng sản phẩm omega-3 cao cấp.',
+        en: 'Comparing bioavailability and brand positioning for premium omega-3 products.',
+      },
       categories: [categoryIds['blog']],
       tags: [tagIds['omega-3']],
-      body: [
-        'Dạng triglyceride (TG) và ethyl ester (EE) khác nhau ở cấu trúc và sinh khả dụng. Dạng TG gần với dầu cá tự nhiên, hấp thu tốt hơn nhưng chi phí cao hơn.',
-        'Với phân khúc cao cấp, minh bạch dạng nguyên liệu và chỉ số IFOS là lợi thế định vị rõ ràng. Người tiêu dùng ngày càng quan tâm tới nguồn gốc và độ tinh khiết.',
-      ],
+      body: {
+        vi: [
+          'Dạng triglyceride (TG) và ethyl ester (EE) khác nhau ở cấu trúc và sinh khả dụng. Dạng TG gần với dầu cá tự nhiên, hấp thu tốt hơn nhưng chi phí cao hơn.',
+          'Với phân khúc cao cấp, minh bạch dạng nguyên liệu và chỉ số IFOS là lợi thế định vị rõ ràng. Người tiêu dùng ngày càng quan tâm tới nguồn gốc và độ tinh khiết.',
+        ],
+        en: [
+          'Triglyceride (TG) and ethyl ester (EE) forms differ in structure and bioavailability. TG mirrors natural fish oil and is absorbed better, but costs more.',
+          'For the premium segment, transparent ingredient form and IFOS ratings are a clear positioning advantage. Consumers increasingly care about origin and purity.',
+        ],
+      },
     },
     {
       slug: 'chung-nhan-gmp-halal-kosher',
-      title: 'Chứng nhận GMP, Halal, Kosher — hướng dẫn cho formulator',
-      excerpt: 'Giải thích ý nghĩa từng chứng nhận và cách chọn nguyên liệu phù hợp thị trường mục tiêu.',
+      title: {
+        vi: 'Chứng nhận GMP, Halal, Kosher — hướng dẫn cho formulator',
+        en: 'GMP, Halal, Kosher certifications — a formulator’s guide',
+      },
+      excerpt: {
+        vi: 'Giải thích ý nghĩa từng chứng nhận và cách chọn nguyên liệu phù hợp thị trường mục tiêu.',
+        en: 'What each certification means and how to pick ingredients for your target market.',
+      },
       categories: [categoryIds['formulator']],
-      tags: [tagIds['chung-nhan']],
-      body: [
-        'GMP đảm bảo điều kiện sản xuất; ISO 22000 và HACCP quản lý an toàn thực phẩm; Halal và Kosher mở rộng thị trường theo tín ngưỡng.',
-        'Chọn nguyên liệu có sẵn bộ chứng nhận phù hợp giúp rút ngắn thời gian công bố và mở rộng thị trường xuất khẩu.',
-      ],
+      tags: [tagIds['chung-nhan'], tagIds['cong-thuc']],
+      body: {
+        vi: [
+          'GMP đảm bảo điều kiện sản xuất; ISO 22000 và HACCP quản lý an toàn thực phẩm; Halal và Kosher mở rộng thị trường theo tín ngưỡng.',
+          'Chọn nguyên liệu có sẵn bộ chứng nhận phù hợp giúp rút ngắn thời gian công bố và mở rộng thị trường xuất khẩu.',
+        ],
+        en: [
+          'GMP covers production conditions; ISO 22000 and HACCP manage food safety; Halal and Kosher unlock faith-based markets.',
+          'Choosing ingredients with the right pre-existing certifications shortens registration time and expands your export market.',
+        ],
+      },
+    },
+    {
+      slug: 'thuong-mai-hoa-san-pham-moi',
+      title: {
+        vi: 'Thương mại hoá sản phẩm mới: 5 bước từ lab đến kệ hàng',
+        en: 'Commercializing a new product: 5 steps from lab to shelf',
+      },
+      excerpt: {
+        vi: 'Lộ trình chuẩn hoá công thức → pilot → đăng ký → production → kênh phân phối.',
+        en: 'Standardization path: formula → pilot → registration → production → distribution channels.',
+      },
+      categories: [categoryIds['blog']],
+      tags: [tagIds['thuong-mai-hoa'], tagIds['phat-trien-nhan-hang']],
+      body: {
+        vi: [
+          'Bước 1: Chuẩn hoá công thức với nguyên liệu ổn định, tài liệu TDS đầy đủ.',
+          'Bước 2: Pilot batch — kiểm chứng cảm quan, độ ổn định, khả năng mở rộng.',
+          'Bước 3: Hồ sơ công bố — phối hợp đơn vị công bố, chuẩn bị COA/SDS.',
+          'Bước 4: Sản xuất tại nhà máy GMP — chọn đối tác phù hợp quy mô và claim.',
+          'Bước 5: Phân phối — đàm phán kênh, giá, chính sách thương mại.',
+        ],
+        en: [
+          'Step 1: Standardize the formula with stable ingredients and complete TDS.',
+          'Step 2: Pilot batch — verify sensory, stability, and scalability.',
+          'Step 3: Registration dossier — coordinate with a registration body, prepare COA/SDS.',
+          'Step 4: GMP production — pick a partner that matches your scale and claims.',
+          'Step 5: Distribution — negotiate channels, pricing, and commercial terms.',
+        ],
+      },
     },
   ]
   for (const p of postData) {
-    const { body, ...rest } = p
     await upsertLocalized(
       payload,
       'posts',
       { slug: { equals: p.slug } },
       {
         vi: {
-          ...rest,
+          title: p.title.vi,
+          slug: p.slug,
+          excerpt: p.excerpt.vi,
           author: adminId,
-          content: lexical(body),
+          categories: p.categories,
+          tags: p.tags,
+          content: lexical(p.body.vi),
           publishedAt: new Date().toISOString(),
+          _status: 'published',
+        },
+        en: {
+          title: p.title.en,
+          excerpt: p.excerpt.en,
+          content: lexical(p.body.en),
           _status: 'published',
         },
       },
     )
   }
-  log(`posts: ${postData.length}`)
+  log(`posts: ${postData.length} (vi + en)`)
 
   /* ── 15. Pages (bố cục block, song ngữ vi + en) ────────── */
   // Block builders

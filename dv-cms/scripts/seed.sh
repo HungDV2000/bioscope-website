@@ -1,13 +1,28 @@
 #!/usr/bin/env bash
-# seed.sh — SEED DATA cho bioscope-website (Postgres + Payload admin user)
+# seed.sh — SEED DATA cho bioscope-website
 #
 # Yêu cầu: đã chạy install.sh (services đang chạy).
-# Làm:
-#   1. Tạo admin user (admin@bioscope.vn / Bioscope@123)
-#   2. Import CSV categories + ingredients
+# Làm (theo thứ tự):
+#   1. Chạy runSeed() (idempotent) — TẠO TẤT CẢ DATA CHO FRONTEND:
+#      - admin user (admin@bioscope.vn / Bioscope@123)
+#      - site-settings (contact, social, defaultSeo)
+#      - navigation (header + footer, vi + en)
+#      - branding (theme Bioscope)
+#      - bioscope-ai global (vi + en)
+#      - seo-settings global (vi + en)
+#      - 13 pages song ngữ (ve-chung-toi, nguyen-lieu, giai-phap, dong-kien-tao,
+#        rd, tai-nguyen, case-study, lien-he, cau-hoi-thuong-gap, blog-chuyen-mon,
+#        chinh-sach-bao-mat, dieu-khoan-su-dung, bioscope-ai)
+#      - trang chủ = Page 9 block + link vào site-settings.homePage
+#      - 4 partners, 3 ingredient categories, 3 technologies, 6 ingredients
+#      - 3 services, 3 case studies, 9 FAQs, 7 certifications
+#      - 2 members, 1 gated document (nếu có CoA media)
+#      - 5 post categories, 4 tags, 3 posts blog
+#      - forms (Liên hệ, mẫu thử, Bioscope AI)
+#   2. Import CSV (1594 ingredients từ CrawlerDriveData)
 #   3. Trigger Drive Sync (optional)
 #
-# Không xóa data cũ — script idempotent (chạy nhiều lần OK, chỉ update).
+# Script idempotent — chạy nhiều lần OK, chỉ update/create missing.
 
 set -euo pipefail
 
@@ -23,7 +38,7 @@ cd "$DV_CMS_DIR"
 
 # ─── Banner ────────────────────────────────────────────────────
 echo "╔════════════════════════════════════════════════════════════╗"
-echo "║   BIOSCOPE — SEED DATA                                     ║"
+echo "║   BIOSCOPE — SEED DATA (full content + frontend pages)    ║"
 echo "╚════════════════════════════════════════════════════════════╝"
 echo ""
 echo "CSV file : $CSV"
@@ -54,11 +69,12 @@ fi
 
 # ─── 2. Đợi CMS ready (Payload phải migrate trước) ────────────
 echo "→ Đợi CMS ready (Payload migrate)..."
-TIMEOUT=90
+TIMEOUT=120
 ELAPSED=0
 while [ $ELAPSED -lt $TIMEOUT ]; do
-  if curl -sS -o /dev/null -w "%{http_code}" "http://127.0.0.1:26080/api/users/me" 2>/dev/null | grep -qE "^(200|401|403)$"; then
-    echo "→ CMS OK"
+  HTTP=$(curl -sS -o /dev/null -w "%{http_code}" "http://127.0.0.1:26080/api/users/me" 2>/dev/null || echo "000")
+  if echo "$HTTP" | grep -qE "^(200|401|403)$"; then
+    echo "→ CMS OK (HTTP $HTTP)"
     break
   fi
   sleep 3
@@ -69,47 +85,66 @@ if [ $ELAPSED -ge $TIMEOUT ]; then
   exit 1
 fi
 
-# ─── 3. Tạo admin user ────────────────────────────────────────
+# ─── 3. Run Payload seed (admin + pages + branding + nav + ...) ─
+# runSeed.ts bao gồm TẤT CẢ: admin user, site-settings, navigation (vi+en),
+# branding, bioscope-ai (vi+en), seo-settings (vi+en), 13 pages song ngữ,
+# trang chủ (9 block) + homePage ref, services, case studies, FAQs, partners,
+# certifications, members, posts, categories, tags.
+# Idempotent — chạy nhiều lần OK, update nếu đã có.
 echo ""
-echo "→ Tạo admin user (admin@bioscope.vn)..."
-ADMIN_COUNT=$(docker compose exec -T db psql -U dvcms -d dvcms -tA -c \
-  "SELECT COUNT(*) FROM users WHERE email='admin@bioscope.vn';" 2>/dev/null | tr -d ' \n')
+echo "→ [3/6] Chạy runSeed() — full content seed (admin + pages + branding + nav + ...)..."
+SEED_OUTPUT=$(docker compose exec -T cms \
+  sh -c "cd /app/apps/core-cms && node --import tsx src/seed/runSeed.ts" 2>&1) || {
+  echo "❌ runSeed thất bại:"
+  echo "$SEED_OUTPUT" | tail -20
+  exit 1
+}
+echo "$SEED_OUTPUT" | grep -E '^\[seed\]|^\[import\]' | tail -30
+echo "→ runSeed OK"
 
-if [ "$ADMIN_COUNT" = "0" ]; then
-  docker compose exec -T cms \
-    sh -c "cd /app/apps/core-cms && pnpm payload run src/scripts/seed.ts" 2>/dev/null \
-    || docker compose exec -T cms \
-       sh -c "cd /app/apps/core-cms && node --import tsx src/seed/runSeed.ts" \
-    || echo "⚠ Không tìm thấy seed script — bỏ qua. Tạo admin thủ công qua /admin UI."
-else
-  echo "  (admin user đã tồn tại, skip)"
-fi
-
-# ─── 4. Import CSV ─────────────────────────────────────────────
+# ─── 4. Verify trang chủ + pages đã tồn tại ──────────────────
 echo ""
+echo "→ [4/6] Verify pages + home page:"
+docker compose exec -T db psql -U dvcms -d dvcms -c "
+  SELECT slug,
+         CASE WHEN title_vi IS NOT NULL THEN 'vi' ELSE '—' END || '/' ||
+         CASE WHEN title_en IS NOT NULL THEN 'en' ELSE '—' END AS locales
+  FROM (
+    SELECT slug,
+           MAX(CASE WHEN _locale='vi' THEN title END) AS title_vi,
+           MAX(CASE WHEN _locale='en' THEN title END) AS title_en
+    FROM pages
+    GROUP BY slug
+  ) s
+  ORDER BY slug;" 2>/dev/null || true
+
+# ─── 5. Import CSV ─────────────────────────────────────────────
+echo ""
+echo "→ [5/6] Import CSV..."
 if [ -f "$CSV" ]; then
-  echo "→ Import CSV: $CSV"
   docker cp "$CSV" dvcms-app:/app/danh_sach_san_pham.csv
-
-  # Chạy import
   docker compose exec -T cms \
-    sh -c "cd /app/apps/core-cms && CSV_PATH=/app/danh_sach_san_pham.csv node --import tsx src/scripts/importCsvRun.ts"
+    sh -c "cd /app/apps/core-cms && CSV_PATH=/app/danh_sach_san_pham.csv node --import tsx src/scripts/importCsvRun.ts" 2>&1 \
+    | grep -E '^\[import\]' | tail -10 || true
 
-  # Verify
   echo ""
-  echo "→ Verify:"
+  echo "  DB counts:"
   docker compose exec -T db psql -U dvcms -d dvcms -c \
-    "SELECT 'categories' AS t, COUNT(*) FROM ingredient_categories
-     UNION ALL
-     SELECT 'ingredients', COUNT(*) FROM ingredients;" \
-    2>/dev/null || true
+    "SELECT 'ingredient_categories' AS t, COUNT(*) FROM ingredient_categories
+     UNION ALL SELECT 'ingredients', COUNT(*) FROM ingredients
+     UNION ALL SELECT 'users (admin)', COUNT(*) FROM users WHERE role='admin'
+     UNION ALL SELECT 'pages', COUNT(*) FROM pages
+     UNION ALL SELECT 'partners', COUNT(*) FROM partners
+     UNION ALL SELECT 'posts', COUNT(*) FROM posts
+     UNION ALL SELECT 'case_studies', COUNT(*) FROM case_studies;" 2>/dev/null || true
 else
   echo "⚠ Không tìm thấy CSV ở $CSV"
   echo "  Tạo data thủ công qua admin UI: https://admin.bioscope.vn/admin"
 fi
 
-# ─── 5. Trigger Drive Sync (optional) ─────────────────────────
+# ─── 6. Trigger Drive Sync (optional) ─────────────────────────
 echo ""
+echo "→ [6/6] Trigger Drive Sync (optional)..."
 read -p "Trigger Drive Sync từ Google Drive? (y/n) " -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
@@ -123,8 +158,15 @@ echo ""
 echo "╔════════════════════════════════════════════════════════════╗"
 echo "║   ✅ SEED HOÀN TẤT                                          ║"
 echo "║                                                            ║"
-echo "║   Login admin:                                             ║"
-echo "║     https://admin.bioscope.vn/admin                        ║"
-echo "║     user: admin@bioscope.vn                                ║"
-echo "║     pass: Bioscope@123                                     ║"
+echo "║   CMS Admin : https://admin.bioscope.vn/admin              ║"
+echo "║     user    : admin@bioscope.vn                            ║"
+echo "║     pass    : Bioscope@123                                 ║"
+echo "║                                                            ║"
+echo "║   Frontend : https://web.bioscope.vn                       ║"
+echo "║   - Trang chủ (9 block)                                    ║"
+echo "║   - 13 trang song ngữ (vi + en)                           ║"
+echo "║   - Nav header/footer, branding, AI global                  ║"
+echo "║   - 6 ingredients mẫu + CSV (1594 ingredients)             ║"
+echo "║   - 3 services, 3 case studies, 9 FAQs                     ║"
+echo "║   - 3 posts blog, 7 certifications, 4 partners             ║"
 echo "╚════════════════════════════════════════════════════════════╝"

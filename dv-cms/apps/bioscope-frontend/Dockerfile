@@ -28,6 +28,8 @@ ENV NEXT_TELEMETRY_DISABLED=1
 WORKDIR /app/apps/bioscope-frontend
 COPY --from=build /app/node_modules /app/node_modules
 COPY --from=build /app/apps/bioscope-frontend /app/apps/bioscope-frontend
-EXPOSE 3000
-ENV PORT=3000
-CMD ["node", "/app/node_modules/next/dist/bin/next", "start", "-p", "3000"]
+# Container port dải 26xxx — tránh xung đột 3000/3001 nếu container join host network
+ARG FE_INTERNAL_PORT=26300
+ENV PORT=${FE_INTERNAL_PORT}
+EXPOSE ${FE_INTERNAL_PORT}
+CMD ["sh", "-c", "exec node /app/node_modules/next/dist/bin/next start -p ${FE_INTERNAL_PORT}"]

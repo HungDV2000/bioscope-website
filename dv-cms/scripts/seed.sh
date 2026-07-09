@@ -150,7 +150,7 @@ echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
   echo "→ Trigger Drive Sync..."
   docker compose exec -T cms \
-    sh -c "curl -sS -X POST http://127.0.0.1:3001/api/drive-sync/trigger -H 'Content-Type: application/json' -d '{\"rootFolderId\":\"${GOOGLE_DRIVE_ROOT_FOLDER_ID:-}\"}'" \
+    sh -c "curl -sS -X POST http://127.0.0.1:26301/api/drive-sync/trigger -H 'Content-Type: application/json' -d '{\"rootFolderId\":\"${GOOGLE_DRIVE_ROOT_FOLDER_ID:-}\"}'" \
     || echo "⚠ Trigger thất bại — kiểm tra GOOGLE_DRIVE_ROOT_FOLDER_ID trong .env"
 fi
 

@@ -39,9 +39,10 @@ services:
       GOOGLE_APPLICATION_CREDENTIALS: ${GOOGLE_APPLICATION_CREDENTIALS:-/app/apps/core-cms/credentials/service-account.json}
       NODE_ENV: production
       NODE_OPTIONS: --no-deprecation
-      PORT: "3001"
+      # Container port dải 26xxx (tránh xung đột 3000/3001 nếu chạy network=host)
+      PORT: "26301"
     expose:
-      - "3001"
+      - "26301"
     volumes:
       - media:/app/apps/core-cms/media
 
@@ -60,12 +61,13 @@ services:
         condition: service_started
     environment:
       NODE_ENV: production
-      PORT: "3000"
+      # Container port dải 26xxx
+      PORT: "26300"
       NEXT_PUBLIC_CMS_URL: ${NEXT_PUBLIC_CMS_URL:-http://admin.bioscope.vn}
       NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://web.bioscope.vn}
       REVALIDATE_SECRET: ${REVALIDATE_SECRET:-}
     expose:
-      - "3000"
+      - "26300"
 
   nginx:
     image: nginx:1.27-alpine

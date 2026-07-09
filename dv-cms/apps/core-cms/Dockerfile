@@ -29,5 +29,8 @@ WORKDIR /app/apps/core-cms
 COPY --from=build /app/node_modules /app/node_modules
 COPY --from=build /app/packages /app/packages
 COPY --from=build /app/apps/core-cms /app/apps/core-cms
-EXPOSE 3001
-CMD ["node", "/app/node_modules/next/dist/bin/next", "start", "-p", "3001"]
+# Container port dải 26xxx — tránh xung đột 3000/3001 nếu container join host network
+ARG CMS_INTERNAL_PORT=26301
+ENV PORT=${CMS_INTERNAL_PORT}
+EXPOSE ${CMS_INTERNAL_PORT}
+CMD ["sh", "-c", "exec node /app/node_modules/next/dist/bin/next start -p ${CMS_INTERNAL_PORT}"]

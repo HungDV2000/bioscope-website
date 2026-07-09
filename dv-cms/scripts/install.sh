@@ -58,6 +58,11 @@ if [ ! -f "$DV_CMS_DIR/.env" ]; then
   sed -i 's|^DVCMS_HTTP_HOST_PORT=.*|DVCMS_HTTP_HOST_PORT=26080|' "$DV_CMS_DIR/.env"
   sed -i 's|^DVCMS_HTTPS_HOST_PORT=.*|DVCMS_HTTPS_HOST_PORT=26443|' "$DV_CMS_DIR/.env"
   sed -i 's|^NGINX_HOST_PORT=.*|NGINX_HOST_PORT=26080|' "$DV_CMS_DIR/.env"
+  # Container internal port dải 26xxx (tránh xung đột 3000/3001)
+  sed -i 's|^PORT=.*|PORT=26301|' "$DV_CMS_DIR/.env"
+  # Xóa các biến host port không còn dùng (cms/frontend giờ chỉ nginx mới bind)
+  sed -i '/^DVCMS_CMS_HOST_PORT=/d' "$DV_CMS_DIR/.env"
+  sed -i '/^DVCMS_FRONTEND_HOST_PORT=/d' "$DV_CMS_DIR/.env"
   echo "→ Đã tạo $DV_CMS_DIR/.env"
 fi
 

@@ -20,6 +20,11 @@ COPY pnpm-workspace.yaml pnpm-lock.yaml package.json tsconfig.base.json ./
 COPY patches ./patches
 COPY packages ./packages
 COPY apps/core-cms ./apps/core-cms
+# Re-run install to regenerate pnpm workspace symlinks for @dv/* packages.
+# Without this, pnpm symlinks from monorepo install point to absolute paths that
+# break when copied between Docker stages → "Module not found: @dv/...".
+WORKDIR /app
+RUN pnpm install --frozen-lockfile
 WORKDIR /app/apps/core-cms
 RUN pnpm exec next build --webpack
 

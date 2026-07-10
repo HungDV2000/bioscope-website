@@ -634,15 +634,22 @@ docker compose down -v
 docker compose up -d
 ```
 
+### Lỗi: CMS / Frontend restart loop với `error: option '-p, --port <port>' argument missing`
+Dockerfile CMD dùng `${CMS_INTERNAL_PORT}` (ARG) thay vì `${PORT}` (ENV). ARG chỉ available trong `docker build`, không tồn tại ở runtime → shell expand thành rỗng → `next start -p` không có port → exit 1. Đã fix: dùng `${PORT}` (đã `ENV PORT=${...}` ở line trên).
+
+```bash
+git pull origin main
+docker compose build cms frontend
+docker compose up -d
+docker compose ps      # cả 3 phải Up + Healthy
+```
+
 ### Lỗi: CMS / Frontend restart loop với `Error: Cannot find module '/app/node_modules/next/dist/bin/next'`
 Dockerfile CMD sai path. pnpm hoist `next` vào `apps/<name>/node_modules/next` (symlink tới `.pnpm/next@...`), không phải `/app/node_modules/next`. Đã fix: chạy `./node_modules/next/dist/bin/next` tương đối với WORKDIR.
 
 ```bash
-# Pull fix
 git pull origin main
-# Build lại image (chỉ rebuild 2 service này)
 docker compose build cms frontend
-# Up
 docker compose up -d
 # Verify
 docker compose ps      # cả 3 phải Up + Healthy

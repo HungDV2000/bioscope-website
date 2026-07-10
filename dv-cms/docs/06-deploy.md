@@ -644,6 +644,22 @@ docker compose up -d
 docker compose ps      # cả 3 phải Up + Healthy
 ```
 
+### Lỗi: CMS / Frontend Up nhưng `curl http://127.0.0.1:26081/admin` bị Connection refused (container bind 26000/26001 thay vì 26081/26080)
+`.env` cũ (sinh từ version trước khi chuyển sang aaPanel proxy) có thể chứa `DVCMS_CMS_HOST_PORT=26001` / `DVCMS_FRONTEND_HOST_PORT=26000` — sai dải 26xxx. Compose đọc biến này để map host port.
+
+Fix nhanh:
+```bash
+cd /www/wwwroot/bioscope-website/dv-cms
+sed -i 's/^DVCMS_CMS_HOST_PORT=.*/DVCMS_CMS_HOST_PORT=26081/' .env
+sed -i 's/^DVCMS_FRONTEND_HOST_PORT=.*/DVCMS_FRONTEND_HOST_PORT=26080/' .env
+grep -E "DVCMS_.*HOST_PORT" .env    # verify
+docker compose down
+docker compose up -d
+docker compose ps    # phải thấy 26081:26301 và 26080:26300
+```
+
+Từ giờ `scripts/install.sh` đã idempotent — chạy lại sẽ tự đồng bộ 3 host port này về đúng giá trị 26xxx, không cần sửa tay.
+
 ### Lỗi: CMS / Frontend restart loop với `Error: Cannot find module '/app/node_modules/next/dist/bin/next'`
 Dockerfile CMD sai path. pnpm hoist `next` vào `apps/<name>/node_modules/next` (symlink tới `.pnpm/next@...`), không phải `/app/node_modules/next`. Đã fix: chạy `./node_modules/next/dist/bin/next` tương đối với WORKDIR.
 

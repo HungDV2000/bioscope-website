@@ -61,9 +61,11 @@ if [ ! -f "$DV_CMS_DIR/.env" ]; then
   sed -i 's|@localhost:5432|@db:5432|g' "$DV_CMS_DIR/.env"
 
   # Host ports cho aaPanel proxy (dải 26xxx — tránh xung đột BioBot)
-  sed -i 's|^DVCMS_DB_HOST_PORT=.*|DVCMS_DB_HOST_PORT=26432|'  "$DV_CMS_DIR/.env"
+  # Chạy mỗi lần install.sh (idempotent) để VPS cũ với port 26000/26001
+  # cũng được fix tự động.
+  sed -i 's|^DVCMS_DB_HOST_PORT=.*|DVCMS_DB_HOST_PORT=26432|'             "$DV_CMS_DIR/.env"
   sed -i 's|^DVCMS_FRONTEND_HOST_PORT=.*|DVCMS_FRONTEND_HOST_PORT=26080|' "$DV_CMS_DIR/.env"
-  sed -i 's|^DVCMS_CMS_HOST_PORT=.*|DVCMS_CMS_HOST_PORT=26081|'       "$DV_CMS_DIR/.env"
+  sed -i 's|^DVCMS_CMS_HOST_PORT=.*|DVCMS_CMS_HOST_PORT=26081|'           "$DV_CMS_DIR/.env"
 
   # Xoá các biến nginx container (không dùng nữa)
   sed -i '/^DVCMS_HTTP_HOST_PORT=/d'      "$DV_CMS_DIR/.env"
@@ -78,6 +80,18 @@ if [ ! -f "$DV_CMS_DIR/.env" ]; then
   echo "     bằng 'openssl rand -hex 32' TRƯỚC KHI seed."
   echo ""
 fi
+
+# Idempotent: luôn đồng bộ host ports dải 26xxx (kể cả khi .env có sẵn từ
+# version cũ với port 26000/26001). Chạy mỗi lần install.sh để fix an toàn
+# cho VPS đã được deploy từ trước — không cần xóa .env.
+echo "→ Đồng bộ host ports dải 26xxx trong .env..."
+sed -i 's|^DVCMS_DB_HOST_PORT=.*|DVCMS_DB_HOST_PORT=26432|'             "$DV_CMS_DIR/.env"
+sed -i 's|^DVCMS_CMS_HOST_PORT=.*|DVCMS_CMS_HOST_PORT=26081|'           "$DV_CMS_DIR/.env"
+sed -i 's|^DVCMS_FRONTEND_HOST_PORT=.*|DVCMS_FRONTEND_HOST_PORT=26080|' "$DV_CMS_DIR/.env"
+# Xoá các biến nginx container (không dùng nữa)
+sed -i '/^DVCMS_HTTP_HOST_PORT=/d'      "$DV_CMS_DIR/.env"
+sed -i '/^DVCMS_HTTPS_HOST_PORT=/d'     "$DV_CMS_DIR/.env"
+sed -i '/^NGINX_HOST_PORT=/d'           "$DV_CMS_DIR/.env"
 
 # ─── 3. Chuẩn bị secrets (service-account.json) ────────────────
 if [ ! -f "$DV_CMS_DIR/apps/core-cms/credentials/service-account.json" ]; then

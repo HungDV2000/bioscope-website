@@ -40,4 +40,4 @@ ENV PORT=${FE_INTERNAL_PORT}
 EXPOSE ${FE_INTERNAL_PORT}
 # next lives in apps/bioscope-frontend/node_modules/next (pnpm hoists under
 # app dir, not at /app/node_modules). Run relative to WORKDIR.
-CMD ["sh", "-c", "exec node ./node_modules/next/dist/bin/next start -p ${FE_INTERNAL_PORT}"]
+CMD ["sh", "-c", "exec node ./node_modules/next/dist/bin/next start -p ${PORT}"]

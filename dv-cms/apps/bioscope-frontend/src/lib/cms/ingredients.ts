@@ -91,9 +91,13 @@ function toIngredient(d: IngredientDoc, locale: Locale): Ingredient {
 
 /** All published ingredients from the CMS. Returns null on failure/empty (caller falls back to static). */
 export async function getIngredients(locale: Locale): Promise<Ingredient[] | null> {
-  const res = await cmsFetch<Paginated<IngredientDoc>>('ingredients?limit=100&sort=name&depth=1', {
+  // TODO(scale): the catalog filters client-side, so we fetch the full set.
+  // For very large catalogs, move filtering/pagination server-side instead.
+  const res = await cmsFetch<Paginated<IngredientDoc>>('ingredients?limit=2000&sort=name&depth=1', {
     locale,
     revalidate: 60,
+    // Fetching the whole catalog (depth=1) can exceed the default 4s timeout.
+    timeoutMs: 20000,
   })
   if (!res?.docs?.length) return null
   return res.docs.map((d) => toIngredient(d, locale))

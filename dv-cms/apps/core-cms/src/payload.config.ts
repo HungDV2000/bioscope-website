@@ -52,6 +52,10 @@ const corsOrigins = Array.from(
 
 const db = postgresAdapter({
   pool: { connectionString: process.env.DATABASE_URI || '' },
+  // Auto-create/evolve the schema on startup (incl. production) — the deploy
+  // relies on push rather than migrations. Set PAYLOAD_DB_PUSH=false to disable
+  // and use `payload migrate` instead once migrations are maintained.
+  push: process.env.PAYLOAD_DB_PUSH !== 'false',
 })
 
 export default buildConfig({

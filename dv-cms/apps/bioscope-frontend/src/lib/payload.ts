@@ -1,8 +1,15 @@
 /**
  * Thin client for the shared Payload backend (`@dv/core-cms`).
- * REST API base — over/ride via NEXT_PUBLIC_CMS_URL.
+ *
+ * - `CMS_URL` (public) is baked into the browser bundle and used for media URLs
+ *   the client loads — must be the public domain.
+ * - `SERVER_CMS_URL` is used for server-side data fetches (`cmsFetch`). In Docker,
+ *   set `CMS_INTERNAL_URL=http://cms:<port>` so the frontend container reaches the
+ *   CMS over the internal network instead of hair-pinning through the public domain
+ *   (which usually fails from inside the container). Falls back to the public URL.
  */
 export const CMS_URL = process.env.NEXT_PUBLIC_CMS_URL ?? 'http://localhost:3001'
+const SERVER_CMS_URL = process.env.CMS_INTERNAL_URL || CMS_URL
 
 type FetchOptions = {
   /** ISR revalidate window in seconds (default 60). */
@@ -16,7 +23,7 @@ export async function cmsFetch<T>(
   path: string,
   { revalidate = 60, locale, timeoutMs = 4000 }: FetchOptions = {},
 ): Promise<T | null> {
-  const url = new URL(`/api/${path.replace(/^\//, '')}`, CMS_URL)
+  const url = new URL(`/api/${path.replace(/^\//, '')}`, SERVER_CMS_URL)
   if (locale) url.searchParams.set('locale', locale)
 
   try {

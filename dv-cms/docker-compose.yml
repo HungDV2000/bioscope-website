@@ -72,6 +72,9 @@ services:
       NEXT_PUBLIC_CMS_URL: ${NEXT_PUBLIC_CMS_URL:-https://admin.bioscope.vn}
       NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-https://web.bioscope.vn}
       REVALIDATE_SECRET: ${REVALIDATE_SECRET:-}
+      # Server-side data fetches go over the internal Docker network (not the public
+      # domain, which hair-pins and fails from inside the container).
+      CMS_INTERNAL_URL: ${CMS_INTERNAL_URL:-http://cms:26301}
     ports:
       # Bind 127.0.0.1:26080 → container:26300 (chỉ aaPanel proxy mới truy cập được)
       - "127.0.0.1:${DVCMS_FRONTEND_HOST_PORT:-26080}:26300"

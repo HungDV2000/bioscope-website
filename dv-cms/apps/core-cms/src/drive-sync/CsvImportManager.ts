@@ -336,6 +336,8 @@ export async function runCsvImport(params: {
           driveFiles,
           fileCount,
           lastDriveSyncAt: latestModified ? new Date(latestModified).toISOString() : new Date().toISOString(),
+          // Publish immediately so the public frontend (published-only) shows it.
+          _status: 'published' as const,
           ...(categoryId !== undefined ? { category: categoryId } : {}),
         }
 
@@ -345,8 +347,10 @@ export async function runCsvImport(params: {
           const currentName = typeof docName === 'string' ? docName : docName?.vi
           const nameChanged = currentName !== ingName
           const filesChanged = JSON.stringify((doc as unknown as { driveFiles?: unknown[] })?.driveFiles ?? []) !== JSON.stringify(driveFiles)
+          // Re-publish any previously-imported drafts.
+          const needsPublish = (doc as unknown as { _status?: string })?._status !== 'published'
 
-          if (nameChanged || filesChanged) {
+          if (nameChanged || filesChanged || needsPublish) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             await payload.update({ collection: 'ingredients', id: doc.id, data: baseData as any, overrideAccess: true })
             totals.ingredients.updated++

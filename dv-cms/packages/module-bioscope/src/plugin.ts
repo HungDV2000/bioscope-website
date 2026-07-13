@@ -3,6 +3,7 @@ import { HOME_BLOCKS } from './blocks/home.js'
 import { IngredientCategories } from './collections/IngredientCategories.js'
 import { DriveSyncJobs } from './collections/DriveSyncJobs.js'
 import { CmsSyncRuns } from './collections/CmsSyncRuns.js'
+import { AiGenerateJobs } from './collections/AiGenerateJobs.js'
 import { Technologies } from './collections/Technologies.js'
 import { Ingredients } from './collections/Ingredients.js'
 import { Services } from './collections/Services.js'
@@ -23,6 +24,7 @@ export type BioscopePluginOptions = {
     faqs?: boolean
     cmsSyncRuns?: boolean
     driveSyncJobs?: boolean
+    aiGenerateJobs?: boolean
   }
   /** Register the Home page global (default true). */
   home?: boolean
@@ -43,6 +45,7 @@ export const bioscopePlugin =
 
     if (c.ingredients !== false) add.push(IngredientCategories, Ingredients)
     if (c.driveSyncJobs !== false) add.push(DriveSyncJobs)
+    if (c.aiGenerateJobs !== false) add.push(AiGenerateJobs)
     if (c.cmsSyncRuns !== false) add.push(CmsSyncRuns)
     if (c.technologies !== false) add.push(Technologies)
     if (c.services !== false) add.push(Services)

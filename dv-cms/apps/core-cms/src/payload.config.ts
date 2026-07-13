@@ -29,6 +29,11 @@ import {
   driveSyncCancelEndpoint,
 } from './endpoints/driveSync.js'
 import { csvImportEndpoint } from './endpoints/csvImport.js'
+import {
+  aiGenerateTriggerEndpoint,
+  aiGenerateListEndpoint,
+  aiGenerateGetEndpoint,
+} from './endpoints/aiGenerate.js'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -86,7 +91,7 @@ export default buildConfig({
     collectionSpecific: true,
   },
   typescript: { outputFile: path.resolve(dirname, 'payload-types.ts') },
-  endpoints: [seedEndpoint, cmsSyncSourceEndpoint, cmsSyncEndpoint, cmsSyncRunsEndpoint, driveSyncTriggerEndpoint, driveSyncListEndpoint, driveSyncGetEndpoint, driveSyncCancelEndpoint, csvImportEndpoint],
+  endpoints: [seedEndpoint, cmsSyncSourceEndpoint, cmsSyncEndpoint, cmsSyncRunsEndpoint, driveSyncTriggerEndpoint, driveSyncListEndpoint, driveSyncGetEndpoint, driveSyncCancelEndpoint, csvImportEndpoint, aiGenerateTriggerEndpoint, aiGenerateListEndpoint, aiGenerateGetEndpoint],
   collections: [],
   plugins: [
     // Tier 1 — generic core (must come first: users + media).
@@ -107,6 +112,7 @@ export default buildConfig({
     dashboardPlugin({
       seedComponent: '/components/SeedButton#SeedButton',
       cmsSyncComponent: '/components/CmsSyncPanel/CmsSyncPanel#CmsSyncPanel',
+      aiGenerateComponent: '/components/AiGeneratePanel/AiGeneratePanel#AiGeneratePanel',
     }),
     // Custom content types (ACF-like) — after core (needs users/media/access).
     customTypesPlugin(),

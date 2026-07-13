@@ -9,6 +9,8 @@ export type DashboardPluginOptions = {
   seedComponent?: string
   /** Client CMS sync panel — path tới component (vd. /components/CmsSyncPanel#CmsSyncPanel). */
   cmsSyncComponent?: string
+  /** Client AI Generate panel — path tới component. */
+  aiGenerateComponent?: string
 }
 
 /**
@@ -40,6 +42,15 @@ export const dashboardPlugin =
       })
     }
 
+    if (options.aiGenerateComponent) {
+      widgets.push({
+        slug: 'dv-ai-generate',
+        Component: options.aiGenerateComponent,
+        minWidth: 'medium',
+        maxWidth: 'full',
+      })
+    }
+
     const config = { ...incoming }
     const admin = { ...(config.admin ?? {}) }
 
@@ -52,6 +63,7 @@ export const dashboardPlugin =
           if (slug === 'collections') return false
           if (!options.seedComponent && slug === 'dv-seed') return false
           if (!options.cmsSyncComponent && slug === 'dv-cms-sync') return false
+          if (!options.aiGenerateComponent && slug === 'dv-ai-generate') return false
           return true
         })
       },

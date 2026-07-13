@@ -49,6 +49,8 @@ import { AnalyticsChartWidget as AnalyticsChartWidget_0c869148cc3ac91aff1eb6410b
 import { SeedButton as SeedButton_fcf13aba43db26699925682d82e9535d } from '../../../components/SeedButton'
 import { CmsSyncPanel as CmsSyncPanel_d5ca907242d376a736aefb95b63de448 } from '../../../components/CmsSyncPanel/CmsSyncPanel'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
+import { AiGeneratePanel as AiGeneratePanel_b7c3d1e9f8a2e5d4 } from '../../../components/AiGeneratePanel/AiGeneratePanel'
+import { DriveFilesPanel as DriveFilesPanel_c8d4e2f0a9b3f6e1 } from '../../../components/DriveFilesPanel/DriveFilesPanel'
 
 /** @type import('payload').ImportMap */
 export const importMap = {
@@ -102,5 +104,7 @@ export const importMap = {
   "@dv/cms-core/dashboard#AnalyticsChartWidget": AnalyticsChartWidget_0c869148cc3ac91aff1eb6410b91e9ab,
   "/components/SeedButton#SeedButton": SeedButton_fcf13aba43db26699925682d82e9535d,
   "/components/CmsSyncPanel/CmsSyncPanel#CmsSyncPanel": CmsSyncPanel_d5ca907242d376a736aefb95b63de448,
+  "/components/AiGeneratePanel/AiGeneratePanel#AiGeneratePanel": AiGeneratePanel_b7c3d1e9f8a2e5d4,
+  "/components/DriveFilesPanel/DriveFilesPanel#DriveFilesPanel": DriveFilesPanel_c8d4e2f0a9b3f6e1,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }

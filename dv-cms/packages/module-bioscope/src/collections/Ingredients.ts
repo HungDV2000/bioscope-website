@@ -171,14 +171,16 @@ export const Ingredients: CollectionConfig = {
       admin: { position: 'sidebar', readOnly: true },
     },
     {
-      // Danh sách file từ Google Drive
+      // Danh sách file từ Google Drive — hiển thị bằng DriveFilesPanel component
       name: 'driveFiles',
       label: 'Drive Files (CMS Sync)',
       type: 'json',
       admin: {
         position: 'sidebar',
         readOnly: true,
-        description: '[{fileId, fileName, mimeType, webViewLink, webContentLink, size, modifiedTime}]',
+        components: {
+          Field: '/components/DriveFilesPanel/DriveFilesPanel#DriveFilesPanel',
+        },
       },
     },
     {

@@ -80,6 +80,66 @@ function completionParams(model: string, maxTokens: number, temperature: number)
 }
 
 /**
+ * Coerce the model's JSON into the GeneratedContent shape. Different models
+ * (gpt-4o vs gpt-5.6) vary: a bilingual field may come back as a plain string,
+ * and list fields may be missing or contain objects. Normalize so downstream
+ * writeback never trips over shape differences.
+ */
+function normalizeGenerated(raw: unknown): GeneratedContent {
+  const o = (raw ?? {}) as Record<string, unknown>
+
+  // {vi,en} — accept a plain string or a partial object.
+  const pair = (v: unknown): { vi: string; en: string } | undefined => {
+    if (v == null) return undefined
+    if (typeof v === 'string') return { vi: v, en: v }
+    if (typeof v === 'object') {
+      const p = v as { vi?: unknown; en?: unknown }
+      const vi = typeof p.vi === 'string' ? p.vi : typeof p.en === 'string' ? p.en : ''
+      const en = typeof p.en === 'string' ? p.en : vi
+      return vi || en ? { vi, en } : undefined
+    }
+    return undefined
+  }
+
+  // string[] — accept a string, or an array of strings/objects (pick label/text/value).
+  const list = (v: unknown): string[] => {
+    if (typeof v === 'string') return v.trim() ? [v.trim()] : []
+    if (!Array.isArray(v)) return []
+    return v
+      .map((it) => {
+        if (typeof it === 'string') return it.trim()
+        if (it && typeof it === 'object') {
+          const x = it as Record<string, unknown>
+          const cand = x.text ?? x.label ?? x.value ?? x.vi
+          return typeof cand === 'string' ? cand.trim() : ''
+        }
+        return ''
+      })
+      .filter(Boolean)
+  }
+
+  const str = (v: unknown): string | undefined =>
+    typeof v === 'string' ? v : v == null ? undefined : String(v)
+
+  return {
+    name: pair(o.name),
+    subtitle: pair(o.subtitle) ?? { vi: '', en: '' },
+    description: pair(o.description) ?? { vi: '', en: '' },
+    benefits: list(o.benefits),
+    applications: list(o.applications),
+    badges: list(o.badges),
+    suggestedDosage: str(o.suggestedDosage) ?? '',
+    inci: pair(o.inci),
+    originCountry: str(o.originCountry),
+    tag: (['NEW', 'TRENDING', 'EXCLUSIVE'].includes(o.tag as string) ? o.tag : null) as GeneratedContent['tag'],
+    specs: Array.isArray(o.specs) ? (o.specs as GeneratedContent['specs']) : undefined,
+    seoTitle: pair(o.seoTitle),
+    seoDescription: pair(o.seoDescription),
+    imagePrompt: pair(o.imagePrompt) ?? { vi: '', en: '' },
+  }
+}
+
+/**
  * Sinh nội dung cho nguyên liệu bằng GPT-4o.
  *
  * @param ingredientData — tất cả fields hiện có của nguyên liệu (từ Payload)
@@ -117,11 +177,11 @@ export async function generateIngredientContent(
     const raw = completion.choices[0]?.message?.content
     if (!raw) return { ok: false, error: 'No response from OpenAI' }
 
-    const parsed = JSON.parse(raw) as GeneratedContent
+    const parsed = normalizeGenerated(JSON.parse(raw))
 
-    // Basic validation
-    if (!parsed.subtitle?.vi || !parsed.description?.vi || !Array.isArray(parsed.benefits)) {
-      return { ok: false, error: `GPT-4o returned unexpected JSON shape: ${raw.slice(0, 200)}` }
+    // Only hard-fail if there is essentially no usable text at all.
+    if (!parsed.subtitle?.vi && !parsed.description?.vi) {
+      return { ok: false, error: `AI trả JSON không có subtitle/description: ${raw.slice(0, 600)}` }
     }
 
     return { ok: true, content: parsed }

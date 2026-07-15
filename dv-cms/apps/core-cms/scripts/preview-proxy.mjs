@@ -29,17 +29,32 @@ const FRONTEND_TARGET = process.env.FRONTEND_TARGET || 'http://localhost:3000'
 // Path prefixes that belong to the CMS admin app.
 const CMS_PREFIXES = ['/admin', '/api', '/cms-static', '/_payload', '/graphql-playground']
 
-const targetFor = (url) => (CMS_PREFIXES.some((p) => url === p || url.startsWith(`${p}/`) || url.startsWith(`${p}?`)) ? CMS_TARGET : FRONTEND_TARGET)
+const isCms = (url) => CMS_PREFIXES.some((p) => url === p || url.startsWith(`${p}/`) || url.startsWith(`${p}?`))
+
+/**
+ * Resolve {target, path} for a request. The CMS runs with assetPrefix=/cms-static
+ * so its HTML asks for /cms-static/_next/*, but Next serves those at /_next/* —
+ * strip the /cms-static prefix when forwarding to the CMS.
+ */
+function route(url) {
+  if (isCms(url)) {
+    const path = url.startsWith('/cms-static') ? url.slice('/cms-static'.length) || '/' : url
+    return { target: CMS_TARGET, path }
+  }
+  return { target: FRONTEND_TARGET, path: url }
+}
+
+const targetFor = (url) => route(url).target
 
 function forward(clientReq, clientRes) {
-  const target = targetFor(clientReq.url)
+  const { target, path } = route(clientReq.url)
   const t = new URL(target)
   const options = {
     protocol: t.protocol,
     hostname: t.hostname,
     port: t.port,
     method: clientReq.method,
-    path: clientReq.url,
+    path,
     headers: { ...clientReq.headers, host: t.host },
   }
 
@@ -60,11 +75,12 @@ const server = http.createServer(forward)
 
 // Proxy WebSocket upgrades (Next dev HMR) to the matching target.
 server.on('upgrade', (req, socket, head) => {
-  const t = new URL(targetFor(req.url))
+  const { target, path } = route(req.url)
+  const t = new URL(target)
   const proxyReq = http.request({
     hostname: t.hostname,
     port: t.port,
-    path: req.url,
+    path,
     method: req.method,
     headers: { ...req.headers, host: t.host },
   })

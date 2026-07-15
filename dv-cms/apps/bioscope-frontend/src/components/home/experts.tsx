@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Reveal } from '@/components/ui/reveal'
 import { Counter } from '@/components/ui/counter'
 import { useLocale } from '@/lib/i18n/context'
+import type { SectionMedia } from '@/lib/cms/home'
 
 const STAT_ICONS = [CalendarDays, FlaskConical, Award, Lightbulb]
 const STAT_VALUES = [
@@ -15,7 +16,7 @@ const STAT_VALUES = [
   { to: 23, suffix: '' },
 ]
 
-export function Experts() {
+export function Experts({ media }: { media?: SectionMedia }) {
   const { t } = useLocale()
   const e = t.home.experts
 
@@ -25,7 +26,7 @@ export function Experts() {
         <Reveal>
           <div className="relative overflow-hidden rounded-[1.75rem] shadow-card">
             <Image
-              src="/images/experts.png"
+              src={media?.image ?? "/images/experts.png"}
               alt={e.imageAlt}
               width={2880}
               height={1440}

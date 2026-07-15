@@ -1,4 +1,4 @@
-import { cmsFetch } from '@/lib/payload'
+import { cmsFetch, mediaUrl } from '@/lib/payload'
 import { getMessages, type Messages } from '@/lib/i18n/messages'
 import type { Locale } from '@/lib/i18n/config'
 
@@ -24,6 +24,16 @@ const DEFAULT_ORDER: HomeSection[] = [
   'certifications', 'experts', 'cta', 'aiChat',
 ]
 
+/** A card's image + (optional) link, extracted from a block outside the i18n overlay. */
+export type CardMedia = { image?: string; href?: string }
+export type SectionMedia = {
+  image?: string
+  featured?: CardMedia
+  items?: CardMedia[]
+  logos?: { image?: string; name?: string }[]
+}
+export type HomeMedia = Partial<Record<HomeSection, SectionMedia>>
+
 export type HomePageData = {
   /** Sections in the order defined by the home Page's blocks. */
   order: HomeSection[]
@@ -31,6 +41,48 @@ export type HomePageData = {
   home: HomeMessages
   /** CMS block row id per section (for Better Editor click-to-edit). */
   blockIds: Partial<Record<HomeSection, string>>
+  /** Images + category links per section (bypasses the shape-locked i18n overlay). */
+  media: HomeMedia
+}
+
+/** Build the public link for an ingredient-category relationship value. */
+function categoryHref(cat: unknown): string | undefined {
+  const slug = typeof cat === 'object' && cat !== null ? (cat as { slug?: string }).slug : undefined
+  return slug ? `/nguyen-lieu?category=${encodeURIComponent(slug)}` : undefined
+}
+
+function uploadUrl(v: unknown): string | undefined {
+  const url = typeof v === 'object' && v !== null ? (v as { url?: string }).url : undefined
+  return mediaUrl(url) ?? undefined
+}
+
+/** Extract the media (images + category links) from a raw block by its type. */
+function extractMedia(block: Block): SectionMedia | undefined {
+  const b = block as Record<string, unknown>
+  switch (block.blockType) {
+    case 'homeHero':
+    case 'homeExperts':
+    case 'homeCta':
+      return { image: uploadUrl(b.image) }
+    case 'homeCategories': {
+      const f = (b.featured ?? {}) as Record<string, unknown>
+      const items = Array.isArray(b.items) ? (b.items as Record<string, unknown>[]) : []
+      return {
+        featured: { image: uploadUrl(f.image), href: categoryHref(f.category) },
+        items: items.map((it) => ({ image: uploadUrl(it.image), href: categoryHref(it.category) })),
+      }
+    }
+    case 'homeCertifications': {
+      const items = Array.isArray(b.items) ? (b.items as Record<string, unknown>[]) : []
+      return { items: items.map((it) => ({ image: uploadUrl(it.logo) })) }
+    }
+    case 'homeBrands': {
+      const logos = Array.isArray(b.logos) ? (b.logos as Record<string, unknown>[]) : []
+      return { logos: logos.map((l) => ({ image: uploadUrl(l.logo), name: typeof l.name === 'string' ? l.name : undefined })) }
+    }
+    default:
+      return undefined
+  }
 }
 
 /**
@@ -65,7 +117,7 @@ type Block = { blockType: string } & Record<string, unknown>
  */
 export async function getHomePage(locale: Locale): Promise<HomePageData> {
   const base = getMessages(locale).home
-  const fallback: HomePageData = { order: DEFAULT_ORDER, home: base, blockIds: {} }
+  const fallback: HomePageData = { order: DEFAULT_ORDER, home: base, blockIds: {}, media: {} }
 
   const settings = await cmsFetch<{ homePage?: { id?: string | number } | string | number | null }>(
     'globals/site-settings',
@@ -75,20 +127,24 @@ export async function getHomePage(locale: Locale): Promise<HomePageData> {
   const homePageId = typeof rel === 'object' && rel !== null ? rel.id : rel
   if (!homePageId) return fallback
 
-  const page = await cmsFetch<{ layout?: Block[] }>(`pages/${homePageId}?depth=0`, { locale, revalidate: 60 })
+  // depth=1 populates the block uploads (image.url) + category relationships (slug).
+  const page = await cmsFetch<{ layout?: Block[] }>(`pages/${homePageId}?depth=1`, { locale, revalidate: 60 })
   const blocks = page?.layout
   if (!blocks?.length) return fallback
 
   const order: HomeSection[] = []
   const blockIds: Partial<Record<HomeSection, string>> = {}
+  const media: HomeMedia = {}
   const home = { ...base }
   for (const block of blocks) {
     const section = BLOCK_TO_SECTION[block.blockType]
     if (!section || order.includes(section)) continue
     order.push(section)
     if (typeof block.id === 'string') blockIds[section] = block.id
+    const m = extractMedia(block)
+    if (m) media[section] = m
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ;(home as any)[section] = overlay(base[section], block)
   }
-  return order.length ? { order, home, blockIds } : fallback
+  return order.length ? { order, home, blockIds, media } : fallback
 }

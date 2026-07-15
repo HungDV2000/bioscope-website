@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import { CLIENT_LOGOS } from '@/lib/content'
 import { useLocale } from '@/lib/i18n/context'
+import type { SectionMedia } from '@/lib/cms/home'
 import { useTrackScroll } from '@/lib/use-track-scroll'
 import { cn } from '@/lib/utils'
 
@@ -24,7 +25,7 @@ const track =
 const navBtn =
   'grid h-9 w-9 shrink-0 place-items-center rounded-full border border-primary-border bg-white text-ink/40 transition-colors duration-300 hover:text-primary'
 
-export function Brands() {
+export function Brands({ media }: { media?: SectionMedia }) {
   const { t } = useLocale()
   const categories = t.home.brands.categories.map((label, i) => ({
     icon: CATEGORY_ICONS[i],
@@ -79,7 +80,7 @@ export function Brands() {
           {/* Right — partners: auto-loop marquee, no arrows, drag enabled */}
           <div className="relative" {...brandHover}>
             <div ref={brandRef} {...brandDrag} className={track}>
-              {[...CLIENT_LOGOS, ...CLIENT_LOGOS].map((c, i) => (
+              {(() => { const cms = (media?.logos ?? []).filter(l => l.image).map(l => ({ logo: l.image as string, name: l.name ?? '' })); const base = cms.length ? cms : CLIENT_LOGOS; return [...base, ...base]; })().map((c, i) => (
                 <div
                   key={`${c.name}-${i}`}
                   className="flex h-[104px] w-[170px] shrink-0 items-center justify-center rounded-2xl border border-primary-border/70 bg-white px-4"

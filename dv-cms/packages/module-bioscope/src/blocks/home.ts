@@ -6,6 +6,16 @@ const T = (name: string, label?: Record<string, string>): Field => ({ name, type
 const A = (name: string, label?: Record<string, string>): Field => ({ name, type: 'textarea', localized: true, ...(label ? { label } : {}) })
 /** Localized list of short strings (returns string[]). */
 const LIST = (name: string, label?: Record<string, string>): Field => ({ name, type: 'text', hasMany: true, localized: true, ...(label ? { label } : {}) })
+/** Image upload (not localized). */
+const IMG = (name = 'image', label?: Record<string, string>): Field => ({ name, type: 'upload', relationTo: 'media', ...(label ? { label } : {}) })
+/** Relationship to an ingredient category (for "link to category"). */
+const CAT = (name = 'category', label?: Record<string, string>): Field => ({
+  name,
+  type: 'relationship',
+  relationTo: 'ingredient-categories',
+  ...(label ? { label } : {}),
+  admin: { description: { en: 'Link this card to an ingredient category.', vi: 'Liên kết thẻ này tới một danh mục nguyên liệu.' } },
+})
 
 /**
  * Home page section blocks — one per section of the real home design.
@@ -23,6 +33,7 @@ export const HOME_BLOCKS: Block[] = [
       A('description'),
       T('ctaPrimary'), T('ctaSecondary'),
       LIST('trust', { en: 'Trust badges', vi: 'Nhãn tin cậy' }),
+      IMG('image', { en: 'Hero image', vi: 'Ảnh Hero' }),
     ],
   },
   {
@@ -32,6 +43,7 @@ export const HOME_BLOCKS: Block[] = [
     fields: [
       T('title'),
       LIST('categories', { en: 'Category chips', vi: 'Chip danh mục' }),
+      { name: 'logos', type: 'array', label: { en: 'Partner logos', vi: 'Logo đối tác' }, fields: [IMG('logo', { en: 'Logo', vi: 'Logo' }), { name: 'name', type: 'text' }] },
     ],
   },
   {
@@ -49,8 +61,8 @@ export const HOME_BLOCKS: Block[] = [
     labels: { singular: { en: 'Ingredient categories', vi: 'Danh mục nguyên liệu' }, plural: { en: 'Ingredient categories', vi: 'Danh mục nguyên liệu' } },
     fields: [
       T('title'), A('description'), T('viewAll'),
-      { name: 'featured', type: 'group', label: { en: 'Featured card', vi: 'Thẻ nổi bật' }, fields: [T('name'), A('desc'), T('cta')] },
-      { name: 'items', type: 'array', label: { en: 'Cards', vi: 'Thẻ' }, fields: [T('name', { en: 'Name', vi: 'Tên' }), A('desc', { en: 'Description', vi: 'Mô tả' })] },
+      { name: 'featured', type: 'group', label: { en: 'Featured card', vi: 'Thẻ nổi bật' }, fields: [T('name'), A('desc'), T('cta'), IMG('image', { en: 'Image', vi: 'Ảnh' }), CAT()] },
+      { name: 'items', type: 'array', label: { en: 'Cards', vi: 'Thẻ' }, fields: [T('name', { en: 'Name', vi: 'Tên' }), A('desc', { en: 'Description', vi: 'Mô tả' }), IMG('image', { en: 'Image', vi: 'Ảnh' }), CAT()] },
     ],
   },
   {
@@ -65,7 +77,7 @@ export const HOME_BLOCKS: Block[] = [
     labels: { singular: { en: 'Certifications', vi: 'Chứng nhận' }, plural: { en: 'Certifications', vi: 'Chứng nhận' } },
     fields: [
       T('title'), A('description'), T('countries'),
-      { name: 'items', type: 'array', label: { en: 'Items', vi: 'Mục' }, fields: [T('name', { en: 'Name', vi: 'Tên' }), T('sub', { en: 'Subtitle', vi: 'Phụ đề' })] },
+      { name: 'items', type: 'array', label: { en: 'Items', vi: 'Mục' }, fields: [T('name', { en: 'Name', vi: 'Tên' }), T('sub', { en: 'Subtitle', vi: 'Phụ đề' }), IMG('logo', { en: 'Logo', vi: 'Logo' })] },
     ],
   },
   {
@@ -76,6 +88,7 @@ export const HOME_BLOCKS: Block[] = [
       T('eyebrow'), T('title'),
       LIST('paragraphs', { en: 'Paragraphs', vi: 'Đoạn văn' }),
       T('cta'), T('imageAlt'),
+      IMG('image', { en: 'Team image', vi: 'Ảnh đội ngũ' }),
       { name: 'stats', type: 'array', label: { en: 'Stats (labels)', vi: 'Chỉ số (nhãn)' }, admin: { description: { en: 'Numbers are fixed in the design; edit labels only.', vi: 'Số cố định theo thiết kế; chỉ sửa nhãn.' } }, fields: [T('label', { en: 'Label', vi: 'Nhãn' })] },
     ],
   },
@@ -96,7 +109,7 @@ export const HOME_BLOCKS: Block[] = [
     slug: 'homeCta',
     interfaceName: 'HomeCtaBlock',
     labels: { singular: { en: 'Closing CTA', vi: 'CTA cuối trang' }, plural: { en: 'Closing CTA', vi: 'CTA cuối trang' } },
-    fields: [T('title'), A('description'), T('primary'), T('secondary')],
+    fields: [T('title'), A('description'), T('primary'), T('secondary'), IMG('image', { en: 'Background image', vi: 'Ảnh nền' })],
   },
 ]
 

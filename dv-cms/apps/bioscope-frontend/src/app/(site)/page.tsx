@@ -11,26 +11,39 @@ import { AiChatPromo } from '@/components/home/ai-chat-promo'
 import { LocaleProvider } from '@/lib/i18n/context'
 import { getMessages } from '@/lib/i18n/messages'
 import { getLocale } from '@/lib/i18n/server'
-import { getHomePage, type HomeSection } from '@/lib/cms/home'
+import { getHomePage, type HomeSection, type SectionMedia } from '@/lib/cms/home'
 
-/** Section key → component. The AI promo is the last static section above the footer. */
-const SECTIONS: Record<HomeSection, ReactNode> = {
-  hero: <Hero key="hero" />,
-  brands: <Brands key="brands" />,
-  process: <Process key="process" />,
-  categories: <Categories key="categories" />,
-  caseStudies: <CaseStudies key="caseStudies" />,
-  certifications: <Certifications key="certifications" />,
-  experts: <Experts key="experts" />,
-  cta: <CtaBand key="cta" />,
-  aiChat: <AiChatPromo key="aiChat" />,
+/** Render a section, passing the CMS-managed images/links to media-aware ones. */
+function renderSection(section: HomeSection, media?: SectionMedia): ReactNode {
+  switch (section) {
+    case 'hero':
+      return <Hero media={media} />
+    case 'brands':
+      return <Brands media={media} />
+    case 'process':
+      return <Process />
+    case 'categories':
+      return <Categories media={media} />
+    case 'caseStudies':
+      return <CaseStudies />
+    case 'certifications':
+      return <Certifications media={media} />
+    case 'experts':
+      return <Experts media={media} />
+    case 'cta':
+      return <CtaBand media={media} />
+    case 'aiChat':
+      return <AiChatPromo />
+    default:
+      return null
+  }
 }
 
 export default async function HomePage() {
   const locale = await getLocale()
   const messages = getMessages(locale)
   // Home = the Page selected in Site Settings → homePage (falls back to static i18n).
-  const { order, home, blockIds } = await getHomePage(locale)
+  const { order, home, blockIds, media } = await getHomePage(locale)
 
   return (
     <LocaleProvider locale={locale} messages={{ ...messages, home }}>
@@ -38,12 +51,15 @@ export default async function HomePage() {
         // data-better-editor-id lets the CMS Better Editor map a preview click
         // back to the matching block (home page only — blocks come from the Page).
         const id = blockIds[section]
+        const node = renderSection(section, media[section])
         return id ? (
           <div key={section} data-better-editor-id={id}>
-            {SECTIONS[section]}
+            {node}
           </div>
         ) : (
-          SECTIONS[section]
+          <div key={section} style={{ display: 'contents' }}>
+            {node}
+          </div>
         )
       })}
     </LocaleProvider>

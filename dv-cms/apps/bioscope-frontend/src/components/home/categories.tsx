@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Reveal } from '@/components/ui/reveal'
 import { img, type ImgKey } from '@/lib/images'
 import { useLocale } from '@/lib/i18n/context'
+import type { SectionMedia } from '@/lib/cms/home'
 
 const IMAGE_KEYS: ImgKey[] = ['oil', 'botanical', 'powder', 'capsules']
 const IMAGE_SRCS = [
@@ -16,9 +17,10 @@ const IMAGE_SRCS = [
   undefined,
 ]
 
-export function Categories() {
+export function Categories({ media }: { media?: SectionMedia }) {
   const { t } = useLocale()
   const c = t.home.categories
+  const featuredHref = media?.featured?.href ?? '/nguyen-lieu'
 
   return (
     <section className="bg-white py-14">
@@ -41,7 +43,7 @@ export function Categories() {
           <Reveal className="h-full">
             <div className="relative flex h-full flex-col justify-between overflow-hidden rounded-[1.75rem] p-6 text-white shadow-card sm:p-7">
               <Image
-                src="/images/nl1.png"
+                src={media?.featured?.image ?? '/images/nl1.png'}
                 alt={c.featured.name}
                 fill
                 sizes="340px"
@@ -54,7 +56,7 @@ export function Categories() {
                 <p className="mt-3 text-[13.5px] leading-relaxed text-white/85">{c.featured.desc}</p>
               </div>
               <div className="relative mt-6">
-                <Button href="/nguyen-lieu" variant="ghost">
+                <Button href={featuredHref} variant="ghost">
                   {c.featured.cta}
                 </Button>
               </div>
@@ -62,18 +64,21 @@ export function Categories() {
           </Reveal>
 
           <div className="grid h-full gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {c.items.map(({ name, desc }, i) => (
+            {c.items.map(({ name, desc }, i) => {
+              const itemImg = media?.items?.[i]?.image ?? IMAGE_SRCS[i] ?? img(IMAGE_KEYS[i], 420)
+              const itemHref = media?.items?.[i]?.href ?? '/nguyen-lieu'
+              return (
               <Reveal key={name} delay={i * 0.07} className="h-full">
                 <Link
-                  href="/nguyen-lieu"
+                  href={itemHref}
                   className="group flex h-full flex-col overflow-hidden rounded-[1.75rem] border border-primary-border/60 bg-white transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] hover:-translate-y-1 hover:shadow-card"
                 >
                   <div className="relative aspect-[16/11] overflow-hidden">
                     <Image
-                      src={IMAGE_SRCS[i] ?? img(IMAGE_KEYS[i], 420)}
+                      src={itemImg}
                       alt={name}
                       fill
-                      unoptimized={Boolean(IMAGE_SRCS[i])}
+                      unoptimized
                       sizes="(max-width: 1024px) 50vw, 220px"
                       className="object-cover transition-transform duration-700 group-hover:scale-105"
                     />
@@ -85,7 +90,8 @@ export function Categories() {
                   </div>
                 </Link>
               </Reveal>
-            ))}
+              )
+            })}
           </div>
         </div>
       </div>

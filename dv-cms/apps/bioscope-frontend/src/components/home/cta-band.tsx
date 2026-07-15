@@ -3,8 +3,9 @@
 import { Button } from '@/components/ui/button'
 import { Reveal } from '@/components/ui/reveal'
 import { useLocale } from '@/lib/i18n/context'
+import type { SectionMedia } from '@/lib/cms/home'
 
-export function CtaBand() {
+export function CtaBand({ media: _media }: { media?: SectionMedia }) {
   const { t } = useLocale()
   const c = t.home.cta
 

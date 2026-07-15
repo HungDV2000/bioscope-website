@@ -5,10 +5,11 @@ import { FlaskConical, ShieldCheck, Truck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Reveal } from '@/components/ui/reveal'
 import { useLocale } from '@/lib/i18n/context'
+import type { SectionMedia } from '@/lib/cms/home'
 
 const TRUST_ICONS = [FlaskConical, ShieldCheck, Truck] as const
 
-export function Hero() {
+export function Hero({ media }: { media?: SectionMedia }) {
   const { t } = useLocale()
   const h = t.home.hero
 
@@ -16,10 +17,11 @@ export function Hero() {
     <section className="relative overflow-hidden bg-mist pt-[72px]">
       <div className="absolute inset-0" aria-hidden>
         <Image
-          src="/images/banners/banner.png"
+          src={media?.image ?? "/images/banners/banner.png"}
           alt=""
           fill
           priority
+          unoptimized={Boolean(media?.image)}
           sizes="100vw"
           className="object-cover object-center"
         />

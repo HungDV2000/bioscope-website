@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import { Reveal } from '@/components/ui/reveal'
 import { useLocale } from '@/lib/i18n/context'
+import type { SectionMedia } from '@/lib/cms/home'
 import { useTrackScroll } from '@/lib/use-track-scroll'
 
 /** Certification logos from /public/images/certificates (drag + auto-scroll, full colour). */
@@ -25,12 +26,17 @@ const CERTS = [
   { src: 'E_SDG-goals_icons-individual-rgb-14-300x300.png', alt: 'SDG 14 — Life below water' },
 ]
 
-export function Certifications() {
+export function Certifications({ media }: { media?: SectionMedia }) {
   const { t } = useLocale()
   const c = t.home.certifications
   const { ref, dragProps, hoverProps } = useTrackScroll(true, 0.4)
+  // Prefer CMS-managed logos when the block provides them; else the built-in set.
+  const cmsLogos = (media?.items ?? []).filter((it) => it.image)
+  const logos = cmsLogos.length
+    ? cmsLogos.map((it, i) => ({ src: it.image as string, alt: CERTS[i]?.alt ?? '' }))
+    : CERTS.map((cert) => ({ src: `/images/certificates/${cert.src}`, alt: cert.alt }))
   // Duplicate the list so the auto-scroll loops seamlessly.
-  const track = [...CERTS, ...CERTS]
+  const track = [...logos, ...logos]
 
   return (
     <section className="bg-white py-10">
@@ -58,7 +64,7 @@ export function Certifications() {
                   className="flex h-20 w-[150px] shrink-0 items-center justify-center rounded-2xl border border-primary-border/50 bg-white px-5"
                 >
                   <Image
-                    src={`/images/certificates/${cert.src}`}
+                    src={cert.src}
                     alt={cert.alt}
                     width={130}
                     height={64}

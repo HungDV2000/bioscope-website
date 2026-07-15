@@ -5,6 +5,7 @@ import { getLocale } from '@/lib/i18n/server'
 import { DEFAULT_OG_IMAGE } from '@/lib/seo'
 import { getSeoSettings } from '@/lib/cms/seo-settings'
 import { Analytics, GtmNoScript } from '@/components/analytics'
+import { CookieBanner } from '@/components/consent/CookieBanner'
 import { getTracking } from '@/lib/cms/site-settings'
 import './globals.css'
 
@@ -97,6 +98,7 @@ export default async function RootLayout({
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
         {children}
         <Analytics tracking={tracking} />
+        <CookieBanner />
       </body>
     </html>
   )

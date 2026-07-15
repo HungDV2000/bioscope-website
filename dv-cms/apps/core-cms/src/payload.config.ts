@@ -16,6 +16,7 @@ import { customTypesPlugin } from '@dv/module-custom-types'
 import { seoPlugin } from '@dv/module-seo'
 import { securityPlugin } from '@dv/module-security'
 import { imagePlugin } from '@dv/module-image'
+import { consentPlugin } from '@dv/module-consent'
 import { languagesPlugin, resolveLocalizationConfig } from '@dv/module-languages'
 import { permissionsPlugin } from '@dv/module-permissions'
 import { betterEditor } from 'payload-better-editor'
@@ -141,6 +142,8 @@ export default buildConfig({
     betterEditor({ collections: ['pages'] }),
     // Wordfence-style security: managed firewall, IP blocklist, event log.
     securityPlugin(),
+    // Complianz-style GDPR cookie consent (banner + proof-of-consent).
+    consentPlugin(),
     // RBAC — must be last so it wraps all collections/globals.
     permissionsPlugin(),
   ],

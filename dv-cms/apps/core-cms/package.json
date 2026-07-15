@@ -28,6 +28,7 @@
     "@dv/module-bioscope": "workspace:*",
     "@dv/module-blocks": "workspace:*",
     "@dv/module-catalog": "workspace:*",
+    "@dv/module-consent": "workspace:*",
     "@dv/module-custom-types": "workspace:*",
     "@dv/module-image": "workspace:*",
     "@dv/module-languages": "workspace:*",

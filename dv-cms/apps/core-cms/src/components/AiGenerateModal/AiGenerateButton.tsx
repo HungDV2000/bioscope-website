@@ -129,7 +129,7 @@ interface AiGenerateModalProps {
   onApply: (result: AiGenerateResult) => void
 }
 
-const AiGenerateModal: React.FC<AiGenerateModalProps> = ({
+export const AiGenerateModal: React.FC<AiGenerateModalProps> = ({
   ingredientId,
   ingredientName,
   onClose,

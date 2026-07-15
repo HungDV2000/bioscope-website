@@ -55,7 +55,14 @@ function forward(clientReq, clientRes) {
     port: t.port,
     method: clientReq.method,
     path,
-    headers: { ...clientReq.headers, host: t.host },
+    // Preserve the original Host (admin.bioscope.vn). Rewriting it to the target
+    // host breaks Next 16's Server Action / RSC origin validation. Add the
+    // standard forwarding headers instead.
+    headers: {
+      ...clientReq.headers,
+      'x-forwarded-host': clientReq.headers.host,
+      'x-forwarded-proto': clientReq.headers['x-forwarded-proto'] || 'https',
+    },
   }
 
   const proxyReq = http.request(options, (proxyRes) => {
@@ -82,7 +89,7 @@ server.on('upgrade', (req, socket, head) => {
     port: t.port,
     path,
     method: req.method,
-    headers: { ...req.headers, host: t.host },
+    headers: { ...req.headers },
   })
   proxyReq.on('upgrade', (proxyRes, proxySocket) => {
     socket.write(

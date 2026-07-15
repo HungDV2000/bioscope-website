@@ -33,7 +33,7 @@ const securityHeaders = [
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  transpilePackages: ['@dv/cms-core'],
+  transpilePackages: ['@dv/cms-core', '@dv/module-security'],
   turbopack: {
     root: fileURLToPath(new URL('../..', import.meta.url)),
   },

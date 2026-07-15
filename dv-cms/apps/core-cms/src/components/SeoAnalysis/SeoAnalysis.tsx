@@ -16,7 +16,7 @@ import {
   overallRating,
   type Assessment,
   type Rating,
-} from '@dv/module-seo'
+} from '@dv/module-seo/analyze'
 
 const DOT: Record<Rating, string> = { good: '#38a169', ok: '#e6a23c', bad: '#f56565' }
 

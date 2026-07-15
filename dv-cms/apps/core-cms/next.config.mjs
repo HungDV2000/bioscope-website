@@ -20,6 +20,10 @@ const nextConfig = {
     '@dv/module-custom-types',
     '@dv/module-languages',
     '@dv/module-permissions',
+    '@dv/module-seo',
+    '@dv/module-security',
+    '@dv/module-image',
+    '@dv/module-consent',
   ],
   typescript: {
     // Disable type check during build (pre-existing issues in packages/core unrelated to CSV import).

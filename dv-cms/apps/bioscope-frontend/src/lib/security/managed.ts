@@ -8,7 +8,8 @@
  */
 
 import type { NextRequest } from 'next/server'
-import { inspect as engineInspect, type FirewallSettings } from '@dv/module-security'
+// Import ONLY the pure firewall engine (no payload/server deps) via the subpath.
+import { inspect as engineInspect, type FirewallSettings } from '@dv/module-security/firewall'
 import { inspect as localInspect, type WafResult } from './waf'
 import { clientIp } from '@/lib/rate-limit'
 

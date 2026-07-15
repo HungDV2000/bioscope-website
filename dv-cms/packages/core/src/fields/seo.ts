@@ -23,6 +23,14 @@ export const seoField = (): Field => ({
       localized: true,
       admin: { description: 'Từ khóa trọng tâm — nội dung sẽ được chấm điểm theo từ khóa này.' },
     },
+    // Internal-linking suggestions (Yoast Premium-style).
+    {
+      name: 'internalLinks',
+      type: 'ui',
+      admin: {
+        components: { Field: '/components/InternalLinkSuggestions/InternalLinkSuggestions#InternalLinkSuggestions' },
+      },
+    },
     {
       name: 'title',
       type: 'text',

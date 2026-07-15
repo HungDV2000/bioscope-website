@@ -1,9 +1,12 @@
 import type { Config, Plugin } from 'payload'
 import { SeoSettings } from './globals/SeoSettings.js'
+import { internalLinksEndpoint } from './endpoints/internalLinks.js'
 
 export type SeoPluginOptions = {
   /** Register the site-wide SEO settings global (default true). */
   settings?: boolean
+  /** Register the internal-linking suggestions endpoint (default true). */
+  internalLinks?: boolean
 }
 
 /**
@@ -17,6 +20,9 @@ export const seoPlugin =
     const config = { ...incoming }
     if (options.settings !== false) {
       config.globals = [...(config.globals ?? []), SeoSettings]
+    }
+    if (options.internalLinks !== false) {
+      config.endpoints = [...(config.endpoints ?? []), internalLinksEndpoint]
     }
     return config
   }

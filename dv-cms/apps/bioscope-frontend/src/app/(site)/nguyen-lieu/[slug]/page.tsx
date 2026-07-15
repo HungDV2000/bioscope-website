@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
-import { ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { DetailTabs } from '@/components/ingredients/detail-tabs'
 import { INGREDIENTS } from '@/lib/content'
@@ -11,6 +10,8 @@ import { getMessages } from '@/lib/i18n/messages'
 import { ingredientImg } from '@/lib/images'
 import { getIngredient } from '@/lib/cms/ingredients'
 import { JsonLd } from '@/components/seo/json-ld'
+import { Breadcrumbs } from '@/components/seo/Breadcrumbs'
+import { productSchema } from '@/lib/seo/schema'
 import { absUrl, DEFAULT_OG_IMAGE } from '@/lib/seo'
 
 export function generateStaticParams() {
@@ -36,44 +37,25 @@ export default async function IngredientDetail({ params }: { params: Promise<{ s
   const askExpert = locale === 'en' ? 'Ask an expert' : 'Hỏi chuyên gia'
 
   const url = absUrl(`/nguyen-lieu/${it.slug}`)
-  const jsonLd = [
-    {
-      '@context': 'https://schema.org',
-      '@type': 'Product',
-      name: it.name,
-      description: it.shortDesc,
-      image: it.imageSrc ?? absUrl(DEFAULT_OG_IMAGE),
-      category: it.category,
-      ...(it.manufacturer ? { brand: { '@type': 'Brand', name: it.manufacturer } } : {}),
-      ...(it.origin ? { countryOfOrigin: it.origin } : {}),
-      url,
-    },
-    {
-      '@context': 'https://schema.org',
-      '@type': 'BreadcrumbList',
-      itemListElement: [
-        { '@type': 'ListItem', position: 1, name: m.nav.home, item: absUrl('/') },
-        { '@type': 'ListItem', position: 2, name: m.nav.ingredients, item: absUrl('/nguyen-lieu') },
-        { '@type': 'ListItem', position: 3, name: it.name, item: url },
-      ],
-    },
+  const productLd = productSchema({
+    name: it.name,
+    description: it.shortDesc,
+    image: it.imageSrc ?? absUrl(DEFAULT_OG_IMAGE),
+    category: it.category,
+    brand: it.manufacturer,
+    url,
+  })
+  const crumbs = [
+    { name: m.nav.home, path: '/' },
+    { name: m.nav.ingredients, path: '/nguyen-lieu' },
+    { name: it.name, path: `/nguyen-lieu/${it.slug}` },
   ]
 
   return (
     <article className="bg-white pt-32 lg:pt-40">
-      <JsonLd data={jsonLd} />
+      <JsonLd data={productLd} />
       <div className="container-bs pb-24">
-        <nav className="flex items-center gap-1.5 text-[13px] text-ink/45">
-          <Link href="/" className="hover:text-primary">
-            {m.nav.home}
-          </Link>
-          <ChevronRight className="h-3.5 w-3.5" />
-          <Link href="/nguyen-lieu" className="hover:text-primary">
-            {m.nav.ingredients}
-          </Link>
-          <ChevronRight className="h-3.5 w-3.5" />
-          <span className="text-ink/70">{it.name}</span>
-        </nav>
+        <Breadcrumbs crumbs={crumbs} />
 
         <div className="mt-8 grid gap-12 lg:grid-cols-[1fr_360px]">
           <div>

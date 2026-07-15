@@ -58,6 +58,26 @@ export const seoField = (): Field => ({
       defaultValue: false,
       admin: { description: 'Nội dung nền tảng (cornerstone) — bài quan trọng, chấm điểm chặt hơn.' },
     },
+    {
+      name: 'schemaType',
+      type: 'select',
+      defaultValue: 'auto',
+      admin: { description: 'Loại schema.org (JSON-LD) cho trang này.' },
+      options: [
+        { label: 'Tự động theo loại trang', value: 'auto' },
+        { label: 'Article (bài viết)', value: 'Article' },
+        { label: 'Product (sản phẩm/nguyên liệu)', value: 'Product' },
+        { label: 'FAQPage (câu hỏi thường gặp)', value: 'FAQPage' },
+        { label: 'WebPage (trang thường)', value: 'WebPage' },
+        { label: 'Không xuất schema', value: 'none' },
+      ],
+    },
+    {
+      name: 'breadcrumbTitle',
+      type: 'text',
+      localized: true,
+      admin: { description: 'Nhãn hiển thị trên breadcrumb (bỏ trống dùng tiêu đề trang).' },
+    },
     // Social overrides (Open Graph / Twitter) — fall back to title/description.
     {
       type: 'collapsible',

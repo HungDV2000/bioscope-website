@@ -46,7 +46,7 @@ export type GeneratedContent = {
   inci?: { vi: string; en: string }
   originCountry?: string
   tag?: 'NEW' | 'TRENDING' | 'EXCLUSIVE' | null
-  specs?: Array<{ label: { vi: string; en: string }; value: string; unit?: string }>
+  specs?: Array<{ label: { vi: string; en: string } | string; value: string; unit?: string }>
   seoTitle?: { vi: string; en: string }
   seoDescription?: { vi: string; en: string }
   imagePrompt: { vi: string; en: string }

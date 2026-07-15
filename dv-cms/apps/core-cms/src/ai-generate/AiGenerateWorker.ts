@@ -584,17 +584,29 @@ export async function runAiGenerate(input: WorkerInput): Promise<void> {
     // update by row `id` (rewriting the array without ids would drop the required
     // vi label and fail validation with "Specs N > Label").
     if (gc.specs?.length) {
-      const cleaned = gc.specs.filter((s) => s?.label && s?.value)
+      // `label` may arrive as a localized object {vi,en} OR (depending on the
+      // model) as a plain string. Resolve both, per locale.
+      const labelFor = (raw: unknown, l: 'vi' | 'en'): string => {
+        if (typeof raw === 'string') return raw.trim()
+        if (raw && typeof raw === 'object') {
+          const o = raw as { vi?: string; en?: string }
+          return ((l === 'en' ? o.en || o.vi : o.vi || o.en) || '').trim()
+        }
+        return ''
+      }
+      // Keep only specs that have a non-empty label in the default locale (vi) and
+      // a value — an empty required `label` is what triggers "Specs N > Label".
+      const cleaned = gc.specs.filter(
+        (s) => s && s.value != null && String(s.value).trim() && labelFor(s.label, 'vi'),
+      )
       if (cleaned.length) {
-        const labelFor = (s: (typeof cleaned)[number], l: 'vi' | 'en') =>
-          (l === 'en' ? s.label.en || s.label.vi : s.label.vi || s.label.en) || ''
         await payload.update({
           collection: 'ingredients',
           id: ingredientId,
           data: {
             name: nameFor('vi'),
             specs: cleaned.map((s) => ({
-              label: labelFor(s, 'vi'),
+              label: labelFor(s.label, 'vi'),
               value: String(s.value),
               unit: s.unit || undefined,
             })),
@@ -615,7 +627,8 @@ export async function runAiGenerate(input: WorkerInput): Promise<void> {
                 name: nameFor('en'),
                 specs: rows.map((r, i) => ({
                   id: r.id,
-                  label: labelFor(cleaned[i], 'en'),
+                  // Fall back to the vi label so the required en label is never empty.
+                  label: labelFor(cleaned[i].label, 'en') || labelFor(cleaned[i].label, 'vi'),
                   value: String(cleaned[i].value),
                   unit: cleaned[i].unit || undefined,
                 })),
@@ -627,6 +640,8 @@ export async function runAiGenerate(input: WorkerInput): Promise<void> {
         } catch (specErr) {
           addLog(logs, 'warn', `Không ghi được label EN cho specs: ${specErr instanceof Error ? specErr.message : String(specErr)}`)
         }
+      } else if (gc.specs.length) {
+        addLog(logs, 'warn', `Bỏ qua ${gc.specs.length} specs vì thiếu label/value hợp lệ`)
       }
     }
     addLog(logs, 'info', `Đã ghi nội dung vào nguyên liệu (${Object.keys(primaryData).join(', ')}${gc.specs?.length ? ', specs' : ''})`)

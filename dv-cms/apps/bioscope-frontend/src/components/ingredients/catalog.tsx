@@ -239,9 +239,12 @@ export function Catalog({ items }: { items: Ingredient[] }) {
                     src={ingredientImg(it, 600)}
                     alt={it.name}
                     fill
-                    unoptimized={Boolean(it.imageSrc)}
+                    unoptimized
                     sizes="(max-width: 768px) 100vw, 360px"
-                    className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:scale-105"
+                    className={cn(
+                      'transition-transform duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:scale-105',
+                      it.imageSrc ? 'object-cover' : 'object-contain p-2',
+                    )}
                   />
                   <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/25 to-transparent" />
                   <span className="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-[11px] font-semibold text-primary-dark backdrop-blur-sm">
@@ -309,10 +312,10 @@ function Pagination({
 }) {
   const { t } = useLocale()
   const cat = t.ingredientsCatalog
-  const pages = Array.from({ length: totalPages }, (_, i) => i + 1)
+  const pages = pageWindow(page, totalPages)
 
   return (
-    <nav aria-label={cat.pagination} className="mt-12 flex items-center justify-center gap-2">
+    <nav aria-label={cat.pagination} className="mt-12 flex flex-wrap items-center justify-center gap-2">
       <button
         type="button"
         aria-label={cat.prevPage}
@@ -322,22 +325,28 @@ function Pagination({
       >
         <ChevronLeft className="h-4 w-4" />
       </button>
-      {pages.map((p) => (
-        <button
-          key={p}
-          type="button"
-          aria-current={p === page ? 'page' : undefined}
-          onClick={() => onPage(p)}
-          className={cn(
-            'grid h-10 min-w-10 place-items-center rounded-full px-3 text-[14px] font-semibold transition-colors',
-            p === page
-              ? 'bg-primary text-white'
-              : 'border border-primary-border bg-white text-ink/55 hover:text-primary',
-          )}
-        >
-          {p}
-        </button>
-      ))}
+      {pages.map((p, i) =>
+        p === '…' ? (
+          <span key={`gap-${i}`} className="grid h-10 w-8 place-items-center text-ink/35">
+            …
+          </span>
+        ) : (
+          <button
+            key={p}
+            type="button"
+            aria-current={p === page ? 'page' : undefined}
+            onClick={() => onPage(p)}
+            className={cn(
+              'grid h-10 min-w-10 place-items-center rounded-full px-3 text-[14px] font-semibold transition-colors',
+              p === page
+                ? 'bg-primary text-white'
+                : 'border border-primary-border bg-white text-ink/55 hover:text-primary',
+            )}
+          >
+            {p}
+          </button>
+        ),
+      )}
       <button
         type="button"
         aria-label={cat.nextPage}
@@ -349,6 +358,24 @@ function Pagination({
       </button>
     </nav>
   )
+}
+
+/**
+ * Compact page list: first + last + a window around the current page, with '…'
+ * gaps. e.g. page 130/150 → [1, '…', 129, 130, 131, '…', 150].
+ */
+function pageWindow(page: number, total: number): (number | '…')[] {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1)
+  const around = new Set<number>([1, total, page - 1, page, page + 1])
+  const nums = [...around].filter((p) => p >= 1 && p <= total).sort((a, b) => a - b)
+  const out: (number | '…')[] = []
+  let prev = 0
+  for (const p of nums) {
+    if (p - prev > 1) out.push('…')
+    out.push(p)
+    prev = p
+  }
+  return out
 }
 
 type Facets = {

@@ -26,6 +26,9 @@ export function img(key: ImgKey, w = 1200, q = 75) {
   return `${IMG[key]}?auto=format&fit=crop&w=${w}&q=${q}`
 }
 
-export function ingredientImg(it: { image: ImgKey; imageSrc?: string }, w = 600) {
-  return it.imageSrc ?? img(it.image, w)
+/** Branded local placeholder shown when an ingredient has no real photo. */
+export const INGREDIENT_PLACEHOLDER = '/images/ingredient-placeholder.svg'
+
+export function ingredientImg(it: { image: ImgKey; imageSrc?: string }, _w = 600) {
+  return it.imageSrc || INGREDIENT_PLACEHOLDER
 }

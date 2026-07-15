@@ -36,6 +36,7 @@ export function getOpenAIClient(): OpenAI {
 export type Locale = 'vi' | 'en'
 
 export type GeneratedContent = {
+  name?: { vi: string; en: string }
   subtitle: { vi: string; en: string }
   description: { vi: string; en: string }
   benefits: string[]
@@ -262,6 +263,7 @@ NGUYÊN TẮC VIẾT:
 8. SuggestedDosage: liều tham khảo an toàn, ghi rõ nguồn tham khảo
 9. INCI: tên khoa học/Latin nếu suy ra được; specs: 3-6 thông số kỹ thuật rút từ TDS (hàm lượng, độ tinh khiết, dạng...)
 10. SEO: seoTitle ≤ 60 ký tự (tên + lợi ích chính), seoDescription 120-155 ký tự hấp dẫn có từ khóa — CẢ vi + en
+11. NAME: chuẩn hóa lại tên sản phẩm — BỎ số thứ tự đầu dòng ("1.", "2."), BỎ mã nội bộ và hậu tố như "(TM)", "- TQ", "- Đức", "- VN"; viết hoa đúng chuẩn; giữ tên thương mại + hoạt chất chính. KHÔNG tự bịa thêm chữ không có trong tên gốc
 
 TRẢ VỀ ĐỊNH DẠNG JSON — KHÔNG giải thích, KHÔNG markdown code block.`
 }
@@ -304,6 +306,10 @@ ${driveFileContents || 'Không có nội dung từ file Drive'}
 Trả về JSON với format sau (VIẾT ĐẦY ĐỦ cả 2 ngôn ngữ):
 
 {
+  "name": {
+    "vi": "<TÊN SẢN PHẨM ĐÃ CHUẨN HÓA tiếng Việt: bỏ số thứ tự đầu dòng (VD '1.'), bỏ mã nội bộ/hậu tố như '(TM)', '- TQ', '- Đức', viết hoa đúng chuẩn, giữ tên thương mại + hoạt chất chính. VD: '1. Đường Erythritol - TQ(TM)' → 'Đường Erythritol'>",
+    "en": "<standardized English/international product name, VD: 'Erythritol'>"
+  },
   "subtitle": {
     "vi": "<tên ngắn gọn 1 câu, thu hút, có yếu tố khoa học hoặc lợi ích nổi bật, 20-60 ký tự>",
     "en": "<tiếng Anh chuyên ngành, 1 dòng, thu hút, 20-80 ký tự>"

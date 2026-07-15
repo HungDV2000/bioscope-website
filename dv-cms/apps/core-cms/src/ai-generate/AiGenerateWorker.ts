@@ -540,9 +540,14 @@ export async function runAiGenerate(input: WorkerInput): Promise<void> {
     await updateJob(payload, jobId, { status: 'saving', phase: 'Đang lưu nội dung vào nguyên liệu...', logs })
 
     const otherLocale = locale === 'vi' ? 'en' : 'vi'
-    // `name` (required, localized) may be empty in the other locale for imported
-    // records → include it in every update so validation passes (fills the blank).
     const gc = generatedContent
+
+    // Normalized product name (AI strips numbering / internal suffixes like "(TM)",
+    // "- TQ"). Fall back to the original name so `name` (required, localized) is
+    // never empty in either locale.
+    const nameFor = (l: 'vi' | 'en'): string =>
+      (gc.name?.[l]?.trim() || gc.name?.vi?.trim() || gc.name?.en?.trim() || ingredientName)
+
     const seoFor = (l: 'vi' | 'en') => {
       const seo: Record<string, unknown> = {}
       if (gc.seoTitle?.[l]) seo.title = gc.seoTitle[l]
@@ -550,7 +555,7 @@ export async function runAiGenerate(input: WorkerInput): Promise<void> {
       return Object.keys(seo).length ? seo : undefined
     }
 
-    const primaryData: Record<string, unknown> = { name: ingredientName }
+    const primaryData: Record<string, unknown> = { name: nameFor(locale) }
     if (gc.subtitle?.[locale]) primaryData.subtitle = gc.subtitle[locale]
     if (gc.description?.[locale]) primaryData.description = textToLexical(gc.description[locale])
     if (gc.inci?.[locale]) primaryData.inci = gc.inci[locale]
@@ -566,42 +571,62 @@ export async function runAiGenerate(input: WorkerInput): Promise<void> {
     await payload.update({ collection: 'ingredients', id: ingredientId, data: primaryData, locale, overrideAccess: true })
 
     // Second language for the bilingual text fields.
-    const otherData: Record<string, unknown> = { name: ingredientName }
+    const otherData: Record<string, unknown> = { name: nameFor(otherLocale) }
     if (gc.subtitle?.[otherLocale]) otherData.subtitle = gc.subtitle[otherLocale]
     if (gc.description?.[otherLocale]) otherData.description = textToLexical(gc.description[otherLocale])
     if (gc.inci?.[otherLocale]) otherData.inci = gc.inci[otherLocale]
     if (seoFor(otherLocale)) otherData.seo = seoFor(otherLocale)
-    if (Object.keys(otherData).length > 1) {
-      await payload.update({ collection: 'ingredients', id: ingredientId, data: otherData, locale: otherLocale, overrideAccess: true })
-    }
+    await payload.update({ collection: 'ingredients', id: ingredientId, data: otherData, locale: otherLocale, overrideAccess: true })
 
-    // Specs — non-localized array whose `label` subfield IS localized. Passing a
-    // locale-keyed object as the label stores it as a stringified JSON blob, so
-    // instead write the array once per locale with `label` as a plain string.
-    // Array items align by index across the two writes, so value/unit stay intact.
+    // Specs — a non-localized array whose `label` subfield IS localized. Write the
+    // array ONCE in the default locale (vi) to create the rows and satisfy the
+    // required label. Then, to add the EN label, re-read the created rows and
+    // update by row `id` (rewriting the array without ids would drop the required
+    // vi label and fail validation with "Specs N > Label").
     if (gc.specs?.length) {
       const cleaned = gc.specs.filter((s) => s?.label && s?.value)
       if (cleaned.length) {
-        const buildSpecs = (l: string) =>
-          cleaned.map((s) => ({
-            label: (l === 'en' ? s.label.en || s.label.vi : s.label.vi || s.label.en) || '',
-            value: String(s.value),
-            unit: s.unit || undefined,
-          }))
+        const labelFor = (s: (typeof cleaned)[number], l: 'vi' | 'en') =>
+          (l === 'en' ? s.label.en || s.label.vi : s.label.vi || s.label.en) || ''
         await payload.update({
           collection: 'ingredients',
           id: ingredientId,
-          data: { name: ingredientName, specs: buildSpecs(locale) },
-          locale,
+          data: {
+            name: nameFor('vi'),
+            specs: cleaned.map((s) => ({
+              label: labelFor(s, 'vi'),
+              value: String(s.value),
+              unit: s.unit || undefined,
+            })),
+          },
+          locale: 'vi',
           overrideAccess: true,
         })
-        await payload.update({
-          collection: 'ingredients',
-          id: ingredientId,
-          data: { name: ingredientName, specs: buildSpecs(otherLocale) },
-          locale: otherLocale,
-          overrideAccess: true,
-        })
+
+        // Add EN labels by matching the freshly-created row ids.
+        try {
+          const fresh = await payload.findByID({ collection: 'ingredients', id: ingredientId, locale: 'en', depth: 0 })
+          const rows = (fresh?.specs as Array<{ id?: string }> | undefined) ?? []
+          if (rows.length === cleaned.length) {
+            await payload.update({
+              collection: 'ingredients',
+              id: ingredientId,
+              data: {
+                name: nameFor('en'),
+                specs: rows.map((r, i) => ({
+                  id: r.id,
+                  label: labelFor(cleaned[i], 'en'),
+                  value: String(cleaned[i].value),
+                  unit: cleaned[i].unit || undefined,
+                })),
+              },
+              locale: 'en',
+              overrideAccess: true,
+            })
+          }
+        } catch (specErr) {
+          addLog(logs, 'warn', `Không ghi được label EN cho specs: ${specErr instanceof Error ? specErr.message : String(specErr)}`)
+        }
       }
     }
     addLog(logs, 'info', `Đã ghi nội dung vào nguyên liệu (${Object.keys(primaryData).join(', ')}${gc.specs?.length ? ', specs' : ''})`)
@@ -613,7 +638,7 @@ export async function runAiGenerate(input: WorkerInput): Promise<void> {
       metadata: {
         filesProcessed: totals.filesExtracted,
         filesSkipped: totals.filesSkipped,
-        modelUsed: 'gpt-4o + dall-e-3',
+        modelUsed: `${process.env.OPENAI_CONTENT_MODEL || 'gpt-5.6-terra'} + ${process.env.OPENAI_IMAGE_MODEL || 'gpt-image-2'}`,
         imageGenerated: Boolean(featuredImage),
         locale,
         fileTypes: typeSummary,

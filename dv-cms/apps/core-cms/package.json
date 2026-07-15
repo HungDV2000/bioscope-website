@@ -11,6 +11,7 @@
     "lint": "next lint",
     "generate:types": "cross-env NODE_OPTIONS=--no-deprecation payload generate:types",
     "generate:importmap": "cross-env NODE_OPTIONS=--no-deprecation payload generate:importmap",
+    "preview-proxy": "node scripts/preview-proxy.mjs",
     "migrate": "cross-env NODE_OPTIONS=--no-deprecation payload migrate",
     "migrate:create": "cross-env NODE_OPTIONS=--no-deprecation payload migrate:create",
     "db:branding": "sh -c 'set -a && [ -f .env ] && . ./.env && set +a && exec psql \"$DATABASE_URI\" -f scripts/migrate-branding-theme.sql'",

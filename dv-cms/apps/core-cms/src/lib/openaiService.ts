@@ -138,7 +138,7 @@ export async function generateIngredientContent(
 // ---------------------------------------------------------------------------
 
 const IMAGE_PROMPT_MODEL = process.env.OPENAI_IMAGE_PROMPT_MODEL || CONTENT_MODEL
-const IMAGE_GENERATION_MODEL = process.env.OPENAI_IMAGE_MODEL || 'gpt-image-1'
+const IMAGE_GENERATION_MODEL = process.env.OPENAI_IMAGE_MODEL || 'gpt-image-2'
 const IMAGE_SIZE = (process.env.OPENAI_IMAGE_SIZE || '1024x1024') as '1024x1024'
 // gpt-image-1 quality: low | medium | high | auto (dall-e-3 used standard | hd).
 const IMAGE_QUALITY = (process.env.OPENAI_IMAGE_QUALITY || 'medium') as 'medium'

@@ -1,3 +1,4 @@
+import { TwoFactorSetup as TwoFactorSetup_f6b05812afbbd5082b50bd287e1b32d6 } from '../../../components/TwoFactorSetup/TwoFactorSetup'
 import { FolderTableCell as FolderTableCell_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 import { FolderField as FolderField_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 import { MediaLibraryRedirect as MediaLibraryRedirect_00843a5f229f2e31dd95960baf9412a3 } from '@dv/cms-core/admin'
@@ -46,6 +47,7 @@ import { AdminLocaleSync as AdminLocaleSync_00843a5f229f2e31dd95960baf9412a3 } f
 import { NavIconRail as NavIconRail_00843a5f229f2e31dd95960baf9412a3 } from '@dv/cms-core/admin'
 import { NavIcons as NavIcons_00843a5f229f2e31dd95960baf9412a3 } from '@dv/cms-core/admin'
 import { NavMobileDrawer as NavMobileDrawer_00843a5f229f2e31dd95960baf9412a3 } from '@dv/cms-core/admin'
+import { TwoFactorGate as TwoFactorGate_f87f8a7982e865af4837d68ff8be8785 } from '../../../components/TwoFactorGate/TwoFactorGate'
 import { WelcomeWidget as WelcomeWidget_0c869148cc3ac91aff1eb6410b91e9ab } from '@dv/cms-core/dashboard'
 import { ShortcutsWidget as ShortcutsWidget_0c869148cc3ac91aff1eb6410b91e9ab } from '@dv/cms-core/dashboard'
 import { StatsOverviewWidget as StatsOverviewWidget_0c869148cc3ac91aff1eb6410b91e9ab } from '@dv/cms-core/dashboard'
@@ -57,6 +59,7 @@ import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } f
 
 /** @type import('payload').ImportMap */
 export const importMap = {
+  "/components/TwoFactorSetup/TwoFactorSetup#TwoFactorSetup": TwoFactorSetup_f6b05812afbbd5082b50bd287e1b32d6,
   "@payloadcms/next/rsc#FolderTableCell": FolderTableCell_f9c02e79a4aed9a3924487c0cd4cafb1,
   "@payloadcms/next/rsc#FolderField": FolderField_f9c02e79a4aed9a3924487c0cd4cafb1,
   "@dv/cms-core/admin#MediaLibraryRedirect": MediaLibraryRedirect_00843a5f229f2e31dd95960baf9412a3,
@@ -105,6 +108,7 @@ export const importMap = {
   "@dv/cms-core/admin#NavIconRail": NavIconRail_00843a5f229f2e31dd95960baf9412a3,
   "@dv/cms-core/admin#NavIcons": NavIcons_00843a5f229f2e31dd95960baf9412a3,
   "@dv/cms-core/admin#NavMobileDrawer": NavMobileDrawer_00843a5f229f2e31dd95960baf9412a3,
+  "/components/TwoFactorGate/TwoFactorGate#TwoFactorGate": TwoFactorGate_f87f8a7982e865af4837d68ff8be8785,
   "@dv/cms-core/dashboard#WelcomeWidget": WelcomeWidget_0c869148cc3ac91aff1eb6410b91e9ab,
   "@dv/cms-core/dashboard#ShortcutsWidget": ShortcutsWidget_0c869148cc3ac91aff1eb6410b91e9ab,
   "@dv/cms-core/dashboard#StatsOverviewWidget": StatsOverviewWidget_0c869148cc3ac91aff1eb6410b91e9ab,

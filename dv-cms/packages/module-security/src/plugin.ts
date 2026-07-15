@@ -5,6 +5,8 @@ import { SecurityEvents } from './collections/SecurityEvents.js'
 import { uploadScannerHook } from './hooks/uploadScanner.js'
 import { beforeLoginHook, afterLoginHook } from './hooks/loginProtection.js'
 import { firewallConfigEndpoint } from './endpoints/firewallConfig.js'
+import { twoFactorEndpoints } from './endpoints/twoFactor.js'
+import type { Field } from 'payload'
 
 export type SecurityPluginOptions = {
   /** Register the security-settings global (default true). */
@@ -18,7 +20,38 @@ export type SecurityPluginOptions = {
   /** Native per-account lockout defaults applied to the auth collection. */
   maxLoginAttempts?: number
   lockTimeMs?: number
+  /** Register the 2FA fields/endpoints/gate (default true). */
+  twoFactor?: boolean
 }
+
+/**
+ * Fields added to the auth collection to support TOTP 2FA. Secrets are `hidden`
+ * (stripped from API responses) but still available server-side on req.user for
+ * the 2FA endpoints. `twoFactorEnabled` is saved to the JWT so the gate can read
+ * it without a DB hit.
+ */
+const TWO_FACTOR_FIELDS: Field[] = [
+  {
+    name: 'twoFactorEnabled',
+    type: 'checkbox',
+    defaultValue: false,
+    saveToJWT: true,
+    admin: {
+      readOnly: true,
+      description: '2FA (TOTP). Bật/tắt qua nút bên dưới — không sửa trực tiếp.',
+      position: 'sidebar',
+    },
+  },
+  {
+    name: 'twoFactorSetup',
+    type: 'ui',
+    admin: {
+      components: { Field: '/components/TwoFactorSetup/TwoFactorSetup#TwoFactorSetup' },
+    },
+  },
+  { name: 'twoFactorSecret', type: 'text', hidden: true },
+  { name: 'twoFactorPendingSecret', type: 'text', hidden: true },
+]
 
 /**
  * Wordfence-style security module. Registers the settings global + blocked-ips
@@ -45,8 +78,22 @@ export const securityPlugin =
       config.collections = [...(config.collections ?? []), BlockedIps, SecurityEvents]
     }
 
-    // Public firewall-config endpoint for the edge/frontend firewall.
-    config.endpoints = [...(config.endpoints ?? []), firewallConfigEndpoint]
+    // Public firewall-config endpoint + authenticated 2FA endpoints.
+    config.endpoints = [...(config.endpoints ?? []), firewallConfigEndpoint, ...twoFactorEndpoints]
+
+    // Post-login 2FA gate — wraps the admin UI (only blocks users who enabled 2FA).
+    if (options.twoFactor !== false) {
+      config.admin = {
+        ...config.admin,
+        components: {
+          ...config.admin?.components,
+          providers: [
+            ...(config.admin?.components?.providers ?? []),
+            '/components/TwoFactorGate/TwoFactorGate#TwoFactorGate',
+          ],
+        },
+      }
+    }
 
     // Inject login + upload hooks into the existing collections.
     config.collections = (config.collections ?? []).map((col: CollectionConfig): CollectionConfig => {
@@ -61,6 +108,7 @@ export const securityPlugin =
                   ...col.auth,
                 }
               : col.auth,
+          fields: [...(col.fields ?? []), ...(options.twoFactor !== false ? TWO_FACTOR_FIELDS : [])],
           hooks: {
             ...col.hooks,
             beforeLogin: [...(col.hooks?.beforeLogin ?? []), beforeLoginHook],

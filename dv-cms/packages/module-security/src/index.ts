@@ -27,3 +27,5 @@ export {
 } from './hooks/loginProtection.js'
 export { uploadScannerHook } from './hooks/uploadScanner.js'
 export { firewallConfigEndpoint } from './endpoints/firewallConfig.js'
+export { twoFactorEndpoints } from './endpoints/twoFactor.js'
+export { generateSecret, totp, verifyTotp, otpauthUri } from './lib/totp.js'

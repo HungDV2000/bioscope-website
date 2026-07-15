@@ -90,15 +90,39 @@ function toIngredient(d: IngredientDoc, locale: Locale): Ingredient {
 }
 
 /** All published ingredients from the CMS. Returns null on failure/empty (caller falls back to static). */
+// Only the fields the catalog list + filters actually use. Dropping the heavy
+// `description` richText keeps the full-catalog response under Next's 2MB data
+// cache limit (it was ~4.3MB with every field).
+const LIST_SELECT = [
+  'slug',
+  'name',
+  'subtitle',
+  'type',
+  'category',
+  'originCountry',
+  'brandName',
+  'moq',
+  'benefits',
+  'applications',
+  'badges',
+  'featuredImage',
+  'specs',
+]
+  .map((f) => `select[${f}]=true`)
+  .join('&')
+
 export async function getIngredients(locale: Locale): Promise<Ingredient[] | null> {
   // TODO(scale): the catalog filters client-side, so we fetch the full set.
   // For very large catalogs, move filtering/pagination server-side instead.
-  const res = await cmsFetch<Paginated<IngredientDoc>>('ingredients?limit=2000&sort=name&depth=1', {
-    locale,
-    revalidate: 60,
-    // Fetching the whole catalog (depth=1) can exceed the default 4s timeout.
-    timeoutMs: 20000,
-  })
+  const res = await cmsFetch<Paginated<IngredientDoc>>(
+    `ingredients?limit=2000&sort=name&depth=1&${LIST_SELECT}`,
+    {
+      locale,
+      revalidate: 60,
+      // Fetching the whole catalog can exceed the default 4s timeout.
+      timeoutMs: 20000,
+    },
+  )
   if (!res?.docs?.length) return null
   return res.docs.map((d) => toIngredient(d, locale))
 }

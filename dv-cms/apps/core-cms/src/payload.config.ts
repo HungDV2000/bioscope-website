@@ -14,6 +14,7 @@ import { bioscopePlugin } from '@dv/module-bioscope'
 import { b2bPlugin } from '@dv/module-b2b'
 import { customTypesPlugin } from '@dv/module-custom-types'
 import { seoPlugin } from '@dv/module-seo'
+import { securityPlugin } from '@dv/module-security'
 import { languagesPlugin, resolveLocalizationConfig } from '@dv/module-languages'
 import { permissionsPlugin } from '@dv/module-permissions'
 import { betterEditor } from 'payload-better-editor'
@@ -135,6 +136,8 @@ export default buildConfig({
     // Visual "Better Editor" preview toggle on Pages (needs admin.preview URL +
     // same-origin frontend proxy — see next.config rewrites).
     betterEditor({ collections: ['pages'] }),
+    // Wordfence-style security: managed firewall, IP blocklist, event log.
+    securityPlugin(),
     // RBAC — must be last so it wraps all collections/globals.
     permissionsPlugin(),
   ],

@@ -104,6 +104,9 @@ importers:
       '@dv/module-permissions':
         specifier: workspace:*
         version: link:../../packages/module-permissions
+      '@dv/module-security':
+        specifier: workspace:*
+        version: link:../../packages/module-security
       '@dv/module-seo':
         specifier: workspace:*
         version: link:../../packages/module-seo
@@ -272,6 +275,19 @@ importers:
         version: 5.9.3
 
   packages/module-permissions:
+    dependencies:
+      '@dv/cms-core':
+        specifier: workspace:*
+        version: link:../core
+    devDependencies:
+      payload:
+        specifier: 3.85.1
+        version: 3.85.1(graphql@16.14.2)(typescript@5.9.3)
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+
+  packages/module-security:
     dependencies:
       '@dv/cms-core':
         specifier: workspace:*

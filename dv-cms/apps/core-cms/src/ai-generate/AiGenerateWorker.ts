@@ -570,14 +570,33 @@ export async function runAiGenerate(input: WorkerInput): Promise<void> {
       await payload.update({ collection: 'ingredients', id: ingredientId, data: otherData, locale: otherLocale, overrideAccess: true })
     }
 
-    // Specs — non-localized array with a localized `label`: write both languages
-    // in one all-locales update (locale-keyed label object) to avoid empty labels.
+    // Specs — non-localized array whose `label` subfield IS localized. Passing a
+    // locale-keyed object as the label stores it as a stringified JSON blob, so
+    // instead write the array once per locale with `label` as a plain string.
+    // Array items align by index across the two writes, so value/unit stay intact.
     if (gc.specs?.length) {
-      const specs = gc.specs
-        .filter((s) => s?.label && s?.value)
-        .map((s) => ({ label: { vi: s.label.vi || s.label.en, en: s.label.en || s.label.vi }, value: String(s.value), unit: s.unit || undefined }))
-      if (specs.length) {
-        await payload.update({ collection: 'ingredients', id: ingredientId, data: { name: ingredientName, specs }, overrideAccess: true })
+      const cleaned = gc.specs.filter((s) => s?.label && s?.value)
+      if (cleaned.length) {
+        const buildSpecs = (l: string) =>
+          cleaned.map((s) => ({
+            label: (l === 'en' ? s.label.en || s.label.vi : s.label.vi || s.label.en) || '',
+            value: String(s.value),
+            unit: s.unit || undefined,
+          }))
+        await payload.update({
+          collection: 'ingredients',
+          id: ingredientId,
+          data: { name: ingredientName, specs: buildSpecs(locale) },
+          locale,
+          overrideAccess: true,
+        })
+        await payload.update({
+          collection: 'ingredients',
+          id: ingredientId,
+          data: { name: ingredientName, specs: buildSpecs(otherLocale) },
+          locale: otherLocale,
+          overrideAccess: true,
+        })
       }
     }
     addLog(logs, 'info', `Đã ghi nội dung vào nguyên liệu (${Object.keys(primaryData).join(', ')}${gc.specs?.length ? ', specs' : ''})`)

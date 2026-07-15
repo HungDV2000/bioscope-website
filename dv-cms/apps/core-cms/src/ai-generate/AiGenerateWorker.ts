@@ -445,7 +445,7 @@ export async function runAiGenerate(input: WorkerInput): Promise<void> {
     // ── 4. Update to generating phase ───────────────────────────────────
     await updateJob(payload, jobId, {
       status: 'generating_content',
-      phase: 'Đang gọi GPT-4o sinh nội dung...',
+      phase: 'Đang gọi AI sinh nội dung...',
       totals,
       logs,
     })
@@ -583,6 +583,10 @@ export async function runAiGenerate(input: WorkerInput): Promise<void> {
     // required label. Then, to add the EN label, re-read the created rows and
     // update by row `id` (rewriting the array without ids would drop the required
     // vi label and fail validation with "Specs N > Label").
+    // BUILD MARKER — if this line is missing from the job log, the running build
+    // is stale (rebuild required). specs-writeback: v3
+    addLog(logs, 'info', 'specs-writeback v3')
+    try {
     if (gc.specs?.length) {
       // Diagnostic: log the raw shape of the first spec so we can see exactly how
       // the model returned `label` if validation still complains.
@@ -646,6 +650,15 @@ export async function runAiGenerate(input: WorkerInput): Promise<void> {
       } else if (gc.specs.length) {
         addLog(logs, 'warn', `Bỏ qua ${gc.specs.length} specs vì thiếu label/value hợp lệ`)
       }
+    }
+    } catch (specsErr) {
+      // Never let a specs validation failure sink the whole job — the rest of the
+      // content is already saved. Log it so we can inspect the offending shape.
+      addLog(
+        logs,
+        'error',
+        `Ghi specs thất bại (bỏ qua, giữ nội dung còn lại): ${specsErr instanceof Error ? specsErr.message : String(specsErr)}`,
+      )
     }
     addLog(logs, 'info', `Đã ghi nội dung vào nguyên liệu (${Object.keys(primaryData).join(', ')}${gc.specs?.length ? ', specs' : ''})`)
 

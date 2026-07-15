@@ -11,8 +11,54 @@
  * - Trạng thái đã sync (số file)
  */
 
-import React from 'react'
+import React, { useState } from 'react'
 import { useFormFields } from '@payloadcms/ui'
+
+/** Button that re-syncs files from Google Drive (background job). */
+const SyncDriveButton: React.FC = () => {
+  const [state, setState] = useState<'idle' | 'starting' | 'started' | 'error'>('idle')
+
+  const run = async () => {
+    if (state === 'starting') return
+    setState('starting')
+    try {
+      const res = await fetch('/api/drive-sync', { method: 'post', credentials: 'include' })
+      setState(res.ok ? 'started' : 'error')
+    } catch {
+      setState('error')
+    }
+  }
+
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+      <button
+        type="button"
+        onClick={() => void run()}
+        disabled={state === 'starting'}
+        title="Đồng bộ lại danh sách file từ Google Drive"
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 4,
+          padding: '4px 10px',
+          borderRadius: 6,
+          border: '1px solid var(--theme-elevation-200, #ddd)',
+          background: 'var(--theme-elevation-50, #f5f5f5)',
+          color: 'var(--theme-elevation-700, #444)',
+          fontSize: 12,
+          fontWeight: 600,
+          cursor: state === 'starting' ? 'default' : 'pointer',
+        }}
+      >
+        {state === 'starting' ? '⏳ Đang bắt đầu…' : '🔄 Sync lại từ Drive'}
+      </button>
+      {state === 'started' && (
+        <span style={{ fontSize: 11, color: '#27ae60' }}>Đã bắt đầu — tải lại trang sau vài phút.</span>
+      )}
+      {state === 'error' && <span style={{ fontSize: 11, color: '#c22' }}>Lỗi — thử lại.</span>}
+    </span>
+  )
+}
 
 // ---------------------------------------------------------------------------
 // Types
@@ -238,11 +284,12 @@ export const DriveFilesPanel: React.FC = () => {
             </span>
           )}
         </div>
-        {lastSyncAt && (
-          <span style={{ fontSize: 10, color: '#aaa' }}>
-            Sync: {formatDate(lastSyncAt)}
-          </span>
-        )}
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
+          {lastSyncAt && (
+            <span style={{ fontSize: 10, color: '#aaa' }}>Sync: {formatDate(lastSyncAt)}</span>
+          )}
+          <SyncDriveButton />
+        </span>
       </div>
 
       {/* Drive ID */}

@@ -537,25 +537,50 @@ export async function runAiGenerate(input: WorkerInput): Promise<void> {
     const otherLocale = locale === 'vi' ? 'en' : 'vi'
     // `name` (required, localized) may be empty in the other locale for imported
     // records → include it in every update so validation passes (fills the blank).
+    const gc = generatedContent
+    const seoFor = (l: 'vi' | 'en') => {
+      const seo: Record<string, unknown> = {}
+      if (gc.seoTitle?.[l]) seo.title = gc.seoTitle[l]
+      if (gc.seoDescription?.[l]) seo.description = gc.seoDescription[l]
+      return Object.keys(seo).length ? seo : undefined
+    }
+
     const primaryData: Record<string, unknown> = { name: ingredientName }
-    if (generatedContent.subtitle?.[locale]) primaryData.subtitle = generatedContent.subtitle[locale]
-    if (generatedContent.description?.[locale]) primaryData.description = textToLexical(generatedContent.description[locale])
-    if (generatedContent.suggestedDosage) primaryData.suggestedDosage = generatedContent.suggestedDosage
-    if (generatedContent.benefits?.length) primaryData.benefits = generatedContent.benefits
-    if (generatedContent.applications?.length) primaryData.applications = generatedContent.applications
-    if (generatedContent.badges?.length) primaryData.badges = generatedContent.badges // not localized
+    if (gc.subtitle?.[locale]) primaryData.subtitle = gc.subtitle[locale]
+    if (gc.description?.[locale]) primaryData.description = textToLexical(gc.description[locale])
+    if (gc.inci?.[locale]) primaryData.inci = gc.inci[locale]
+    if (gc.suggestedDosage) primaryData.suggestedDosage = gc.suggestedDosage
+    if (gc.benefits?.length) primaryData.benefits = gc.benefits
+    if (gc.applications?.length) primaryData.applications = gc.applications
+    if (gc.badges?.length) primaryData.badges = gc.badges // not localized
+    if (gc.originCountry) primaryData.originCountry = gc.originCountry // not localized
+    if (gc.tag) primaryData.tag = gc.tag // not localized
+    if (seoFor(locale)) primaryData.seo = seoFor(locale)
     if (featuredImage) primaryData.featuredImage = featuredImage.id
 
     await payload.update({ collection: 'ingredients', id: ingredientId, data: primaryData, locale, overrideAccess: true })
 
     // Second language for the bilingual text fields.
     const otherData: Record<string, unknown> = { name: ingredientName }
-    if (generatedContent.subtitle?.[otherLocale]) otherData.subtitle = generatedContent.subtitle[otherLocale]
-    if (generatedContent.description?.[otherLocale]) otherData.description = textToLexical(generatedContent.description[otherLocale])
+    if (gc.subtitle?.[otherLocale]) otherData.subtitle = gc.subtitle[otherLocale]
+    if (gc.description?.[otherLocale]) otherData.description = textToLexical(gc.description[otherLocale])
+    if (gc.inci?.[otherLocale]) otherData.inci = gc.inci[otherLocale]
+    if (seoFor(otherLocale)) otherData.seo = seoFor(otherLocale)
     if (Object.keys(otherData).length > 1) {
       await payload.update({ collection: 'ingredients', id: ingredientId, data: otherData, locale: otherLocale, overrideAccess: true })
     }
-    addLog(logs, 'info', `Đã ghi nội dung vào nguyên liệu (${Object.keys(primaryData).join(', ')})`)
+
+    // Specs — non-localized array with a localized `label`: write both languages
+    // in one all-locales update (locale-keyed label object) to avoid empty labels.
+    if (gc.specs?.length) {
+      const specs = gc.specs
+        .filter((s) => s?.label && s?.value)
+        .map((s) => ({ label: { vi: s.label.vi || s.label.en, en: s.label.en || s.label.vi }, value: String(s.value), unit: s.unit || undefined }))
+      if (specs.length) {
+        await payload.update({ collection: 'ingredients', id: ingredientId, data: { name: ingredientName, specs }, overrideAccess: true })
+      }
+    }
+    addLog(logs, 'info', `Đã ghi nội dung vào nguyên liệu (${Object.keys(primaryData).join(', ')}${gc.specs?.length ? ', specs' : ''})`)
 
     // ── 8. Save result ────────────────────────────────────────────────────
     const result = {

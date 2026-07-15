@@ -42,6 +42,12 @@ export type GeneratedContent = {
   applications: string[]
   badges: string[]
   suggestedDosage: string
+  inci?: { vi: string; en: string }
+  originCountry?: string
+  tag?: 'NEW' | 'TRENDING' | 'EXCLUSIVE' | null
+  specs?: Array<{ label: { vi: string; en: string }; value: string; unit?: string }>
+  seoTitle?: { vi: string; en: string }
+  seoDescription?: { vi: string; en: string }
   imagePrompt: { vi: string; en: string }
 }
 
@@ -230,6 +236,8 @@ NGUYÊN TẮC VIẾT:
 6. Applications: 3-6 items, liệt kê dạng bào chế cụ thể
 7. Badges: chứng nhận phổ biến trong ngành (Halal, Kosher, Non-GMO, FDA, GMP...)
 8. SuggestedDosage: liều tham khảo an toàn, ghi rõ nguồn tham khảo
+9. INCI: tên khoa học/Latin nếu suy ra được; specs: 3-6 thông số kỹ thuật rút từ TDS (hàm lượng, độ tinh khiết, dạng...)
+10. SEO: seoTitle ≤ 60 ký tự (tên + lợi ích chính), seoDescription 120-155 ký tự hấp dẫn có từ khóa — CẢ vi + en
 
 TRẢ VỀ ĐỊNH DẠNG JSON — KHÔNG giải thích, KHÔNG markdown code block.`
 }
@@ -297,6 +305,28 @@ Trả về JSON với format sau (VIẾT ĐẦY ĐỦ cả 2 ngôn ngữ):
     "... các chứng nhận phù hợp với ngành và nguồn gốc>"
   ],
   "suggestedDosage": "<liều dùng gợi ý, VD: 100-500mg/ngày (tham khảo từ TDS và tài liệu khoa học)>",
+  "inci": {
+    "vi": "<tên khoa học / INCI (tên Latin), VD: Oryza Sativa Bran Oil — nếu không xác định được để chuỗi rỗng>",
+    "en": "<INCI name, thường giống tiếng Việt>"
+  },
+  "originCountry": "<mã quốc gia xuất xứ 2 ký tự nếu suy ra được từ tài liệu, VD: NO cho Na Uy, JP, VN — nếu không rõ để chuỗi rỗng>",
+  "tag": "<một trong: NEW | TRENDING | EXCLUSIVE — hoặc null nếu không phù hợp>",
+  "specs": [
+    {
+      "label": { "vi": "<tên thông số, VD: Hàm lượng>", "en": "<English label, e.g. Content>" },
+      "value": "<giá trị, VD: 95>",
+      "unit": "<đơn vị nếu có, VD: % — bỏ trống nếu không có>"
+    },
+    "... 3-6 thông số kỹ thuật rút ra từ TDS (hàm lượng hoạt chất, độ tinh khiết, dạng, xuất xứ...)>"
+  ],
+  "seoTitle": {
+    "vi": "<tiêu đề SEO tiếng Việt, ≤ 60 ký tự, chứa tên nguyên liệu + lợi ích chính>",
+    "en": "<SEO title English, ≤ 60 chars>"
+  },
+  "seoDescription": {
+    "vi": "<meta description tiếng Việt, 120-155 ký tự, hấp dẫn, chứa từ khóa>",
+    "en": "<meta description English, 120-155 chars>"
+  },
   "imagePrompt": {
     "vi": "<mô tả ngắn hình ảnh đại diện bằng tiếng Việt — phong cách studio dược phẩm, góc nhìn close-up, có mô tả nguyên liệu rõ ràng, 50-200 ký tự>",
     "en": "<English image description for DALL·E 3 — professional pharmaceutical/cosmetic studio style, close-up view, realistic, no text, max 200 chars>"

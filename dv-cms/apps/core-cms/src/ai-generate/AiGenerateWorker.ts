@@ -584,6 +584,9 @@ export async function runAiGenerate(input: WorkerInput): Promise<void> {
     // update by row `id` (rewriting the array without ids would drop the required
     // vi label and fail validation with "Specs N > Label").
     if (gc.specs?.length) {
+      // Diagnostic: log the raw shape of the first spec so we can see exactly how
+      // the model returned `label` if validation still complains.
+      addLog(logs, 'info', `Specs thô từ AI (mẫu đầu): ${JSON.stringify(gc.specs[0])}`)
       // `label` may arrive as a localized object {vi,en} OR (depending on the
       // model) as a plain string. Resolve both, per locale.
       const labelFor = (raw: unknown, l: 'vi' | 'en'): string => {

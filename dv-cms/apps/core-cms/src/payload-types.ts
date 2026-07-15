@@ -85,6 +85,7 @@ export interface Config {
     'ingredient-categories': IngredientCategory;
     ingredients: Ingredient;
     'drive-sync-jobs': DriveSyncJob;
+    'ai-generate-jobs': AiGenerateJob;
     'cms-sync-runs': CmsSyncRun;
     technologies: Technology;
     services: Service;
@@ -123,6 +124,7 @@ export interface Config {
     'ingredient-categories': IngredientCategoriesSelect<false> | IngredientCategoriesSelect<true>;
     ingredients: IngredientsSelect<false> | IngredientsSelect<true>;
     'drive-sync-jobs': DriveSyncJobsSelect<false> | DriveSyncJobsSelect<true>;
+    'ai-generate-jobs': AiGenerateJobsSelect<false> | AiGenerateJobsSelect<true>;
     'cms-sync-runs': CmsSyncRunsSelect<false> | CmsSyncRunsSelect<true>;
     technologies: TechnologiesSelect<false> | TechnologiesSelect<true>;
     services: ServicesSelect<false> | ServicesSelect<true>;
@@ -168,6 +170,7 @@ export interface Config {
     'dv-analytics': DvAnalyticsWidget;
     'dv-seed': DvSeedWidget;
     'dv-cms-sync': DvCmsSyncWidget;
+    'dv-ai-generate': DvAiGenerateWidget;
     collections: CollectionsWidget;
   };
   user: User | Member;
@@ -1306,9 +1309,6 @@ export interface Ingredient {
    */
   driveId?: string | null;
   driveParentId?: string | null;
-  /**
-   * [{fileId, fileName, mimeType, webViewLink, webContentLink, size, modifiedTime}]
-   */
   driveFiles?:
     | {
         [k: string]: unknown;
@@ -1514,6 +1514,63 @@ export interface DriveSyncJob {
    */
   rootFolderId?: string | null;
   updatedAt: string;
+}
+/**
+ * Job history — Tạo nội dung tự động bằng AI (GPT-4o + DALL·E 3)
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ai-generate-jobs".
+ */
+export interface AiGenerateJob {
+  id: number;
+  ingredientId: string;
+  ingredientName: string;
+  status:
+    | 'queued'
+    | 'downloading'
+    | 'extracting'
+    | 'generating_content'
+    | 'generating_image'
+    | 'saving'
+    | 'done'
+    | 'error'
+    | 'cancelled';
+  /**
+   * Mô tả bước hiện tại
+   */
+  phase?: string | null;
+  locale?: ('vi' | 'en') | null;
+  totals?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  logs?:
+    | {
+        ts?: string | null;
+        level?: ('info' | 'warn' | 'error') | null;
+        message?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  result?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  errorMessage?: string | null;
+  startedAt?: string | null;
+  finishedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * Lịch sử đồng bộ sản phẩm/danh mục từ RAG DB sang CMS.
@@ -1941,6 +1998,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'drive-sync-jobs';
         value: number | DriveSyncJob;
+      } | null)
+    | ({
+        relationTo: 'ai-generate-jobs';
+        value: number | AiGenerateJob;
       } | null)
     | ({
         relationTo: 'cms-sync-runs';
@@ -2802,6 +2863,32 @@ export interface DriveSyncJobsSelect<T extends boolean = true> {
   errorMessage?: T;
   rootFolderId?: T;
   updatedAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ai-generate-jobs_select".
+ */
+export interface AiGenerateJobsSelect<T extends boolean = true> {
+  ingredientId?: T;
+  ingredientName?: T;
+  status?: T;
+  phase?: T;
+  locale?: T;
+  totals?: T;
+  logs?:
+    | T
+    | {
+        ts?: T;
+        level?: T;
+        message?: T;
+        id?: T;
+      };
+  result?: T;
+  errorMessage?: T;
+  startedAt?: T;
+  finishedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -3905,6 +3992,16 @@ export interface DvSeedWidget {
  * via the `definition` "dv-cms-sync_widget".
  */
 export interface DvCmsSyncWidget {
+  data?: {
+    [k: string]: unknown;
+  };
+  width: 'medium' | 'large' | 'x-large' | 'full';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "dv-ai-generate_widget".
+ */
+export interface DvAiGenerateWidget {
   data?: {
     [k: string]: unknown;
   };

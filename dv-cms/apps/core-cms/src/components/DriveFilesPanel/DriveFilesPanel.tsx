@@ -12,6 +12,7 @@
  */
 
 import React from 'react'
+import { useFormFields } from '@payloadcms/ui'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -206,12 +207,13 @@ const FileCard: React.FC<{ file: DriveFileEntry }> = ({ file }) => {
 // Main panel
 // ---------------------------------------------------------------------------
 
-export const DriveFilesPanel: React.FC<DriveFilesPanelProps> = ({
-  files,
-  driveId,
-  lastSyncAt,
-  fileCount,
-}) => {
+export const DriveFilesPanel: React.FC = () => {
+  // Payload passes the field's `path`, NOT the value — read it (and its siblings)
+  // straight from the form state instead of from props.
+  const files = useFormFields(([fields]) => fields?.driveFiles?.value) as DriveFileEntry[] | null | undefined
+  const driveId = useFormFields(([fields]) => fields?.driveId?.value) as string | null | undefined
+  const lastSyncAt = useFormFields(([fields]) => fields?.lastDriveSyncAt?.value) as string | null | undefined
+  const fileCount = useFormFields(([fields]) => fields?.fileCount?.value) as number | null | undefined
   const fileList: DriveFileEntry[] = Array.isArray(files) ? files : []
   const hasFiles = fileList.length > 0
 

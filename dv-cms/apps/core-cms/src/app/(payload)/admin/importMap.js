@@ -26,6 +26,8 @@ import { BoldFeatureClient as BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864
 import { ItalicFeatureClient as ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { LiveEditorToggle as LiveEditorToggle_d26de2934fab2f5e50b16fb3e402473a } from 'payload-better-editor/client'
 import { ContentCollectionSlugsField as ContentCollectionSlugsField_f8b2c5cd74f162a2f9852cdf8f8c19f7 } from '@dv/module-custom-types/fields'
+import { IngredientAiField as IngredientAiField_d58fb5a0d75374311f1eedb9e89183ac } from '../../../components/IngredientAiField/IngredientAiField'
+import { DriveFilesPanel as DriveFilesPanel_e800e5de3d6644596c0db139b456e845 } from '../../../components/DriveFilesPanel/DriveFilesPanel'
 import { FolderTypeField as FolderTypeField_2b8867833a34864a02ddf429b0728a40 } from '@payloadcms/next/client'
 import { HexColorField as HexColorField_c3949c88f94613bf8ab39d0e00ee34b2 } from '@dv/cms-core/fields'
 import { SettingsBanner as SettingsBanner_d26de2934fab2f5e50b16fb3e402473a } from 'payload-better-editor/client'
@@ -48,9 +50,8 @@ import { StatsOverviewWidget as StatsOverviewWidget_0c869148cc3ac91aff1eb6410b91
 import { AnalyticsChartWidget as AnalyticsChartWidget_0c869148cc3ac91aff1eb6410b91e9ab } from '@dv/cms-core/dashboard'
 import { SeedButton as SeedButton_fcf13aba43db26699925682d82e9535d } from '../../../components/SeedButton'
 import { CmsSyncPanel as CmsSyncPanel_d5ca907242d376a736aefb95b63de448 } from '../../../components/CmsSyncPanel/CmsSyncPanel'
+import { AiGeneratePanel as AiGeneratePanel_68079c2fbae6949d62bdd38851969025 } from '../../../components/AiGeneratePanel/AiGeneratePanel'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
-import { AiGeneratePanel as AiGeneratePanel_b7c3d1e9f8a2e5d4 } from '../../../components/AiGeneratePanel/AiGeneratePanel'
-import { DriveFilesPanel as DriveFilesPanel_c8d4e2f0a9b3f6e1 } from '../../../components/DriveFilesPanel/DriveFilesPanel'
 
 /** @type import('payload').ImportMap */
 export const importMap = {
@@ -82,6 +83,8 @@ export const importMap = {
   "@payloadcms/richtext-lexical/client#ItalicFeatureClient": ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "payload-better-editor/client#LiveEditorToggle": LiveEditorToggle_d26de2934fab2f5e50b16fb3e402473a,
   "@dv/module-custom-types/fields#ContentCollectionSlugsField": ContentCollectionSlugsField_f8b2c5cd74f162a2f9852cdf8f8c19f7,
+  "/components/IngredientAiField/IngredientAiField#IngredientAiField": IngredientAiField_d58fb5a0d75374311f1eedb9e89183ac,
+  "/components/DriveFilesPanel/DriveFilesPanel#DriveFilesPanel": DriveFilesPanel_e800e5de3d6644596c0db139b456e845,
   "@payloadcms/next/client#FolderTypeField": FolderTypeField_2b8867833a34864a02ddf429b0728a40,
   "@dv/cms-core/fields#HexColorField": HexColorField_c3949c88f94613bf8ab39d0e00ee34b2,
   "payload-better-editor/client#SettingsBanner": SettingsBanner_d26de2934fab2f5e50b16fb3e402473a,
@@ -104,7 +107,6 @@ export const importMap = {
   "@dv/cms-core/dashboard#AnalyticsChartWidget": AnalyticsChartWidget_0c869148cc3ac91aff1eb6410b91e9ab,
   "/components/SeedButton#SeedButton": SeedButton_fcf13aba43db26699925682d82e9535d,
   "/components/CmsSyncPanel/CmsSyncPanel#CmsSyncPanel": CmsSyncPanel_d5ca907242d376a736aefb95b63de448,
-  "/components/AiGeneratePanel/AiGeneratePanel#AiGeneratePanel": AiGeneratePanel_b7c3d1e9f8a2e5d4,
-  "/components/DriveFilesPanel/DriveFilesPanel#DriveFilesPanel": DriveFilesPanel_c8d4e2f0a9b3f6e1,
+  "/components/AiGeneratePanel/AiGeneratePanel#AiGeneratePanel": AiGeneratePanel_68079c2fbae6949d62bdd38851969025,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }

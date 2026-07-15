@@ -21,6 +21,16 @@ export const Ingredients: CollectionConfig = {
     { name: 'name', type: 'text', localized: true, required: true },
     slugField('name'),
     {
+      // "Tạo nội dung tự động" button — reads Drive files → OpenAI → writes back.
+      name: 'aiGenerate',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: '/components/IngredientAiField/IngredientAiField#IngredientAiField',
+        },
+      },
+    },
+    {
       // Stable key used by CMS sync to upsert without duplicating records.
       // Drawn from external source (e.g. RAG product_name field).
       name: 'externalId',

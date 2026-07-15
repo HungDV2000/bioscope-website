@@ -277,6 +277,26 @@ async function updateJob(
 // Main worker
 // ---------------------------------------------------------------------------
 
+/** Convert plain text (paragraphs split by blank lines) into a Lexical richText value. */
+function textToLexical(text?: string): Record<string, unknown> {
+  const paras = (text ?? '')
+    .split(/\n{2,}|\n/)
+    .map((s) => s.trim())
+    .filter(Boolean)
+  const children = (paras.length ? paras : ['']).map((p) => ({
+    type: 'paragraph',
+    format: '',
+    indent: 0,
+    version: 1,
+    direction: 'ltr',
+    textFormat: 0,
+    children: p
+      ? [{ type: 'text', detail: 0, format: 0, mode: 'normal', style: '', text: p, version: 1 }]
+      : [],
+  }))
+  return { root: { type: 'root', format: '', indent: 0, version: 1, direction: 'ltr', children } }
+}
+
 export async function runAiGenerate(input: WorkerInput): Promise<void> {
   const { jobId, ingredientId, locale, payload } = input
   const logs: AiGenerateLog[] = []
@@ -510,6 +530,32 @@ export async function runAiGenerate(input: WorkerInput): Promise<void> {
         addLog(logs, 'warn', 'Image generation failed — continuing without image')
       }
     }
+
+    // ── 7.5 Write generated content back to the ingredient (correct structure) ──
+    await updateJob(payload, jobId, { status: 'saving', phase: 'Đang lưu nội dung vào nguyên liệu...', logs })
+
+    const otherLocale = locale === 'vi' ? 'en' : 'vi'
+    // Localized fields already present in both languages (subtitle, description).
+    const primaryData: Record<string, unknown> = {}
+    if (generatedContent.subtitle?.[locale]) primaryData.subtitle = generatedContent.subtitle[locale]
+    if (generatedContent.description?.[locale]) primaryData.description = textToLexical(generatedContent.description[locale])
+    if (generatedContent.suggestedDosage) primaryData.suggestedDosage = generatedContent.suggestedDosage
+    if (generatedContent.benefits?.length) primaryData.benefits = generatedContent.benefits
+    if (generatedContent.applications?.length) primaryData.applications = generatedContent.applications
+    if (generatedContent.badges?.length) primaryData.badges = generatedContent.badges // not localized
+    if (featuredImage) primaryData.featuredImage = featuredImage.id
+
+    if (Object.keys(primaryData).length > 0) {
+      await payload.update({ collection: 'ingredients', id: ingredientId, data: primaryData, locale, overrideAccess: true })
+    }
+    // Second language for the bilingual text fields.
+    const otherData: Record<string, unknown> = {}
+    if (generatedContent.subtitle?.[otherLocale]) otherData.subtitle = generatedContent.subtitle[otherLocale]
+    if (generatedContent.description?.[otherLocale]) otherData.description = textToLexical(generatedContent.description[otherLocale])
+    if (Object.keys(otherData).length > 0) {
+      await payload.update({ collection: 'ingredients', id: ingredientId, data: otherData, locale: otherLocale, overrideAccess: true })
+    }
+    addLog(logs, 'info', `Đã ghi nội dung vào nguyên liệu (${Object.keys(primaryData).join(', ')})`)
 
     // ── 8. Save result ────────────────────────────────────────────────────
     const result = {

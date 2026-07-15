@@ -56,10 +56,27 @@ export type GenerationResult =
   | { ok: false; error: string }
 
 // ---------------------------------------------------------------------------
-// 1. Content generation — GPT-4o
+// Model selection (per OpenAI docs, 2026). All overridable via env so the model
+// can be tuned without a rebuild.
+//   - Text/content + vision: GPT-5.6 family (terra = balanced intelligence/cost).
+//   - Image: gpt-image-1 (DALL·E 3 is deprecated). Note: GPT Image models require
+//     Organization Verification in the OpenAI developer console.
 // ---------------------------------------------------------------------------
 
-const CONTENT_MODEL = 'gpt-4o'
+const CONTENT_MODEL = process.env.OPENAI_CONTENT_MODEL || 'gpt-5.6-terra'
+const VISION_MODEL = process.env.OPENAI_VISION_MODEL || 'gpt-5.6-terra'
+
+/**
+ * Chat-completion token/temperature params that differ across model families.
+ * GPT-5 family uses `max_completion_tokens` and only supports the default
+ * temperature, whereas GPT-4 family uses `max_tokens` and custom temperature.
+ */
+function completionParams(model: string, maxTokens: number, temperature: number): Record<string, unknown> {
+  if (/^(gpt-5|o[0-9])/.test(model)) {
+    return { max_completion_tokens: maxTokens }
+  }
+  return { max_tokens: maxTokens, temperature }
+}
 
 /**
  * Sinh nội dung cho nguyên liệu bằng GPT-4o.
@@ -93,8 +110,7 @@ export async function generateIngredientContent(
         { role: 'user', content: userPrompt },
       ],
       response_format: { type: 'json_object' },
-      temperature: 0.3,
-      max_tokens: 8192,
+      ...completionParams(CONTENT_MODEL, 8192, 0.3),
     })
 
     const raw = completion.choices[0]?.message?.content
@@ -121,10 +137,11 @@ export async function generateIngredientContent(
 // 2. Image generation — DALL·E 3 (two-stage)
 // ---------------------------------------------------------------------------
 
-const IMAGE_PROMPT_MODEL = 'gpt-4o'
-const IMAGE_GENERATION_MODEL = 'dall-e-3'
-const IMAGE_SIZE = '1024x1024'
-const IMAGE_QUALITY = 'standard'
+const IMAGE_PROMPT_MODEL = process.env.OPENAI_IMAGE_PROMPT_MODEL || CONTENT_MODEL
+const IMAGE_GENERATION_MODEL = process.env.OPENAI_IMAGE_MODEL || 'gpt-image-1'
+const IMAGE_SIZE = (process.env.OPENAI_IMAGE_SIZE || '1024x1024') as '1024x1024'
+// gpt-image-1 quality: low | medium | high | auto (dall-e-3 used standard | hd).
+const IMAGE_QUALITY = (process.env.OPENAI_IMAGE_QUALITY || 'medium') as 'medium'
 
 /**
  * Sinh featured image cho nguyên liệu bằng DALL·E 3 (2-stage).
@@ -171,8 +188,8 @@ Trả về JSON: {"prompt": "<image prompt bằng tiếng Anh, tối đa 400 ký
     const refinement = await client.chat.completions.create({
       model: IMAGE_PROMPT_MODEL,
       messages: [{ role: 'user', content: refinementPrompt }],
-      temperature: 0.3,
-      max_tokens: 500,
+      response_format: { type: 'json_object' },
+      ...completionParams(IMAGE_PROMPT_MODEL, 500, 0.3),
     })
     const refined = JSON.parse(refinement.choices[0]?.message?.content ?? '{}') as { prompt?: string }
     refinedPrompt = refined.prompt ?? preferredPrompt
@@ -183,13 +200,14 @@ Trả về JSON: {"prompt": "<image prompt bằng tiếng Anh, tối đa 400 ký
   // Stage 2: Generate image với DALL·E 3
   let imageBuffer: Buffer
   try {
+    // gpt-image-1 returns b64_json (no `style`/`response_format` params); dall-e-3
+    // used `style`/`quality: standard`. Keep the call minimal + model-agnostic.
     const imageResponse = await client.images.generate({
       model: IMAGE_GENERATION_MODEL,
       prompt: refinedPrompt,
       size: IMAGE_SIZE,
       quality: IMAGE_QUALITY,
       n: 1,
-      style: 'natural',
     })
 
     const first = imageResponse.data?.[0]
@@ -448,7 +466,7 @@ Nếu ảnh không chứa text có ý nghĩa, trả về: "[No readable text fou
 
   try {
     const response = await client.chat.completions.create({
-      model: 'gpt-4o',
+      model: VISION_MODEL,
       messages: [
         { role: 'system', content: systemPrompt },
         {
@@ -465,8 +483,7 @@ Nếu ảnh không chứa text có ý nghĩa, trả về: "[No readable text fou
           ],
         },
       ],
-      max_tokens: 4096,
-      temperature: 0.1,
+      ...completionParams(VISION_MODEL, 4096, 0.1),
     })
 
     const text = response.choices[0]?.message?.content ?? ''

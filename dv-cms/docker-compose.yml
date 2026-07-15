@@ -44,6 +44,12 @@ services:
       GOOGLE_APPLICATION_CREDENTIALS: ${GOOGLE_APPLICATION_CREDENTIALS:-/app/apps/core-cms/credentials/service-account.json}
       # AI auto-content generation (Tạo nội dung tự động) — required for that feature.
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      # Model overrides (optional — sensible defaults baked in). See openaiService.ts.
+      OPENAI_CONTENT_MODEL: ${OPENAI_CONTENT_MODEL:-}
+      OPENAI_VISION_MODEL: ${OPENAI_VISION_MODEL:-}
+      OPENAI_IMAGE_MODEL: ${OPENAI_IMAGE_MODEL:-}
+      OPENAI_IMAGE_QUALITY: ${OPENAI_IMAGE_QUALITY:-}
+      OPENAI_IMAGE_SIZE: ${OPENAI_IMAGE_SIZE:-}
       NODE_ENV: production
       NODE_OPTIONS: --no-deprecation
       # Container internal port dải 26xxx (tránh xung đột 3000/3001)

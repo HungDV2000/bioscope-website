@@ -26,3 +26,4 @@ export {
   clientIpFromReq,
 } from './hooks/loginProtection.js'
 export { uploadScannerHook } from './hooks/uploadScanner.js'
+export { firewallConfigEndpoint } from './endpoints/firewallConfig.js'

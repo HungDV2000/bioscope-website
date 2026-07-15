@@ -25,6 +25,9 @@ importers:
       '@dv/cms-core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@dv/module-security':
+        specifier: workspace:*
+        version: link:../../packages/module-security
       '@payloadcms/live-preview-react':
         specifier: ^3.85.2
         version: 3.85.2(react-dom@19.2.7(react@19.2.7))(react@19.2.7)

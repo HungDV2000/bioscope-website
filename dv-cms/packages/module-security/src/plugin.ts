@@ -4,6 +4,7 @@ import { BlockedIps } from './collections/BlockedIps.js'
 import { SecurityEvents } from './collections/SecurityEvents.js'
 import { uploadScannerHook } from './hooks/uploadScanner.js'
 import { beforeLoginHook, afterLoginHook } from './hooks/loginProtection.js'
+import { firewallConfigEndpoint } from './endpoints/firewallConfig.js'
 
 export type SecurityPluginOptions = {
   /** Register the security-settings global (default true). */
@@ -43,6 +44,9 @@ export const securityPlugin =
     if (options.collections !== false) {
       config.collections = [...(config.collections ?? []), BlockedIps, SecurityEvents]
     }
+
+    // Public firewall-config endpoint for the edge/frontend firewall.
+    config.endpoints = [...(config.endpoints ?? []), firewallConfigEndpoint]
 
     // Inject login + upload hooks into the existing collections.
     config.collections = (config.collections ?? []).map((col: CollectionConfig): CollectionConfig => {

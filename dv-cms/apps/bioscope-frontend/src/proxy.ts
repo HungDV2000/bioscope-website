@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { inspect } from '@/lib/security/waf'
+import { inspectManaged } from '@/lib/security/managed'
 
 /**
  * CMS-managed URL redirects (Next 16 proxy convention) (collection `redirects`: from → to, 301/302).
@@ -40,7 +40,8 @@ async function getRedirects(): Promise<Map<string, RedirectRow>> {
 
 export async function proxy(req: NextRequest) {
   // 1) Web-application firewall — block scanners/attacks before anything else.
-  const waf = inspect(req)
+  //    Uses CMS-managed rules (cached) with the local static WAF as a fallback.
+  const waf = await inspectManaged(req)
   if (waf.blocked) {
     console.warn(`[waf] blocked ${waf.reason} ${req.method} ${req.nextUrl.pathname}`)
     return new NextResponse('Forbidden', {

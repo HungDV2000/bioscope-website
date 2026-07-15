@@ -235,9 +235,9 @@ Bạn làm việc cho CÔNG TY BIOSCOPE — chuyên gia nghiên cứu, phát tri
 
 NGUYÊN TẮC VIẾT:
 1. Viết bằng tiếng VIỆT CHUẨN cho field "vi", tiếng ANH CHUYÊN NGÀNH cho field "en"
-2. Không bịa đặt thông tin — chỉ dựa trên dữ liệu được cung cấp từ TDS/PDF
-3. Nếu thiếu thông tin, dùng suy luận khoa học hợp lý dựa trên tên hoạt chất và nguồn gốc
-4. Description: 150-300 từ, chuyên nghiệp, có điểm nhấn khoa học
+2. Không bịa đặt thông tin — chỉ dựa trên dữ liệu được cung cấp từ TDS/PDF. TUYỆT ĐỐI không tự chế số liệu specs/hàm lượng/độ tinh khiết: chỉ điền specs khi con số đó XUẤT HIỆN trong tài liệu; nếu tài liệu không có số → để specs rỗng, KHÔNG đoán bừa
+3. Nếu thiếu thông tin định tính (mô tả, ứng dụng), có thể suy luận khoa học hợp lý dựa trên tên hoạt chất và nguồn gốc — nhưng KHÔNG áp dụng cho số liệu định lượng
+4. Description: 250-400 từ, chia 2-3 đoạn, chuyên nghiệp, có điểm nhấn khoa học (cơ chế tác dụng, nguồn gốc/công nghệ chiết xuất, ứng dụng thực tế trong công thức)
 5. Benefits: 4-8 items, ngắn gọn, dễ hiểu, có số liệu nếu có
 6. Applications: 3-6 items, liệt kê dạng bào chế cụ thể
 7. Badges: chứng nhận phổ biến trong ngành (Halal, Kosher, Non-GMO, FDA, GMP...)
@@ -352,10 +352,28 @@ Trả về JSON với format sau (VIẾT ĐẦY ĐỦ cả 2 ngôn ngữ):
  * @returns Nội dung text thuần (không giữ format)
  */
 export async function extractTextFromPdf(buffer: Buffer): Promise<string> {
+  // pdfjs-dist v4 calls Promise.withResolvers(), which only exists on Node 22+.
+  // Polyfill it so PDF extraction also works on Node 20 (current Docker image).
+  const P = Promise as unknown as { withResolvers?: () => unknown }
+  if (typeof P.withResolvers !== 'function') {
+    P.withResolvers = function withResolvers<T>() {
+      let resolve!: (v: T | PromiseLike<T>) => void
+      let reject!: (r?: unknown) => void
+      const promise = new Promise<T>((res, rej) => {
+        resolve = res
+        reject = rej
+      })
+      return { promise, resolve, reject }
+    }
+  }
+
   const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs')
   const PDFJS = pdfjsLib
 
-  const loadingTask = PDFJS.getDocument({ data: buffer })
+  // Pass a Uint8Array (pdfjs detaches the underlying buffer) to avoid corrupting
+  // the shared Node Buffer, and disable the worker for a pure-Node environment.
+  const data = new Uint8Array(buffer)
+  const loadingTask = PDFJS.getDocument({ data, useWorkerFetch: false, isEvalSupported: false })
   const pdf = await loadingTask.promise
 
   const texts: string[] = []

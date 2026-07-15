@@ -11,3 +11,18 @@ export {
   type FirewallRequest,
   type FirewallDecision,
 } from './lib/firewall.js'
+export {
+  getSecuritySettings,
+  getActiveBlockedIps,
+  invalidateSecurityCaches,
+  recordSecurityEvent,
+  blockIp,
+  type SecuritySettingsDoc,
+} from './lib/settings.js'
+export {
+  beforeLoginHook,
+  afterLoginHook,
+  registerFailedLogin,
+  clientIpFromReq,
+} from './hooks/loginProtection.js'
+export { uploadScannerHook } from './hooks/uploadScanner.js'

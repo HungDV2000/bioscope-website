@@ -10,7 +10,11 @@ export const specsField = (name = 'specs'): Field => ({
   type: 'array',
   labels: { singular: 'Spec', plural: 'Specs' },
   fields: [
-    { name: 'label', type: 'text', localized: true, required: true },
+    // NOT required: `label` is localized, and requiring it makes any update to a
+    // published, versioned doc fail when a spec row is missing a label in the
+    // *other* locale (cross-locale publish validation). The label is filled in
+    // practice (manual + AI), so keep it optional to avoid blocking every write.
+    { name: 'label', type: 'text', localized: true },
     { name: 'value', type: 'text', required: true },
     { name: 'unit', type: 'text' },
     {

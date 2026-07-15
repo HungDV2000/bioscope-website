@@ -535,8 +535,9 @@ export async function runAiGenerate(input: WorkerInput): Promise<void> {
     await updateJob(payload, jobId, { status: 'saving', phase: 'Đang lưu nội dung vào nguyên liệu...', logs })
 
     const otherLocale = locale === 'vi' ? 'en' : 'vi'
-    // Localized fields already present in both languages (subtitle, description).
-    const primaryData: Record<string, unknown> = {}
+    // `name` (required, localized) may be empty in the other locale for imported
+    // records → include it in every update so validation passes (fills the blank).
+    const primaryData: Record<string, unknown> = { name: ingredientName }
     if (generatedContent.subtitle?.[locale]) primaryData.subtitle = generatedContent.subtitle[locale]
     if (generatedContent.description?.[locale]) primaryData.description = textToLexical(generatedContent.description[locale])
     if (generatedContent.suggestedDosage) primaryData.suggestedDosage = generatedContent.suggestedDosage
@@ -545,14 +546,13 @@ export async function runAiGenerate(input: WorkerInput): Promise<void> {
     if (generatedContent.badges?.length) primaryData.badges = generatedContent.badges // not localized
     if (featuredImage) primaryData.featuredImage = featuredImage.id
 
-    if (Object.keys(primaryData).length > 0) {
-      await payload.update({ collection: 'ingredients', id: ingredientId, data: primaryData, locale, overrideAccess: true })
-    }
+    await payload.update({ collection: 'ingredients', id: ingredientId, data: primaryData, locale, overrideAccess: true })
+
     // Second language for the bilingual text fields.
-    const otherData: Record<string, unknown> = {}
+    const otherData: Record<string, unknown> = { name: ingredientName }
     if (generatedContent.subtitle?.[otherLocale]) otherData.subtitle = generatedContent.subtitle[otherLocale]
     if (generatedContent.description?.[otherLocale]) otherData.description = textToLexical(generatedContent.description[otherLocale])
-    if (Object.keys(otherData).length > 0) {
+    if (Object.keys(otherData).length > 1) {
       await payload.update({ collection: 'ingredients', id: ingredientId, data: otherData, locale: otherLocale, overrideAccess: true })
     }
     addLog(logs, 'info', `Đã ghi nội dung vào nguyên liệu (${Object.keys(primaryData).join(', ')})`)

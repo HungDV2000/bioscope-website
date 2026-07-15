@@ -99,7 +99,11 @@ export const AiGenerateJobs: CollectionConfig = {
     {
       name: 'logs',
       type: 'array',
-      admin: { readOnly: true },
+      admin: {
+        readOnly: true,
+        // Compact console-style renderer instead of the bulky per-row array UI.
+        components: { Field: '/components/AiJobLogViewer/AiJobLogViewer#AiJobLogViewer' },
+      },
       fields: [
         { name: 'ts', type: 'text' },
         {

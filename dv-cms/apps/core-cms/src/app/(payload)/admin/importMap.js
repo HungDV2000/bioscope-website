@@ -28,6 +28,7 @@ import { LiveEditorToggle as LiveEditorToggle_d26de2934fab2f5e50b16fb3e402473a }
 import { ContentCollectionSlugsField as ContentCollectionSlugsField_f8b2c5cd74f162a2f9852cdf8f8c19f7 } from '@dv/module-custom-types/fields'
 import { IngredientAiField as IngredientAiField_d58fb5a0d75374311f1eedb9e89183ac } from '../../../components/IngredientAiField/IngredientAiField'
 import { DriveFilesPanel as DriveFilesPanel_e800e5de3d6644596c0db139b456e845 } from '../../../components/DriveFilesPanel/DriveFilesPanel'
+import { AiJobLogViewer as AiJobLogViewer_cbe5331e68a1b6faa2791bcfa661c147 } from '../../../components/AiJobLogViewer/AiJobLogViewer'
 import { FolderTypeField as FolderTypeField_2b8867833a34864a02ddf429b0728a40 } from '@payloadcms/next/client'
 import { HexColorField as HexColorField_c3949c88f94613bf8ab39d0e00ee34b2 } from '@dv/cms-core/fields'
 import { SettingsBanner as SettingsBanner_d26de2934fab2f5e50b16fb3e402473a } from 'payload-better-editor/client'
@@ -85,6 +86,7 @@ export const importMap = {
   "@dv/module-custom-types/fields#ContentCollectionSlugsField": ContentCollectionSlugsField_f8b2c5cd74f162a2f9852cdf8f8c19f7,
   "/components/IngredientAiField/IngredientAiField#IngredientAiField": IngredientAiField_d58fb5a0d75374311f1eedb9e89183ac,
   "/components/DriveFilesPanel/DriveFilesPanel#DriveFilesPanel": DriveFilesPanel_e800e5de3d6644596c0db139b456e845,
+  "/components/AiJobLogViewer/AiJobLogViewer#AiJobLogViewer": AiJobLogViewer_cbe5331e68a1b6faa2791bcfa661c147,
   "@payloadcms/next/client#FolderTypeField": FolderTypeField_2b8867833a34864a02ddf429b0728a40,
   "@dv/cms-core/fields#HexColorField": HexColorField_c3949c88f94613bf8ab39d0e00ee34b2,
   "payload-better-editor/client#SettingsBanner": SettingsBanner_d26de2934fab2f5e50b16fb3e402473a,

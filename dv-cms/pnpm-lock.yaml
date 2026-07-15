@@ -101,6 +101,9 @@ importers:
       '@dv/module-custom-types':
         specifier: workspace:*
         version: link:../../packages/module-custom-types
+      '@dv/module-image':
+        specifier: workspace:*
+        version: link:../../packages/module-image
       '@dv/module-languages':
         specifier: workspace:*
         version: link:../../packages/module-languages
@@ -260,6 +263,19 @@ importers:
       react:
         specifier: 19.2.7
         version: 19.2.7
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+
+  packages/module-image:
+    dependencies:
+      '@dv/cms-core':
+        specifier: workspace:*
+        version: link:../core
+    devDependencies:
+      payload:
+        specifier: 3.85.1
+        version: 3.85.1(graphql@16.14.2)(typescript@5.9.3)
       typescript:
         specifier: 5.9.3
         version: 5.9.3

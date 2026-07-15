@@ -15,6 +15,7 @@ import { b2bPlugin } from '@dv/module-b2b'
 import { customTypesPlugin } from '@dv/module-custom-types'
 import { seoPlugin } from '@dv/module-seo'
 import { securityPlugin } from '@dv/module-security'
+import { imagePlugin } from '@dv/module-image'
 import { languagesPlugin, resolveLocalizationConfig } from '@dv/module-languages'
 import { permissionsPlugin } from '@dv/module-permissions'
 import { betterEditor } from 'payload-better-editor'
@@ -115,6 +116,8 @@ export default buildConfig({
       cmsSyncComponent: '/components/CmsSyncPanel/CmsSyncPanel#CmsSyncPanel',
       aiGenerateComponent: '/components/AiGeneratePanel/AiGeneratePanel#AiGeneratePanel',
     }),
+    // Image optimization — after core (enhances the media upload config).
+    imagePlugin(),
     // Custom content types (ACF-like) — after core (needs users/media/access).
     customTypesPlugin(),
     // Page layout blocks — pick which blocks this site can use (omit `enabled` for all).

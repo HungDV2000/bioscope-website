@@ -29,6 +29,7 @@
     "@dv/module-blocks": "workspace:*",
     "@dv/module-catalog": "workspace:*",
     "@dv/module-custom-types": "workspace:*",
+    "@dv/module-image": "workspace:*",
     "@dv/module-languages": "workspace:*",
     "@dv/module-permissions": "workspace:*",
     "@dv/module-seo": "workspace:*",

@@ -27,6 +27,8 @@ services:
     build:
       context: .
       dockerfile: apps/core-cms/Dockerfile
+    # Tag the built image so the preview-proxy service can reuse it (no rebuild).
+    image: dv-cms-cms
     container_name: dvcms-app
     restart: unless-stopped
     depends_on:
@@ -54,6 +56,12 @@ services:
       NODE_OPTIONS: --no-deprecation
       # Container internal port dải 26xxx (tránh xung đột 3000/3001)
       PORT: "26301"
+      # ── Better Editor same-origin preview (opt-in) ──
+      # Để trống = admin chạy bình thường. Khi bật preview-proxy + route admin qua
+      # proxy, đặt CMS_ASSET_PREFIX=/cms-static (asset admin không đụng /_next của
+      # frontend) và PREVIEW_ORIGIN=https://admin.bioscope.vn. Xem docs/better-editor-preview.md.
+      CMS_ASSET_PREFIX: ${CMS_ASSET_PREFIX:-}
+      PREVIEW_ORIGIN: ${PREVIEW_ORIGIN:-}
     ports:
       # Bind 127.0.0.1:26081 → container:26301 (chỉ aaPanel proxy mới truy cập được)
       - "127.0.0.1:${DVCMS_CMS_HOST_PORT:-26081}:26301"
@@ -86,6 +94,29 @@ services:
     ports:
       # Bind 127.0.0.1:26080 → container:26300 (chỉ aaPanel proxy mới truy cập được)
       - "127.0.0.1:${DVCMS_FRONTEND_HOST_PORT:-26080}:26300"
+
+  # Same-origin proxy for the Better Editor preview. Reuses the cms image (no
+  # extra build). Opt-in: `docker compose --profile preview up -d preview-proxy`.
+  # Then route admin.bioscope.vn → this proxy in nginx and set CMS_ASSET_PREFIX +
+  # PREVIEW_ORIGIN on the cms service. See docs/better-editor-preview.md.
+  preview-proxy:
+    image: dv-cms-cms
+    container_name: dvcms-preview-proxy
+    restart: unless-stopped
+    profiles: ["preview"]
+    depends_on:
+      cms:
+        condition: service_started
+      frontend:
+        condition: service_started
+    working_dir: /app/apps/core-cms
+    command: ["node", "scripts/preview-proxy.mjs"]
+    environment:
+      PROXY_PORT: "26302"
+      CMS_TARGET: http://cms:26301
+      FRONTEND_TARGET: http://frontend:26300
+    ports:
+      - "127.0.0.1:${DVCMS_PREVIEW_HOST_PORT:-26082}:26302"
 
 volumes:
   pgdata:

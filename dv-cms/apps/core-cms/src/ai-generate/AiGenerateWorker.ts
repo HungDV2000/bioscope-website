@@ -504,30 +504,35 @@ export async function runAiGenerate(input: WorkerInput): Promise<void> {
         logs,
       })
 
-      featuredImage = await generateAndUploadFeaturedImage(
-        ingredientName,
-        locale,
-        generatedContent.imagePrompt,
-        async (buffer, filename, mimeType, alt) => {
-          addLog(logs, 'info', `Uploading image: ${filename}`)
-          const media = await payload.create({
-            collection: 'media',
-            data: { alt: { vi: alt, en: alt } },
-            file: { buffer, filename, mimeType },
-            overrideAccess: true,
-          })
-          addLog(logs, 'info', `Image uploaded: ${media.id}`)
-          return {
-            id: media.id,
-            url: (media.url as string) ?? `/_uploads/media/${filename}`,
-          }
-        },
-      )
+      try {
+        featuredImage = await generateAndUploadFeaturedImage(
+          ingredientName,
+          locale,
+          generatedContent.imagePrompt,
+          async (buffer, filename, mimeType, alt) => {
+            addLog(logs, 'info', `Uploading image: ${filename}`)
+            const media = await payload.create({
+              collection: 'media',
+              data: { alt: { vi: alt, en: alt } },
+              file: { buffer, filename, mimeType },
+              overrideAccess: true,
+            })
+            addLog(logs, 'info', `Image uploaded: ${media.id}`)
+            return {
+              id: media.id,
+              url: (media.url as string) ?? `/_uploads/media/${filename}`,
+            }
+          },
+        )
+      } catch (imgErr) {
+        const msg = imgErr instanceof Error ? imgErr.message : String(imgErr)
+        addLog(logs, 'error', `Tạo ảnh thất bại: ${msg}`)
+      }
 
       if (featuredImage) {
         addLog(logs, 'info', `Featured image generated: ${featuredImage.url}`)
       } else {
-        addLog(logs, 'warn', 'Image generation failed — continuing without image')
+        addLog(logs, 'warn', 'Không tạo được ảnh — tiếp tục không có ảnh đại diện')
       }
     }
 

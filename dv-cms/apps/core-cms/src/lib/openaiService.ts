@@ -192,16 +192,22 @@ Trả về JSON: {"prompt": "<image prompt bằng tiếng Anh, tối đa 400 ký
       style: 'natural',
     })
 
-    const imageUrl = imageResponse.data[0]?.url
-    if (!imageUrl) return null
-
-    // Download image
-    const fetchRes = await fetch(imageUrl)
-    if (!fetchRes.ok) return null
-    imageBuffer = Buffer.from(await fetchRes.arrayBuffer())
+    const first = imageResponse.data?.[0]
+    // dall-e-3 returns `url`; some image models return base64 in `b64_json`.
+    if (first?.b64_json) {
+      imageBuffer = Buffer.from(first.b64_json, 'base64')
+    } else if (first?.url) {
+      const fetchRes = await fetch(first.url)
+      if (!fetchRes.ok) throw new Error(`Tải ảnh về thất bại: HTTP ${fetchRes.status}`)
+      imageBuffer = Buffer.from(await fetchRes.arrayBuffer())
+    } else {
+      throw new Error('OpenAI không trả về dữ liệu ảnh (thiếu url và b64_json)')
+    }
   } catch (err) {
+    // Re-throw so the worker can surface the real reason in the job log.
+    const msg = err instanceof Error ? err.message : String(err)
     console.error('[AI Image] Generation failed:', err)
-    return null
+    throw new Error(msg)
   }
 
   // Stage 3: Upload lên Payload Media

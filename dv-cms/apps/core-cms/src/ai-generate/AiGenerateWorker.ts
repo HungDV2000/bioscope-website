@@ -496,10 +496,10 @@ export async function runAiGenerate(input: WorkerInput): Promise<void> {
     let featuredImage: { id: string | number; url: string } | null = null
 
     if (generatedContent.imagePrompt) {
-      addLog(logs, 'info', 'Calling DALL·E 3 to generate featured image...')
+      addLog(logs, 'info', 'Gọi AI tạo hình ảnh...')
       await updateJob(payload, jobId, {
         status: 'generating_image',
-        phase: 'Đang gọi DALL·E 3 sinh hình ảnh...',
+        phase: 'Đang gọi AI tạo hình ảnh...',
         totals,
         logs,
       })
@@ -567,6 +567,11 @@ export async function runAiGenerate(input: WorkerInput): Promise<void> {
     if (gc.tag) primaryData.tag = gc.tag // not localized
     if (seoFor(locale)) primaryData.seo = seoFor(locale)
     if (featuredImage) primaryData.featuredImage = featuredImage.id
+    // Wipe any stale/corrupt spec rows (e.g. a prior partial run left a row with
+    // an empty required label in the other locale). Sending an empty array in
+    // this already-validated write clears them so the write itself can't be
+    // blocked by pre-existing bad specs; the real specs are re-created below.
+    primaryData.specs = []
 
     await payload.update({ collection: 'ingredients', id: ingredientId, data: primaryData, locale, overrideAccess: true })
 

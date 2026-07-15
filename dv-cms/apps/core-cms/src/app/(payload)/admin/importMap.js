@@ -32,6 +32,7 @@ import { AiJobLogViewer as AiJobLogViewer_cbe5331e68a1b6faa2791bcfa661c147 } fro
 import { FolderTypeField as FolderTypeField_2b8867833a34864a02ddf429b0728a40 } from '@payloadcms/next/client'
 import { HexColorField as HexColorField_c3949c88f94613bf8ab39d0e00ee34b2 } from '@dv/cms-core/fields'
 import { SettingsBanner as SettingsBanner_d26de2934fab2f5e50b16fb3e402473a } from 'payload-better-editor/client'
+import { SecurityDashboard as SecurityDashboard_049361287b1fa1300950c1b1838c1a82 } from '../../../components/SecurityDashboard/SecurityDashboard'
 import { AccountMenu as AccountMenu_00843a5f229f2e31dd95960baf9412a3 } from '@dv/cms-core/admin'
 import { HiddenLogout as HiddenLogout_00843a5f229f2e31dd95960baf9412a3 } from '@dv/cms-core/admin'
 import { BrandIcon as BrandIcon_00843a5f229f2e31dd95960baf9412a3 } from '@dv/cms-core/admin'
@@ -90,6 +91,7 @@ export const importMap = {
   "@payloadcms/next/client#FolderTypeField": FolderTypeField_2b8867833a34864a02ddf429b0728a40,
   "@dv/cms-core/fields#HexColorField": HexColorField_c3949c88f94613bf8ab39d0e00ee34b2,
   "payload-better-editor/client#SettingsBanner": SettingsBanner_d26de2934fab2f5e50b16fb3e402473a,
+  "/components/SecurityDashboard/SecurityDashboard#SecurityDashboard": SecurityDashboard_049361287b1fa1300950c1b1838c1a82,
   "@dv/cms-core/admin#AccountMenu": AccountMenu_00843a5f229f2e31dd95960baf9412a3,
   "@dv/cms-core/admin#HiddenLogout": HiddenLogout_00843a5f229f2e31dd95960baf9412a3,
   "@dv/cms-core/admin#BrandIcon": BrandIcon_00843a5f229f2e31dd95960baf9412a3,

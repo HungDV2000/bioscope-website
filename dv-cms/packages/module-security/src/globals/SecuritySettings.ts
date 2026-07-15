@@ -23,6 +23,15 @@ export const SecuritySettings: GlobalConfig = {
   },
   fields: [
     {
+      name: 'dashboard',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: '/components/SecurityDashboard/SecurityDashboard#SecurityDashboard',
+        },
+      },
+    },
+    {
       type: 'tabs',
       tabs: [
         // ── Firewall ──────────────────────────────────────────────────────

@@ -157,20 +157,19 @@ const triggerGenerateEndpoint: Endpoint = {
       })
       jobId = String(job.id)
 
+      // Reuse the request's Payload instance (global.__payload isn't set in the
+      // running server — only in CLI scripts).
+      const payload = req.payload
+
       // Chạy nền ngay
       setImmediate(async () => {
         try {
-          const payload = (global as Record<string, unknown>).__payload
-          if (!payload) {
-            console.error('[ai-generate] Payload not available in global')
-            return
-          }
           const { runAiGenerate } = await import('../ai-generate/AiGenerateWorker.js')
           await runAiGenerate({
             jobId: String(jobId),
             ingredientId: String(ingredientId),
             locale: locale as Locale,
-            payload: payload as Parameters<typeof runAiGenerate>[0]['payload'],
+            payload,
           })
         } catch (err) {
           console.error('[ai-generate] Background error:', err)

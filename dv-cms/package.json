@@ -5,7 +5,7 @@
   "description": "DeepViewJSC headless CMS platform — reusable core + installable modules (Payload 3), deployable via core-cms",
   "packageManager": "pnpm@9.15.9",
   "engines": {
-    "node": ">=20.9.0"
+    "node": ">=22.0.0"
   },
   "scripts": {
     "dev": "turbo run dev",

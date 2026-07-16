@@ -9,6 +9,10 @@ export const Ingredients: CollectionConfig = {
     useAsTitle: 'name',
     group: 'Bioscope',
     defaultColumns: ['name', 'type', 'originCountry', 'featured', '_status'],
+    components: {
+      // Bulk "Tạo nội dung tự động" bar on the list view (selected / all).
+      beforeListTable: ['/components/BulkAiGenerate/BulkAiGenerate#BulkAiGenerate'],
+    },
   },
   versions: { drafts: { autosave: false }, maxPerDoc: 10 },
   access: {

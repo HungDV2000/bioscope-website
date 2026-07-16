@@ -192,6 +192,126 @@ const triggerGenerateEndpoint: Endpoint = {
 }
 
 // ---------------------------------------------------------------------------
+// POST /api/ai-generate/bulk — Enqueue generation for many/all ingredients
+// ---------------------------------------------------------------------------
+
+const ACTIVE_STATUSES = ['queued', 'downloading', 'extracting', 'generating_content', 'generating_image', 'saving']
+
+const bulkGenerateEndpoint: Endpoint = {
+  path: '/ai-generate/bulk',
+  method: 'post',
+  handler: async (req: PayloadRequest): Promise<Response> => {
+    if (!isAdmin(req)) {
+      return Response.json({ ok: false, error: 'Chỉ admin được phép.' }, { status: 403 })
+    }
+
+    let body: { ids?: (string | number)[]; all?: boolean; locale?: string }
+    try {
+      body = await (req as unknown as Request).json()
+    } catch {
+      return Response.json({ ok: false, error: 'Invalid JSON body.' }, { status: 400 })
+    }
+    const locale = (body.locale ?? 'vi') as Locale
+    const payload = req.payload
+
+    // Count how many will be targeted (fast) so the UI can show a number now.
+    let targetCount = 0
+    try {
+      if (body.all) {
+        const c = await payload.count({ collection: 'ingredients', overrideAccess: true })
+        targetCount = c.totalDocs
+      } else {
+        targetCount = Array.isArray(body.ids) ? body.ids.length : 0
+      }
+    } catch {
+      /* non-fatal */
+    }
+
+    if (!body.all && (!Array.isArray(body.ids) || body.ids.length === 0)) {
+      return Response.json({ ok: false, error: 'Chưa chọn nguyên liệu nào.' }, { status: 400 })
+    }
+
+    // Enqueue + drain in the background so this request returns immediately
+    // (creating hundreds of job rows must not block/timeout the HTTP call).
+    setImmediate(async () => {
+      try {
+        // Resolve the target ingredient ids.
+        const ids: (string | number)[] = []
+        if (body.all) {
+          let page = 1
+          for (;;) {
+            const res = await payload.find({ collection: 'ingredients', limit: 500, page, depth: 0, overrideAccess: true })
+            for (const d of res.docs) ids.push(d.id)
+            if (!res.hasNextPage) break
+            page++
+          }
+        } else {
+          ids.push(...(body.ids ?? []))
+        }
+
+        // Skip ingredients that already have an active (queued/in-progress) job.
+        const active = new Set<string>()
+        try {
+          const res = await payload.find({
+            collection: 'ai-generate-jobs',
+            where: { status: { in: ACTIVE_STATUSES } },
+            limit: 5000,
+            depth: 0,
+            overrideAccess: true,
+          })
+          for (const j of res.docs) active.add(String(j.ingredientId))
+        } catch {
+          /* ignore — worst case we create a duplicate job */
+        }
+
+        let created = 0
+        for (const id of ids) {
+          if (active.has(String(id))) continue
+          try {
+            const ing = await payload.findByID({ collection: 'ingredients', id, depth: 0, overrideAccess: true })
+            const nf = ing.name as { vi?: string; en?: string } | string | undefined
+            const ingredientName =
+              typeof nf === 'object' && nf !== null ? nf.vi ?? nf.en ?? String(id) : String(nf ?? id)
+            await payload.create({
+              collection: 'ai-generate-jobs',
+              data: {
+                status: 'queued',
+                phase: 'Đang xếp hàng (bulk)...',
+                ingredientId: String(id),
+                ingredientName,
+                locale,
+                totals: { filesFound: 0, filesDownloaded: 0, filesExtracted: 0, errors: 0 },
+                logs: [],
+              } as never,
+              overrideAccess: true,
+            })
+            active.add(String(id))
+            created++
+          } catch (err) {
+            console.error('[ai-generate/bulk] enqueue failed for', id, err)
+          }
+        }
+
+        console.log(`[ai-generate/bulk] enqueued ${created} jobs; starting sequential queue`)
+        const { ensureQueueRunner } = await import('../ai-generate/queue.js')
+        ensureQueueRunner(payload)
+      } catch (err) {
+        console.error('[ai-generate/bulk] background error:', err)
+      }
+    })
+
+    return Response.json(
+      {
+        ok: true,
+        message: `Đã nhận yêu cầu cho ${targetCount} nguyên liệu. Job sẽ chạy lần lượt trong nền — theo dõi ở AI Generate Jobs.`,
+        targeted: targetCount,
+      },
+      { status: 202 },
+    )
+  },
+}
+
+// ---------------------------------------------------------------------------
 // GET /api/ai-generate/jobs — List recent jobs
 // ---------------------------------------------------------------------------
 
@@ -285,5 +405,6 @@ const getJobEndpoint: Endpoint = {
 // ---------------------------------------------------------------------------
 
 export const aiGenerateTriggerEndpoint = triggerGenerateEndpoint
+export const aiGenerateBulkEndpoint = bulkGenerateEndpoint
 export const aiGenerateListEndpoint = listJobsEndpoint
 export const aiGenerateGetEndpoint = getJobEndpoint

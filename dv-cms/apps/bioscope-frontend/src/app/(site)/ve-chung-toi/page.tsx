@@ -29,11 +29,17 @@ export default async function AboutPage() {
       <div data-better-editor-id={blockIds.aboutMission}>
         <AboutMissionStrip />
       </div>
-      <AboutDifferentiation />
+      <div data-better-editor-id={blockIds.aboutDifferentiation}>
+        <AboutDifferentiation />
+      </div>
       <AboutCoreValues />
       <AboutProductProcess />
-      <AboutJourney />
-      <AboutPartners />
+      <div data-better-editor-id={blockIds.aboutJourney}>
+        <AboutJourney />
+      </div>
+      <div data-better-editor-id={blockIds.aboutPartners}>
+        <AboutPartners />
+      </div>
       <CtaBand />
     </LocaleProvider>
   )

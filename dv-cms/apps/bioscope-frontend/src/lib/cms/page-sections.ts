@@ -45,13 +45,24 @@ export async function getPageSections(slug: string, locale: Locale): Promise<Pag
   const out: Messages = { ...messages, about: { ...messages.about } }
   const blockIds: Record<string, string> = {}
 
+  const setSection = (key: keyof Messages['about'], value: unknown, id?: string, slug?: string) => {
+    out.about = { ...out.about, [key]: value } as Messages['about']
+    if (slug && typeof id === 'string') blockIds[slug] = id
+  }
+
   for (const b of blocks) {
     switch (b.blockType) {
       case 'aboutMission':
-        if (Array.isArray(b.mission)) {
-          out.about = { ...out.about, mission: overlay(messages.about.mission, b.mission) }
-          if (typeof b.id === 'string') blockIds.aboutMission = b.id
-        }
+        if (Array.isArray(b.mission)) setSection('mission', overlay(messages.about.mission, b.mission), b.id, 'aboutMission')
+        break
+      case 'aboutDifferentiation':
+        setSection('differentiation', overlay(messages.about.differentiation, b), b.id, 'aboutDifferentiation')
+        break
+      case 'aboutJourney':
+        setSection('journey', overlay(messages.about.journey, b), b.id, 'aboutJourney')
+        break
+      case 'aboutPartners':
+        setSection('partners', overlay(messages.about.partners, b), b.id, 'aboutPartners')
         break
       // Further sections are added here as they become editable.
     }

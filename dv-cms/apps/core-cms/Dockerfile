@@ -8,6 +8,10 @@ WORKDIR /app
 FROM base AS build
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_OPTIONS=--no-deprecation
+# assetPrefix must be baked at BUILD time so webpack's runtime publicPath uses it
+# (Better Editor same-origin preview). Runtime-only env is too late for chunks.
+ARG CMS_ASSET_PREFIX=
+ENV CMS_ASSET_PREFIX=${CMS_ASSET_PREFIX}
 
 COPY pnpm-workspace.yaml pnpm-lock.yaml package.json tsconfig.base.json ./
 COPY patches ./patches
@@ -21,6 +25,9 @@ FROM base AS runner
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_OPTIONS=--no-deprecation
+# Keep the same prefix at runtime so the server-rendered HTML matches the bundle.
+ARG CMS_ASSET_PREFIX=
+ENV CMS_ASSET_PREFIX=${CMS_ASSET_PREFIX}
 WORKDIR /app/apps/core-cms
 COPY --from=build /app/node_modules /app/node_modules
 COPY --from=build /app/packages /app/packages

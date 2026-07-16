@@ -27,6 +27,10 @@ services:
     build:
       context: .
       dockerfile: apps/core-cms/Dockerfile
+      args:
+        # Baked into the webpack bundle at build time (assetPrefix). Must match the
+        # runtime CMS_ASSET_PREFIX or the admin's dynamic chunks 404. Empty = off.
+        CMS_ASSET_PREFIX: ${CMS_ASSET_PREFIX:-}
     # Tag the built image so the preview-proxy service can reuse it (no rebuild).
     image: dv-cms-cms
     container_name: dvcms-app

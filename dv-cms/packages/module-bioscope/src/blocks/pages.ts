@@ -193,6 +193,36 @@ export const ContactInfoBlock: Block = {
   ],
 }
 
+// ── Legal pages (Privacy / Terms) ──────────────────────────────────────────
+
+export const LegalContentBlock: Block = {
+  slug: 'legalContent',
+  interfaceName: 'LegalContentBlock',
+  labels: { singular: { en: 'Legal · Content', vi: 'Pháp lý · Nội dung' }, plural: { en: 'Legal · Content', vi: 'Pháp lý · Nội dung' } },
+  fields: [
+    {
+      name: 'target',
+      type: 'select',
+      required: true,
+      defaultValue: 'privacy',
+      label: { en: 'Document', vi: 'Tài liệu' },
+      options: [
+        { label: { en: 'Privacy policy', vi: 'Chính sách bảo mật' }, value: 'privacy' },
+        { label: { en: 'Terms of use', vi: 'Điều khoản sử dụng' }, value: 'terms' },
+      ],
+    },
+    T('title', { en: 'Title', vi: 'Tiêu đề' }),
+    T('updated', { en: 'Updated label', vi: 'Nhãn cập nhật' }),
+    A('intro', { en: 'Intro', vi: 'Mở đầu' }),
+    {
+      name: 'sections',
+      type: 'array',
+      label: { en: 'Sections', vi: 'Các mục' },
+      fields: [T('title', { en: 'Heading', vi: 'Tiêu đề mục' }), LIST('paragraphs', { en: 'Paragraphs', vi: 'Đoạn văn' })],
+    },
+  ],
+}
+
 /** All static-page section blocks, appended to the Pages layout. */
 export const PAGE_BLOCKS: Block[] = [
   AboutMissionBlock,
@@ -209,6 +239,7 @@ export const PAGE_BLOCKS: Block[] = [
   CoCreateCasesBlock,
   RdContentBlock,
   ContactInfoBlock,
+  LegalContentBlock,
 ]
 
 export const PAGE_BLOCK_SLUGS = PAGE_BLOCKS.map((b) => b.slug)

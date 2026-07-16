@@ -3,6 +3,7 @@ import { LegalContent } from '@/components/legal-content'
 import { getContent } from '@/lib/get-content'
 import { getLocale } from '@/lib/i18n/server'
 import { getPageContent } from '@/lib/cms/page'
+import { getPageSections, applyContentOverride } from '@/lib/cms/page-sections'
 
 export async function generateMetadata() {
   const locale = await getLocale()
@@ -11,14 +12,15 @@ export async function generateMetadata() {
 
 export default async function TermsPage() {
   const locale = await getLocale()
-  const terms = getContent(locale).TERMS_OF_USE
+  const { contentOverride, blockIds } = await getPageSections('dieu-khoan-su-dung', locale)
+  const terms = applyContentOverride(getContent(locale), contentOverride).TERMS_OF_USE
   const { hero } = await getPageContent('dieu-khoan-su-dung', locale)
 
   return (
     <>
       <PageHero eyebrow={hero.eyebrow} title={terms.title} description={hero.description} crumbs={hero.crumbs} image="labWork" />
 
-      <section className="bg-white pb-16 pt-16">
+      <section className="bg-white pb-16 pt-16" data-better-editor-id={blockIds.legalContent}>
         <div className="container-bs">
           <LegalContent intro={terms.intro} sections={terms.sections} updated={terms.updated} />
         </div>

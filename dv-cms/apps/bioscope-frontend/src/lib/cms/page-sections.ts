@@ -84,6 +84,17 @@ export async function getPageSections(slug: string, locale: Locale): Promise<Pag
         if (Array.isArray(b.faq) && b.faq.length) contentOverride.CONTACT_FAQ = b.faq
         markId(b.id, 'contactInfo')
         break
+      case 'legalContent': {
+        const doc: Record<string, unknown> = {}
+        for (const k of ['title', 'updated', 'intro']) {
+          const v = str(b[k])
+          if (v) doc[k] = v
+        }
+        if (Array.isArray(b.sections) && b.sections.length) doc.sections = b.sections
+        if (Object.keys(doc).length) contentOverride[b.target === 'terms' ? 'TERMS_OF_USE' : 'PRIVACY_POLICY'] = doc
+        markId(b.id, 'legalContent')
+        break
+      }
       case 'aboutMission':
         if (Array.isArray(b.mission)) setSection('mission', overlay(messages.about.mission, b.mission), b.id, 'aboutMission')
         break

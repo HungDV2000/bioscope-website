@@ -4,10 +4,12 @@ import { Lightbulb, FlaskConical, ShieldCheck, Rocket, TrendingUp } from 'lucide
 import { LeafDivider } from '@/components/ui/section'
 import { Reveal } from '@/components/ui/reveal'
 import { useLocale } from '@/lib/i18n/context'
+import type { SectionMedia } from '@/lib/cms/home'
+import { RichOrText } from '@/components/ui/rich-text'
 
 const STEP_ICONS = [Lightbulb, FlaskConical, ShieldCheck, Rocket, TrendingUp] as const
 
-export function Process() {
+export function Process({ media }: { media?: SectionMedia }) {
   const { t } = useLocale()
   const p = t.home.process
 
@@ -16,7 +18,7 @@ export function Process() {
       <div className="container-bs">
         <Reveal className="text-center">
           <h2 className="font-bold tracking-tight text-ink text-[1.8rem] sm:text-[2.2rem]">{p.title}</h2>
-          <p className="mx-auto mt-4 max-w-2xl text-[15px] leading-relaxed text-ink/65">{p.description}</p>
+          <RichOrText value={media?.descRich} fallback={p.description} className="mx-auto mt-4 max-w-2xl text-[15px] leading-relaxed text-ink/65" />
           <LeafDivider />
         </Reveal>
 

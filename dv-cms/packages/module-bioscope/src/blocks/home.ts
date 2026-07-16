@@ -4,6 +4,8 @@ import type { Block, Field } from 'payload'
 const T = (name: string, label?: Record<string, string>): Field => ({ name, type: 'text', localized: true, ...(label ? { label } : {}) })
 /** Localized multi-line text. */
 const A = (name: string, label?: Record<string, string>): Field => ({ name, type: 'textarea', localized: true, ...(label ? { label } : {}) })
+/** Localized richText (Word-like styling: bold/italic/lists/links). */
+const R = (name: string, label?: Record<string, string>): Field => ({ name, type: 'richText', localized: true, ...(label ? { label } : {}) })
 /** Localized list of short strings (returns string[]). */
 const LIST = (name: string, label?: Record<string, string>): Field => ({ name, type: 'text', hasMany: true, localized: true, ...(label ? { label } : {}) })
 /** Image upload (not localized). */
@@ -30,7 +32,7 @@ export const HOME_BLOCKS: Block[] = [
     fields: [
       T('eyebrow'),
       T('titleBefore'), T('titleHighlight'), T('titleMid'), T('titleAccent'),
-      A('description'),
+      R('description'),
       T('ctaPrimary'), T('ctaSecondary'),
       LIST('trust', { en: 'Trust badges', vi: 'Nhãn tin cậy' }),
       IMG('image', { en: 'Hero image', vi: 'Ảnh Hero' }),
@@ -51,7 +53,7 @@ export const HOME_BLOCKS: Block[] = [
     interfaceName: 'HomeProcessBlock',
     labels: { singular: { en: 'Process', vi: 'Quy trình' }, plural: { en: 'Process', vi: 'Quy trình' } },
     fields: [
-      T('title'), A('description'),
+      T('title'), R('description'),
       { name: 'steps', type: 'array', label: { en: 'Steps', vi: 'Các bước' }, fields: [T('title', { en: 'Title', vi: 'Tiêu đề' }), A('desc', { en: 'Description', vi: 'Mô tả' })] },
     ],
   },
@@ -60,7 +62,7 @@ export const HOME_BLOCKS: Block[] = [
     interfaceName: 'HomeCategoriesBlock',
     labels: { singular: { en: 'Ingredient categories', vi: 'Danh mục nguyên liệu' }, plural: { en: 'Ingredient categories', vi: 'Danh mục nguyên liệu' } },
     fields: [
-      T('title'), A('description'), T('viewAll'),
+      T('title'), R('description'), T('viewAll'),
       { name: 'featured', type: 'group', label: { en: 'Featured card', vi: 'Thẻ nổi bật' }, fields: [T('name'), A('desc'), T('cta'), IMG('image', { en: 'Image', vi: 'Ảnh' }), CAT()] },
       { name: 'items', type: 'array', label: { en: 'Cards', vi: 'Thẻ' }, fields: [T('name', { en: 'Name', vi: 'Tên' }), A('desc', { en: 'Description', vi: 'Mô tả' }), IMG('image', { en: 'Image', vi: 'Ảnh' }), CAT()] },
     ],
@@ -76,7 +78,7 @@ export const HOME_BLOCKS: Block[] = [
     interfaceName: 'HomeCertificationsBlock',
     labels: { singular: { en: 'Certifications', vi: 'Chứng nhận' }, plural: { en: 'Certifications', vi: 'Chứng nhận' } },
     fields: [
-      T('title'), A('description'), T('countries'),
+      T('title'), R('description'), T('countries'),
       { name: 'items', type: 'array', label: { en: 'Items', vi: 'Mục' }, fields: [T('name', { en: 'Name', vi: 'Tên' }), T('sub', { en: 'Subtitle', vi: 'Phụ đề' }), IMG('logo', { en: 'Logo', vi: 'Logo' })] },
     ],
   },
@@ -97,7 +99,7 @@ export const HOME_BLOCKS: Block[] = [
     interfaceName: 'HomeAiPromoBlock',
     labels: { singular: { en: 'AI chat promo', vi: 'Quảng bá AI chat' }, plural: { en: 'AI chat promo', vi: 'Quảng bá AI chat' } },
     fields: [
-      T('badge'), T('titleBefore'), T('titleHighlight'), A('description'),
+      T('badge'), T('titleBefore'), T('titleHighlight'), R('description'),
       LIST('features', { en: 'Features', vi: 'Tính năng' }),
       T('cta'), T('ctaHref'),
       T('chatName'), T('chatStatus'), T('typing'),
@@ -109,7 +111,7 @@ export const HOME_BLOCKS: Block[] = [
     slug: 'homeCta',
     interfaceName: 'HomeCtaBlock',
     labels: { singular: { en: 'Closing CTA', vi: 'CTA cuối trang' }, plural: { en: 'Closing CTA', vi: 'CTA cuối trang' } },
-    fields: [T('title'), A('description'), T('primary'), T('secondary'), IMG('image', { en: 'Background image', vi: 'Ảnh nền' })],
+    fields: [T('title'), R('description'), T('primary'), T('secondary'), IMG('image', { en: 'Background image', vi: 'Ảnh nền' })],
   },
 ]
 

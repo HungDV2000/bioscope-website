@@ -4,8 +4,9 @@ import { Button } from '@/components/ui/button'
 import { Reveal } from '@/components/ui/reveal'
 import { useLocale } from '@/lib/i18n/context'
 import type { SectionMedia } from '@/lib/cms/home'
+import { RichOrText } from '@/components/ui/rich-text'
 
-export function CtaBand({ media: _media }: { media?: SectionMedia }) {
+export function CtaBand({ media }: { media?: SectionMedia }) {
   const { t } = useLocale()
   const c = t.home.cta
 
@@ -20,7 +21,7 @@ export function CtaBand({ media: _media }: { media?: SectionMedia }) {
             <div className="relative z-10 flex flex-col items-start justify-between gap-4 lg:flex-row lg:items-center">
               <div className="max-w-xl text-white">
                 <h2 className="text-[1.25rem] font-bold leading-snug tracking-tight sm:text-[1.45rem]">{c.title}</h2>
-                <p className="mt-2 text-[13.5px] leading-relaxed text-white/85">{c.description}</p>
+                <RichOrText value={media?.descRich} fallback={c.description} className="mt-2 text-[13.5px] leading-relaxed text-white/85" />
               </div>
               <div className="flex shrink-0 flex-wrap gap-3">
                 <Button href="/lien-he" variant="accent">

@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { Reveal } from '@/components/ui/reveal'
 import { useLocale } from '@/lib/i18n/context'
 import type { SectionMedia } from '@/lib/cms/home'
+import { RichOrText } from '@/components/ui/rich-text'
 import { useTrackScroll } from '@/lib/use-track-scroll'
 
 /** Certification logos from /public/images/certificates (drag + auto-scroll, full colour). */
@@ -43,7 +44,7 @@ export function Certifications({ media }: { media?: SectionMedia }) {
       <div className="container-bs">
         <Reveal>
           <h2 className="text-[15px] font-extrabold uppercase tracking-[0.1em] text-ink">{c.title}</h2>
-          <p className="mt-2 text-[14px] text-ink/55">{c.description}</p>
+          <RichOrText value={media?.descRich} fallback={c.description} className="mt-2 text-[14px] text-ink/55" />
         </Reveal>
 
         <Reveal delay={0.08}>

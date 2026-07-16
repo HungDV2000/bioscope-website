@@ -31,6 +31,8 @@ export type SectionMedia = {
   featured?: CardMedia
   items?: CardMedia[]
   logos?: { image?: string; name?: string }[]
+  /** RichText (lexical) description edited in the CMS — overrides the i18n string. */
+  descRich?: unknown
 }
 export type HomeMedia = Partial<Record<HomeSection, SectionMedia>>
 
@@ -56,25 +58,33 @@ function uploadUrl(v: unknown): string | undefined {
   return mediaUrl(url) ?? undefined
 }
 
-/** Extract the media (images + category links) from a raw block by its type. */
+/** RichText (lexical) value if the field holds real content, else undefined. */
+function richVal(v: unknown): unknown {
+  const root = (v as { root?: { children?: unknown[] } } | undefined)?.root
+  return root?.children?.length ? v : undefined
+}
+
+/** Extract the media (images + category links + rich descriptions) from a block. */
 function extractMedia(block: Block): SectionMedia | undefined {
   const b = block as Record<string, unknown>
   switch (block.blockType) {
     case 'homeHero':
-    case 'homeExperts':
     case 'homeCta':
+      return { image: uploadUrl(b.image), descRich: richVal(b.description) }
+    case 'homeExperts':
       return { image: uploadUrl(b.image) }
+    case 'homeProcess':
+    case 'homeCertifications':
+    case 'homeAiPromo':
+      return { descRich: richVal(b.description), ...(block.blockType === 'homeCertifications' ? { items: (Array.isArray(b.items) ? (b.items as Record<string, unknown>[]) : []).map((it) => ({ image: uploadUrl(it.logo) })) } : {}) }
     case 'homeCategories': {
       const f = (b.featured ?? {}) as Record<string, unknown>
       const items = Array.isArray(b.items) ? (b.items as Record<string, unknown>[]) : []
       return {
+        descRich: richVal(b.description),
         featured: { image: uploadUrl(f.image), href: categoryHref(f.category) },
         items: items.map((it) => ({ image: uploadUrl(it.image), href: categoryHref(it.category) })),
       }
-    }
-    case 'homeCertifications': {
-      const items = Array.isArray(b.items) ? (b.items as Record<string, unknown>[]) : []
-      return { items: items.map((it) => ({ image: uploadUrl(it.logo) })) }
     }
     case 'homeBrands': {
       const logos = Array.isArray(b.logos) ? (b.logos as Record<string, unknown>[]) : []
@@ -94,6 +104,9 @@ function extractMedia(block: Block): SectionMedia | undefined {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function overlay(base: any, over: any): any {
   if (over == null) return base
+  // Type mismatch guard: a richText field (object) must not overwrite an i18n
+  // string. Keep the string fallback; the richText is surfaced via `media.descRich`.
+  if (typeof base === 'string' && over && typeof over === 'object') return base
   if (Array.isArray(base)) {
     if (!Array.isArray(over) || over.length === 0) return base
     return over.map((o, i) => overlay(base[i] ?? base[0], o))

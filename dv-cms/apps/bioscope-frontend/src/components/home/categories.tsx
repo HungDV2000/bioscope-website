@@ -8,6 +8,7 @@ import { Reveal } from '@/components/ui/reveal'
 import { img, type ImgKey } from '@/lib/images'
 import { useLocale } from '@/lib/i18n/context'
 import type { SectionMedia } from '@/lib/cms/home'
+import { RichOrText } from '@/components/ui/rich-text'
 
 const IMAGE_KEYS: ImgKey[] = ['oil', 'botanical', 'powder', 'capsules']
 const IMAGE_SRCS = [
@@ -28,7 +29,7 @@ export function Categories({ media }: { media?: SectionMedia }) {
         <Reveal className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h2 className="text-[15px] font-extrabold uppercase tracking-[0.1em] text-ink">{c.title}</h2>
-            <p className="mt-2 max-w-lg text-[14px] leading-relaxed text-ink/55">{c.description}</p>
+            <RichOrText value={media?.descRich} fallback={c.description} className="mt-2 max-w-lg text-[14px] leading-relaxed text-ink/55" />
           </div>
           <Link
             href="/nguyen-lieu"

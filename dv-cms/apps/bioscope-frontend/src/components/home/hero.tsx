@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Reveal } from '@/components/ui/reveal'
 import { useLocale } from '@/lib/i18n/context'
 import type { SectionMedia } from '@/lib/cms/home'
+import { RichOrText } from '@/components/ui/rich-text'
 
 const TRUST_ICONS = [FlaskConical, ShieldCheck, Truck] as const
 
@@ -54,7 +55,7 @@ export function Hero({ media }: { media?: SectionMedia }) {
             </h1>
           </Reveal>
           <Reveal immediate delay={0.16}>
-            <p className="mt-5 max-w-md text-[16px] leading-relaxed text-ink/70">{h.description}</p>
+            <RichOrText value={media?.descRich} fallback={h.description} className="mt-5 max-w-md text-[16px] leading-relaxed text-ink/70" />
           </Reveal>
           <Reveal immediate delay={0.24}>
             <div className="mt-8 flex flex-wrap items-center gap-3">

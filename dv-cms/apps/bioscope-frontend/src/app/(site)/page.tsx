@@ -21,7 +21,7 @@ function renderSection(section: HomeSection, media?: SectionMedia): ReactNode {
     case 'brands':
       return <Brands media={media} />
     case 'process':
-      return <Process />
+      return <Process media={media} />
     case 'categories':
       return <Categories media={media} />
     case 'caseStudies':
@@ -33,7 +33,7 @@ function renderSection(section: HomeSection, media?: SectionMedia): ReactNode {
     case 'cta':
       return <CtaBand media={media} />
     case 'aiChat':
-      return <AiChatPromo />
+      return <AiChatPromo media={media} />
     default:
       return null
   }

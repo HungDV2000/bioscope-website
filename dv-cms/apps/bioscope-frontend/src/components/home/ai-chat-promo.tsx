@@ -4,12 +4,14 @@ import Link from 'next/link'
 import { ArrowRight, Clock, FileText, FlaskConical, Lightbulb, Sparkles } from 'lucide-react'
 import { Reveal } from '@/components/ui/reveal'
 import { useLocale } from '@/lib/i18n/context'
+import type { SectionMedia } from '@/lib/cms/home'
+import { RichOrText } from '@/components/ui/rich-text'
 import { AiChatDemo } from '@/components/home/ai-chat-demo'
 import { AiChatFloatingWidget } from '@/components/home/ai-chat-widget'
 
 const FEATURE_ICONS = [FlaskConical, Lightbulb, FileText, Clock]
 
-export function AiChatPromo() {
+export function AiChatPromo({ media }: { media?: SectionMedia }) {
   const { t } = useLocale()
   const c = t.home.aiChat
 
@@ -38,7 +40,7 @@ export function AiChatPromo() {
                 <span className="text-[#7ee8a8]">{c.titleHighlight}</span>
               </h2>
 
-              <p className="mt-4 max-w-md text-[15px] leading-relaxed text-white/75">{c.description}</p>
+              <RichOrText value={media?.descRich} fallback={c.description} className="mt-4 max-w-md text-[15px] leading-relaxed text-white/75" />
 
               <div className="mt-6 flex flex-wrap gap-2">
                 {c.features.map((label, i) => {

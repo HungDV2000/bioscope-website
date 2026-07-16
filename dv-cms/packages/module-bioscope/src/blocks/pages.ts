@@ -159,6 +159,23 @@ export const CoCreateCasesBlock: Block = {
   fields: [T('casesTitle', { en: 'Title', vi: 'Tiêu đề' }), A('casesDesc', { en: 'Description', vi: 'Mô tả' }), T('readCase', { en: 'Read case label', vi: 'Nhãn xem case' })],
 }
 
+// ── R&D page ─────────────────────────────────────────────────────────────
+
+export const RdContentBlock: Block = {
+  slug: 'rdContent',
+  interfaceName: 'RdContentBlock',
+  labels: { singular: { en: 'R&D · Content', vi: 'R&D · Nội dung' }, plural: { en: 'R&D · Content', vi: 'R&D · Nội dung' } },
+  fields: [
+    { name: 'stats', type: 'array', label: { en: 'Stat labels', vi: 'Nhãn chỉ số' }, admin: { description: { en: 'Numbers are fixed; edit labels only.', vi: 'Số cố định; chỉ sửa nhãn.' } }, fields: [T('label', { en: 'Label', vi: 'Nhãn' })] },
+    T('techTitle', { en: 'Technologies title', vi: 'Tiêu đề công nghệ' }),
+    T('researchTitle', { en: 'Research title', vi: 'Tiêu đề nghiên cứu' }), A('researchDesc', { en: 'Research description', vi: 'Mô tả nghiên cứu' }),
+    LIST('researchAreas', { en: 'Research areas', vi: 'Lĩnh vực nghiên cứu' }),
+    T('partnersTitle', { en: 'Partners title', vi: 'Tiêu đề đối tác' }), A('partnersDesc', { en: 'Partners description', vi: 'Mô tả đối tác' }),
+    T('papersTitle', { en: 'Papers title', vi: 'Tiêu đề tài liệu' }), A('papersDesc', { en: 'Papers description', vi: 'Mô tả tài liệu' }), T('gated', { en: 'Gated label', vi: 'Nhãn tài liệu bảo vệ' }),
+    { name: 'papers', type: 'array', label: { en: 'Whitepapers', vi: 'Tài liệu' }, fields: [T('title', { en: 'Title', vi: 'Tiêu đề' }), T('type', { en: 'Type', vi: 'Loại' })] },
+  ],
+}
+
 /** All static-page section blocks, appended to the Pages layout. */
 export const PAGE_BLOCKS: Block[] = [
   AboutMissionBlock,
@@ -173,6 +190,7 @@ export const PAGE_BLOCKS: Block[] = [
   CoCreateCompareBlock,
   CoCreateJourneyBlock,
   CoCreateCasesBlock,
+  RdContentBlock,
 ]
 
 export const PAGE_BLOCK_SLUGS = PAGE_BLOCKS.map((b) => b.slug)

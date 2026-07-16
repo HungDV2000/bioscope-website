@@ -7,7 +7,7 @@ import { CtaBand } from '@/components/home/cta-band'
 import { getContent } from '@/lib/get-content'
 import { getLocale } from '@/lib/i18n/server'
 import { getPageContent } from '@/lib/cms/page'
-import { getMessages } from '@/lib/i18n/messages'
+import { getPageSections, applyContentOverride } from '@/lib/cms/page-sections'
 
 const STAT_VALUES = [
   { to: 23, suffix: '+' },
@@ -23,9 +23,9 @@ export async function generateMetadata() {
 
 export default async function RDPage() {
   const locale = await getLocale()
-  const content = getContent(locale)
   const { hero } = await getPageContent('rd', locale)
-  const m = getMessages(locale)
+  const { messages: m, contentOverride, blockIds } = await getPageSections('rd', locale)
+  const content = applyContentOverride(getContent(locale), contentOverride)
   const p = m.rdPage
   const { TECHNOLOGIES, RD_RESEARCH_AREAS, RD_WHITEPAPERS, CLIENT_LOGOS } = content
 
@@ -33,7 +33,7 @@ export default async function RDPage() {
     <>
       <PageHero {...hero} image="microscope" />
 
-      <section className="bg-white py-12">
+      <section className="bg-white py-12" data-better-editor-id={blockIds.rdContent}>
         <div className="container-bs grid grid-cols-2 gap-px overflow-hidden rounded-[2rem] border border-primary-border/60 bg-primary-border/50 lg:grid-cols-4">
           {p.stats.map((s, i) => (
             <div key={s.label} className="bg-white px-6 py-8 text-center">
@@ -46,7 +46,7 @@ export default async function RDPage() {
         </div>
       </section>
 
-      <section className="bg-white pb-20">
+      <section className="bg-white pb-20" data-better-editor-id={blockIds.rdContent}>
         <div className="container-bs">
           <Reveal>
             <h2 className="text-[1.9rem] font-bold tracking-tight text-ink sm:text-[2.3rem]">{p.techTitle}</h2>
@@ -90,7 +90,7 @@ export default async function RDPage() {
         </div>
       </section>
 
-      <section className="bg-mist py-16">
+      <section className="bg-mist py-16" data-better-editor-id={blockIds.rdContent}>
         <div className="container-bs">
           <Reveal>
             <h2 className="text-[1.9rem] font-bold tracking-tight text-ink sm:text-[2.3rem]">{p.researchTitle}</h2>
@@ -111,7 +111,7 @@ export default async function RDPage() {
         </div>
       </section>
 
-      <section className="bg-white py-16">
+      <section className="bg-white py-16" data-better-editor-id={blockIds.rdContent}>
         <div className="container-bs grid gap-12 lg:grid-cols-2">
           <Reveal>
             <h2 className="text-[1.9rem] font-bold tracking-tight text-ink sm:text-[2.3rem]">{p.partnersTitle}</h2>

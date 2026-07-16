@@ -163,6 +163,22 @@ export async function getPageSections(slug: string, locale: Locale): Promise<Pag
         markId(b.id, 'coCreateCases')
         break
       }
+
+      // ── R&D page ────────────────────────────────────────────────────────
+      case 'rdContent': {
+        const patch: Record<string, unknown> = {}
+        for (const k of ['techTitle', 'researchTitle', 'researchDesc', 'partnersTitle', 'partnersDesc', 'papersTitle', 'papersDesc', 'gated']) {
+          const v = str(b[k])
+          if (v) patch[k] = v
+        }
+        const rdBase = (messages as unknown as { rdPage?: { stats?: unknown } }).rdPage
+        if (Array.isArray(b.stats) && b.stats.length) patch.stats = overlay(rdBase?.stats, b.stats)
+        mergeMsg('rdPage', patch)
+        if (Array.isArray(b.researchAreas) && b.researchAreas.length) contentOverride.RD_RESEARCH_AREAS = b.researchAreas
+        if (Array.isArray(b.papers) && b.papers.length) contentOverride.RD_WHITEPAPERS = b.papers
+        markId(b.id, 'rdContent')
+        break
+      }
     }
   }
 

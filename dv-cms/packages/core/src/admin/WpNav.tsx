@@ -165,7 +165,8 @@ export const WpNav: React.FC = () => {
   return (
     <nav className={`dv-wpnav${rail ? ' dv-wpnav--rail' : ''}`} aria-label="Admin">
       <style>{WPNAV_CSS}</style>
-      <NavBrand />
+      {/* Hide the brand logo in rail mode — it overlaps the top nav toggle. */}
+      {!rail && <NavBrand />}
 
       <div className="dv-wpnav__scroll">
         <Link href={adminRoute} className={`dv-wpnav__dash${onDashboard ? ' is-active' : ''}`} onClick={closeMobile} title="Bảng điều khiển">
@@ -193,22 +194,23 @@ export const WpNav: React.FC = () => {
         )}
 
         <div className="dv-wpnav__groups">
-          {groups.map((grp, gi) => {
+          {groups.map((grp) => {
             const expanded = !rail && (Boolean(open[grp.key]) || groupActive(grp.items))
             if (rail) {
+              // Rail: one PARENT icon per group; hover/click opens its flyout.
               return (
-                <div
+                <button
                   key={grp.key}
-                  className={`dv-wpnav__railgroup${gi > 0 ? ' has-divider' : ''}`}
+                  type="button"
+                  className={`dv-wpnav__railicon${groupActive(grp.items) ? ' is-active' : ''}`}
                   onMouseEnter={(e) => openFlyout(grp.key, e.currentTarget)}
                   onMouseLeave={scheduleClose}
+                  onClick={(e) => openFlyout(grp.key, e.currentTarget)}
+                  title={grp.label[lang]}
+                  aria-label={grp.label[lang]}
                 >
-                  {grp.items.map((e) => (
-                    <Link key={e.slug} href={hrefOf(e)} className={`dv-wpnav__railicon${isActive(e) ? ' is-active' : ''}`} onClick={closeMobile} title={e.label} aria-label={e.label}>
-                      <NavIconGraphic name={e.icon} />
-                    </Link>
-                  ))}
-                </div>
+                  <NavIconGraphic name={grp.icon} />
+                </button>
               )
             }
             return (
@@ -304,16 +306,17 @@ const WPNAV_CSS = `
 .dv-wpnav__child.is-active { background: color-mix(in srgb, var(--dv-primary, #008e4d) 14%, transparent); color: var(--dv-primary, #008e4d); font-weight: 600; }
 .dv-wpnav__child .dv-wpnav__cicon { width: 15px; height: 15px; opacity: .85; }
 
-.dv-wpnav--rail .dv-wpnav__scroll { padding: 6px 0 20px; align-items: center; }
-.dv-wpnav--rail .dv-nav-brand { padding: 12px 0 !important; justify-content: center; }
-.dv-wpnav--rail .dv-nav-brand__logo { max-width: 30px; }
-.dv-wpnav__railgroup { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 0; width: 100%; }
-.dv-wpnav__railgroup.has-divider { border-top: 1px solid color-mix(in srgb, var(--dv-primary, #008e4d) 12%, #e2e8e4); margin-top: 3px; padding-top: 8px; }
-.dv-wpnav__railicon { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 10px; color: var(--theme-elevation-700); transition: background .12s, color .12s; }
-.dv-wpnav__railicon svg { width: 18px; height: 18px; }
+/* Rail: parent icons only. Top padding clears the fixed nav toggle. */
+.dv-wpnav--rail .dv-wpnav__scroll { padding: calc(var(--app-header-height, 3.5rem) + 4px) 0 20px; align-items: center; }
+.dv-wpnav--rail .dv-wpnav__groups { align-items: center; gap: 4px; margin-top: 4px; }
+.dv-wpnav__railicon {
+  display: grid; place-items: center; width: 42px; height: 42px; border: 0; background: transparent; cursor: pointer;
+  border-radius: 11px; color: var(--theme-elevation-700); transition: background .12s, color .12s;
+}
+.dv-wpnav__railicon svg { width: 19px; height: 19px; }
 .dv-wpnav__railicon:hover { background: color-mix(in srgb, var(--dv-primary, #008e4d) 12%, transparent); color: var(--dv-primary, #008e4d); }
 .dv-wpnav__railicon.is-active { background: color-mix(in srgb, var(--dv-primary, #008e4d) 16%, transparent); color: var(--dv-primary, #008e4d); }
-.dv-wpnav--rail .dv-wpnav__dash { justify-content: center; padding: 9px 0; margin: 0 6px 4px; }
+.dv-wpnav--rail .dv-wpnav__dash { justify-content: center; padding: 0; width: 42px; height: 42px; border-radius: 11px; margin: 0 auto 4px; }
 
 .dv-wpnav__flyout {
   position: fixed; z-index: 100; min-width: 224px; max-height: 80vh; overflow-y: auto;

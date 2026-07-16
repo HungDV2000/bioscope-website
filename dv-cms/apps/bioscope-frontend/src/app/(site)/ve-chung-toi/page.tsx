@@ -8,6 +8,8 @@ import { AboutJourney } from '@/components/about/journey'
 import { AboutPartners } from '@/components/about/partners'
 import { getLocale } from '@/lib/i18n/server'
 import { getPageContent } from '@/lib/cms/page'
+import { getPageSections } from '@/lib/cms/page-sections'
+import { LocaleProvider } from '@/lib/i18n/context'
 
 export async function generateMetadata() {
   const locale = await getLocale()
@@ -17,17 +19,22 @@ export async function generateMetadata() {
 export default async function AboutPage() {
   const locale = await getLocale()
   const { hero } = await getPageContent('ve-chung-toi', locale)
+  // Overlay CMS section blocks onto the i18n so the bespoke components render
+  // edited content; blockIds mark sections for the Better Editor.
+  const { messages, blockIds } = await getPageSections('ve-chung-toi', locale)
 
   return (
-    <>
+    <LocaleProvider locale={locale} messages={messages}>
       <PageHero {...hero} image="labWork" />
-      <AboutMissionStrip />
+      <div data-better-editor-id={blockIds.aboutMission}>
+        <AboutMissionStrip />
+      </div>
       <AboutDifferentiation />
       <AboutCoreValues />
       <AboutProductProcess />
       <AboutJourney />
       <AboutPartners />
       <CtaBand />
-    </>
+    </LocaleProvider>
   )
 }

@@ -1,5 +1,6 @@
 import type { Config, Plugin } from 'payload'
 import { HOME_BLOCKS } from './blocks/home.js'
+import { PAGE_BLOCKS } from './blocks/pages.js'
 import { IngredientCategories } from './collections/IngredientCategories.js'
 import { DriveSyncJobs } from './collections/DriveSyncJobs.js'
 import { CmsSyncRuns } from './collections/CmsSyncRuns.js'
@@ -63,7 +64,7 @@ export const bioscopePlugin =
         if (col.slug !== 'pages') return col
         const fields = (col.fields ?? []).map((f) => {
           if (!('name' in f) || f.name !== 'layout' || f.type !== 'blocks') return f
-          return { ...f, blocks: [...f.blocks, ...HOME_BLOCKS] }
+          return { ...f, blocks: [...f.blocks, ...HOME_BLOCKS, ...PAGE_BLOCKS] }
         })
         return { ...col, fields }
       })

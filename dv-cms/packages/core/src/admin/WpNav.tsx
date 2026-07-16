@@ -55,7 +55,11 @@ const HIDDEN = new Set(['home'])
 const isHidden = (slug: string) => slug.startsWith('payload-') || HIDDEN.has(slug)
 
 const WPNAV_CSS = `
-.dv-wpnav { display: flex; flex-direction: column; gap: 2px; padding: 8px 10px 24px; }
+.dv-wpnav { display: flex; flex-direction: column; padding: 0; height: 100%; }
+/* Neutralise NavBrand's negative margins (built for the default nav layout). */
+.dv-wpnav .dv-nav-brand { margin-inline: 0 !important; padding: 12px 16px !important; }
+.dv-wpnav .dv-nav-brand__logo { max-width: 150px; }
+.dv-wpnav__groups { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px 28px; overflow-y: auto; }
 .dv-wpnav__group { position: relative; }
 .dv-wpnav__parent {
   display: flex; align-items: center; gap: 10px; width: 100%;
@@ -164,6 +168,7 @@ export const WpNav: React.FC = () => {
     <nav className="dv-wpnav" aria-label="Admin">
       <style>{WPNAV_CSS}</style>
       <NavBrand />
+      <div className="dv-wpnav__groups">
       {groups.map((grp) => {
         const expanded = Boolean(open[grp.key]) || groupActive(grp.items)
         const showFlyout = hovered === grp.key && !expanded
@@ -231,6 +236,7 @@ export const WpNav: React.FC = () => {
           </div>
         )
       })}
+      </div>
     </nav>
   )
 }

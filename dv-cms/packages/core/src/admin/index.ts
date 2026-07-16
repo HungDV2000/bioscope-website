@@ -1,6 +1,7 @@
 export { BrandLogo } from './BrandLogo.js'
 export { BrandIcon } from './BrandIcon.js'
 export { NavBrand } from './NavBrand.js'
+export { WpNav } from './WpNav.js'
 export { NavIconRail } from './NavIconRail.js'
 export { NavIcons } from './NavIcons.js'
 export { NavMobileDrawer } from './NavMobileDrawer.js'

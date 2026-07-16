@@ -71,6 +71,11 @@ export default buildConfig({
     user: 'users',
     suppressHydrationWarning: true,
     importMap: { baseDir: path.resolve(dirname) },
+    components: {
+      // WordPress-style sidebar: consolidated groups, collapsed parents with a
+      // hover flyout + click-to-expand. Replaces Payload's default flat nav.
+      Nav: '@dv/cms-core/admin#WpNav',
+    },
   },
   serverURL,
   editor: lexicalEditor(),

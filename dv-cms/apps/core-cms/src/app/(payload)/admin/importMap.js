@@ -38,6 +38,7 @@ import { ImageStats as ImageStats_7c6bea9edbf2db83a7c1f5e5a5b2459e } from '../..
 import { SettingsBanner as SettingsBanner_d26de2934fab2f5e50b16fb3e402473a } from 'payload-better-editor/client'
 import { SecurityDashboard as SecurityDashboard_049361287b1fa1300950c1b1838c1a82 } from '../../../components/SecurityDashboard/SecurityDashboard'
 import { AccountMenu as AccountMenu_00843a5f229f2e31dd95960baf9412a3 } from '@dv/cms-core/admin'
+import { WpNav as WpNav_00843a5f229f2e31dd95960baf9412a3 } from '@dv/cms-core/admin'
 import { HiddenLogout as HiddenLogout_00843a5f229f2e31dd95960baf9412a3 } from '@dv/cms-core/admin'
 import { BrandIcon as BrandIcon_00843a5f229f2e31dd95960baf9412a3 } from '@dv/cms-core/admin'
 import { BrandLogo as BrandLogo_00843a5f229f2e31dd95960baf9412a3 } from '@dv/cms-core/admin'
@@ -102,6 +103,7 @@ export const importMap = {
   "payload-better-editor/client#SettingsBanner": SettingsBanner_d26de2934fab2f5e50b16fb3e402473a,
   "/components/SecurityDashboard/SecurityDashboard#SecurityDashboard": SecurityDashboard_049361287b1fa1300950c1b1838c1a82,
   "@dv/cms-core/admin#AccountMenu": AccountMenu_00843a5f229f2e31dd95960baf9412a3,
+  "@dv/cms-core/admin#WpNav": WpNav_00843a5f229f2e31dd95960baf9412a3,
   "@dv/cms-core/admin#HiddenLogout": HiddenLogout_00843a5f229f2e31dd95960baf9412a3,
   "@dv/cms-core/admin#BrandIcon": BrandIcon_00843a5f229f2e31dd95960baf9412a3,
   "@dv/cms-core/admin#BrandLogo": BrandLogo_00843a5f229f2e31dd95960baf9412a3,

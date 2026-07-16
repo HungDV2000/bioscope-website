@@ -88,6 +88,45 @@ export const AboutTimelineBlock: Block = {
   ],
 }
 
+// ── Solutions page ───────────────────────────────────────────────────────
+
+export const SolutionsIntroBlock: Block = {
+  slug: 'solutionsIntro',
+  interfaceName: 'SolutionsIntroBlock',
+  labels: { singular: { en: 'Solutions · Intro (ICP)', vi: 'Giải pháp · Mở đầu (ICP)' }, plural: { en: 'Solutions · Intro (ICP)', vi: 'Giải pháp · Mở đầu (ICP)' } },
+  fields: [
+    T('icpTitle', { en: 'Section title', vi: 'Tiêu đề mục' }),
+    A('icpDesc', { en: 'Section description', vi: 'Mô tả mục' }),
+    {
+      name: 'icp',
+      type: 'array',
+      label: { en: 'ICP cards', vi: 'Thẻ ICP' },
+      admin: { description: { en: 'Order must match the design; the target solution link is kept from config.', vi: 'Thứ tự phải khớp thiết kế; link tới giải pháp giữ theo cấu hình.' } },
+      fields: [T('priority', { en: 'Priority label', vi: 'Nhãn ưu tiên' }), T('title', { en: 'Title', vi: 'Tiêu đề' }), A('desc', { en: 'Description', vi: 'Mô tả' })],
+    },
+  ],
+}
+
+export const SolutionsListBlock: Block = {
+  slug: 'solutionsList',
+  interfaceName: 'SolutionsListBlock',
+  labels: { singular: { en: 'Solutions · Cards', vi: 'Giải pháp · Thẻ' }, plural: { en: 'Solutions · Cards', vi: 'Giải pháp · Thẻ' } },
+  fields: [
+    {
+      name: 'items',
+      type: 'array',
+      label: { en: 'Solution cards', vi: 'Thẻ giải pháp' },
+      admin: { description: { en: 'Order must match the design; slug/route is kept from config.', vi: 'Thứ tự phải khớp thiết kế; slug/route giữ theo cấu hình.' } },
+      fields: [
+        T('title', { en: 'Title', vi: 'Tiêu đề' }),
+        A('forWho', { en: 'For whom', vi: 'Dành cho ai' }),
+        LIST('receive', { en: 'What you receive', vi: 'Bạn nhận được' }),
+        T('cta', { en: 'CTA label', vi: 'Nhãn nút' }),
+      ],
+    },
+  ],
+}
+
 /** All static-page section blocks, appended to the Pages layout. */
 export const PAGE_BLOCKS: Block[] = [
   AboutMissionBlock,
@@ -97,6 +136,8 @@ export const PAGE_BLOCKS: Block[] = [
   AboutValuesBlock,
   AboutProcessBlock,
   AboutTimelineBlock,
+  SolutionsIntroBlock,
+  SolutionsListBlock,
 ]
 
 export const PAGE_BLOCK_SLUGS = PAGE_BLOCKS.map((b) => b.slug)

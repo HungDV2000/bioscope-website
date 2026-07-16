@@ -30,6 +30,12 @@ function overlay(base: any, over: any): any {
   return over ?? base
 }
 
+/** Deep-merge a content override onto the static content (for pages that read
+ *  `content` directly rather than via LocaleProvider). */
+export function applyContentOverride(base: ContentModule, override: Partial<ContentModule>): ContentModule {
+  return override && Object.keys(override).length ? (overlay(base, override) as ContentModule) : base
+}
+
 function uploadUrl(v: unknown): string | undefined {
   const url = typeof v === 'object' && v !== null ? (v as { url?: string }).url : undefined
   return mediaUrl(url) ?? undefined
@@ -50,7 +56,7 @@ export async function getPageSections(slug: string, locale: Locale): Promise<Pag
   const blocks = res?.docs?.[0]?.layout
   if (!blocks?.length) return { messages, contentOverride: {}, blockIds: {} }
 
-  const out: Messages = { ...messages, about: { ...messages.about } }
+  const out: Messages = { ...messages }
   const contentOverride: Record<string, unknown> = {}
   const blockIds: Record<string, string> = {}
 
@@ -93,6 +99,24 @@ export async function getPageSections(slug: string, locale: Locale): Promise<Pag
       case 'aboutTimeline':
         if (Array.isArray(b.items) && b.items.length) contentOverride.ABOUT_TIMELINE = b.items
         markId(b.id, 'aboutTimeline')
+        break
+
+      // ── Solutions page ──────────────────────────────────────────────────
+      case 'solutionsIntro': {
+        const sp = (out as unknown as { solutionsPage?: Record<string, unknown> }).solutionsPage
+        if (sp) {
+          const next = { ...sp }
+          if (typeof b.icpTitle === 'string' && b.icpTitle) next.icpTitle = b.icpTitle
+          if (typeof b.icpDesc === 'string' && b.icpDesc) next.icpDesc = b.icpDesc
+          ;(out as unknown as { solutionsPage: unknown }).solutionsPage = next
+        }
+        if (Array.isArray(b.icp) && b.icp.length) contentOverride.SOLUTIONS_ICP = b.icp
+        markId(b.id, 'solutionsIntro')
+        break
+      }
+      case 'solutionsList':
+        if (Array.isArray(b.items) && b.items.length) contentOverride.SOLUTIONS = b.items
+        markId(b.id, 'solutionsList')
         break
     }
   }

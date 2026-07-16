@@ -6,7 +6,7 @@ import { CtaBand } from '@/components/home/cta-band'
 import { getContent } from '@/lib/get-content'
 import { getLocale } from '@/lib/i18n/server'
 import { getPageContent } from '@/lib/cms/page'
-import { getMessages } from '@/lib/i18n/messages'
+import { getPageSections, applyContentOverride } from '@/lib/cms/page-sections'
 import { cn } from '@/lib/utils'
 
 export async function generateMetadata() {
@@ -16,16 +16,17 @@ export async function generateMetadata() {
 
 export default async function SolutionsPage() {
   const locale = await getLocale()
-  const content = getContent(locale)
   const { hero } = await getPageContent('giai-phap', locale)
-  const m = getMessages(locale)
+  // Overlay CMS section blocks onto the static content/messages.
+  const { messages: m, contentOverride, blockIds } = await getPageSections('giai-phap', locale)
+  const content = applyContentOverride(getContent(locale), contentOverride)
   const { SOLUTIONS, SOLUTIONS_ICP } = content
 
   return (
     <>
       <PageHero {...hero} image="labWork" />
 
-      <section className="bg-white py-16">
+      <section className="bg-white py-16" data-better-editor-id={blockIds.solutionsIntro}>
         <div className="container-bs">
           <Reveal>
             <h2 className="text-[1.9rem] font-bold tracking-tight text-ink sm:text-[2.3rem]">{m.solutionsPage.icpTitle}</h2>
@@ -73,7 +74,7 @@ export default async function SolutionsPage() {
         </div>
       </section>
 
-      <section className="bg-mist py-16">
+      <section className="bg-mist py-16" data-better-editor-id={blockIds.solutionsList}>
         <div className="container-bs grid gap-5 lg:grid-cols-3">
           {SOLUTIONS.map((s, i) => (
             <Reveal key={s.slug} delay={i * 0.08}>

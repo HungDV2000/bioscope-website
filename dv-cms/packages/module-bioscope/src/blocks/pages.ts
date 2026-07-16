@@ -127,6 +127,38 @@ export const SolutionsListBlock: Block = {
   ],
 }
 
+// ── Co-create page ───────────────────────────────────────────────────────
+
+export const CoCreateCompareBlock: Block = {
+  slug: 'coCreateCompare',
+  interfaceName: 'CoCreateCompareBlock',
+  labels: { singular: { en: 'Co-create · Comparison', vi: 'Đồng kiến tạo · So sánh' }, plural: { en: 'Co-create · Comparison', vi: 'Đồng kiến tạo · So sánh' } },
+  fields: [
+    T('compareTitle', { en: 'Title', vi: 'Tiêu đề' }), A('compareDesc', { en: 'Description', vi: 'Mô tả' }),
+    T('traditionalTitle', { en: 'Traditional column title', vi: 'Tiêu đề cột truyền thống' }),
+    LIST('traditional', { en: 'Traditional points', vi: 'Ý truyền thống' }),
+    T('bioscopeTitle', { en: 'Bioscope column title', vi: 'Tiêu đề cột Bioscope' }),
+    LIST('bioscope', { en: 'Bioscope points', vi: 'Ý Bioscope' }),
+  ],
+}
+
+export const CoCreateJourneyBlock: Block = {
+  slug: 'coCreateJourney',
+  interfaceName: 'CoCreateJourneyBlock',
+  labels: { singular: { en: 'Co-create · Journey', vi: 'Đồng kiến tạo · Hành trình' }, plural: { en: 'Co-create · Journey', vi: 'Đồng kiến tạo · Hành trình' } },
+  fields: [
+    T('stepLabel', { en: 'Step label prefix', vi: 'Tiền tố nhãn bước' }),
+    { name: 'journey', type: 'array', label: { en: 'Steps (5)', vi: 'Các bước (5)' }, fields: [T('title', { en: 'Title', vi: 'Tiêu đề' }), A('desc', { en: 'Description', vi: 'Mô tả' }), T('duration', { en: 'Duration badge', vi: 'Nhãn thời lượng' })] },
+  ],
+}
+
+export const CoCreateCasesBlock: Block = {
+  slug: 'coCreateCases',
+  interfaceName: 'CoCreateCasesBlock',
+  labels: { singular: { en: 'Co-create · Cases heading', vi: 'Đồng kiến tạo · Tiêu đề case' }, plural: { en: 'Co-create · Cases heading', vi: 'Đồng kiến tạo · Tiêu đề case' } },
+  fields: [T('casesTitle', { en: 'Title', vi: 'Tiêu đề' }), A('casesDesc', { en: 'Description', vi: 'Mô tả' }), T('readCase', { en: 'Read case label', vi: 'Nhãn xem case' })],
+}
+
 /** All static-page section blocks, appended to the Pages layout. */
 export const PAGE_BLOCKS: Block[] = [
   AboutMissionBlock,
@@ -138,6 +170,9 @@ export const PAGE_BLOCKS: Block[] = [
   AboutTimelineBlock,
   SolutionsIntroBlock,
   SolutionsListBlock,
+  CoCreateCompareBlock,
+  CoCreateJourneyBlock,
+  CoCreateCasesBlock,
 ]
 
 export const PAGE_BLOCK_SLUGS = PAGE_BLOCKS.map((b) => b.slug)

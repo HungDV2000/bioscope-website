@@ -6,7 +6,7 @@ import { CtaBand } from '@/components/home/cta-band'
 import { getContent } from '@/lib/get-content'
 import { getLocale } from '@/lib/i18n/server'
 import { getPageContent } from '@/lib/cms/page'
-import { getMessages } from '@/lib/i18n/messages'
+import { getPageSections, applyContentOverride } from '@/lib/cms/page-sections'
 
 const JOURNEY_ICONS = [Lightbulb, FlaskConical, ShieldCheck, Rocket, TrendingUp]
 
@@ -17,9 +17,9 @@ export async function generateMetadata() {
 
 export default async function CoCreatePage() {
   const locale = await getLocale()
-  const content = getContent(locale)
   const { hero } = await getPageContent('dong-kien-tao', locale)
-  const m = getMessages(locale)
+  const { messages: m, contentOverride, blockIds } = await getPageSections('dong-kien-tao', locale)
+  const content = applyContentOverride(getContent(locale), contentOverride)
   const p = m.coCreatePage
   const { CO_CREATE_COMPARISON, CO_CREATE_STEP_DURATIONS, CASE_STUDIES } = content
 
@@ -27,7 +27,7 @@ export default async function CoCreatePage() {
     <>
       <PageHero {...hero} image="heroTeam" />
 
-      <section className="bg-white py-16">
+      <section className="bg-white py-16" data-better-editor-id={blockIds.coCreateCompare}>
         <div className="container-bs">
           <Reveal>
             <h2 className="text-center text-[1.9rem] font-bold tracking-tight text-ink sm:text-[2.3rem]">{p.compareTitle}</h2>
@@ -64,7 +64,7 @@ export default async function CoCreatePage() {
         </div>
       </section>
 
-      <section className="bg-mist py-20">
+      <section className="bg-mist py-20" data-better-editor-id={blockIds.coCreateJourney}>
         <div className="container-bs">
           <div className="relative mx-auto max-w-5xl">
             <span
@@ -118,7 +118,7 @@ export default async function CoCreatePage() {
         </div>
       </section>
 
-      <section className="bg-white py-16">
+      <section className="bg-white py-16" data-better-editor-id={blockIds.coCreateCases}>
         <div className="container-bs">
           <Reveal>
             <h2 className="text-[1.9rem] font-bold tracking-tight text-ink sm:text-[2.3rem]">{p.casesTitle}</h2>

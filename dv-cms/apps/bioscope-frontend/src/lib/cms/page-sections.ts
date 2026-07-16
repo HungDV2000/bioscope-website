@@ -67,6 +67,12 @@ export async function getPageSections(slug: string, locale: Locale): Promise<Pag
   const markId = (id: unknown, mark: string) => {
     if (typeof id === 'string') blockIds[mark] = id
   }
+  // Merge a patch onto a top-level messages section (e.g. coCreatePage).
+  const mergeMsg = (key: string, patch: Record<string, unknown>) => {
+    const cur = (out as unknown as Record<string, Record<string, unknown>>)[key] ?? {}
+    ;(out as unknown as Record<string, unknown>)[key] = { ...cur, ...patch }
+  }
+  const str = (v: unknown) => (typeof v === 'string' && v ? v : undefined)
 
   for (const b of blocks) {
     switch (b.blockType) {
@@ -118,6 +124,45 @@ export async function getPageSections(slug: string, locale: Locale): Promise<Pag
         if (Array.isArray(b.items) && b.items.length) contentOverride.SOLUTIONS = b.items
         markId(b.id, 'solutionsList')
         break
+
+      // ── Co-create page ──────────────────────────────────────────────────
+      case 'coCreateCompare': {
+        const patch: Record<string, unknown> = {}
+        for (const k of ['compareTitle', 'compareDesc', 'traditionalTitle', 'bioscopeTitle']) {
+          const v = str(b[k])
+          if (v) patch[k] = v
+        }
+        mergeMsg('coCreatePage', patch)
+        const cmp: Record<string, unknown> = {}
+        if (Array.isArray(b.traditional) && b.traditional.length) cmp.traditional = b.traditional
+        if (Array.isArray(b.bioscope) && b.bioscope.length) cmp.bioscope = b.bioscope
+        if (Object.keys(cmp).length) contentOverride.CO_CREATE_COMPARISON = cmp
+        markId(b.id, 'coCreateCompare')
+        break
+      }
+      case 'coCreateJourney': {
+        const patch: Record<string, unknown> = {}
+        if (str(b.stepLabel)) patch.stepLabel = b.stepLabel
+        const journey = Array.isArray(b.journey) ? (b.journey as Record<string, unknown>[]) : []
+        if (journey.length) {
+          const cur = (messages as unknown as { coCreatePage?: { journey?: unknown } }).coCreatePage?.journey
+          patch.journey = overlay(cur, journey.map((j) => ({ title: j.title, desc: j.desc })))
+          contentOverride.CO_CREATE_STEP_DURATIONS = journey.map((j) => ({ duration: j.duration }))
+        }
+        mergeMsg('coCreatePage', patch)
+        markId(b.id, 'coCreateJourney')
+        break
+      }
+      case 'coCreateCases': {
+        const patch: Record<string, unknown> = {}
+        for (const k of ['casesTitle', 'casesDesc', 'readCase']) {
+          const v = str(b[k])
+          if (v) patch[k] = v
+        }
+        mergeMsg('coCreatePage', patch)
+        markId(b.id, 'coCreateCases')
+        break
+      }
     }
   }
 

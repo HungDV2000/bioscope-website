@@ -45,6 +45,8 @@ export type PageSections = {
   messages: Messages
   contentOverride: Partial<ContentModule>
   blockIds: Record<string, string>
+  /** Raw block data keyed by blockType — for pages that read arbitrary fields. */
+  sections: Record<string, Record<string, unknown>>
 }
 
 export async function getPageSections(slug: string, locale: Locale): Promise<PageSections> {
@@ -54,11 +56,12 @@ export async function getPageSections(slug: string, locale: Locale): Promise<Pag
     { locale, revalidate: 60 },
   )
   const blocks = res?.docs?.[0]?.layout
-  if (!blocks?.length) return { messages, contentOverride: {}, blockIds: {} }
+  if (!blocks?.length) return { messages, contentOverride: {}, blockIds: {}, sections: {} }
 
   const out: Messages = { ...messages }
   const contentOverride: Record<string, unknown> = {}
   const blockIds: Record<string, string> = {}
+  const sections: Record<string, Record<string, unknown>> = {}
 
   const setSection = (key: keyof Messages['about'], value: unknown, id?: string, mark?: string) => {
     out.about = { ...out.about, [key]: value } as Messages['about']
@@ -75,7 +78,12 @@ export async function getPageSections(slug: string, locale: Locale): Promise<Pag
   const str = (v: unknown) => (typeof v === 'string' && v ? v : undefined)
 
   for (const b of blocks) {
+    if (b.blockType) sections[b.blockType] = b
     switch (b.blockType) {
+      case 'contactInfo':
+        if (Array.isArray(b.faq) && b.faq.length) contentOverride.CONTACT_FAQ = b.faq
+        markId(b.id, 'contactInfo')
+        break
       case 'aboutMission':
         if (Array.isArray(b.mission)) setSection('mission', overlay(messages.about.mission, b.mission), b.id, 'aboutMission')
         break
@@ -182,5 +190,5 @@ export async function getPageSections(slug: string, locale: Locale): Promise<Pag
     }
   }
 
-  return { messages: out, contentOverride, blockIds }
+  return { messages: out, contentOverride, blockIds, sections }
 }

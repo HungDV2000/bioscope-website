@@ -5,6 +5,7 @@ import { ContactWizard } from '@/components/contact/wizard'
 import { getContent } from '@/lib/get-content'
 import { getLocale } from '@/lib/i18n/server'
 import { getPageContent } from '@/lib/cms/page'
+import { getPageSections, applyContentOverride } from '@/lib/cms/page-sections'
 
 export async function generateMetadata() {
   const locale = await getLocale()
@@ -13,33 +14,30 @@ export async function generateMetadata() {
 
 export default async function ContactPage() {
   const locale = await getLocale()
-  const content = getContent(locale)
   const { hero } = await getPageContent('lien-he', locale)
+  const { contentOverride, sections, blockIds } = await getPageSections('lien-he', locale)
+  const content = applyContentOverride(getContent(locale), contentOverride)
   const FAQ = content.CONTACT_FAQ
-  const labels =
+  const info = (sections.contactInfo ?? {}) as Record<string, string | undefined>
+  const s = (v: string | undefined) => (typeof v === 'string' && v ? v : undefined)
+  const fb =
     locale === 'en'
-      ? {
-          quick: 'Fast response',
-          within: 'Within 24 business hours',
-          faq: 'Frequently asked questions',
-          office: 'Office: updating',
-          hotline: 'Hotline: updating',
-          email: 'Email: updating',
-        }
-      : {
-          quick: 'Phản hồi nhanh',
-          within: 'Trong vòng 24 giờ làm việc',
-          faq: 'Câu hỏi thường gặp',
-          office: 'Văn phòng: đang cập nhật',
-          hotline: 'Hotline: đang cập nhật',
-          email: 'Email: đang cập nhật',
-        }
+      ? { quick: 'Fast response', within: 'Within 24 business hours', faq: 'Frequently asked questions', office: 'Office: updating', hotline: 'Hotline: updating', email: 'Email: updating' }
+      : { quick: 'Phản hồi nhanh', within: 'Trong vòng 24 giờ làm việc', faq: 'Câu hỏi thường gặp', office: 'Văn phòng: đang cập nhật', hotline: 'Hotline: đang cập nhật', email: 'Email: đang cập nhật' }
+  const labels = {
+    quick: s(info.quick) ?? fb.quick,
+    within: s(info.within) ?? fb.within,
+    faq: s(info.faqTitle) ?? fb.faq,
+    office: s(info.office) ?? fb.office,
+    hotline: s(info.hotline) ?? fb.hotline,
+    email: s(info.email) ?? fb.email,
+  }
 
   return (
     <>
       <PageHero {...hero} image="glassware" />
 
-      <section className="bg-white py-16">
+      <section className="bg-white py-16" data-better-editor-id={blockIds.contactInfo}>
         <div className="container-bs grid gap-10 lg:grid-cols-[1fr_360px]">
           <Reveal>
             <ContactWizard />

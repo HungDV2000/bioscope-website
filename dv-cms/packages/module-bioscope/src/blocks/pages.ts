@@ -176,6 +176,23 @@ export const RdContentBlock: Block = {
   ],
 }
 
+// ── Contact page ─────────────────────────────────────────────────────────
+
+export const ContactInfoBlock: Block = {
+  slug: 'contactInfo',
+  interfaceName: 'ContactInfoBlock',
+  labels: { singular: { en: 'Contact · Info', vi: 'Liên hệ · Thông tin' }, plural: { en: 'Contact · Info', vi: 'Liên hệ · Thông tin' } },
+  fields: [
+    T('quick', { en: 'Fast-response label', vi: 'Nhãn phản hồi nhanh' }),
+    T('within', { en: 'Response time', vi: 'Thời gian phản hồi' }),
+    T('office', { en: 'Office address', vi: 'Địa chỉ văn phòng' }),
+    T('hotline', { en: 'Hotline', vi: 'Hotline' }),
+    T('email', { en: 'Email', vi: 'Email' }),
+    T('faqTitle', { en: 'FAQ title', vi: 'Tiêu đề FAQ' }),
+    { name: 'faq', type: 'array', label: { en: 'FAQ', vi: 'Câu hỏi thường gặp' }, fields: [T('q', { en: 'Question', vi: 'Câu hỏi' }), A('a', { en: 'Answer', vi: 'Trả lời' })] },
+  ],
+}
+
 /** All static-page section blocks, appended to the Pages layout. */
 export const PAGE_BLOCKS: Block[] = [
   AboutMissionBlock,
@@ -191,6 +208,7 @@ export const PAGE_BLOCKS: Block[] = [
   CoCreateJourneyBlock,
   CoCreateCasesBlock,
   RdContentBlock,
+  ContactInfoBlock,
 ]
 
 export const PAGE_BLOCK_SLUGS = PAGE_BLOCKS.map((b) => b.slug)

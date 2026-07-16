@@ -95,6 +95,9 @@ export interface Config {
     members: Member;
     'gated-documents': GatedDocument;
     languages: Language;
+    'blocked-ips': BlockedIp;
+    'security-events': SecurityEvent;
+    'consent-log': ConsentLog;
     'payload-kv': PayloadKv;
     'payload-folders': FolderInterface;
     'payload-locked-documents': PayloadLockedDocument;
@@ -134,6 +137,9 @@ export interface Config {
     members: MembersSelect<false> | MembersSelect<true>;
     'gated-documents': GatedDocumentsSelect<false> | GatedDocumentsSelect<true>;
     languages: LanguagesSelect<false> | LanguagesSelect<true>;
+    'blocked-ips': BlockedIpsSelect<false> | BlockedIpsSelect<true>;
+    'security-events': SecurityEventsSelect<false> | SecurityEventsSelect<true>;
+    'consent-log': ConsentLogSelect<false> | ConsentLogSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-folders': PayloadFoldersSelect<false> | PayloadFoldersSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -148,19 +154,25 @@ export interface Config {
     'site-settings': SiteSetting;
     navigation: Navigation;
     branding: Branding;
+    'image-settings': ImageSetting;
     home: Home;
     'bioscope-ai': BioscopeAi;
     'seo-settings': SeoSetting;
     'better-editor-settings': BetterEditorSetting;
+    'security-settings': SecuritySetting;
+    'consent-settings': ConsentSetting;
   };
   globalsSelect: {
     'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
     navigation: NavigationSelect<false> | NavigationSelect<true>;
     branding: BrandingSelect<false> | BrandingSelect<true>;
+    'image-settings': ImageSettingsSelect<false> | ImageSettingsSelect<true>;
     home: HomeSelect<false> | HomeSelect<true>;
     'bioscope-ai': BioscopeAiSelect<false> | BioscopeAiSelect<true>;
     'seo-settings': SeoSettingsSelect<false> | SeoSettingsSelect<true>;
     'better-editor-settings': BetterEditorSettingsSelect<false> | BetterEditorSettingsSelect<true>;
+    'security-settings': SecuritySettingsSelect<false> | SecuritySettingsSelect<true>;
+    'consent-settings': ConsentSettingsSelect<false> | ConsentSettingsSelect<true>;
   };
   locale: 'vi' | 'en';
   widgets: {
@@ -272,6 +284,12 @@ export interface User {
   role: 'admin' | 'editor' | 'viewer';
   avatar?: (number | null) | Media;
   /**
+   * 2FA (TOTP). Bật/tắt qua nút bên dưới — không sửa trực tiếp.
+   */
+  twoFactorEnabled?: boolean | null;
+  twoFactorSecret?: string | null;
+  twoFactorPendingSecret?: string | null;
+  /**
    * Assigned role — overrides legacy role select when set.
    */
   staffRole?: (number | null) | StaffRole;
@@ -307,6 +325,19 @@ export interface Media {
    */
   alt?: string | null;
   caption?: string | null;
+  /**
+   * Bytes gốc trước tối ưu.
+   */
+  originalSize?: number | null;
+  /**
+   * Bytes tiết kiệm.
+   */
+  savedBytes?: number | null;
+  /**
+   * % giảm dung lượng.
+   */
+  savedPct?: number | null;
+  optimizedFormat?: string | null;
   folder?: (number | null) | FolderInterface;
   updatedAt: string;
   createdAt: string;
@@ -337,6 +368,38 @@ export interface Media {
       filename?: string | null;
     };
     og?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    w400?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    w768?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    w1080?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    w1600?: {
       url?: string | null;
       width?: number | null;
       height?: number | null;
@@ -406,12 +469,31 @@ export interface Page {
         | HomeExpertsBlock
         | HomeAiPromoBlock
         | HomeCtaBlock
+        | AboutMissionBlock
+        | AboutDifferentiationBlock
+        | AboutJourneyBlock
+        | AboutPartnersBlock
+        | AboutValuesBlock
+        | AboutProcessBlock
+        | AboutTimelineBlock
+        | SolutionsIntroBlock
+        | SolutionsListBlock
+        | CoCreateCompareBlock
+        | CoCreateJourneyBlock
+        | CoCreateCasesBlock
+        | RdContentBlock
+        | ContactInfoBlock
+        | LegalContentBlock
       )[]
     | null;
   /**
-   * Meta cho công cụ tìm kiếm & mạng xã hội.
+   * Meta cho công cụ tìm kiếm & mạng xã hội (phân tích kiểu Yoast).
    */
   seo?: {
+    /**
+     * Từ khóa trọng tâm — nội dung sẽ được chấm điểm theo từ khóa này.
+     */
+    focusKeyphrase?: string | null;
     /**
      * Thẻ <title>. Bỏ trống dùng tiêu đề mặc định.
      */
@@ -432,6 +514,25 @@ export interface Page {
      * Chặn index trang này.
      */
     noIndex?: boolean | null;
+    /**
+     * Nội dung nền tảng (cornerstone) — bài quan trọng, chấm điểm chặt hơn.
+     */
+    cornerstone?: boolean | null;
+    /**
+     * Loại schema.org (JSON-LD) cho trang này.
+     */
+    schemaType?: ('auto' | 'Article' | 'Product' | 'FAQPage' | 'WebPage' | 'none') | null;
+    /**
+     * Nhãn hiển thị trên breadcrumb (bỏ trống dùng tiêu đề trang).
+     */
+    breadcrumbTitle?: string | null;
+    /**
+     * Tiêu đề khi chia sẻ Facebook/Zalo.
+     */
+    ogTitle?: string | null;
+    ogDescription?: string | null;
+    twitterTitle?: string | null;
+    twitterDescription?: string | null;
   };
   updatedAt: string;
   createdAt: string;
@@ -608,6 +709,7 @@ export interface HomeHeroBlock {
   ctaPrimary?: string | null;
   ctaSecondary?: string | null;
   trust?: string[] | null;
+  image?: (number | null) | Media;
   id?: string | null;
   blockName?: string | null;
   blockType: 'homeHero';
@@ -619,6 +721,13 @@ export interface HomeHeroBlock {
 export interface HomeBrandsBlock {
   title?: string | null;
   categories?: string[] | null;
+  logos?:
+    | {
+        logo?: (number | null) | Media;
+        name?: string | null;
+        id?: string | null;
+      }[]
+    | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'homeBrands';
@@ -653,17 +762,51 @@ export interface HomeCategoriesBlock {
     name?: string | null;
     desc?: string | null;
     cta?: string | null;
+    image?: (number | null) | Media;
+    /**
+     * Link this card to an ingredient category.
+     */
+    category?: (number | null) | IngredientCategory;
   };
   items?:
     | {
         name?: string | null;
         desc?: string | null;
+        image?: (number | null) | Media;
+        /**
+         * Link this card to an ingredient category.
+         */
+        category?: (number | null) | IngredientCategory;
         id?: string | null;
       }[]
     | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'homeCategories';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ingredient-categories".
+ */
+export interface IngredientCategory {
+  id: number;
+  name: string;
+  /**
+   * Để trống sẽ tự tạo từ tiêu đề.
+   */
+  slug?: string | null;
+  /**
+   * Google Drive folder ID của danh mục này.
+   */
+  driveId?: string | null;
+  driveParentId?: string | null;
+  /**
+   * Dùng driveId hoặc slugify(name).
+   */
+  externalId?: string | null;
+  scope?: ('supplement' | 'cosmetic' | 'both') | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -688,6 +831,7 @@ export interface HomeCertificationsBlock {
     | {
         name?: string | null;
         sub?: string | null;
+        logo?: (number | null) | Media;
         id?: string | null;
       }[]
     | null;
@@ -705,6 +849,7 @@ export interface HomeExpertsBlock {
   paragraphs?: string[] | null;
   cta?: string | null;
   imageAlt?: string | null;
+  image?: (number | null) | Media;
   /**
    * Numbers are fixed in the design; edit labels only.
    */
@@ -752,9 +897,297 @@ export interface HomeCtaBlock {
   description?: string | null;
   primary?: string | null;
   secondary?: string | null;
+  image?: (number | null) | Media;
   id?: string | null;
   blockName?: string | null;
   blockType: 'homeCta';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "AboutMissionBlock".
+ */
+export interface AboutMissionBlock {
+  /**
+   * The three mission cards.
+   */
+  mission?:
+    | {
+        title?: string | null;
+        desc?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'aboutMission';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "AboutDifferentiationBlock".
+ */
+export interface AboutDifferentiationBlock {
+  eyebrow?: string | null;
+  bullets?: string[] | null;
+  quote?: string | null;
+  quoteHighlight?: string | null;
+  quoteAfter?: string | null;
+  company?: string | null;
+  companyRole?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'aboutDifferentiation';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "AboutJourneyBlock".
+ */
+export interface AboutJourneyBlock {
+  eyebrow?: string | null;
+  title?: string | null;
+  subtitle?: string | null;
+  description?: string | null;
+  stats?:
+    | {
+        label?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  highlight?: string | null;
+  highlightBold?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'aboutJourney';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "AboutPartnersBlock".
+ */
+export interface AboutPartnersBlock {
+  eyebrow?: string | null;
+  title?: string | null;
+  description?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'aboutPartners';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "AboutValuesBlock".
+ */
+export interface AboutValuesBlock {
+  eyebrow?: string | null;
+  title?: string | null;
+  items?:
+    | {
+        title?: string | null;
+        desc?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'aboutValues';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "AboutProcessBlock".
+ */
+export interface AboutProcessBlock {
+  eyebrow?: string | null;
+  title?: string | null;
+  description?: string | null;
+  imageAlt?: string | null;
+  image?: (number | null) | Media;
+  steps?:
+    | {
+        title?: string | null;
+        desc?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'aboutProcess';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "AboutTimelineBlock".
+ */
+export interface AboutTimelineBlock {
+  items?:
+    | {
+        year?: string | null;
+        text?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'aboutTimeline';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "SolutionsIntroBlock".
+ */
+export interface SolutionsIntroBlock {
+  icpTitle?: string | null;
+  icpDesc?: string | null;
+  /**
+   * Order must match the design; the target solution link is kept from config.
+   */
+  icp?:
+    | {
+        priority?: string | null;
+        title?: string | null;
+        desc?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'solutionsIntro';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "SolutionsListBlock".
+ */
+export interface SolutionsListBlock {
+  /**
+   * Order must match the design; slug/route is kept from config.
+   */
+  items?:
+    | {
+        title?: string | null;
+        forWho?: string | null;
+        receive?: string[] | null;
+        cta?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'solutionsList';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CoCreateCompareBlock".
+ */
+export interface CoCreateCompareBlock {
+  compareTitle?: string | null;
+  compareDesc?: string | null;
+  traditionalTitle?: string | null;
+  traditional?: string[] | null;
+  bioscopeTitle?: string | null;
+  bioscope?: string[] | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'coCreateCompare';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CoCreateJourneyBlock".
+ */
+export interface CoCreateJourneyBlock {
+  stepLabel?: string | null;
+  journey?:
+    | {
+        title?: string | null;
+        desc?: string | null;
+        duration?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'coCreateJourney';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CoCreateCasesBlock".
+ */
+export interface CoCreateCasesBlock {
+  casesTitle?: string | null;
+  casesDesc?: string | null;
+  readCase?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'coCreateCases';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RdContentBlock".
+ */
+export interface RdContentBlock {
+  /**
+   * Numbers are fixed; edit labels only.
+   */
+  stats?:
+    | {
+        label?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  techTitle?: string | null;
+  researchTitle?: string | null;
+  researchDesc?: string | null;
+  researchAreas?: string[] | null;
+  partnersTitle?: string | null;
+  partnersDesc?: string | null;
+  papersTitle?: string | null;
+  papersDesc?: string | null;
+  gated?: string | null;
+  papers?:
+    | {
+        title?: string | null;
+        type?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'rdContent';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ContactInfoBlock".
+ */
+export interface ContactInfoBlock {
+  quick?: string | null;
+  within?: string | null;
+  office?: string | null;
+  hotline?: string | null;
+  email?: string | null;
+  faqTitle?: string | null;
+  faq?:
+    | {
+        q?: string | null;
+        a?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'contactInfo';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LegalContentBlock".
+ */
+export interface LegalContentBlock {
+  target: 'privacy' | 'terms';
+  title?: string | null;
+  updated?: string | null;
+  intro?: string | null;
+  sections?:
+    | {
+        title?: string | null;
+        paragraphs?: string[] | null;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'legalContent';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -789,9 +1222,13 @@ export interface Post {
   tags?: (number | Tag)[] | null;
   publishedAt?: string | null;
   /**
-   * Meta cho công cụ tìm kiếm & mạng xã hội.
+   * Meta cho công cụ tìm kiếm & mạng xã hội (phân tích kiểu Yoast).
    */
   seo?: {
+    /**
+     * Từ khóa trọng tâm — nội dung sẽ được chấm điểm theo từ khóa này.
+     */
+    focusKeyphrase?: string | null;
     /**
      * Thẻ <title>. Bỏ trống dùng tiêu đề mặc định.
      */
@@ -812,6 +1249,25 @@ export interface Post {
      * Chặn index trang này.
      */
     noIndex?: boolean | null;
+    /**
+     * Nội dung nền tảng (cornerstone) — bài quan trọng, chấm điểm chặt hơn.
+     */
+    cornerstone?: boolean | null;
+    /**
+     * Loại schema.org (JSON-LD) cho trang này.
+     */
+    schemaType?: ('auto' | 'Article' | 'Product' | 'FAQPage' | 'WebPage' | 'none') | null;
+    /**
+     * Nhãn hiển thị trên breadcrumb (bỏ trống dùng tiêu đề trang).
+     */
+    breadcrumbTitle?: string | null;
+    /**
+     * Tiêu đề khi chia sẻ Facebook/Zalo.
+     */
+    ogTitle?: string | null;
+    ogDescription?: string | null;
+    twitterTitle?: string | null;
+    twitterDescription?: string | null;
   };
   updatedAt: string;
   createdAt: string;
@@ -1177,30 +1633,6 @@ export interface Partner {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ingredient-categories".
- */
-export interface IngredientCategory {
-  id: number;
-  name: string;
-  /**
-   * Để trống sẽ tự tạo từ tiêu đề.
-   */
-  slug?: string | null;
-  /**
-   * Google Drive folder ID của danh mục này.
-   */
-  driveId?: string | null;
-  driveParentId?: string | null;
-  /**
-   * Dùng driveId hoặc slugify(name).
-   */
-  externalId?: string | null;
-  scope?: ('supplement' | 'cosmetic' | 'both') | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "ingredients".
  */
 export interface Ingredient {
@@ -1276,7 +1708,7 @@ export interface Ingredient {
   technologies?: (number | Technology)[] | null;
   specs?:
     | {
-        label: string;
+        label?: string | null;
         value: string;
         unit?: string | null;
         display?: ('text' | 'number' | 'bar' | 'donut') | null;
@@ -1327,9 +1759,13 @@ export interface Ingredient {
    */
   lastDriveSyncAt?: string | null;
   /**
-   * Meta cho công cụ tìm kiếm & mạng xã hội.
+   * Meta cho công cụ tìm kiếm & mạng xã hội (phân tích kiểu Yoast).
    */
   seo?: {
+    /**
+     * Từ khóa trọng tâm — nội dung sẽ được chấm điểm theo từ khóa này.
+     */
+    focusKeyphrase?: string | null;
     /**
      * Thẻ <title>. Bỏ trống dùng tiêu đề mặc định.
      */
@@ -1350,6 +1786,25 @@ export interface Ingredient {
      * Chặn index trang này.
      */
     noIndex?: boolean | null;
+    /**
+     * Nội dung nền tảng (cornerstone) — bài quan trọng, chấm điểm chặt hơn.
+     */
+    cornerstone?: boolean | null;
+    /**
+     * Loại schema.org (JSON-LD) cho trang này.
+     */
+    schemaType?: ('auto' | 'Article' | 'Product' | 'FAQPage' | 'WebPage' | 'none') | null;
+    /**
+     * Nhãn hiển thị trên breadcrumb (bỏ trống dùng tiêu đề trang).
+     */
+    breadcrumbTitle?: string | null;
+    /**
+     * Tiêu đề khi chia sẻ Facebook/Zalo.
+     */
+    ogTitle?: string | null;
+    ogDescription?: string | null;
+    twitterTitle?: string | null;
+    twitterDescription?: string | null;
   };
   updatedAt: string;
   createdAt: string;
@@ -1410,7 +1865,7 @@ export interface Technology {
     | null;
   specs?:
     | {
-        label: string;
+        label?: string | null;
         value: string;
         unit?: string | null;
         display?: ('text' | 'number' | 'bar' | 'donut') | null;
@@ -1423,9 +1878,13 @@ export interface Technology {
     | null;
   order?: number | null;
   /**
-   * Meta cho công cụ tìm kiếm & mạng xã hội.
+   * Meta cho công cụ tìm kiếm & mạng xã hội (phân tích kiểu Yoast).
    */
   seo?: {
+    /**
+     * Từ khóa trọng tâm — nội dung sẽ được chấm điểm theo từ khóa này.
+     */
+    focusKeyphrase?: string | null;
     /**
      * Thẻ <title>. Bỏ trống dùng tiêu đề mặc định.
      */
@@ -1446,6 +1905,25 @@ export interface Technology {
      * Chặn index trang này.
      */
     noIndex?: boolean | null;
+    /**
+     * Nội dung nền tảng (cornerstone) — bài quan trọng, chấm điểm chặt hơn.
+     */
+    cornerstone?: boolean | null;
+    /**
+     * Loại schema.org (JSON-LD) cho trang này.
+     */
+    schemaType?: ('auto' | 'Article' | 'Product' | 'FAQPage' | 'WebPage' | 'none') | null;
+    /**
+     * Nhãn hiển thị trên breadcrumb (bỏ trống dùng tiêu đề trang).
+     */
+    breadcrumbTitle?: string | null;
+    /**
+     * Tiêu đề khi chia sẻ Facebook/Zalo.
+     */
+    ogTitle?: string | null;
+    ogDescription?: string | null;
+    twitterTitle?: string | null;
+    twitterDescription?: string | null;
   };
   updatedAt: string;
   createdAt: string;
@@ -1698,9 +2176,13 @@ export interface Service {
   features?: string[] | null;
   order?: number | null;
   /**
-   * Meta cho công cụ tìm kiếm & mạng xã hội.
+   * Meta cho công cụ tìm kiếm & mạng xã hội (phân tích kiểu Yoast).
    */
   seo?: {
+    /**
+     * Từ khóa trọng tâm — nội dung sẽ được chấm điểm theo từ khóa này.
+     */
+    focusKeyphrase?: string | null;
     /**
      * Thẻ <title>. Bỏ trống dùng tiêu đề mặc định.
      */
@@ -1721,6 +2203,25 @@ export interface Service {
      * Chặn index trang này.
      */
     noIndex?: boolean | null;
+    /**
+     * Nội dung nền tảng (cornerstone) — bài quan trọng, chấm điểm chặt hơn.
+     */
+    cornerstone?: boolean | null;
+    /**
+     * Loại schema.org (JSON-LD) cho trang này.
+     */
+    schemaType?: ('auto' | 'Article' | 'Product' | 'FAQPage' | 'WebPage' | 'none') | null;
+    /**
+     * Nhãn hiển thị trên breadcrumb (bỏ trống dùng tiêu đề trang).
+     */
+    breadcrumbTitle?: string | null;
+    /**
+     * Tiêu đề khi chia sẻ Facebook/Zalo.
+     */
+    ogTitle?: string | null;
+    ogDescription?: string | null;
+    twitterTitle?: string | null;
+    twitterDescription?: string | null;
   };
   updatedAt: string;
   createdAt: string;
@@ -1786,9 +2287,13 @@ export interface CaseStudy {
   featured?: boolean | null;
   order?: number | null;
   /**
-   * Meta cho công cụ tìm kiếm & mạng xã hội.
+   * Meta cho công cụ tìm kiếm & mạng xã hội (phân tích kiểu Yoast).
    */
   seo?: {
+    /**
+     * Từ khóa trọng tâm — nội dung sẽ được chấm điểm theo từ khóa này.
+     */
+    focusKeyphrase?: string | null;
     /**
      * Thẻ <title>. Bỏ trống dùng tiêu đề mặc định.
      */
@@ -1809,6 +2314,25 @@ export interface CaseStudy {
      * Chặn index trang này.
      */
     noIndex?: boolean | null;
+    /**
+     * Nội dung nền tảng (cornerstone) — bài quan trọng, chấm điểm chặt hơn.
+     */
+    cornerstone?: boolean | null;
+    /**
+     * Loại schema.org (JSON-LD) cho trang này.
+     */
+    schemaType?: ('auto' | 'Article' | 'Product' | 'FAQPage' | 'WebPage' | 'none') | null;
+    /**
+     * Nhãn hiển thị trên breadcrumb (bỏ trống dùng tiêu đề trang).
+     */
+    breadcrumbTitle?: string | null;
+    /**
+     * Tiêu đề khi chia sẻ Facebook/Zalo.
+     */
+    ogTitle?: string | null;
+    ogDescription?: string | null;
+    twitterTitle?: string | null;
+    twitterDescription?: string | null;
   };
   updatedAt: string;
   createdAt: string;
@@ -1904,6 +2428,77 @@ export interface Language {
    * Sort in switcher
    */
   sortOrder?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * IP đang bị chặn (tự động + thủ công).
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blocked-ips".
+ */
+export interface BlockedIp {
+  id: number;
+  ip: string;
+  /**
+   * VD: brute-force, rate-limit, manual, attack-signature.
+   */
+  reason?: string | null;
+  source?: ('manual' | 'brute-force' | 'rate-limit' | 'firewall') | null;
+  /**
+   * Bỏ trống = chặn vĩnh viễn.
+   */
+  expiresAt?: string | null;
+  hits?: number | null;
+  lastUserAgent?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Nhật ký sự kiện bảo mật (request bị chặn, đăng nhập, quét).
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "security-events".
+ */
+export interface SecurityEvent {
+  id: number;
+  type: 'firewall' | 'rate-limit' | 'login' | 'scan';
+  action: 'blocked' | 'monitored' | 'allowed' | 'lockout';
+  ip?: string | null;
+  reason?: string | null;
+  path?: string | null;
+  method?: string | null;
+  userAgent?: string | null;
+  country?: string | null;
+  /**
+   * Cho sự kiện đăng nhập.
+   */
+  username?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Bằng chứng đồng ý cookie (proof-of-consent).
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "consent-log".
+ */
+export interface ConsentLog {
+  id: number;
+  consentId?: string | null;
+  /**
+   * Danh mục đã đồng ý (CSV).
+   */
+  categories?: string | null;
+  action?: string | null;
+  /**
+   * IP đã ẩn octet cuối.
+   */
+  ipTrunc?: string | null;
+  country?: string | null;
+  url?: string | null;
+  userAgent?: string | null;
+  policyVersion?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -2040,6 +2635,18 @@ export interface PayloadLockedDocument {
         value: number | Language;
       } | null)
     | ({
+        relationTo: 'blocked-ips';
+        value: number | BlockedIp;
+      } | null)
+    | ({
+        relationTo: 'security-events';
+        value: number | SecurityEvent;
+      } | null)
+    | ({
+        relationTo: 'consent-log';
+        value: number | ConsentLog;
+      } | null)
+    | ({
         relationTo: 'payload-folders';
         value: number | FolderInterface;
       } | null);
@@ -2123,6 +2730,9 @@ export interface UsersSelect<T extends boolean = true> {
   name?: T;
   role?: T;
   avatar?: T;
+  twoFactorEnabled?: T;
+  twoFactorSecret?: T;
+  twoFactorPendingSecret?: T;
   staffRole?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -2148,6 +2758,10 @@ export interface UsersSelect<T extends boolean = true> {
 export interface MediaSelect<T extends boolean = true> {
   alt?: T;
   caption?: T;
+  originalSize?: T;
+  savedBytes?: T;
+  savedPct?: T;
+  optimizedFormat?: T;
   folder?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -2193,6 +2807,46 @@ export interface MediaSelect<T extends boolean = true> {
               filesize?: T;
               filename?: T;
             };
+        w400?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        w768?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        w1080?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        w1600?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
       };
 }
 /**
@@ -2223,15 +2877,38 @@ export interface PagesSelect<T extends boolean = true> {
         homeExperts?: T | HomeExpertsBlockSelect<T>;
         homeAiPromo?: T | HomeAiPromoBlockSelect<T>;
         homeCta?: T | HomeCtaBlockSelect<T>;
+        aboutMission?: T | AboutMissionBlockSelect<T>;
+        aboutDifferentiation?: T | AboutDifferentiationBlockSelect<T>;
+        aboutJourney?: T | AboutJourneyBlockSelect<T>;
+        aboutPartners?: T | AboutPartnersBlockSelect<T>;
+        aboutValues?: T | AboutValuesBlockSelect<T>;
+        aboutProcess?: T | AboutProcessBlockSelect<T>;
+        aboutTimeline?: T | AboutTimelineBlockSelect<T>;
+        solutionsIntro?: T | SolutionsIntroBlockSelect<T>;
+        solutionsList?: T | SolutionsListBlockSelect<T>;
+        coCreateCompare?: T | CoCreateCompareBlockSelect<T>;
+        coCreateJourney?: T | CoCreateJourneyBlockSelect<T>;
+        coCreateCases?: T | CoCreateCasesBlockSelect<T>;
+        rdContent?: T | RdContentBlockSelect<T>;
+        contactInfo?: T | ContactInfoBlockSelect<T>;
+        legalContent?: T | LegalContentBlockSelect<T>;
       };
   seo?:
     | T
     | {
+        focusKeyphrase?: T;
         title?: T;
         description?: T;
         image?: T;
         canonical?: T;
         noIndex?: T;
+        cornerstone?: T;
+        schemaType?: T;
+        breadcrumbTitle?: T;
+        ogTitle?: T;
+        ogDescription?: T;
+        twitterTitle?: T;
+        twitterDescription?: T;
       };
   updatedAt?: T;
   createdAt?: T;
@@ -2380,6 +3057,7 @@ export interface HomeHeroBlockSelect<T extends boolean = true> {
   ctaPrimary?: T;
   ctaSecondary?: T;
   trust?: T;
+  image?: T;
   id?: T;
   blockName?: T;
 }
@@ -2390,6 +3068,13 @@ export interface HomeHeroBlockSelect<T extends boolean = true> {
 export interface HomeBrandsBlockSelect<T extends boolean = true> {
   title?: T;
   categories?: T;
+  logos?:
+    | T
+    | {
+        logo?: T;
+        name?: T;
+        id?: T;
+      };
   id?: T;
   blockName?: T;
 }
@@ -2424,12 +3109,16 @@ export interface HomeCategoriesBlockSelect<T extends boolean = true> {
         name?: T;
         desc?: T;
         cta?: T;
+        image?: T;
+        category?: T;
       };
   items?:
     | T
     | {
         name?: T;
         desc?: T;
+        image?: T;
+        category?: T;
         id?: T;
       };
   id?: T;
@@ -2458,6 +3147,7 @@ export interface HomeCertificationsBlockSelect<T extends boolean = true> {
     | {
         name?: T;
         sub?: T;
+        logo?: T;
         id?: T;
       };
   id?: T;
@@ -2473,6 +3163,7 @@ export interface HomeExpertsBlockSelect<T extends boolean = true> {
   paragraphs?: T;
   cta?: T;
   imageAlt?: T;
+  image?: T;
   stats?:
     | T
     | {
@@ -2515,6 +3206,267 @@ export interface HomeCtaBlockSelect<T extends boolean = true> {
   description?: T;
   primary?: T;
   secondary?: T;
+  image?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "AboutMissionBlock_select".
+ */
+export interface AboutMissionBlockSelect<T extends boolean = true> {
+  mission?:
+    | T
+    | {
+        title?: T;
+        desc?: T;
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "AboutDifferentiationBlock_select".
+ */
+export interface AboutDifferentiationBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  bullets?: T;
+  quote?: T;
+  quoteHighlight?: T;
+  quoteAfter?: T;
+  company?: T;
+  companyRole?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "AboutJourneyBlock_select".
+ */
+export interface AboutJourneyBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  title?: T;
+  subtitle?: T;
+  description?: T;
+  stats?:
+    | T
+    | {
+        label?: T;
+        id?: T;
+      };
+  highlight?: T;
+  highlightBold?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "AboutPartnersBlock_select".
+ */
+export interface AboutPartnersBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  title?: T;
+  description?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "AboutValuesBlock_select".
+ */
+export interface AboutValuesBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  title?: T;
+  items?:
+    | T
+    | {
+        title?: T;
+        desc?: T;
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "AboutProcessBlock_select".
+ */
+export interface AboutProcessBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  title?: T;
+  description?: T;
+  imageAlt?: T;
+  image?: T;
+  steps?:
+    | T
+    | {
+        title?: T;
+        desc?: T;
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "AboutTimelineBlock_select".
+ */
+export interface AboutTimelineBlockSelect<T extends boolean = true> {
+  items?:
+    | T
+    | {
+        year?: T;
+        text?: T;
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "SolutionsIntroBlock_select".
+ */
+export interface SolutionsIntroBlockSelect<T extends boolean = true> {
+  icpTitle?: T;
+  icpDesc?: T;
+  icp?:
+    | T
+    | {
+        priority?: T;
+        title?: T;
+        desc?: T;
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "SolutionsListBlock_select".
+ */
+export interface SolutionsListBlockSelect<T extends boolean = true> {
+  items?:
+    | T
+    | {
+        title?: T;
+        forWho?: T;
+        receive?: T;
+        cta?: T;
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CoCreateCompareBlock_select".
+ */
+export interface CoCreateCompareBlockSelect<T extends boolean = true> {
+  compareTitle?: T;
+  compareDesc?: T;
+  traditionalTitle?: T;
+  traditional?: T;
+  bioscopeTitle?: T;
+  bioscope?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CoCreateJourneyBlock_select".
+ */
+export interface CoCreateJourneyBlockSelect<T extends boolean = true> {
+  stepLabel?: T;
+  journey?:
+    | T
+    | {
+        title?: T;
+        desc?: T;
+        duration?: T;
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CoCreateCasesBlock_select".
+ */
+export interface CoCreateCasesBlockSelect<T extends boolean = true> {
+  casesTitle?: T;
+  casesDesc?: T;
+  readCase?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RdContentBlock_select".
+ */
+export interface RdContentBlockSelect<T extends boolean = true> {
+  stats?:
+    | T
+    | {
+        label?: T;
+        id?: T;
+      };
+  techTitle?: T;
+  researchTitle?: T;
+  researchDesc?: T;
+  researchAreas?: T;
+  partnersTitle?: T;
+  partnersDesc?: T;
+  papersTitle?: T;
+  papersDesc?: T;
+  gated?: T;
+  papers?:
+    | T
+    | {
+        title?: T;
+        type?: T;
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ContactInfoBlock_select".
+ */
+export interface ContactInfoBlockSelect<T extends boolean = true> {
+  quick?: T;
+  within?: T;
+  office?: T;
+  hotline?: T;
+  email?: T;
+  faqTitle?: T;
+  faq?:
+    | T
+    | {
+        q?: T;
+        a?: T;
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "LegalContentBlock_select".
+ */
+export interface LegalContentBlockSelect<T extends boolean = true> {
+  target?: T;
+  title?: T;
+  updated?: T;
+  intro?: T;
+  sections?:
+    | T
+    | {
+        title?: T;
+        paragraphs?: T;
+        id?: T;
+      };
   id?: T;
   blockName?: T;
 }
@@ -2535,11 +3487,19 @@ export interface PostsSelect<T extends boolean = true> {
   seo?:
     | T
     | {
+        focusKeyphrase?: T;
         title?: T;
         description?: T;
         image?: T;
         canonical?: T;
         noIndex?: T;
+        cornerstone?: T;
+        schemaType?: T;
+        breadcrumbTitle?: T;
+        ogTitle?: T;
+        ogDescription?: T;
+        twitterTitle?: T;
+        twitterDescription?: T;
       };
   updatedAt?: T;
   createdAt?: T;
@@ -2827,11 +3787,19 @@ export interface IngredientsSelect<T extends boolean = true> {
   seo?:
     | T
     | {
+        focusKeyphrase?: T;
         title?: T;
         description?: T;
         image?: T;
         canonical?: T;
         noIndex?: T;
+        cornerstone?: T;
+        schemaType?: T;
+        breadcrumbTitle?: T;
+        ogTitle?: T;
+        ogDescription?: T;
+        twitterTitle?: T;
+        twitterDescription?: T;
       };
   updatedAt?: T;
   createdAt?: T;
@@ -2945,11 +3913,19 @@ export interface TechnologiesSelect<T extends boolean = true> {
   seo?:
     | T
     | {
+        focusKeyphrase?: T;
         title?: T;
         description?: T;
         image?: T;
         canonical?: T;
         noIndex?: T;
+        cornerstone?: T;
+        schemaType?: T;
+        breadcrumbTitle?: T;
+        ogTitle?: T;
+        ogDescription?: T;
+        twitterTitle?: T;
+        twitterDescription?: T;
       };
   updatedAt?: T;
   createdAt?: T;
@@ -2992,11 +3968,19 @@ export interface ServicesSelect<T extends boolean = true> {
   seo?:
     | T
     | {
+        focusKeyphrase?: T;
         title?: T;
         description?: T;
         image?: T;
         canonical?: T;
         noIndex?: T;
+        cornerstone?: T;
+        schemaType?: T;
+        breadcrumbTitle?: T;
+        ogTitle?: T;
+        ogDescription?: T;
+        twitterTitle?: T;
+        twitterDescription?: T;
       };
   updatedAt?: T;
   createdAt?: T;
@@ -3039,11 +4023,19 @@ export interface CaseStudiesSelect<T extends boolean = true> {
   seo?:
     | T
     | {
+        focusKeyphrase?: T;
         title?: T;
         description?: T;
         image?: T;
         canonical?: T;
         noIndex?: T;
+        cornerstone?: T;
+        schemaType?: T;
+        breadcrumbTitle?: T;
+        ogTitle?: T;
+        ogDescription?: T;
+        twitterTitle?: T;
+        twitterDescription?: T;
       };
   updatedAt?: T;
   createdAt?: T;
@@ -3111,6 +4103,53 @@ export interface LanguagesSelect<T extends boolean = true> {
   rtl?: T;
   fallbackLocale?: T;
   sortOrder?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blocked-ips_select".
+ */
+export interface BlockedIpsSelect<T extends boolean = true> {
+  ip?: T;
+  reason?: T;
+  source?: T;
+  expiresAt?: T;
+  hits?: T;
+  lastUserAgent?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "security-events_select".
+ */
+export interface SecurityEventsSelect<T extends boolean = true> {
+  type?: T;
+  action?: T;
+  ip?: T;
+  reason?: T;
+  path?: T;
+  method?: T;
+  userAgent?: T;
+  country?: T;
+  username?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "consent-log_select".
+ */
+export interface ConsentLogSelect<T extends boolean = true> {
+  consentId?: T;
+  categories?: T;
+  action?: T;
+  ipTrunc?: T;
+  country?: T;
+  url?: T;
+  userAgent?: T;
+  policyVersion?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -3315,6 +4354,30 @@ export interface Branding {
     | 'work-sans'
     | 'montserrat'
     | 'lato';
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * Tối ưu ảnh: chuyển WebP/AVIF, nén, ảnh responsive (tham khảo image-optimization).
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "image-settings".
+ */
+export interface ImageSetting {
+  id: number;
+  /**
+   * Định dạng đích (env OPTIMIZE_IMAGE_FORMAT: webp|avif|off).
+   */
+  format?: string | null;
+  /**
+   * Chất lượng nén (env OPTIMIZE_IMAGE_QUALITY).
+   */
+  quality?: number | null;
+  /**
+   * Chiều rộng tối đa (env OPTIMIZE_IMAGE_MAX_WIDTH).
+   */
+  maxWidth?: number | null;
+  lazyLoad?: boolean | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -3573,6 +4636,109 @@ export interface BetterEditorSetting {
   createdAt?: string | null;
 }
 /**
+ * Tường lửa, chặn IP, chống brute-force, quét bảo mật (tham khảo Wordfence).
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "security-settings".
+ */
+export interface SecuritySetting {
+  id: number;
+  firewallEnabled?: boolean | null;
+  /**
+   * Learning mode để test rule mà không chặn thật.
+   */
+  firewallMode?: ('block' | 'monitor') | null;
+  blockKnownAttacks?: boolean | null;
+  blockScanners?: boolean | null;
+  blockWpProbes?: boolean | null;
+  /**
+   * Mỗi dòng là 1 biểu thức chính quy. Cẩn thận kẻo chặn nhầm.
+   */
+  customBlockedPatterns?:
+    | {
+        pattern: string;
+        note?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  rateLimitEnabled?: boolean | null;
+  rateLimitMax?: number | null;
+  rateLimitWindowMs?: number | null;
+  rateLimitBlockSeconds?: number | null;
+  allowedIps?:
+    | {
+        ip: string;
+        note?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  blockedIps?:
+    | {
+        ip: string;
+        note?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * VD: CN,RU,KP. Cần header geo từ CDN/proxy (x-vercel-ip-country / cf-ipcountry).
+   */
+  blockedCountries?: string | null;
+  bruteForceEnabled?: boolean | null;
+  maxLoginAttempts?: number | null;
+  lockoutMinutes?: number | null;
+  immediateBlockInvalidUsers?: boolean | null;
+  enforce2fa?: ('off' | 'admin' | 'all') | null;
+  scanEnabled?: boolean | null;
+  scanMediaUploads?: boolean | null;
+  blockedUploadExtensions?: string | null;
+  alertEmail?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * Banner đồng ý cookie, phân loại cookie & chặn script (tham khảo Complianz).
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "consent-settings".
+ */
+export interface ConsentSetting {
+  id: number;
+  enabled?: boolean | null;
+  mode?: ('optIn' | 'optOut') | null;
+  title?: string | null;
+  message?: string | null;
+  acceptAllLabel?: string | null;
+  rejectAllLabel?: string | null;
+  customizeLabel?: string | null;
+  saveLabel?: string | null;
+  policyUrl?: string | null;
+  position?: ('bottom' | 'bottom-left' | 'bottom-right') | null;
+  /**
+   * Mỗi danh mục = 1 nhóm cookie/script người dùng bật/tắt.
+   */
+  categories?:
+    | {
+        /**
+         * Mã danh mục (necessary/preferences/statistics/marketing).
+         */
+        key: string;
+        label?: string | null;
+        description?: string | null;
+        required?: boolean | null;
+        defaultOn?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Màu nút chính (hex).
+   */
+  accentColor?: string | null;
+  blockScripts?: boolean | null;
+  logConsent?: boolean | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "site-settings_select".
  */
@@ -3681,6 +4847,19 @@ export interface BrandingSelect<T extends boolean = true> {
   sidebarBackground?: T;
   radius?: T;
   fontFamily?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "image-settings_select".
+ */
+export interface ImageSettingsSelect<T extends boolean = true> {
+  format?: T;
+  quality?: T;
+  maxWidth?: T;
+  lazyLoad?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
@@ -3922,6 +5101,87 @@ export interface BetterEditorSettingsSelect<T extends boolean = true> {
   hoverOutlineWidth?: T;
   showHoverToolbar?: T;
   hoverToolbarPosition?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "security-settings_select".
+ */
+export interface SecuritySettingsSelect<T extends boolean = true> {
+  firewallEnabled?: T;
+  firewallMode?: T;
+  blockKnownAttacks?: T;
+  blockScanners?: T;
+  blockWpProbes?: T;
+  customBlockedPatterns?:
+    | T
+    | {
+        pattern?: T;
+        note?: T;
+        id?: T;
+      };
+  rateLimitEnabled?: T;
+  rateLimitMax?: T;
+  rateLimitWindowMs?: T;
+  rateLimitBlockSeconds?: T;
+  allowedIps?:
+    | T
+    | {
+        ip?: T;
+        note?: T;
+        id?: T;
+      };
+  blockedIps?:
+    | T
+    | {
+        ip?: T;
+        note?: T;
+        id?: T;
+      };
+  blockedCountries?: T;
+  bruteForceEnabled?: T;
+  maxLoginAttempts?: T;
+  lockoutMinutes?: T;
+  immediateBlockInvalidUsers?: T;
+  enforce2fa?: T;
+  scanEnabled?: T;
+  scanMediaUploads?: T;
+  blockedUploadExtensions?: T;
+  alertEmail?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "consent-settings_select".
+ */
+export interface ConsentSettingsSelect<T extends boolean = true> {
+  enabled?: T;
+  mode?: T;
+  title?: T;
+  message?: T;
+  acceptAllLabel?: T;
+  rejectAllLabel?: T;
+  customizeLabel?: T;
+  saveLabel?: T;
+  policyUrl?: T;
+  position?: T;
+  categories?:
+    | T
+    | {
+        key?: T;
+        label?: T;
+        description?: T;
+        required?: T;
+        defaultOn?: T;
+        id?: T;
+      };
+  accentColor?: T;
+  blockScripts?: T;
+  logConsent?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

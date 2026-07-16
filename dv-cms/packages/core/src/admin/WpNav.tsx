@@ -14,6 +14,7 @@
  */
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useConfig, useAuth, useNav, useWindowInfo } from '@payloadcms/ui'
@@ -240,7 +241,7 @@ export const WpNav: React.FC = () => {
         </div>
       </div>
 
-      {flyout && flyoutGroup && (
+      {flyout && flyoutGroup && createPortal(
         <div className="dv-wpnav__flyout" role="menu" style={{ top: flyout.top, left: flyout.left }} onMouseEnter={cancelClose} onMouseLeave={scheduleClose}>
           <div className="dv-wpnav__flyout-title">{flyoutGroup.label[lang]}</div>
           {flyoutGroup.items.map((e) => (
@@ -251,14 +252,15 @@ export const WpNav: React.FC = () => {
               {e.label}
             </Link>
           ))}
-        </div>
+        </div>,
+        document.body
       )}
     </nav>
   )
 }
 
 const WPNAV_CSS = `
-.dv-wpnav { display: flex; flex-direction: column; padding: 0; height: 100%; background: var(--dv-sidebar-bg, #f5f8f6); }
+.dv-wpnav { display: flex; flex-direction: column; padding: 0; height: 100vh; position: sticky; top: 0; flex-shrink: 0; align-self: flex-start; background: var(--dv-sidebar-bg, #f5f8f6); }
 .dv-wpnav .dv-nav-brand { margin-inline: 0 !important; padding: 12px 16px !important; background: transparent !important; }
 .dv-wpnav .dv-nav-brand__logo { max-width: 150px; }
 .dv-wpnav__scroll { flex: 1; overflow-y: auto; padding: 8px 12px 28px; display: flex; flex-direction: column; gap: 4px; }
@@ -274,7 +276,7 @@ const WPNAV_CSS = `
 .dv-wpnav__dash:hover { background: color-mix(in srgb, var(--dv-primary, #008e4d) 10%, transparent); }
 .dv-wpnav__dash.is-active { background: color-mix(in srgb, var(--dv-primary, #008e4d) 14%, transparent); color: var(--dv-primary, #008e4d); }
 
-.dv-wpnav__actions { margin: 6px 0 4px; }
+.dv-wpnav__actions { margin: 6px 0 4px; padding-bottom: 8px; border-bottom: 1px solid var(--theme-elevation-100, #e8eaed); }
 .dv-wpnav__actions-title { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--theme-elevation-500); padding: 6px 8px 4px; }
 .dv-wpnav__actions-row { display: flex; flex-direction: column; gap: 4px; }
 .dv-wpnav__action {
@@ -319,7 +321,7 @@ const WPNAV_CSS = `
 .dv-wpnav--rail .dv-wpnav__dash { justify-content: center; padding: 0; width: 42px; height: 42px; border-radius: 11px; margin: 0 auto 4px; }
 
 .dv-wpnav__flyout {
-  position: fixed; z-index: 100; min-width: 224px; max-height: 80vh; overflow-y: auto;
+  position: fixed; z-index: 9999; min-width: 224px; max-height: 80vh; overflow-y: auto;
   background: var(--theme-elevation-0, #fff); border: 1px solid var(--theme-elevation-150); border-radius: 12px;
   box-shadow: 0 14px 38px rgba(0,0,0,.18); padding: 6px;
 }

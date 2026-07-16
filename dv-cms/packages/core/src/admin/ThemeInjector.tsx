@@ -43,6 +43,14 @@ export const ThemeInjector: React.FC<{ children?: React.ReactNode }> = ({ childr
         applyGoogleFont(b)
       })
       .catch(() => {})
+
+    // Cố định header và sidebar để không scroll theo trang
+    const style = document.createElement('style')
+    style.textContent = `
+      .nav-toggler { position: fixed !important; top: 12px !important; left: 12px !important; z-index: 9999 !important; }
+    `
+    document.head.appendChild(style)
+    return () => { document.head.removeChild(style) }
   }, [])
 
   return <>{children}</>

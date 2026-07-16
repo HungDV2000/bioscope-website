@@ -21,10 +21,10 @@ export default async function AboutPage() {
   const { hero } = await getPageContent('ve-chung-toi', locale)
   // Overlay CMS section blocks onto the i18n so the bespoke components render
   // edited content; blockIds mark sections for the Better Editor.
-  const { messages, blockIds } = await getPageSections('ve-chung-toi', locale)
+  const { messages, contentOverride, blockIds } = await getPageSections('ve-chung-toi', locale)
 
   return (
-    <LocaleProvider locale={locale} messages={messages}>
+    <LocaleProvider locale={locale} messages={messages} contentOverride={contentOverride}>
       <PageHero {...hero} image="labWork" />
       <div data-better-editor-id={blockIds.aboutMission}>
         <AboutMissionStrip />
@@ -32,8 +32,12 @@ export default async function AboutPage() {
       <div data-better-editor-id={blockIds.aboutDifferentiation}>
         <AboutDifferentiation />
       </div>
-      <AboutCoreValues />
-      <AboutProductProcess />
+      <div data-better-editor-id={blockIds.aboutValues}>
+        <AboutCoreValues />
+      </div>
+      <div data-better-editor-id={blockIds.aboutProcess}>
+        <AboutProductProcess />
+      </div>
       <div data-better-editor-id={blockIds.aboutJourney}>
         <AboutJourney />
       </div>

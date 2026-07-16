@@ -1,18 +1,18 @@
-import { cmsFetch } from '@/lib/payload'
+import { cmsFetch, mediaUrl } from '@/lib/payload'
 import { getMessages, type Messages } from '@/lib/i18n/messages'
+import type { ContentModule } from '@/lib/get-content'
 import type { Locale } from '@/lib/i18n/config'
 
 /**
- * Overlay a static page's CMS section blocks onto the i18n messages, so the
- * bespoke page components (which read `t.<page>.<section>`) render CMS-edited
- * content with the static copy as fallback — the same approach as the home page.
- * Returns overlaid messages + the CMS block id per section (for Better Editor).
+ * Overlay a static page's CMS section blocks onto the i18n messages + content, so
+ * the bespoke page components (which read `t.<page>.<section>` and
+ * `content.<PAGE>_*`) render CMS-edited content with the static copy as fallback
+ * — the same approach as the home page. Returns overlaid messages, a content
+ * override (deep-merged by LocaleProvider) and the CMS block id per section.
  */
 
 type Block = { blockType?: string; id?: string } & Record<string, unknown>
 
-// Deep overlay: CMS values win when present; walks the (typed) base shape so the
-// result always matches it and extra CMS keys (id, blockType…) are dropped.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function overlay(base: any, over: any): any {
   if (over == null) return base
@@ -30,7 +30,16 @@ function overlay(base: any, over: any): any {
   return over ?? base
 }
 
-export type PageSections = { messages: Messages; blockIds: Record<string, string> }
+function uploadUrl(v: unknown): string | undefined {
+  const url = typeof v === 'object' && v !== null ? (v as { url?: string }).url : undefined
+  return mediaUrl(url) ?? undefined
+}
+
+export type PageSections = {
+  messages: Messages
+  contentOverride: Partial<ContentModule>
+  blockIds: Record<string, string>
+}
 
 export async function getPageSections(slug: string, locale: Locale): Promise<PageSections> {
   const messages = getMessages(locale)
@@ -39,15 +48,18 @@ export async function getPageSections(slug: string, locale: Locale): Promise<Pag
     { locale, revalidate: 60 },
   )
   const blocks = res?.docs?.[0]?.layout
-  if (!blocks?.length) return { messages, blockIds: {} }
+  if (!blocks?.length) return { messages, contentOverride: {}, blockIds: {} }
 
-  // Shallow clone + per-section overlay (only sections we map are touched).
   const out: Messages = { ...messages, about: { ...messages.about } }
+  const contentOverride: Record<string, unknown> = {}
   const blockIds: Record<string, string> = {}
 
-  const setSection = (key: keyof Messages['about'], value: unknown, id?: string, slug?: string) => {
+  const setSection = (key: keyof Messages['about'], value: unknown, id?: string, mark?: string) => {
     out.about = { ...out.about, [key]: value } as Messages['about']
-    if (slug && typeof id === 'string') blockIds[slug] = id
+    if (mark && typeof id === 'string') blockIds[mark] = id
+  }
+  const markId = (id: unknown, mark: string) => {
+    if (typeof id === 'string') blockIds[mark] = id
   }
 
   for (const b of blocks) {
@@ -64,9 +76,26 @@ export async function getPageSections(slug: string, locale: Locale): Promise<Pag
       case 'aboutPartners':
         setSection('partners', overlay(messages.about.partners, b), b.id, 'aboutPartners')
         break
-      // Further sections are added here as they become editable.
+      case 'aboutValues':
+        setSection('coreValues', overlay(messages.about.coreValues, b), b.id, 'aboutValues')
+        if (Array.isArray(b.items) && b.items.length) contentOverride.ABOUT_CORE_VALUES = b.items
+        break
+      case 'aboutProcess':
+        contentOverride.ABOUT_PRODUCT_PROCESS = {
+          ...(typeof b.title === 'string' ? { title: b.title } : {}),
+          ...(typeof b.description === 'string' ? { description: b.description } : {}),
+          ...(typeof b.imageAlt === 'string' ? { imageAlt: b.imageAlt } : {}),
+          ...(uploadUrl(b.image) ? { image: uploadUrl(b.image) } : {}),
+          ...(Array.isArray(b.steps) && b.steps.length ? { steps: b.steps } : {}),
+        }
+        markId(b.id, 'aboutProcess')
+        break
+      case 'aboutTimeline':
+        if (Array.isArray(b.items) && b.items.length) contentOverride.ABOUT_TIMELINE = b.items
+        markId(b.id, 'aboutTimeline')
+        break
     }
   }
 
-  return { messages: out, blockIds }
+  return { messages: out, contentOverride, blockIds }
 }

@@ -58,12 +58,45 @@ export const AboutPartnersBlock: Block = {
   fields: [T('eyebrow'), T('title'), A('description')],
 }
 
+export const AboutValuesBlock: Block = {
+  slug: 'aboutValues',
+  interfaceName: 'AboutValuesBlock',
+  labels: { singular: { en: 'About · Core values', vi: 'Về chúng tôi · Giá trị cốt lõi' }, plural: { en: 'About · Core values', vi: 'Về chúng tôi · Giá trị cốt lõi' } },
+  fields: [
+    T('eyebrow'), T('title'),
+    { name: 'items', type: 'array', label: { en: 'Values', vi: 'Giá trị' }, fields: [T('title', { en: 'Title', vi: 'Tiêu đề' }), A('desc', { en: 'Description', vi: 'Mô tả' })] },
+  ],
+}
+
+export const AboutProcessBlock: Block = {
+  slug: 'aboutProcess',
+  interfaceName: 'AboutProcessBlock',
+  labels: { singular: { en: 'About · Product process', vi: 'Về chúng tôi · Quy trình' }, plural: { en: 'About · Product process', vi: 'Về chúng tôi · Quy trình' } },
+  fields: [
+    T('eyebrow'), T('title'), A('description'), T('imageAlt'),
+    { name: 'image', type: 'upload', relationTo: 'media', label: { en: 'Process image', vi: 'Ảnh quy trình' } },
+    { name: 'steps', type: 'array', label: { en: 'Steps', vi: 'Các bước' }, fields: [T('title', { en: 'Title', vi: 'Tiêu đề' }), A('desc', { en: 'Description', vi: 'Mô tả' })] },
+  ],
+}
+
+export const AboutTimelineBlock: Block = {
+  slug: 'aboutTimeline',
+  interfaceName: 'AboutTimelineBlock',
+  labels: { singular: { en: 'About · Timeline', vi: 'Về chúng tôi · Dòng thời gian' }, plural: { en: 'About · Timeline', vi: 'Về chúng tôi · Dòng thời gian' } },
+  fields: [
+    { name: 'items', type: 'array', label: { en: 'Milestones', vi: 'Cột mốc' }, fields: [T('year', { en: 'Year', vi: 'Năm' }), A('text', { en: 'Text', vi: 'Nội dung' })] },
+  ],
+}
+
 /** All static-page section blocks, appended to the Pages layout. */
 export const PAGE_BLOCKS: Block[] = [
   AboutMissionBlock,
   AboutDifferentiationBlock,
   AboutJourneyBlock,
   AboutPartnersBlock,
+  AboutValuesBlock,
+  AboutProcessBlock,
+  AboutTimelineBlock,
 ]
 
 export const PAGE_BLOCK_SLUGS = PAGE_BLOCKS.map((b) => b.slug)

@@ -158,7 +158,6 @@ export interface Config {
     home: Home;
     'bioscope-ai': BioscopeAi;
     'seo-settings': SeoSetting;
-    'better-editor-settings': BetterEditorSetting;
     'security-settings': SecuritySetting;
     'consent-settings': ConsentSetting;
   };
@@ -170,7 +169,6 @@ export interface Config {
     home: HomeSelect<false> | HomeSelect<true>;
     'bioscope-ai': BioscopeAiSelect<false> | BioscopeAiSelect<true>;
     'seo-settings': SeoSettingsSelect<false> | SeoSettingsSelect<true>;
-    'better-editor-settings': BetterEditorSettingsSelect<false> | BetterEditorSettingsSelect<true>;
     'security-settings': SecuritySettingsSelect<false> | SecuritySettingsSelect<true>;
     'consent-settings': ConsentSettingsSelect<false> | ConsentSettingsSelect<true>;
   };
@@ -705,7 +703,21 @@ export interface HomeHeroBlock {
   titleHighlight?: string | null;
   titleMid?: string | null;
   titleAccent?: string | null;
-  description?: string | null;
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
   ctaPrimary?: string | null;
   ctaSecondary?: string | null;
   trust?: string[] | null;
@@ -720,7 +732,10 @@ export interface HomeHeroBlock {
  */
 export interface HomeBrandsBlock {
   title?: string | null;
-  categories?: string[] | null;
+  /**
+   * Search + select ingredient categories.
+   */
+  categories?: (number | IngredientCategory)[] | null;
   logos?:
     | {
         logo?: (number | null) | Media;
@@ -734,11 +749,49 @@ export interface HomeBrandsBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ingredient-categories".
+ */
+export interface IngredientCategory {
+  id: number;
+  name: string;
+  /**
+   * Để trống sẽ tự tạo từ tiêu đề.
+   */
+  slug?: string | null;
+  /**
+   * Google Drive folder ID của danh mục này.
+   */
+  driveId?: string | null;
+  driveParentId?: string | null;
+  /**
+   * Dùng driveId hoặc slugify(name).
+   */
+  externalId?: string | null;
+  scope?: ('supplement' | 'cosmetic' | 'both') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "HomeProcessBlock".
  */
 export interface HomeProcessBlock {
   title?: string | null;
-  description?: string | null;
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
   steps?:
     | {
         title?: string | null;
@@ -756,7 +809,21 @@ export interface HomeProcessBlock {
  */
 export interface HomeCategoriesBlock {
   title?: string | null;
-  description?: string | null;
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
   viewAll?: string | null;
   featured?: {
     name?: string | null;
@@ -786,30 +853,6 @@ export interface HomeCategoriesBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ingredient-categories".
- */
-export interface IngredientCategory {
-  id: number;
-  name: string;
-  /**
-   * Để trống sẽ tự tạo từ tiêu đề.
-   */
-  slug?: string | null;
-  /**
-   * Google Drive folder ID của danh mục này.
-   */
-  driveId?: string | null;
-  driveParentId?: string | null;
-  /**
-   * Dùng driveId hoặc slugify(name).
-   */
-  externalId?: string | null;
-  scope?: ('supplement' | 'cosmetic' | 'both') | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "HomeCaseStudiesBlock".
  */
 export interface HomeCaseStudiesBlock {
@@ -825,7 +868,21 @@ export interface HomeCaseStudiesBlock {
  */
 export interface HomeCertificationsBlock {
   title?: string | null;
-  description?: string | null;
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
   countries?: string | null;
   items?:
     | {
@@ -871,7 +928,21 @@ export interface HomeAiPromoBlock {
   badge?: string | null;
   titleBefore?: string | null;
   titleHighlight?: string | null;
-  description?: string | null;
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
   features?: string[] | null;
   cta?: string | null;
   ctaHref?: string | null;
@@ -894,7 +965,21 @@ export interface HomeAiPromoBlock {
  */
 export interface HomeCtaBlock {
   title?: string | null;
-  description?: string | null;
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
   primary?: string | null;
   secondary?: string | null;
   image?: (number | null) | Media;
@@ -2003,6 +2088,10 @@ export interface AiGenerateJob {
   id: number;
   ingredientId: string;
   ingredientName: string;
+  /**
+   * Loại job: sinh toàn bộ nội dung hay chỉ tạo lại ảnh.
+   */
+  mode?: ('full' | 'image') | null;
   status:
     | 'queued'
     | 'downloading'
@@ -3839,6 +3928,7 @@ export interface DriveSyncJobsSelect<T extends boolean = true> {
 export interface AiGenerateJobsSelect<T extends boolean = true> {
   ingredientId?: T;
   ingredientName?: T;
+  mode?: T;
   status?: T;
   phase?: T;
   locale?: T;
@@ -4604,38 +4694,6 @@ export interface SeoSetting {
   createdAt?: string | null;
 }
 /**
- * Editor-wide preferences for the Better Editor overlay.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "better-editor-settings".
- */
-export interface BetterEditorSetting {
-  id: number;
-  sidebarPosition?: ('right' | 'left') | null;
-  /**
-   * Override admin.width on sidebar fields so they always span the full row.
-   */
-  forceFullWidthFields?: boolean | null;
-  tabletWidth?: number | null;
-  mobileWidth?: number | null;
-  /**
-   * Hex color (e.g. `#3b82f6`).
-   */
-  hoverColorTopLevel?: string | null;
-  /**
-   * Hex color for blocks nested inside another block.
-   */
-  hoverColorNested?: string | null;
-  /**
-   * Outline thickness in pixels (1–5).
-   */
-  hoverOutlineWidth?: number | null;
-  showHoverToolbar?: boolean | null;
-  hoverToolbarPosition?: ('top-right' | 'top-left' | 'bottom-right' | 'bottom-left') | null;
-  updatedAt?: string | null;
-  createdAt?: string | null;
-}
-/**
  * Tường lửa, chặn IP, chống brute-force, quét bảo mật (tham khảo Wordfence).
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -5083,24 +5141,6 @@ export interface SeoSettingsSelect<T extends boolean = true> {
   enableSitemap?: T;
   sitemapExclude?: T;
   robotsExtra?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  globalType?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "better-editor-settings_select".
- */
-export interface BetterEditorSettingsSelect<T extends boolean = true> {
-  sidebarPosition?: T;
-  forceFullWidthFields?: T;
-  tabletWidth?: T;
-  mobileWidth?: T;
-  hoverColorTopLevel?: T;
-  hoverColorNested?: T;
-  hoverOutlineWidth?: T;
-  showHoverToolbar?: T;
-  hoverToolbarPosition?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

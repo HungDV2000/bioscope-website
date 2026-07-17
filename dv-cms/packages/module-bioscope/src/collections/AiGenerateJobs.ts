@@ -23,7 +23,7 @@ export const AiGenerateJobs: CollectionConfig = {
   slug: 'ai-generate-jobs',
   admin: {
     useAsTitle: 'ingredientName',
-    defaultColumns: ['ingredientName', 'status', 'phase', 'locale', 'createdAt'],
+    defaultColumns: ['ingredientName', 'mode', 'status', 'phase', 'locale', 'createdAt'],
     group: 'Bioscope',
     description: 'Job history — Tạo nội dung tự động bằng AI (GPT-4o + DALL·E 3)',
   },
@@ -48,6 +48,19 @@ export const AiGenerateJobs: CollectionConfig = {
       required: true,
       label: 'Ingredient Name',
       admin: { readOnly: true },
+    },
+
+    // ── Mode ──────────────────────────────────────────────────────────────
+    {
+      name: 'mode',
+      type: 'select',
+      defaultValue: 'full',
+      options: [
+        { label: 'Toàn bộ nội dung + ảnh', value: 'full' },
+        { label: 'Chỉ tạo lại ảnh', value: 'image' },
+      ],
+      admin: { readOnly: true, description: 'Loại job: sinh toàn bộ nội dung hay chỉ tạo lại ảnh.' },
+      index: true,
     },
 
     // ── Status ────────────────────────────────────────────────────────────

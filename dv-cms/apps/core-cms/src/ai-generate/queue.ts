@@ -33,7 +33,7 @@ export function isQueueRunning(): boolean {
 async function drain(payload: Payload): Promise<void> {
   // Hard cap on iterations as a safety valve against an unexpected infinite loop.
   for (let i = 0; i < 100_000; i++) {
-    let job: { id: string | number; ingredientId?: string; locale?: string } | undefined
+    let job: { id: string | number; ingredientId?: string; locale?: string; mode?: string } | undefined
     try {
       const res = await payload.find({
         collection: 'ai-generate-jobs',
@@ -65,8 +65,9 @@ async function drain(payload: Payload): Promise<void> {
     }
 
     try {
-      const { runAiGenerate } = await import('./AiGenerateWorker.js')
-      await runAiGenerate({
+      const { runAiGenerate, runAiGenerateImage } = await import('./AiGenerateWorker.js')
+      const run = job.mode === 'image' ? runAiGenerateImage : runAiGenerate
+      await run({
         jobId: String(job.id),
         ingredientId: String(job.ingredientId ?? ''),
         locale: (job.locale as Locale) ?? 'vi',

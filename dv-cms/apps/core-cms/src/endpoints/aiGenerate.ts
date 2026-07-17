@@ -192,6 +192,69 @@ const triggerGenerateEndpoint: Endpoint = {
 }
 
 // ---------------------------------------------------------------------------
+// POST /api/ai-generate/image — Regenerate ONLY the featured image
+// ---------------------------------------------------------------------------
+
+const imageOnlyEndpoint: Endpoint = {
+  path: '/ai-generate/image',
+  method: 'post',
+  handler: async (req: PayloadRequest): Promise<Response> => {
+    if (!isAdmin(req)) {
+      return Response.json({ ok: false, error: 'Chỉ admin được phép.' }, { status: 403 })
+    }
+
+    let body: { ingredientId?: string; locale?: string }
+    try {
+      body = await (req as unknown as Request).json()
+    } catch {
+      return Response.json({ ok: false, error: 'Invalid JSON body.' }, { status: 400 })
+    }
+    const { ingredientId, locale = 'vi' } = body
+    if (!ingredientId) {
+      return Response.json({ ok: false, error: 'Thiếu ingredientId.' }, { status: 400 })
+    }
+
+    let ingredientName = String(ingredientId)
+    try {
+      const ing = await req.payload.findByID({ collection: 'ingredients', id: ingredientId, depth: 0, overrideAccess: true })
+      const nf = ing.name as { vi?: string; en?: string } | string | undefined
+      ingredientName = typeof nf === 'object' && nf !== null ? nf.vi ?? nf.en ?? String(ingredientId) : String(nf ?? ingredientId)
+    } catch {
+      return Response.json({ ok: false, error: `Ingredient ${ingredientId} không tồn tại.` }, { status: 404 })
+    }
+
+    try {
+      const job = await req.payload.create({
+        collection: 'ai-generate-jobs',
+        data: {
+          mode: 'image',
+          status: 'queued',
+          phase: 'Đang xếp hàng (chỉ tạo ảnh)...',
+          ingredientId: String(ingredientId),
+          ingredientName,
+          locale: locale as Locale,
+          totals: { filesFound: 0, filesDownloaded: 0, filesExtracted: 0, errors: 0 },
+          logs: [],
+        } as never,
+        overrideAccess: true,
+      })
+
+      // The sequential queue picks it up and runs the image-only worker (mode).
+      const { ensureQueueRunner } = await import('../ai-generate/queue.js')
+      ensureQueueRunner(req.payload)
+
+      return Response.json(
+        { ok: true, message: 'Đã tạo job tạo lại ảnh. Theo dõi tiến trình bên dưới.', jobId: String(job.id) },
+        { status: 202 },
+      )
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      return Response.json({ ok: false, error: `Lỗi tạo job: ${msg}` }, { status: 500 })
+    }
+  },
+}
+
+// ---------------------------------------------------------------------------
 // POST /api/ai-generate/bulk — Enqueue generation for many/all ingredients
 // ---------------------------------------------------------------------------
 
@@ -406,5 +469,6 @@ const getJobEndpoint: Endpoint = {
 
 export const aiGenerateTriggerEndpoint = triggerGenerateEndpoint
 export const aiGenerateBulkEndpoint = bulkGenerateEndpoint
+export const aiGenerateImageEndpoint = imageOnlyEndpoint
 export const aiGenerateListEndpoint = listJobsEndpoint
 export const aiGenerateGetEndpoint = getJobEndpoint

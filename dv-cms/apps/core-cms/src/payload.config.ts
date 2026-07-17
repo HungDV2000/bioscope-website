@@ -35,6 +35,7 @@ import { csvImportEndpoint } from './endpoints/csvImport.js'
 import {
   aiGenerateTriggerEndpoint,
   aiGenerateBulkEndpoint,
+  aiGenerateImageEndpoint,
   aiGenerateListEndpoint,
   aiGenerateGetEndpoint,
 } from './endpoints/aiGenerate.js'
@@ -101,7 +102,7 @@ export default buildConfig({
     collectionSpecific: true,
   },
   typescript: { outputFile: path.resolve(dirname, 'payload-types.ts') },
-  endpoints: [seedEndpoint, cmsSyncSourceEndpoint, cmsSyncEndpoint, cmsSyncRunsEndpoint, driveSyncTriggerEndpoint, driveSyncListEndpoint, driveSyncGetEndpoint, driveSyncCancelEndpoint, csvImportEndpoint, aiGenerateTriggerEndpoint, aiGenerateBulkEndpoint, aiGenerateListEndpoint, aiGenerateGetEndpoint],
+  endpoints: [seedEndpoint, cmsSyncSourceEndpoint, cmsSyncEndpoint, cmsSyncRunsEndpoint, driveSyncTriggerEndpoint, driveSyncListEndpoint, driveSyncGetEndpoint, driveSyncCancelEndpoint, csvImportEndpoint, aiGenerateTriggerEndpoint, aiGenerateBulkEndpoint, aiGenerateImageEndpoint, aiGenerateListEndpoint, aiGenerateGetEndpoint],
   collections: [],
   plugins: [
     // Tier 1 — generic core (must come first: users + media).

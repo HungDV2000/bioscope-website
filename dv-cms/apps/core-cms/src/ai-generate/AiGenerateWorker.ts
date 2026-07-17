@@ -297,6 +297,115 @@ function textToLexical(text?: string): Record<string, unknown> {
   return { root: { type: 'root', format: '', indent: 0, version: 1, direction: 'ltr', children } }
 }
 
+/**
+ * Image-only run: regenerate just the featured image for an ingredient that
+ * already has content. Builds the image prompt from the existing name/subtitle/
+ * description (no Drive download, no content generation) and writes the new
+ * image to `featuredImage`.
+ */
+export async function runAiGenerateImage(input: WorkerInput): Promise<void> {
+  const { jobId, ingredientId, locale, payload } = input
+  const logs: AiGenerateLog[] = []
+  addLog(logs, 'info', `Image-only job — ingredient: ${ingredientId}, locale: ${locale}`)
+
+  try {
+    await updateJob(payload, jobId, {
+      status: 'generating_image',
+      phase: 'Đang tạo ảnh đại diện...',
+      startedAt: new Date().toISOString(),
+      logs,
+    })
+
+    const ingredient = await payload.findByID({
+      collection: 'ingredients',
+      id: ingredientId,
+      depth: 0,
+      locale,
+      overrideAccess: true,
+    })
+
+    const nameOf = (v: unknown): string =>
+      typeof v === 'object' && v !== null
+        ? ((v as { vi?: string; en?: string }).vi ?? (v as { en?: string }).en ?? '')
+        : String(v ?? '')
+    const ingredientName = nameOf(ingredient.name) || String(ingredientId)
+    const subtitle = nameOf((ingredient as unknown as Record<string, unknown>).subtitle)
+
+    // Base prompt from what the ingredient already says about itself; the image
+    // service refines it into a proper studio prompt before generating.
+    const base = [ingredientName, subtitle].filter(Boolean).join(' — ')
+    const imagePrompt = {
+      vi: `Ảnh studio dược phẩm cận cảnh nguyên liệu: ${base}. Nền sạch, ánh sáng chuyên nghiệp, không chữ.`,
+      en: `Professional pharmaceutical studio close-up of the ingredient: ${base}. Clean background, studio lighting, no text.`,
+    }
+    addLog(logs, 'info', `Prompt gốc: ${imagePrompt.vi}`)
+    await updateJob(payload, jobId, { logs })
+
+    let featuredImage: { id: string | number; url: string } | null = null
+    try {
+      featuredImage = await generateAndUploadFeaturedImage(
+        ingredientName,
+        locale,
+        imagePrompt,
+        (async (buffer: Buffer, filename: string, mimeType: string, alt: string) => {
+          addLog(logs, 'info', `Uploading image: ${filename}`)
+          const media = await payload.create({
+            collection: 'media',
+            data: { alt: { vi: alt, en: alt } } as never,
+            file: { buffer, filename, mimeType } as never,
+            overrideAccess: true,
+          })
+          addLog(logs, 'info', `Image uploaded: ${media.id}`)
+          return { id: media.id, url: (media.url as string) ?? `/_uploads/media/${filename}` }
+        }) as never,
+      )
+    } catch (imgErr) {
+      addLog(logs, 'error', `Tạo ảnh thất bại: ${imgErr instanceof Error ? imgErr.message : String(imgErr)}`)
+    }
+
+    if (!featuredImage) {
+      addLog(logs, 'warn', 'Không tạo được ảnh — nguyên liệu giữ ảnh cũ.')
+      await updateJob(payload, jobId, {
+        status: 'error',
+        phase: 'Không tạo được ảnh.',
+        finishedAt: new Date().toISOString(),
+        errorMessage: 'Image generation failed — xem log.',
+        logs,
+      })
+      return
+    }
+
+    // `name` is required + localized: include it so validation passes.
+    await payload.update({
+      collection: 'ingredients',
+      id: ingredientId,
+      data: { name: ingredientName, featuredImage: featuredImage.id } as never,
+      locale,
+      overrideAccess: true,
+    })
+    addLog(logs, 'info', `✅ Đã gán ảnh mới: ${featuredImage.url}`)
+
+    await updateJob(payload, jobId, {
+      status: 'done',
+      phase: 'Hoàn tất — đã tạo lại ảnh.',
+      finishedAt: new Date().toISOString(),
+      logs,
+      result: { featuredImage, metadata: { imageGenerated: true, locale, mode: 'image' } } as unknown as Record<string, unknown>,
+    })
+  } catch (err) {
+    const errorMsg = err instanceof Error ? err.message : String(err)
+    console.error(`[ai-generate:image] Job ${jobId} failed:`, err)
+    addLog(logs, 'error', `Job failed: ${errorMsg}`)
+    await updateJob(payload, jobId, {
+      status: 'error',
+      phase: 'Đã xảy ra lỗi.',
+      finishedAt: new Date().toISOString(),
+      errorMessage: errorMsg,
+      logs,
+    })
+  }
+}
+
 export async function runAiGenerate(input: WorkerInput): Promise<void> {
   const { jobId, ingredientId, locale, payload } = input
   const logs: AiGenerateLog[] = []

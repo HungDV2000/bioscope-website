@@ -316,10 +316,11 @@ export async function runAiGenerateImage(input: WorkerInput): Promise<void> {
       logs,
     })
 
+    // depth=1 so the category relationship is populated (used as image context).
     const ingredient = await payload.findByID({
       collection: 'ingredients',
       id: ingredientId,
-      depth: 0,
+      depth: 1,
       locale,
       overrideAccess: true,
     })
@@ -328,17 +329,53 @@ export async function runAiGenerateImage(input: WorkerInput): Promise<void> {
       typeof v === 'object' && v !== null
         ? ((v as { vi?: string; en?: string }).vi ?? (v as { en?: string }).en ?? '')
         : String(v ?? '')
+    const ing = ingredient as unknown as Record<string, unknown>
     const ingredientName = nameOf(ingredient.name) || String(ingredientId)
-    const subtitle = nameOf((ingredient as unknown as Record<string, unknown>).subtitle)
+    const subtitle = nameOf(ing.subtitle)
 
-    // Base prompt from what the ingredient already says about itself; the image
-    // service refines it into a proper studio prompt before generating.
-    const base = [ingredientName, subtitle].filter(Boolean).join(' — ')
-    const imagePrompt = {
-      vi: `Ảnh studio dược phẩm cận cảnh nguyên liệu: ${base}. Nền sạch, ánh sáng chuyên nghiệp, không chữ.`,
-      en: `Professional pharmaceutical studio close-up of the ingredient: ${base}. Clean background, studio lighting, no text.`,
+    /** Flatten a lexical richText value into plain text. */
+    const flatten = (v: unknown): string => {
+      const root = (v as { root?: { children?: unknown[] } } | undefined)?.root
+      if (!root?.children) return ''
+      const read = (n: unknown): string => {
+        const node = n as { text?: string; children?: unknown[] }
+        if (typeof node.text === 'string') return node.text
+        return Array.isArray(node.children) ? node.children.map(read).join('') : ''
+      }
+      return root.children.map(read).filter(Boolean).join(' ')
     }
-    addLog(logs, 'info', `Prompt gốc: ${imagePrompt.vi}`)
+    const listOf = (v: unknown, n: number): string =>
+      Array.isArray(v) ? (v.filter((x) => typeof x === 'string') as string[]).slice(0, n).join('; ') : ''
+
+    const cat = ing.category as { title?: string; name?: string } | null | undefined
+    const category = typeof cat === 'object' && cat ? nameOf(cat.title ?? cat.name) : ''
+    const typeLabel = ing.type === 'cosmetic' ? 'mỹ phẩm' : ing.type === 'supplement' ? 'thực phẩm chức năng' : ''
+
+    // Feed the AI everything the ingredient says about itself, so the refined
+    // image prompt matches the real product (form, context, usage) — not just a
+    // generic shot from the name.
+    const context = [
+      `Tên: ${ingredientName}`,
+      subtitle && `Mô tả ngắn: ${subtitle}`,
+      nameOf(ing.inci) && `INCI/tên khoa học: ${nameOf(ing.inci)}`,
+      category && `Danh mục: ${category}`,
+      typeLabel && `Ngành dùng: ${typeLabel}`,
+      ing.originCountry && `Xuất xứ: ${String(ing.originCountry)}`,
+      listOf(ing.badges, 4) && `Chứng nhận: ${listOf(ing.badges, 4)}`,
+      flatten(ing.description) && `Mô tả: ${flatten(ing.description).slice(0, 700)}`,
+      listOf(ing.benefits, 4) && `Lợi ích: ${listOf(ing.benefits, 4)}`,
+      listOf(ing.applications, 4) && `Ứng dụng/dạng bào chế: ${listOf(ing.applications, 4)}`,
+    ]
+      .filter(Boolean)
+      .join('\n')
+
+    const rules =
+      'Dựa vào thông tin trên để chọn ĐÚNG hình thái thực tế của nguyên liệu (bột, dầu, dịch chiết, viên nang, tinh thể, thảo mộc thô...) và bối cảnh phù hợp với ngành dùng. Ảnh studio dược phẩm, cận cảnh/macro, nền sạch, ánh sáng chuyên nghiệp, chân thực, KHÔNG chữ/logo/watermark.'
+    const imagePrompt = {
+      vi: `Tạo ảnh đại diện cho nguyên liệu sau:\n${context}\n\n${rules}`,
+      en: `Create a featured image for this ingredient:\n${context}\n\nUse the details above to choose the ingredient's real physical form (powder, oil, extract, capsule, crystal, raw botanical...) and a context matching its industry. Pharmaceutical studio photo, close-up/macro, clean background, professional lighting, realistic, NO text/logo/watermark.`,
+    }
+    addLog(logs, 'info', `Ngữ cảnh sản phẩm đưa vào prompt ảnh: ${context.replace(/\n/g, ' | ').slice(0, 300)}…`)
     await updateJob(payload, jobId, { logs })
 
     let featuredImage: { id: string | number; url: string } | null = null

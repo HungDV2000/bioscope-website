@@ -7,7 +7,7 @@
  */
 
 import React from 'react'
-import { useFormFields } from '@payloadcms/ui'
+import { useAllFormFields } from '@payloadcms/ui'
 
 type LogEntry = { ts?: string; level?: 'info' | 'warn' | 'error'; message?: string }
 
@@ -27,8 +27,27 @@ function fmtTime(iso?: string): string {
 }
 
 export const AiJobLogViewer: React.FC = () => {
-  const raw = useFormFields(([fields]) => fields?.logs?.value)
-  const logs: LogEntry[] = Array.isArray(raw) ? (raw as LogEntry[]) : []
+  const [fields] = useAllFormFields()
+  // Payload keeps array fields flattened in form state: `logs` holds the ROW
+  // COUNT and each row is `logs.<i>.<sub>`. Reading `logs.value` as an array
+  // always yielded nothing — rebuild the rows from the indexed paths instead.
+  const logs: LogEntry[] = React.useMemo(() => {
+    const f = fields as Record<string, { value?: unknown } | undefined>
+    const count = Number(f?.logs?.value ?? 0)
+    const rows: LogEntry[] = []
+    for (let i = 0; i < count; i++) {
+      const ts = f[`logs.${i}.ts`]?.value
+      const level = f[`logs.${i}.level`]?.value
+      const message = f[`logs.${i}.message`]?.value
+      if (ts == null && level == null && message == null) continue
+      rows.push({
+        ts: typeof ts === 'string' ? ts : undefined,
+        level: (typeof level === 'string' ? level : 'info') as LogEntry['level'],
+        message: typeof message === 'string' ? message : String(message ?? ''),
+      })
+    }
+    return rows
+  }, [fields])
 
   return (
     <div style={{ marginBottom: 16 }}>

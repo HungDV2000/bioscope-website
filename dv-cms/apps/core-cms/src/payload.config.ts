@@ -19,7 +19,6 @@ import { imagePlugin } from '@dv/module-image'
 import { consentPlugin } from '@dv/module-consent'
 import { languagesPlugin, resolveLocalizationConfig } from '@dv/module-languages'
 import { permissionsPlugin } from '@dv/module-permissions'
-import { betterEditor } from 'payload-better-editor'
 
 import { seedEndpoint } from './endpoints/seed.js'
 import { cmsSyncSourceEndpoint } from './endpoints/cmsSyncSource.js'
@@ -145,9 +144,8 @@ export default buildConfig({
     seoPlugin(),
     // Site languages — manifest drives `localization` config above.
     languagesPlugin({ manifestPath: localesManifestPath }),
-    // Visual "Better Editor" preview toggle on Pages (needs admin.preview URL +
-    // same-origin frontend proxy — see next.config rewrites).
-    betterEditor({ collections: ['pages'] }),
+    // Live editing now uses Payload's official Live Preview (Pages.admin.livePreview
+    // + RefreshRouteOnSave on the frontend) — no same-origin proxy needed.
     // Wordfence-style security: managed firewall, IP blocklist, event log.
     securityPlugin(),
     // Complianz-style GDPR cookie consent (banner + proof-of-consent).

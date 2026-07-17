@@ -4,6 +4,8 @@ import { LocaleProvider } from '@/lib/i18n/context'
 import { getMessages } from '@/lib/i18n/messages'
 import { getLocale } from '@/lib/i18n/server'
 import { getNavigation } from '@/lib/cms/navigation'
+import { RefreshOnSave } from '@/components/live-preview/refresh-on-save'
+import { CMS_URL } from '@/lib/payload'
 
 export default async function SiteLayout({
   children,
@@ -17,6 +19,7 @@ export default async function SiteLayout({
 
   return (
     <LocaleProvider locale={locale} messages={messages}>
+      <RefreshOnSave serverURL={CMS_URL} />
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-primary focus:px-4 focus:py-2 focus:text-[14px] focus:font-semibold focus:text-white"

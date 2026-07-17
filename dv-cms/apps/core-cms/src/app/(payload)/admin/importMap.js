@@ -5,6 +5,7 @@ import { MediaLibraryRedirect as MediaLibraryRedirect_00843a5f229f2e31dd95960baf
 import { RscEntryLexicalCell as RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { RscEntryLexicalField as RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { LexicalDiffComponent as LexicalDiffComponent_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
+import { FixedToolbarFeatureClient as FixedToolbarFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { InlineToolbarFeatureClient as InlineToolbarFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { HorizontalRuleFeatureClient as HorizontalRuleFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { UploadFeatureClient as UploadFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
@@ -27,7 +28,6 @@ import { BoldFeatureClient as BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864
 import { ItalicFeatureClient as ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { SeoAnalysis as SeoAnalysis_d252c196ab7663648e3feb5f8f6e2c8f } from '../../../components/SeoAnalysis/SeoAnalysis'
 import { InternalLinkSuggestions as InternalLinkSuggestions_a162ffc73369ce8e3ad0032bcc96d7b7 } from '../../../components/InternalLinkSuggestions/InternalLinkSuggestions'
-import { LiveEditorToggle as LiveEditorToggle_d26de2934fab2f5e50b16fb3e402473a } from 'payload-better-editor/client'
 import { ContentCollectionSlugsField as ContentCollectionSlugsField_f8b2c5cd74f162a2f9852cdf8f8c19f7 } from '@dv/module-custom-types/fields'
 import { IngredientAiField as IngredientAiField_d58fb5a0d75374311f1eedb9e89183ac } from '../../../components/IngredientAiField/IngredientAiField'
 import { DriveFilesPanel as DriveFilesPanel_e800e5de3d6644596c0db139b456e845 } from '../../../components/DriveFilesPanel/DriveFilesPanel'
@@ -36,7 +36,6 @@ import { AiJobLogViewer as AiJobLogViewer_cbe5331e68a1b6faa2791bcfa661c147 } fro
 import { FolderTypeField as FolderTypeField_2b8867833a34864a02ddf429b0728a40 } from '@payloadcms/next/client'
 import { HexColorField as HexColorField_c3949c88f94613bf8ab39d0e00ee34b2 } from '@dv/cms-core/fields'
 import { ImageStats as ImageStats_7c6bea9edbf2db83a7c1f5e5a5b2459e } from '../../../components/ImageStats/ImageStats'
-import { SettingsBanner as SettingsBanner_d26de2934fab2f5e50b16fb3e402473a } from 'payload-better-editor/client'
 import { SecurityDashboard as SecurityDashboard_049361287b1fa1300950c1b1838c1a82 } from '../../../components/SecurityDashboard/SecurityDashboard'
 import { AccountMenu as AccountMenu_00843a5f229f2e31dd95960baf9412a3 } from '@dv/cms-core/admin'
 import { WpNav as WpNav_00843a5f229f2e31dd95960baf9412a3 } from '@dv/cms-core/admin'
@@ -71,6 +70,7 @@ export const importMap = {
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalCell": RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalField": RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#LexicalDiffComponent": LexicalDiffComponent_44fe37237e0ebf4470c9990d8cb7b07e,
+  "@payloadcms/richtext-lexical/client#FixedToolbarFeatureClient": FixedToolbarFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#InlineToolbarFeatureClient": InlineToolbarFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#HorizontalRuleFeatureClient": HorizontalRuleFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#UploadFeatureClient": UploadFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
@@ -93,7 +93,6 @@ export const importMap = {
   "@payloadcms/richtext-lexical/client#ItalicFeatureClient": ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "/components/SeoAnalysis/SeoAnalysis#SeoAnalysis": SeoAnalysis_d252c196ab7663648e3feb5f8f6e2c8f,
   "/components/InternalLinkSuggestions/InternalLinkSuggestions#InternalLinkSuggestions": InternalLinkSuggestions_a162ffc73369ce8e3ad0032bcc96d7b7,
-  "payload-better-editor/client#LiveEditorToggle": LiveEditorToggle_d26de2934fab2f5e50b16fb3e402473a,
   "@dv/module-custom-types/fields#ContentCollectionSlugsField": ContentCollectionSlugsField_f8b2c5cd74f162a2f9852cdf8f8c19f7,
   "/components/IngredientAiField/IngredientAiField#IngredientAiField": IngredientAiField_d58fb5a0d75374311f1eedb9e89183ac,
   "/components/DriveFilesPanel/DriveFilesPanel#DriveFilesPanel": DriveFilesPanel_e800e5de3d6644596c0db139b456e845,
@@ -102,7 +101,6 @@ export const importMap = {
   "@payloadcms/next/client#FolderTypeField": FolderTypeField_2b8867833a34864a02ddf429b0728a40,
   "@dv/cms-core/fields#HexColorField": HexColorField_c3949c88f94613bf8ab39d0e00ee34b2,
   "/components/ImageStats/ImageStats#ImageStats": ImageStats_7c6bea9edbf2db83a7c1f5e5a5b2459e,
-  "payload-better-editor/client#SettingsBanner": SettingsBanner_d26de2934fab2f5e50b16fb3e402473a,
   "/components/SecurityDashboard/SecurityDashboard#SecurityDashboard": SecurityDashboard_049361287b1fa1300950c1b1838c1a82,
   "@dv/cms-core/admin#AccountMenu": AccountMenu_00843a5f229f2e31dd95960baf9412a3,
   "@dv/cms-core/admin#WpNav": WpNav_00843a5f229f2e31dd95960baf9412a3,

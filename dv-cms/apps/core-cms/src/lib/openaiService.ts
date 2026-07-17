@@ -201,8 +201,18 @@ export async function generateIngredientContent(
 const IMAGE_PROMPT_MODEL = process.env.OPENAI_IMAGE_PROMPT_MODEL || CONTENT_MODEL
 const IMAGE_GENERATION_MODEL = process.env.OPENAI_IMAGE_MODEL || 'gpt-image-2'
 const IMAGE_SIZE = (process.env.OPENAI_IMAGE_SIZE || '1024x1024') as '1024x1024'
-// gpt-image-1 quality: low | medium | high | auto (dall-e-3 used standard | hd).
-const IMAGE_QUALITY = (process.env.OPENAI_IMAGE_QUALITY || 'medium') as 'medium'
+/** dall-e-3 is the only image model that needs no Organization Verification. */
+const IS_DALLE = IMAGE_GENERATION_MODEL.startsWith('dall-e')
+/**
+ * Quality vocabularies differ per family: dall-e-3 takes standard|hd, gpt-image
+ * takes low|medium|high|auto. Normalize so switching OPENAI_IMAGE_MODEL alone
+ * (e.g. to dall-e-3) works without also fixing OPENAI_IMAGE_QUALITY.
+ */
+const IMAGE_QUALITY = (() => {
+  const q = process.env.OPENAI_IMAGE_QUALITY
+  if (IS_DALLE) return (q === 'hd' ? 'hd' : 'standard') as 'standard'
+  return (q && ['low', 'medium', 'high', 'auto'].includes(q) ? q : 'medium') as 'medium'
+})()
 
 /**
  * Sinh featured image cho nguyên liệu bằng DALL·E 3 (2-stage).

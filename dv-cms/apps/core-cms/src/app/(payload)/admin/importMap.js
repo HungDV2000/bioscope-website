@@ -2,6 +2,7 @@ import { TwoFactorSetup as TwoFactorSetup_f6b05812afbbd5082b50bd287e1b32d6 } fro
 import { FolderTableCell as FolderTableCell_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 import { FolderField as FolderField_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 import { MediaLibraryRedirect as MediaLibraryRedirect_00843a5f229f2e31dd95960baf9412a3 } from '@dv/cms-core/admin'
+import { BlockFocusListener as BlockFocusListener_6c6ff0d6dc1e753f869fdcee13a16043 } from '../../../components/BlockFocusListener/BlockFocusListener'
 import { RscEntryLexicalCell as RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { RscEntryLexicalField as RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { LexicalDiffComponent as LexicalDiffComponent_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
@@ -67,6 +68,7 @@ export const importMap = {
   "@payloadcms/next/rsc#FolderTableCell": FolderTableCell_f9c02e79a4aed9a3924487c0cd4cafb1,
   "@payloadcms/next/rsc#FolderField": FolderField_f9c02e79a4aed9a3924487c0cd4cafb1,
   "@dv/cms-core/admin#MediaLibraryRedirect": MediaLibraryRedirect_00843a5f229f2e31dd95960baf9412a3,
+  "/components/BlockFocusListener/BlockFocusListener#BlockFocusListener": BlockFocusListener_6c6ff0d6dc1e753f869fdcee13a16043,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalCell": RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalField": RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#LexicalDiffComponent": LexicalDiffComponent_44fe37237e0ebf4470c9990d8cb7b07e,

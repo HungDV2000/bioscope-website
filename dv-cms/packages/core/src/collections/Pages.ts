@@ -45,6 +45,12 @@ export const Pages: CollectionConfig = {
     delete: isAdminOrEditor,
   },
   fields: [
+    // Invisible — mounts the Live Preview click-to-focus listener in the form.
+    {
+      name: 'blockFocusListener',
+      type: 'ui',
+      admin: { components: { Field: '/components/BlockFocusListener/BlockFocusListener#BlockFocusListener' } },
+    },
     { name: 'title', type: 'text', localized: true, required: true },
     slugField('title'),
     { name: 'hero', type: 'upload', relationTo: 'media', admin: { position: 'sidebar' } },

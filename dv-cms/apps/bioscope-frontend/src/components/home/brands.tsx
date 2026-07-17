@@ -27,8 +27,12 @@ const navBtn =
 
 export function Brands({ media }: { media?: SectionMedia }) {
   const { t } = useLocale()
-  const categories = t.home.brands.categories.map((label, i) => ({
-    icon: CATEGORY_ICONS[i],
+  // Prefer CMS-selected ingredient categories; fall back to the static i18n chips.
+  const labels = media?.categoryChips?.length
+    ? media.categoryChips.map((c) => c.name)
+    : t.home.brands.categories
+  const categories = labels.map((label, i) => ({
+    icon: CATEGORY_ICONS[i % CATEGORY_ICONS.length],
     label,
   }))
 

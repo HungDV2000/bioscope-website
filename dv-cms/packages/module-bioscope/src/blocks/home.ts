@@ -44,7 +44,14 @@ export const HOME_BLOCKS: Block[] = [
     labels: { singular: { en: 'Brands strip', vi: 'Dải thương hiệu' }, plural: { en: 'Brands strip', vi: 'Dải thương hiệu' } },
     fields: [
       T('title'),
-      LIST('categories', { en: 'Category chips', vi: 'Chip danh mục' }),
+      {
+        name: 'categories',
+        type: 'relationship',
+        relationTo: 'ingredient-categories',
+        hasMany: true,
+        label: { en: 'Category chips', vi: 'Chip danh mục' },
+        admin: { description: { en: 'Search + select ingredient categories.', vi: 'Tìm + chọn danh mục nguyên liệu (nhiều).' } },
+      },
       { name: 'logos', type: 'array', label: { en: 'Partner logos', vi: 'Logo đối tác' }, fields: [IMG('logo', { en: 'Logo', vi: 'Logo' }), { name: 'name', type: 'text' }] },
     ],
   },

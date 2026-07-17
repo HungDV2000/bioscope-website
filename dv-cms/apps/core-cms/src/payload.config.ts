@@ -2,7 +2,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import { buildConfig } from 'payload'
 import { postgresAdapter } from '@payloadcms/db-postgres'
-import { lexicalEditor } from '@payloadcms/richtext-lexical'
+import { lexicalEditor, FixedToolbarFeature } from '@payloadcms/richtext-lexical'
 import { en } from 'payload/i18n/en'
 import { vi } from 'payload/i18n/vi'
 import sharp from 'sharp'
@@ -79,7 +79,8 @@ export default buildConfig({
     },
   },
   serverURL,
-  editor: lexicalEditor(),
+  // Always-visible toolbar (Word-like) instead of the floating on-selection one.
+  editor: lexicalEditor({ features: ({ defaultFeatures }) => [...defaultFeatures, FixedToolbarFeature()] }),
   secret: process.env.PAYLOAD_SECRET || '',
   db,
   localization: resolveLocalizationConfig(localesManifestPath),

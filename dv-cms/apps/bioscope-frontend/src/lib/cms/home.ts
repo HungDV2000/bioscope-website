@@ -33,6 +33,8 @@ export type SectionMedia = {
   logos?: { image?: string; name?: string }[]
   /** RichText (lexical) description edited in the CMS — overrides the i18n string. */
   descRich?: unknown
+  /** Category chips selected from the ingredient-categories collection. */
+  categoryChips?: { name: string; href: string }[]
 }
 export type HomeMedia = Partial<Record<HomeSection, SectionMedia>>
 
@@ -88,7 +90,20 @@ function extractMedia(block: Block): SectionMedia | undefined {
     }
     case 'homeBrands': {
       const logos = Array.isArray(b.logos) ? (b.logos as Record<string, unknown>[]) : []
-      return { logos: logos.map((l) => ({ image: uploadUrl(l.logo), name: typeof l.name === 'string' ? l.name : undefined })) }
+      const cats = Array.isArray(b.categories) ? (b.categories as unknown[]) : []
+      const categoryChips = cats
+        .map((c) => {
+          const cat = c as { name?: string; title?: string; slug?: string } | null
+          if (!cat || typeof cat !== 'object') return null
+          const name = cat.name || cat.title
+          if (!name) return null
+          return { name, href: cat.slug ? `/nguyen-lieu?category=${encodeURIComponent(cat.slug)}` : '/nguyen-lieu' }
+        })
+        .filter(Boolean) as { name: string; href: string }[]
+      return {
+        logos: logos.map((l) => ({ image: uploadUrl(l.logo), name: typeof l.name === 'string' ? l.name : undefined })),
+        ...(categoryChips.length ? { categoryChips } : {}),
+      }
     }
     default:
       return undefined

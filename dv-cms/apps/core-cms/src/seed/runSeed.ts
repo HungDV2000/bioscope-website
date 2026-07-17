@@ -1714,9 +1714,16 @@ export async function runSeed(payload: Payload): Promise<string[]> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const rd = <O extends { description?: string }>(o: O): any =>
     o?.description ? { ...o, description: lexical([o.description]) } : o
+  // homeBrands.categories is now a relationship (ingredient-categories) — the
+  // seed's plain-string chips can't populate it, so omit it (admin selects them;
+  // the frontend falls back to the i18n chips until then).
+  const brandsNoCats = (b: typeof homeVi.brands) => {
+    const { categories: _drop, ...rest } = b
+    return rest
+  }
   const toHomeLayout = (d: typeof homeVi): Block[] => [
     { blockType: 'homeHero', ...rd(d.hero) },
-    { blockType: 'homeBrands', ...d.brands },
+    { blockType: 'homeBrands', ...brandsNoCats(d.brands) },
     { blockType: 'homeProcess', ...rd(d.process) },
     { blockType: 'homeCategories', ...rd(d.categories) },
     { blockType: 'homeCaseStudies', ...d.caseStudies },

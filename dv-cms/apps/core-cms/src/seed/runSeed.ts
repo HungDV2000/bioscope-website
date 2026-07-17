@@ -1709,16 +1709,21 @@ export async function runSeed(payload: Payload): Promise<string[]> {
   }
 
   // Section content → ordered block layout (order = the real home design).
+  // `rd` converts a section's plain `description` string into lexical richText,
+  // since those block fields are now richText (Word-like styling).
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const rd = <O extends { description?: string }>(o: O): any =>
+    o?.description ? { ...o, description: lexical([o.description]) } : o
   const toHomeLayout = (d: typeof homeVi): Block[] => [
-    { blockType: 'homeHero', ...d.hero },
+    { blockType: 'homeHero', ...rd(d.hero) },
     { blockType: 'homeBrands', ...d.brands },
-    { blockType: 'homeProcess', ...d.process },
-    { blockType: 'homeCategories', ...d.categories },
+    { blockType: 'homeProcess', ...rd(d.process) },
+    { blockType: 'homeCategories', ...rd(d.categories) },
     { blockType: 'homeCaseStudies', ...d.caseStudies },
-    { blockType: 'homeCertifications', ...d.certifications },
+    { blockType: 'homeCertifications', ...rd(d.certifications) },
     { blockType: 'homeExperts', ...d.experts },
-    { blockType: 'homeAiPromo', ...d.aiChat },
-    { blockType: 'homeCta', ...d.cta },
+    { blockType: 'homeAiPromo', ...rd(d.aiChat) },
+    { blockType: 'homeCta', ...rd(d.cta) },
   ]
   await upsertPage(
     'trang-chu',

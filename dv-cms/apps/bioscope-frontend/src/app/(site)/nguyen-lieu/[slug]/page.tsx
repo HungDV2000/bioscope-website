@@ -14,6 +14,7 @@ import { JsonLd } from '@/components/seo/json-ld'
 import { Breadcrumbs } from '@/components/seo/Breadcrumbs'
 import { productSchema } from '@/lib/seo/schema'
 import { absUrl, DEFAULT_OG_IMAGE } from '@/lib/seo'
+import { cn } from '@/lib/utils'
 
 export function generateStaticParams() {
   return INGREDIENTS.map((it) => ({ slug: it.slug }))
@@ -54,13 +55,14 @@ export default async function IngredientDetail({ params }: { params: Promise<{ s
     { name: it.name, path: `/nguyen-lieu/${it.slug}` },
   ]
 
-  // At-a-glance facts row — gives the header visual density.
+  // At-a-glance facts row — gives the header visual density. Facts without a
+  // value are dropped rather than rendered as an empty "—" cell.
   const facts = [
-    { icon: MapPin, label: en ? 'Origin' : 'Xuất xứ', value: it.origin || '—' },
-    { icon: Package, label: 'MOQ', value: it.moq || '—' },
-    { icon: Factory, label: en ? 'Manufacturer' : 'Nhà sản xuất', value: it.manufacturer || '—' },
+    { icon: MapPin, label: en ? 'Origin' : 'Xuất xứ', value: it.origin },
+    { icon: Package, label: 'MOQ', value: it.moq },
+    { icon: Factory, label: en ? 'Manufacturer' : 'Nhà sản xuất', value: it.manufacturer },
     { icon: FlaskConical, label: en ? 'Industry' : 'Ngành', value: it.industry },
-  ]
+  ].filter((f): f is { icon: typeof MapPin; label: string; value: string } => Boolean(f.value?.trim()))
 
   return (
     <article className="bg-white">
@@ -109,7 +111,13 @@ export default async function IngredientDetail({ params }: { params: Promise<{ s
               )}
 
               {/* Quick facts */}
-              <dl className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {facts.length > 0 && (
+              <dl
+                className={cn(
+                  'mt-8 grid grid-cols-2 gap-3',
+                  facts.length >= 4 ? 'sm:grid-cols-4' : 'sm:grid-cols-3',
+                )}
+              >
                 {facts.map(({ icon: Icon, label, value }) => (
                   <div key={label} className="rounded-2xl border border-primary-border/50 bg-white/70 px-4 py-3.5">
                     <dt className="flex items-center gap-1.5 text-[11.5px] font-medium uppercase tracking-wide text-ink/45">
@@ -122,11 +130,19 @@ export default async function IngredientDetail({ params }: { params: Promise<{ s
                   </div>
                 ))}
               </dl>
+              )}
             </div>
 
             {/* Sticky media + CTA */}
             <aside className="lg:sticky lg:top-28 lg:self-start">
-              <div className="relative mb-5 aspect-square overflow-hidden rounded-[2rem] border border-primary-border/60 bg-mist">
+              {/* A real photo gets the full square; the placeholder stays short so
+                  it doesn't dominate the column with empty space. */}
+              <div
+                className={cn(
+                  'relative mb-5 overflow-hidden rounded-[2rem] border border-primary-border/60 bg-mist',
+                  hasImage ? 'aspect-square' : 'aspect-[16/9]',
+                )}
+              >
                 {hasImage ? (
                   <Image
                     src={ingredientImg(it, 700)}

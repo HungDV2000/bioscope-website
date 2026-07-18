@@ -86,6 +86,10 @@ export async function getPageContent(slug: string, locale: Locale): Promise<Page
     ...(ogImage ? { openGraph: { ...(fb.metadata.openGraph ?? {}), images: [ogImage] } } : {}),
   }
 
-  const heroImage = mediaUrl((doc.hero as { url?: string } | null)?.url) ?? undefined
+  // Hero image: the hero block's own `media` upload wins (that's what editors
+  // change on the page), falling back to the Page's sidebar `hero` upload.
+  const blockMedia = (heroBlock?.media ?? heroBlock?.image) as { url?: string } | null | undefined
+  const heroImage =
+    mediaUrl(blockMedia?.url) ?? mediaUrl((doc.hero as { url?: string } | null)?.url) ?? undefined
   return { hero, heroImage, metadata, blocks: doc.layout ?? [] }
 }

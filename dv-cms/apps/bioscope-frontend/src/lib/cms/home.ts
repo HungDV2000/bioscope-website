@@ -35,6 +35,10 @@ export type SectionMedia = {
   descRich?: unknown
   /** Category chips selected from the ingredient-categories collection. */
   categoryChips?: { name: string; href: string }[]
+  /** Hero CTA links + optional background video. */
+  ctaPrimaryHref?: string
+  ctaSecondaryHref?: string
+  videoUrl?: string
 }
 export type HomeMedia = Partial<Record<HomeSection, SectionMedia>>
 
@@ -70,7 +74,16 @@ function richVal(v: unknown): unknown {
 function extractMedia(block: Block): SectionMedia | undefined {
   const b = block as Record<string, unknown>
   switch (block.blockType) {
-    case 'homeHero':
+    case 'homeHero': {
+      const str = (v: unknown) => (typeof v === 'string' && v.trim() ? v.trim() : undefined)
+      return {
+        image: uploadUrl(b.image),
+        descRich: richVal(b.description),
+        videoUrl: uploadUrl(b.video),
+        ctaPrimaryHref: str(b.ctaPrimaryHref),
+        ctaSecondaryHref: str(b.ctaSecondaryHref),
+      }
+    }
     case 'homeCta':
       return { image: uploadUrl(b.image), descRich: richVal(b.description) }
     case 'homeExperts':

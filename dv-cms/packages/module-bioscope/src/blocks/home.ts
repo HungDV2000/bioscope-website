@@ -33,9 +33,30 @@ export const HOME_BLOCKS: Block[] = [
       T('eyebrow'),
       T('titleBefore'), T('titleHighlight'), T('titleMid'), T('titleAccent'),
       R('description'),
-      T('ctaPrimary'), T('ctaSecondary'),
+      {
+        type: 'row',
+        fields: [
+          T('ctaPrimary', { en: 'Primary CTA label', vi: 'Nút chính - chữ' }),
+          { name: 'ctaPrimaryHref', type: 'text', label: { en: 'Primary CTA link', vi: 'Nút chính - link' }, admin: { description: { en: 'e.g. /nguyen-lieu or https://…', vi: 'VD: /nguyen-lieu hoặc https://…' } } },
+        ],
+      },
+      {
+        type: 'row',
+        fields: [
+          T('ctaSecondary', { en: 'Secondary CTA label', vi: 'Nút phụ - chữ' }),
+          { name: 'ctaSecondaryHref', type: 'text', label: { en: 'Secondary CTA link', vi: 'Nút phụ - link' }, admin: { description: { en: 'e.g. /dong-kien-tao', vi: 'VD: /dong-kien-tao' } } },
+        ],
+      },
       LIST('trust', { en: 'Trust badges', vi: 'Nhãn tin cậy' }),
       IMG('image', { en: 'Hero image', vi: 'Ảnh Hero' }),
+      {
+        name: 'video',
+        type: 'upload',
+        relationTo: 'media',
+        label: { en: 'Background video (optional)', vi: 'Video nền (tùy chọn)' },
+        filterOptions: { mimeType: { contains: 'video' } },
+        admin: { description: { en: 'If set, plays as the hero background instead of the image.', vi: 'Nếu có, phát làm nền Hero thay cho ảnh.' } },
+      },
     ],
   },
   {

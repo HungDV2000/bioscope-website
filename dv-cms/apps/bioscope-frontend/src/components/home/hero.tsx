@@ -17,15 +17,27 @@ export function Hero({ media }: { media?: SectionMedia }) {
   return (
     <section className="relative overflow-hidden bg-mist pt-[72px]">
       <div className="absolute inset-0" aria-hidden>
-        <Image
-          src={media?.image ?? "/images/banners/banner.png"}
-          alt=""
-          fill
-          priority
-          unoptimized={Boolean(media?.image)}
-          sizes="100vw"
-          className="object-cover object-center"
-        />
+        {media?.videoUrl ? (
+          <video
+            src={media.videoUrl}
+            autoPlay
+            muted
+            loop
+            playsInline
+            poster={media?.image ?? '/images/banners/banner.png'}
+            className="absolute inset-0 h-full w-full object-cover object-center"
+          />
+        ) : (
+          <Image
+            src={media?.image ?? '/images/banners/banner.png'}
+            alt=""
+            fill
+            priority
+            unoptimized={Boolean(media?.image)}
+            sizes="100vw"
+            className="object-cover object-center"
+          />
+        )}
         <div
           className="absolute inset-0"
           style={{
@@ -59,10 +71,10 @@ export function Hero({ media }: { media?: SectionMedia }) {
           </Reveal>
           <Reveal immediate delay={0.24}>
             <div className="mt-8 flex flex-wrap items-center gap-3">
-              <Button href="/nguyen-lieu" variant="accent">
+              <Button href={media?.ctaPrimaryHref ?? '/nguyen-lieu'} variant="accent">
                 {h.ctaPrimary}
               </Button>
-              <Button href="/dong-kien-tao" variant="outline">
+              <Button href={media?.ctaSecondaryHref ?? '/dong-kien-tao'} variant="outline">
                 {h.ctaSecondary}
               </Button>
             </div>

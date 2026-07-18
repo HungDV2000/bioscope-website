@@ -635,7 +635,7 @@ export async function runAiGenerate(input: WorkerInput): Promise<void> {
     addLog(
       logs,
       'info',
-      `Content generated: ${generatedContent.benefits.length} benefits, ${generatedContent.applications.length} applications`,
+      `Content generated: ${generatedContent.benefits.vi.length} benefits, ${generatedContent.applications.vi.length} applications`,
     )
 
     // ── 7. Generate featured image with DALL·E 3 ──────────────────────────
@@ -726,6 +726,8 @@ export async function runAiGenerate(input: WorkerInput): Promise<void> {
     if (gc.subtitle?.[otherLocale]) otherData.subtitle = gc.subtitle[otherLocale]
     if (gc.description?.[otherLocale]) otherData.description = textToLexical(gc.description[otherLocale])
     if (gc.inci?.[otherLocale]) otherData.inci = gc.inci[otherLocale]
+    if (gc.benefits?.[otherLocale]?.length) otherData.benefits = gc.benefits[otherLocale]
+    if (gc.applications?.[otherLocale]?.length) otherData.applications = gc.applications[otherLocale]
     if (seoFor(otherLocale)) otherData.seo = seoFor(otherLocale)
     await payload.update({ collection: 'ingredients', id: ingredientId, data: otherData, locale: otherLocale, overrideAccess: true })
 
@@ -828,7 +830,7 @@ export async function runAiGenerate(input: WorkerInput): Promise<void> {
       },
     }
 
-    addLog(logs, 'info', `✅ Job completed: ${generatedContent.benefits.length} benefits, ${generatedContent.applications.length} applications, image: ${featuredImage ? 'yes' : 'no'}`)
+    addLog(logs, 'info', `✅ Job completed: ${generatedContent.benefits.vi.length} benefits, ${generatedContent.applications.vi.length} applications, image: ${featuredImage ? 'yes' : 'no'}`)
 
     await updateJob(payload, jobId, {
       status: 'done',

@@ -32,7 +32,7 @@ import { readFile } from 'node:fs/promises'
 
 type RawCsvRow = [string, string, string, string, string, string, string, string, string, string, string, string]
 
-type CsvFileMetadata = {
+export type CsvFileMetadata = {
   id: string
   name: string
   url: string
@@ -59,7 +59,7 @@ type ImportLog = {
 // Helpers
 // ---------------------------------------------------------------------------
 
-function slugify(input: string): string {
+export function slugify(input: string): string {
   return input
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
@@ -71,7 +71,7 @@ function slugify(input: string): string {
     .replace(/^-+|-+$/g, '')
 }
 
-function safeParseFilesJson(raw: string): CsvFileMetadata[] {
+export function safeParseFilesJson(raw: string): CsvFileMetadata[] {
   if (!raw || raw.trim() === '') return []
   try {
     const parsed = JSON.parse(raw.trim())
@@ -405,7 +405,7 @@ export async function runCsvImport(params: {
 // escaped quotes "" become "). Parses the whole file into rows of fields.
 // ---------------------------------------------------------------------------
 
-function parseCsv(content: string): string[][] {
+export function parseCsv(content: string): string[][] {
   const rows: string[][] = []
   let row: string[] = []
   let field = ''

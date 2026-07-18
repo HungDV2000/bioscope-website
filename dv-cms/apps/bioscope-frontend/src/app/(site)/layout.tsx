@@ -32,7 +32,7 @@ export default async function SiteLayout({
       <main id="main-content" className="min-h-[60vh]">
         {children}
       </main>
-      <SiteFooter columns={nav?.footerColumns} />
+      <SiteFooter columns={nav?.footerColumns} company={nav?.companyInfo} />
     </LocaleProvider>
   )
 }

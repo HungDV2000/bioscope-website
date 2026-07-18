@@ -27,7 +27,7 @@ export function img(key: ImgKey, w = 1200, q = 75) {
 }
 
 /** Branded local placeholder shown when an ingredient has no real photo. */
-export const INGREDIENT_PLACEHOLDER = '/images/ingredient-placeholder.svg'
+export const INGREDIENT_PLACEHOLDER = '/images/general-img-landscape.png'
 
 export function ingredientImg(it: { image: ImgKey; imageSrc?: string }, _w = 600) {
   return it.imageSrc || INGREDIENT_PLACEHOLDER

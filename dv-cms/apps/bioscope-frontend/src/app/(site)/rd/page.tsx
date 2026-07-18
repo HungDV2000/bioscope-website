@@ -23,7 +23,7 @@ export async function generateMetadata() {
 
 export default async function RDPage() {
   const locale = await getLocale()
-  const { hero } = await getPageContent('rd', locale)
+  const { hero, heroImage } = await getPageContent('rd', locale)
   const { messages: m, contentOverride, blockIds } = await getPageSections('rd', locale)
   const content = applyContentOverride(getContent(locale), contentOverride)
   const p = m.rdPage
@@ -31,7 +31,7 @@ export default async function RDPage() {
 
   return (
     <>
-      <PageHero {...hero} image="microscope" />
+      <PageHero {...hero} coverImage={heroImage} image="microscope" />
 
       <section className="bg-white py-12" data-better-editor-id={blockIds.rdContent}>
         <div className="container-bs grid grid-cols-2 gap-px overflow-hidden rounded-[2rem] border border-primary-border/60 bg-primary-border/50 lg:grid-cols-4">

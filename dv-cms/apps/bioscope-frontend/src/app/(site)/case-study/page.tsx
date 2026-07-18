@@ -17,14 +17,14 @@ export async function generateMetadata() {
 export default async function CaseStudyList() {
   const locale = await getLocale()
   const content = getContent(locale)
-  const { hero } = await getPageContent('case-study', locale)
+  const { hero, heroImage } = await getPageContent('case-study', locale)
   const m = getMessages(locale)
   // Case studies from the CMS `case-studies` collection (fallback to static).
   const cases = (await getCaseStudies(locale)) ?? content.CASE_STUDIES
 
   return (
     <>
-      <PageHero {...hero} image="oil" />
+      <PageHero {...hero} coverImage={heroImage} image="oil" />
 
       <section className="border-b border-primary-border/40 bg-mist/30 py-10">
         <div className="container-bs">

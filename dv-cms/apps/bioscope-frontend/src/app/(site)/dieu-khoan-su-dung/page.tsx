@@ -14,11 +14,11 @@ export default async function TermsPage() {
   const locale = await getLocale()
   const { contentOverride, blockIds } = await getPageSections('dieu-khoan-su-dung', locale)
   const terms = applyContentOverride(getContent(locale), contentOverride).TERMS_OF_USE
-  const { hero } = await getPageContent('dieu-khoan-su-dung', locale)
+  const { hero, heroImage } = await getPageContent('dieu-khoan-su-dung', locale)
 
   return (
     <>
-      <PageHero eyebrow={hero.eyebrow} title={terms.title} description={hero.description} crumbs={hero.crumbs} image="labWork" />
+      <PageHero eyebrow={hero.eyebrow} title={terms.title} description={hero.description} crumbs={hero.crumbs} coverImage={heroImage} image="labWork" />
 
       <section className="bg-white pb-16 pt-16" data-better-editor-id={blockIds.legalContent}>
         <div className="container-bs">

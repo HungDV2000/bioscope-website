@@ -3,6 +3,7 @@ import { fileURLToPath } from 'url'
 import { buildConfig } from 'payload'
 import { postgresAdapter } from '@payloadcms/db-postgres'
 import { lexicalEditor, FixedToolbarFeature } from '@payloadcms/richtext-lexical'
+import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
 import { en } from 'payload/i18n/en'
 import { vi } from 'payload/i18n/vi'
 import sharp from 'sharp'
@@ -45,6 +46,28 @@ const localesManifestPath = path.resolve(dirname, 'generated/locales-manifest.js
 
 const frontendUrl = process.env.FRONTEND_URL || ''
 const serverURL = process.env.PAYLOAD_PUBLIC_SERVER_URL || 'http://localhost:3001'
+
+/**
+ * SMTP email adapter — used for form-submission notifications and admin
+ * account/error emails. Only enabled when SMTP_HOST is set; otherwise Payload
+ * logs "No email adapter provided" and sendEmail no-ops (safe in dev).
+ * Env: SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_SECURE, EMAIL_FROM, EMAIL_FROM_NAME.
+ */
+const email = process.env.SMTP_HOST
+  ? nodemailerAdapter({
+      defaultFromAddress: process.env.EMAIL_FROM || process.env.SMTP_USER || 'no-reply@bioscope.vn',
+      defaultFromName: process.env.EMAIL_FROM_NAME || 'Bioscope Việt Nam',
+      transportOptions: {
+        host: process.env.SMTP_HOST,
+        port: Number(process.env.SMTP_PORT) || 587,
+        secure: process.env.SMTP_SECURE === 'true' || Number(process.env.SMTP_PORT) === 465,
+        auth:
+          process.env.SMTP_USER && process.env.SMTP_PASS
+            ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
+            : undefined,
+      },
+    })
+  : undefined
 // Origins allowed for CORS + CSRF (cookie auth only honored for these origins).
 const corsOrigins = Array.from(
   new Set(
@@ -82,6 +105,7 @@ export default buildConfig({
   // Always-visible toolbar (Word-like) instead of the floating on-selection one.
   editor: lexicalEditor({ features: ({ defaultFeatures }) => [...defaultFeatures, FixedToolbarFeature()] }),
   secret: process.env.PAYLOAD_SECRET || '',
+  ...(email ? { email } : {}),
   db,
   localization: resolveLocalizationConfig(localesManifestPath),
   i18n: {

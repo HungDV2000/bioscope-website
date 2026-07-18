@@ -138,11 +138,20 @@ export const WpNav: React.FC = () => {
   const groupActive = (items: Entity[]) => items.some(isActive)
   const onDashboard = pathname === adminRoute || pathname === `${adminRoute}/`
 
-  const openFlyout = useCallback((key: string, el: HTMLElement) => {
-    if (closeTimer.current) clearTimeout(closeTimer.current)
-    const r = el.getBoundingClientRect()
-    setFlyout({ key, top: Math.max(8, r.top), left: r.right + 6 })
-  }, [])
+  const openFlyout = useCallback(
+    (key: string, el: HTMLElement) => {
+      if (closeTimer.current) clearTimeout(closeTimer.current)
+      const r = el.getBoundingClientRect()
+      const vh = window.innerHeight
+      // Estimate the flyout height (title + rows) so items near the bottom of the
+      // rail aren't clipped off-screen — anchor it upward when it would overflow.
+      const count = groups.find((g) => g.key === key)?.items.length ?? 0
+      const estH = Math.min(vh * 0.8, 34 + count * 34 + 16)
+      const top = Math.min(Math.max(8, r.top), Math.max(8, vh - estH - 8))
+      setFlyout({ key, top, left: r.right + 6 })
+    },
+    [groups],
+  )
   const scheduleClose = useCallback(() => {
     if (closeTimer.current) clearTimeout(closeTimer.current)
     closeTimer.current = setTimeout(() => setFlyout(null), 140)

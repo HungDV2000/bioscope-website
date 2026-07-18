@@ -18,14 +18,14 @@ export async function generateMetadata() {
 
 export default async function AboutPage() {
   const locale = await getLocale()
-  const { hero } = await getPageContent('ve-chung-toi', locale)
+  const { hero, heroImage } = await getPageContent('ve-chung-toi', locale)
   // Overlay CMS section blocks onto the i18n so the bespoke components render
   // edited content; blockIds mark sections for the Better Editor.
   const { messages, contentOverride, blockIds } = await getPageSections('ve-chung-toi', locale)
 
   return (
     <LocaleProvider locale={locale} messages={messages} contentOverride={contentOverride}>
-      <PageHero {...hero} image="labWork" />
+      <PageHero {...hero} coverImage={heroImage} image="labWork" />
       <div data-better-editor-id={blockIds.aboutMission}>
         <AboutMissionStrip />
       </div>

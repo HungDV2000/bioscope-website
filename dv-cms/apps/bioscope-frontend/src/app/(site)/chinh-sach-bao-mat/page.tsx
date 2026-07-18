@@ -14,11 +14,11 @@ export default async function PrivacyPage() {
   const locale = await getLocale()
   const { contentOverride, blockIds } = await getPageSections('chinh-sach-bao-mat', locale)
   const policy = applyContentOverride(getContent(locale), contentOverride).PRIVACY_POLICY
-  const { hero } = await getPageContent('chinh-sach-bao-mat', locale)
+  const { hero, heroImage } = await getPageContent('chinh-sach-bao-mat', locale)
 
   return (
     <>
-      <PageHero eyebrow={hero.eyebrow} title={policy.title} description={hero.description} crumbs={hero.crumbs} image="labWork" />
+      <PageHero eyebrow={hero.eyebrow} title={policy.title} description={hero.description} crumbs={hero.crumbs} coverImage={heroImage} image="labWork" />
 
       <section className="bg-white pb-16 pt-16" data-better-editor-id={blockIds.legalContent}>
         <div className="container-bs">

@@ -40,7 +40,7 @@ export async function generateMetadata() {
 
 export default async function BioscopeAiPage() {
   const locale = await getLocale()
-  const { hero } = await getPageContent('bioscope-ai', locale)
+  const { hero, heroImage } = await getPageContent('bioscope-ai', locale)
   const m = getMessages(locale)
   // Page content from the `bioscope-ai` global (overlaid on static i18n).
   const p = await getAiPage(locale)
@@ -48,7 +48,7 @@ export default async function BioscopeAiPage() {
 
   return (
     <>
-      <PageHero {...hero} className="pt-36 lg:pt-44" />
+      <PageHero {...hero} coverImage={heroImage} className="pt-36 lg:pt-44" />
 
       {/* Intro band */}
       <section className="relative bg-white pb-4 pt-8">

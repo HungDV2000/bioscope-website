@@ -1,6 +1,7 @@
 import { cmsFetch, mediaUrl } from '@/lib/payload'
 import type { Locale } from '@/lib/i18n/config'
 import type { Ingredient } from '@/lib/content'
+import { pickLocaleText } from '@/lib/i18n/pick-locale-text'
 
 type Paginated<T> = { docs: T[]; totalDocs: number }
 
@@ -8,6 +9,8 @@ type IngredientDoc = {
   slug: string
   name: string
   subtitle?: string
+  inci?: string
+  suggestedDosage?: string
   type?: 'supplement' | 'cosmetic'
   category?: { title?: string; name?: string } | null
   originCountry?: string
@@ -69,7 +72,8 @@ function lexicalToText(value: unknown): string {
 }
 
 function toIngredient(d: IngredientDoc, locale: Locale): Ingredient {
-  const overview = lexicalToText(d.description)
+  const overview = pickLocaleText(lexicalToText(d.description), locale)
+  const pick = (v?: string) => pickLocaleText(v, locale)
   return {
     slug: d.slug,
     name: d.name,
@@ -77,15 +81,17 @@ function toIngredient(d: IngredientDoc, locale: Locale): Ingredient {
     industry: industryLabel(d.type, locale) as Ingredient['industry'],
     origin: originLabel(d.originCountry, locale),
     manufacturer: d.brandName || undefined,
-    shortDesc: d.subtitle ?? overview.split('\n')[0] ?? '',
+    inci: pick(d.inci) || undefined,
+    suggestedDosage: pick(d.suggestedDosage) || undefined,
+    shortDesc: pick(d.subtitle) || overview.split('\n')[0] || '',
     overview: overview || undefined,
-    benefits: d.benefits ?? [],
+    benefits: (d.benefits ?? []).map(pick).filter(Boolean),
     moq: d.moq ?? '',
     badges: d.badges ?? [],
     image: 'powder',
     imageSrc: mediaUrl(d.featuredImage?.url) ?? undefined,
-    specs: (d.specs ?? []).map((s) => ({ label: s.label ?? '', value: s.value ?? '' })),
-    applications: d.applications ?? [],
+    specs: (d.specs ?? []).map((s) => ({ label: pick(s.label), value: pick(s.value) })),
+    applications: (d.applications ?? []).map(pick).filter(Boolean),
   }
 }
 

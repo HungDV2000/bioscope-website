@@ -14,14 +14,14 @@ export async function generateMetadata() {
 export default async function IngredientsPage() {
   const locale = await getLocale()
   const content = getContent(locale)
-  const { hero } = await getPageContent('nguyen-lieu', locale)
+  const { hero, heroImage } = await getPageContent('nguyen-lieu', locale)
   const intro = content.INGREDIENT_PAGE_INTRO
   // Catalog from the CMS `ingredients` collection; falls back to static content.
   const items = (await getIngredients(locale)) ?? content.INGREDIENTS
 
   return (
     <>
-      <PageHero {...hero} image="powder" />
+      <PageHero {...hero} coverImage={heroImage} image="powder" />
       <section className="border-b border-primary-border/40 bg-mist/30 py-10">
         <div className="container-bs">
           <Reveal>

@@ -2,8 +2,9 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { Globe, MessageCircle, Share2, Send } from 'lucide-react'
+import { Globe, MessageCircle, Share2, Send, Phone, Mail, MapPin, Building2 } from 'lucide-react'
 import { useLocale } from '@/lib/i18n/context'
+import type { CompanyInfo } from '@/lib/cms/navigation'
 
 const SOCIAL: { Icon: typeof Globe; label: string }[] = [
   { Icon: Globe, label: 'Website' },
@@ -21,7 +22,7 @@ const FOOTER_HREFS = [
 
 type Col = { title: string; links: { label: string; href: string }[] }
 
-export function SiteFooter({ columns }: { columns?: Col[] }) {
+export function SiteFooter({ columns, company }: { columns?: Col[]; company?: CompanyInfo }) {
   const { t } = useLocale()
   // Footer columns from the CMS `navigation` global (falls back to static i18n).
   const fallback: Col[] = (['ingredients', 'solutions', 'company', 'support'] as const).map((key, c) => ({
@@ -65,6 +66,69 @@ export function SiteFooter({ columns }: { columns?: Col[] }) {
           </div>
         ))}
       </div>
+
+      {company && (
+        <div className="border-t border-primary-border/50">
+          <div className="container-bs grid gap-x-8 gap-y-3 py-8 text-[13px] leading-relaxed text-ink/65 sm:grid-cols-2 lg:grid-cols-3">
+            {company.name && (
+              <p className="flex items-start gap-2 font-semibold text-ink/80 sm:col-span-2 lg:col-span-3">
+                <Building2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" strokeWidth={1.7} />
+                <span>
+                  {company.name}
+                  {company.taxCode && (
+                    <span className="ml-2 font-normal text-ink/55">
+                      — {t.footer.company.taxCode}: {company.taxCode}
+                    </span>
+                  )}
+                </span>
+              </p>
+            )}
+            {company.registeredAddress && (
+              <p className="flex items-start gap-2">
+                <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" strokeWidth={1.7} />
+                <span>
+                  <span className="font-medium text-ink/70">{t.footer.company.registered}: </span>
+                  {company.registeredAddress}
+                </span>
+              </p>
+            )}
+            {company.officeAddress && (
+              <p className="flex items-start gap-2">
+                <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" strokeWidth={1.7} />
+                <span>
+                  <span className="font-medium text-ink/70">{t.footer.company.office}: </span>
+                  {company.officeAddress}
+                </span>
+              </p>
+            )}
+            <div className="flex flex-col gap-2">
+              {company.hotline && (
+                <a href={`tel:${company.hotline.replace(/\s+/g, '')}`} className="flex items-center gap-2 transition-colors hover:text-primary">
+                  <Phone className="h-4 w-4 shrink-0 text-primary" strokeWidth={1.7} />
+                  {company.hotline}
+                </a>
+              )}
+              {company.email && (
+                <a href={`mailto:${company.email}`} className="flex items-center gap-2 transition-colors hover:text-primary">
+                  <Mail className="h-4 w-4 shrink-0 text-primary" strokeWidth={1.7} />
+                  {company.email}
+                </a>
+              )}
+              {company.website && (
+                <a
+                  href={company.website.startsWith('http') ? company.website : `https://${company.website}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 transition-colors hover:text-primary"
+                >
+                  <Globe className="h-4 w-4 shrink-0 text-primary" strokeWidth={1.7} />
+                  {company.website}
+                </a>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="border-t border-primary-border/50">
         <div className="container-bs flex flex-col items-center justify-between gap-2 py-5 text-[12.5px] text-ink/45 sm:flex-row">

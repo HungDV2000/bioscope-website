@@ -16,7 +16,7 @@ export async function generateMetadata() {
 
 export default async function SolutionsPage() {
   const locale = await getLocale()
-  const { hero } = await getPageContent('giai-phap', locale)
+  const { hero, heroImage } = await getPageContent('giai-phap', locale)
   // Overlay CMS section blocks onto the static content/messages.
   const { messages: m, contentOverride, blockIds } = await getPageSections('giai-phap', locale)
   const content = applyContentOverride(getContent(locale), contentOverride)
@@ -24,7 +24,7 @@ export default async function SolutionsPage() {
 
   return (
     <>
-      <PageHero {...hero} image="labWork" />
+      <PageHero {...hero} coverImage={heroImage} image="labWork" />
 
       <section className="bg-white py-16" data-better-editor-id={blockIds.solutionsIntro}>
         <div className="container-bs">

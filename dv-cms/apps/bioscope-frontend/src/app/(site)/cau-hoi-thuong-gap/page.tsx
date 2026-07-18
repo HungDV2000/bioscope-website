@@ -15,7 +15,7 @@ export async function generateMetadata() {
 export default async function FaqPage() {
   const locale = await getLocale()
   const content = getContent(locale)
-  const { hero } = await getPageContent('cau-hoi-thuong-gap', locale)
+  const { hero, heroImage } = await getPageContent('cau-hoi-thuong-gap', locale)
   // FAQ items from the CMS `faqs` collection (fallback to static groups).
   const groups = (await getFaqGroups(locale)) ?? content.FAQ_PAGE.groups
 
@@ -34,7 +34,7 @@ export default async function FaqPage() {
   return (
     <>
       <JsonLd data={faqSchema} />
-      <PageHero {...hero} image="glassware" />
+      <PageHero {...hero} coverImage={heroImage} image="glassware" />
 
       <section className="bg-white pb-8 pt-16">
         <div className="container-bs">

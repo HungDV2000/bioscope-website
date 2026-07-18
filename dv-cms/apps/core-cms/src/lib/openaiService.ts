@@ -39,8 +39,8 @@ export type GeneratedContent = {
   name?: { vi: string; en: string }
   subtitle: { vi: string; en: string }
   description: { vi: string; en: string }
-  benefits: string[]
-  applications: string[]
+  benefits: { vi: string[]; en: string[] }
+  applications: { vi: string[]; en: string[] }
   badges: string[]
   suggestedDosage: string
   inci?: { vi: string; en: string }
@@ -121,12 +121,32 @@ function normalizeGenerated(raw: unknown): GeneratedContent {
   const str = (v: unknown): string | undefined =>
     typeof v === 'string' ? v : v == null ? undefined : String(v)
 
+  // Split a legacy bilingual blob "VI: … | EN: …" into its two sides.
+  const splitBilingual = (s: string): { vi: string; en: string } => {
+    const m = s.match(/VI:\s*([\s\S]*?)\s*\|\s*EN:\s*([\s\S]*)$/i)
+    if (m) return { vi: m[1].trim(), en: m[2].trim() }
+    return { vi: s, en: s }
+  }
+
+  // {vi:[],en:[]} — accept the per-locale object, or a flat array (possibly of
+  // "VI: … | EN: …" blobs) and split it into the two locales.
+  const listPair = (v: unknown): { vi: string[]; en: string[] } => {
+    if (v && typeof v === 'object' && !Array.isArray(v)) {
+      const p = v as { vi?: unknown; en?: unknown }
+      const vi = list(p.vi)
+      const en = list(p.en)
+      if (vi.length || en.length) return { vi: vi.length ? vi : en, en: en.length ? en : vi }
+    }
+    const flat = list(v)
+    return { vi: flat.map((s) => splitBilingual(s).vi), en: flat.map((s) => splitBilingual(s).en) }
+  }
+
   return {
     name: pair(o.name),
     subtitle: pair(o.subtitle) ?? { vi: '', en: '' },
     description: pair(o.description) ?? { vi: '', en: '' },
-    benefits: list(o.benefits),
-    applications: list(o.applications),
+    benefits: listPair(o.benefits),
+    applications: listPair(o.applications),
     badges: list(o.badges),
     suggestedDosage: str(o.suggestedDosage) ?? '',
     inci: pair(o.inci),
@@ -388,16 +408,14 @@ Trả về JSON với format sau (VIẾT ĐẦY ĐỦ cả 2 ngôn ngữ):
     "vi": "<mô tả 150-300 từ tiếng Việt, có cấu trúc: giới thiệu → đặc điểm → ứng dụng → tại sao Bioscope chọn>",
     "en": "<150-300 words English, professional pharma/cosmetic tone>"
   },
-  "benefits": [
-    "<lợi ích 1 — có số liệu nếu có, VD: Tăng sinh collagen lên 47% sau 4 tuần (in vitro)>",
-    "<lợi ích 2>",
-    "... 4-8 items>"
-  ],
-  "applications": [
-    "<ứng dụng 1 — dạng bào chế cụ thể, VD: Kem dưỡng da chống lão hóa>",
-    "<ứng dụng 2>",
-    "... 3-6 items>"
-  ],
+  "benefits": {
+    "vi": ["<lợi ích 1 tiếng Việt — có số liệu nếu có, VD: Tăng sinh collagen lên 47% sau 4 tuần (in vitro)>", "<lợi ích 2>", "... 4-8 items>"],
+    "en": ["<benefit 1 in English, same meaning as vi[0]>", "<benefit 2>", "... same count as vi>"]
+  },
+  "applications": {
+    "vi": ["<ứng dụng 1 tiếng Việt — dạng bào chế cụ thể, VD: Kem dưỡng da chống lão hóa>", "<ứng dụng 2>", "... 3-6 items>"],
+    "en": ["<application 1 in English, same meaning as vi[0]>", "<application 2>", "... same count as vi>"]
+  },
   "badges": [
     "<chứng nhận 1 — VD: GMP Certified>",
     "<chứng nhận 2 — VD: Halal Certified>",

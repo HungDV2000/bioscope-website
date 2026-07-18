@@ -27,6 +27,7 @@ export type Messages = {
     copyright: string
     privacy: string
     terms: string
+    company: { taxCode: string; registered: string; office: string }
   }
   home: {
     hero: {
@@ -192,6 +193,7 @@ const vi: Messages = {
     copyright: '© 2026 Bioscope. Bảo lưu mọi quyền.',
     privacy: 'Chính sách bảo mật',
     terms: 'Điều khoản sử dụng',
+    company: { taxCode: 'MST', registered: 'ĐKKD', office: 'Văn phòng' },
   },
   home: {
     hero: {
@@ -416,6 +418,7 @@ const en: Messages = {
     copyright: '© 2026 Bioscope. All rights reserved.',
     privacy: 'Privacy policy',
     terms: 'Terms of use',
+    company: { taxCode: 'Tax code', registered: 'Business reg.', office: 'Office' },
   },
   home: {
     hero: {

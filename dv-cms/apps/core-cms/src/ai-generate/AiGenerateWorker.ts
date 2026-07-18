@@ -706,8 +706,8 @@ export async function runAiGenerate(input: WorkerInput): Promise<void> {
     if (gc.description?.[locale]) primaryData.description = textToLexical(gc.description[locale])
     if (gc.inci?.[locale]) primaryData.inci = gc.inci[locale]
     if (gc.suggestedDosage) primaryData.suggestedDosage = gc.suggestedDosage
-    if (gc.benefits?.length) primaryData.benefits = gc.benefits
-    if (gc.applications?.length) primaryData.applications = gc.applications
+    if (gc.benefits?.[locale]?.length) primaryData.benefits = gc.benefits[locale]
+    if (gc.applications?.[locale]?.length) primaryData.applications = gc.applications[locale]
     if (gc.badges?.length) primaryData.badges = gc.badges // not localized
     if (gc.originCountry) primaryData.originCountry = gc.originCountry // not localized
     if (gc.tag) primaryData.tag = gc.tag // not localized

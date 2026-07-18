@@ -5,18 +5,31 @@ type NavRow = { label?: string; url?: string; children?: { label?: string; url?:
 
 export type NavLink = { label: string; href: string }
 export type FooterColumn = { title: string; links: NavLink[] }
-export type SiteNav = { header: NavLink[]; footerColumns: FooterColumn[] }
+export type CompanyInfo = {
+  name?: string
+  taxCode?: string
+  registeredAddress?: string
+  officeAddress?: string
+  hotline?: string
+  email?: string
+  website?: string
+}
+export type SiteNav = { header: NavLink[]; footerColumns: FooterColumn[]; companyInfo?: CompanyInfo }
 
 /**
  * Header menu + footer columns from the CMS `navigation` global.
  * Returns null on failure/empty so callers fall back to the static i18n menu.
  */
 export async function getNavigation(locale: Locale): Promise<SiteNav | null> {
-  const nav = await cmsFetch<{ header?: NavRow[]; footer?: NavRow[] }>('globals/navigation', {
-    locale,
-    revalidate: 300,
-  })
+  const nav = await cmsFetch<{ header?: NavRow[]; footer?: NavRow[]; companyInfo?: CompanyInfo }>(
+    'globals/navigation',
+    { locale, revalidate: 300 },
+  )
   if (!nav?.header?.length) return null
+
+  const ci = nav.companyInfo
+  const companyInfo: CompanyInfo | undefined =
+    ci && Object.values(ci).some((v) => typeof v === 'string' && v.trim()) ? ci : undefined
 
   const header: NavLink[] = nav.header
     .filter((i) => i.label && i.url)
@@ -31,5 +44,5 @@ export async function getNavigation(locale: Locale): Promise<SiteNav | null> {
         .map((l) => ({ label: l.label!, href: l.url! })),
     }))
 
-  return header.length ? { header, footerColumns } : null
+  return header.length ? { header, footerColumns, companyInfo } : null
 }

@@ -24,6 +24,7 @@ type AnyBlock = { blockType?: string } & Record<string, unknown>
 type PageDoc = {
   title?: string
   layout?: AnyBlock[]
+  hero?: { url?: string } | null
   seo?: { title?: string; description?: string; image?: { url?: string } | null }
 }
 
@@ -36,6 +37,8 @@ export type PageHeroData = {
 
 export type PageContent = {
   hero: PageHeroData
+  /** CMS hero image URL (the Page's `hero` upload) — overrides the static image. */
+  heroImage?: string
   metadata: Metadata
   /** Raw block layout of the CMS Page (empty when unavailable). */
   blocks: AnyBlock[]
@@ -83,5 +86,6 @@ export async function getPageContent(slug: string, locale: Locale): Promise<Page
     ...(ogImage ? { openGraph: { ...(fb.metadata.openGraph ?? {}), images: [ogImage] } } : {}),
   }
 
-  return { hero, metadata, blocks: doc.layout ?? [] }
+  const heroImage = mediaUrl((doc.hero as { url?: string } | null)?.url) ?? undefined
+  return { hero, heroImage, metadata, blocks: doc.layout ?? [] }
 }

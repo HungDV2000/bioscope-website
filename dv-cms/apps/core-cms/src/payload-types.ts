@@ -719,9 +719,21 @@ export interface HomeHeroBlock {
     [k: string]: unknown;
   } | null;
   ctaPrimary?: string | null;
+  /**
+   * e.g. /nguyen-lieu or https://…
+   */
+  ctaPrimaryHref?: string | null;
   ctaSecondary?: string | null;
+  /**
+   * e.g. /dong-kien-tao
+   */
+  ctaSecondaryHref?: string | null;
   trust?: string[] | null;
   image?: (number | null) | Media;
+  /**
+   * If set, plays as the hero background instead of the image.
+   */
+  video?: (number | null) | Media;
   id?: string | null;
   blockName?: string | null;
   blockType: 'homeHero';
@@ -3144,9 +3156,12 @@ export interface HomeHeroBlockSelect<T extends boolean = true> {
   titleAccent?: T;
   description?: T;
   ctaPrimary?: T;
+  ctaPrimaryHref?: T;
   ctaSecondary?: T;
+  ctaSecondaryHref?: T;
   trust?: T;
   image?: T;
+  video?: T;
   id?: T;
   blockName?: T;
 }

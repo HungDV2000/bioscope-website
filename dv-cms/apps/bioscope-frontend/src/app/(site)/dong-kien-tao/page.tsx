@@ -17,7 +17,7 @@ export async function generateMetadata() {
 
 export default async function CoCreatePage() {
   const locale = await getLocale()
-  const { hero } = await getPageContent('dong-kien-tao', locale)
+  const { hero, heroImage } = await getPageContent('dong-kien-tao', locale)
   const { messages: m, contentOverride, blockIds } = await getPageSections('dong-kien-tao', locale)
   const content = applyContentOverride(getContent(locale), contentOverride)
   const p = m.coCreatePage
@@ -25,7 +25,7 @@ export default async function CoCreatePage() {
 
   return (
     <>
-      <PageHero {...hero} image="heroTeam" />
+      <PageHero {...hero} coverImage={heroImage} image="heroTeam" />
 
       <section className="bg-white py-16" data-better-editor-id={blockIds.coCreateCompare}>
         <div className="container-bs">

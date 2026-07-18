@@ -14,7 +14,7 @@ export async function generateMetadata() {
 
 export default async function ContactPage() {
   const locale = await getLocale()
-  const { hero } = await getPageContent('lien-he', locale)
+  const { hero, heroImage } = await getPageContent('lien-he', locale)
   const { contentOverride, sections, blockIds } = await getPageSections('lien-he', locale)
   const content = applyContentOverride(getContent(locale), contentOverride)
   const FAQ = content.CONTACT_FAQ
@@ -35,7 +35,7 @@ export default async function ContactPage() {
 
   return (
     <>
-      <PageHero {...hero} image="glassware" />
+      <PageHero {...hero} coverImage={heroImage} image="glassware" />
 
       <section className="bg-white py-16" data-better-editor-id={blockIds.contactInfo}>
         <div className="container-bs grid gap-10 lg:grid-cols-[1fr_360px]">

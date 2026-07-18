@@ -35,7 +35,7 @@ export async function generateMetadata() {
 export default async function ResourcesPage() {
   const locale = await getLocale()
   const content = getContent(locale)
-  const { hero } = await getPageContent('tai-nguyen', locale)
+  const { hero, heroImage } = await getPageContent('tai-nguyen', locale)
   const m = getMessages(locale)
   const { RESOURCE_CATEGORIES, RESOURCE_ITEMS } = content
 
@@ -64,7 +64,7 @@ export default async function ResourcesPage() {
 
   return (
     <>
-      <PageHero {...hero} image="botanical" />
+      <PageHero {...hero} coverImage={heroImage} image="botanical" />
 
       <section className="bg-white pb-16 pt-16">
         <div className="container-bs grid gap-5 sm:grid-cols-2 lg:grid-cols-3">

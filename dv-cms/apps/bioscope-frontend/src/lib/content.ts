@@ -24,6 +24,34 @@ export type Ingredient = {
   imageSrc?: string
   specs: { label: string; value: string }[]
   applications: string[]
+  /** Technical profile (CMS `technical` group) — rendered as extra spec rows. */
+  technical?: {
+    casNumber?: string
+    hsCode?: string
+    eNumber?: string
+    assay?: string
+    standardization?: string
+    appearance?: string
+    solubility?: string
+    particleSize?: string
+    shelfLife?: string
+    storage?: string
+    packaging?: string
+    leadTime?: string
+    incompatibility?: string
+  }
+  /** Regulatory status + public certificates (CMS `regulatory` group). */
+  regulatory?: {
+    status?: string[]
+    registrationNo?: string
+    usageLimit?: string
+    documents?: { title?: string; url?: string }[]
+  }
+  /** Mechanism of action + clinical studies (CMS `research` group). */
+  research?: {
+    mechanism?: string
+    studies?: { title?: string; summary?: string; url?: string }[]
+  }
 }
 
 export const INDUSTRIES = ['Dược phẩm', 'Thực phẩm chức năng', 'Mỹ phẩm'] as const

@@ -20,6 +20,16 @@ import { cn } from '@/lib/utils'
 
 const CATEGORY_ICONS = [Sprout, Sparkles, Leaf, FlaskConical, HeartPulse, Pill] as const
 
+/** CMS `icon` select value → lucide glyph (see homeBrands block options). */
+const ICON_BY_NAME: Record<string, (typeof CATEGORY_ICONS)[number]> = {
+  sprout: Sprout,
+  sparkles: Sparkles,
+  leaf: Leaf,
+  flask: FlaskConical,
+  heart: HeartPulse,
+  pill: Pill,
+}
+
 const track =
   'flex gap-3 overflow-x-auto cursor-grab select-none [scrollbar-width:none] [&::-webkit-scrollbar]:hidden active:cursor-grabbing'
 const navBtn =
@@ -28,12 +38,13 @@ const navBtn =
 export function Brands({ media }: { media?: SectionMedia }) {
   const { t } = useLocale()
   // Prefer CMS-selected ingredient categories; fall back to the static i18n chips.
-  const labels = media?.categoryChips?.length
-    ? media.categoryChips.map((c) => c.name)
-    : t.home.brands.categories
-  const categories = labels.map((label, i) => ({
-    icon: CATEGORY_ICONS[i % CATEGORY_ICONS.length],
-    label,
+  const chips = media?.categoryChips?.length
+    ? media.categoryChips
+    : t.home.brands.categories.map((label) => ({ name: label, href: undefined, icon: undefined }))
+  const categories = chips.map((c, i) => ({
+    // Use the icon chosen in the CMS; otherwise cycle through the default set.
+    icon: (c.icon && ICON_BY_NAME[c.icon]) || CATEGORY_ICONS[i % CATEGORY_ICONS.length],
+    label: c.name,
   }))
 
   const { ref: catRef, dragProps: catDrag } = useTrackScroll()

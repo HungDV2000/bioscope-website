@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { isAdminOrEditor, readPublishedOrStaff, seoField, slugField } from '@dv/cms-core'
+import { isAdminOrEditor, readPublishedOrStaff, contentTabs, slugField } from '@dv/cms-core'
 import { specsField } from '@dv/module-catalog'
 
 /** Proprietary technologies (storytelling pages + specs/data viz). */
@@ -18,7 +18,8 @@ export const Technologies: CollectionConfig = {
     update: isAdminOrEditor,
     delete: isAdminOrEditor,
   },
-  fields: [
+  fields: contentTabs([
+    { label: { en: 'Content', vi: 'Nội dung' }, fields: [
     { name: 'name', type: 'text', localized: true, required: true },
     slugField('name'),
     { name: 'tagline', type: 'text', localized: true },
@@ -33,6 +34,6 @@ export const Technologies: CollectionConfig = {
     },
     specsField('specs'),
     { name: 'order', type: 'number', defaultValue: 0, admin: { position: 'sidebar' } },
-    seoField(),
-  ],
+    ]},
+  ]),
 }

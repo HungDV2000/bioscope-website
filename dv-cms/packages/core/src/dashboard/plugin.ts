@@ -11,6 +11,10 @@ export type DashboardPluginOptions = {
   cmsSyncComponent?: string
   /** Client AI Generate panel — path tới component. */
   aiGenerateComponent?: string
+  /** Client backup card — path tới component (vd. /components/BackupButton#BackupButton). */
+  backupComponent?: string
+  /** Client duplicate-scan card — path tới component. */
+  duplicateComponent?: string
 }
 
 /**
@@ -51,6 +55,24 @@ export const dashboardPlugin =
       })
     }
 
+    if (options.backupComponent) {
+      widgets.push({
+        slug: 'dv-backup',
+        Component: options.backupComponent,
+        minWidth: 'medium',
+        maxWidth: 'full',
+      })
+    }
+
+    if (options.duplicateComponent) {
+      widgets.push({
+        slug: 'dv-duplicates',
+        Component: options.duplicateComponent,
+        minWidth: 'medium',
+        maxWidth: 'full',
+      })
+    }
+
     const config = { ...incoming }
     const admin = { ...(config.admin ?? {}) }
 
@@ -64,6 +86,8 @@ export const dashboardPlugin =
           if (!options.seedComponent && slug === 'dv-seed') return false
           if (!options.cmsSyncComponent && slug === 'dv-cms-sync') return false
           if (!options.aiGenerateComponent && slug === 'dv-ai-generate') return false
+          if (!options.backupComponent && slug === 'dv-backup') return false
+          if (!options.duplicateComponent && slug === 'dv-duplicates') return false
           return true
         })
       },

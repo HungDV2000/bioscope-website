@@ -32,12 +32,16 @@ export function AiChatFloatingWidget({ copy }: { copy: AiChatCopy }) {
   const [show, setShow] = useState(false)
 
   useEffect(() => {
+    const footer = document.querySelector('footer')
     const onScroll = () => {
       const el = sentinelRef.current
       if (!el) return
       // Show once the section's end has scrolled up past 60% of the viewport
       // (works even when the content below is too short to push it fully off-screen).
-      setShow(el.getBoundingClientRect().bottom < window.innerHeight * 0.6)
+      const pastPromo = el.getBoundingClientRect().bottom < window.innerHeight * 0.6
+      // Hide again once the footer enters view so the demo widget never covers it.
+      const overFooter = footer ? footer.getBoundingClientRect().top < window.innerHeight : false
+      setShow(pastPromo && !overFooter)
     }
     onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })

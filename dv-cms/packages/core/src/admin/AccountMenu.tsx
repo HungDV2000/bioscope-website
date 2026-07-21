@@ -1,8 +1,26 @@
 'use client'
 
 import React from 'react'
-import { Account, LogOutIcon, Popup, PopupList, useConfig, useTranslation } from '@payloadcms/ui'
+import { LogOutIcon, Popup, PopupList, useAuth, useConfig, useTranslation } from '@payloadcms/ui'
 import { formatAdminURL } from 'payload/shared'
+
+/**
+ * Avatar hiển thị trong header. KHÔNG dùng `<Account />` của Payload ở đây:
+ * component này được gắn vào `admin.avatar`, mà `<Account />` lại phân giải
+ * ngược về chính `admin.avatar` → đệ quy, Payload chặn và render ra một nút
+ * RỖNG (đúng triệu chứng "không có icon user"). Vì vậy ta tự vẽ avatar.
+ */
+const Avatar: React.FC = () => {
+  const { user } = useAuth()
+  const label = (user?.name as string) || (user?.email as string) || ''
+  const initial = label.trim().charAt(0).toUpperCase() || '?'
+
+  return (
+    <span className="dv-account-menu__avatar" aria-hidden title={label}>
+      {initial}
+    </span>
+  )
+}
 
 /** Avatar header — dropdown: Hồ sơ + Đăng xuất (thay link trực tiếp vào account). */
 export const AccountMenu: React.FC = () => {
@@ -27,7 +45,7 @@ export const AccountMenu: React.FC = () => {
       }}
     >
       <Popup
-        button={<Account />}
+        button={<Avatar />}
         buttonType="custom"
         className="dv-account-menu__popup"
         horizontalAlign="right"

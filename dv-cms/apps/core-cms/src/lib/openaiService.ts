@@ -482,6 +482,25 @@ export async function extractTextFromPdf(buffer: Buffer): Promise<string> {
   const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs')
   const PDFJS = pdfjsLib
 
+  // Point pdfjs at the real worker file on disk. Without this it falls back to a
+  // "fake worker" that dynamically imports `pdf.worker.mjs`; inside the Next.js
+  // server bundle that specifier can't be resolved and extraction dies with
+  //   "Setting up fake worker failed: Cannot find module '…/pdf.worker.mjs'"
+  // — which silently degraded every AI generation to name-only input.
+  // Requires `pdfjs-dist` in next.config `serverExternalPackages` so the package
+  // stays outside the bundle and resolves from node_modules.
+  try {
+    if (!PDFJS.GlobalWorkerOptions.workerSrc) {
+      const { createRequire } = await import('node:module')
+      const requireFromHere = createRequire(import.meta.url)
+      PDFJS.GlobalWorkerOptions.workerSrc = requireFromHere.resolve(
+        'pdfjs-dist/legacy/build/pdf.worker.mjs',
+      )
+    }
+  } catch {
+    // Fall through — pdfjs will retry its own resolution below.
+  }
+
   // Pass a Uint8Array (pdfjs detaches the underlying buffer) to avoid corrupting
   // the shared Node Buffer, and disable the worker for a pure-Node environment.
   const data = new Uint8Array(buffer)

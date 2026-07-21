@@ -61,6 +61,9 @@ export const brandingPlugin =
       `${C}#NavIconRail`,
       `${C}#NavIcons`,
       `${C}#NavMobileDrawer`,
+      // Mở Media ở chế độ thư mục. Phải là provider — xem chú thích trong
+      // MediaLibraryRedirect.tsx (gắn vào views.list sẽ làm trắng drawer chọn ảnh).
+      `${C}#MediaLibraryRedirect`,
     ]
     if (options.enableDashboard !== false) {
       components.beforeDashboard = [...(components.beforeDashboard ?? []), `${C}#DashboardWelcome`]

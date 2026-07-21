@@ -1,7 +1,7 @@
 import type { CollectionConfig } from 'payload'
 import { isAdminOrEditor, readPublishedOrStaff } from '../access/index.js'
 import { slugField } from '../fields/slug.js'
-import { seoField } from '../fields/seo.js'
+import { contentTabs } from '../fields/tabs.js'
 import { ADMIN_GROUP_CONTENT } from '../i18n/admin-groups.js'
 
 /** Blog / news articles. */
@@ -19,7 +19,8 @@ export const Posts: CollectionConfig = {
     update: isAdminOrEditor,
     delete: isAdminOrEditor,
   },
-  fields: [
+  fields: contentTabs([
+    { label: { en: 'Content', vi: 'Nội dung' }, fields: [
     { name: 'title', type: 'text', localized: true, required: true },
     slugField('title'),
     { name: 'excerpt', type: 'textarea', localized: true },
@@ -50,6 +51,6 @@ export const Posts: CollectionConfig = {
       type: 'date',
       admin: { position: 'sidebar', date: { pickerAppearance: 'dayAndTime' } },
     },
-    seoField(),
-  ],
+    ]},
+  ]),
 }

@@ -234,7 +234,7 @@ export function Catalog({ items }: { items: Ingredient[] }) {
                 href={`/nguyen-lieu/${it.slug}`}
                 className="group flex flex-col overflow-hidden rounded-[1.75rem] border border-primary-border/60 bg-white transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] hover:-translate-y-1 hover:shadow-card"
               >
-                <div className="relative aspect-[16/10] overflow-hidden">
+                <div className="relative aspect-[16/10] overflow-hidden bg-mist">
                   <Image
                     src={ingredientImg(it, 600)}
                     alt={it.name}
@@ -242,11 +242,11 @@ export function Catalog({ items }: { items: Ingredient[] }) {
                     unoptimized
                     sizes="(max-width: 768px) 100vw, 360px"
                     className={cn(
-                      'transition-transform duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:scale-105',
-                      it.imageSrc ? 'object-cover' : 'object-contain p-2',
+                      // `contain` so the whole product shot is visible — ingredient
+                      // photos are packshots and get their labels cropped by `cover`.
+                      'object-contain p-3 transition-transform duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:scale-105',
                     )}
                   />
-                  <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/25 to-transparent" />
                   <span className="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-[11px] font-semibold text-primary-dark backdrop-blur-sm">
                     {it.category}
                   </span>

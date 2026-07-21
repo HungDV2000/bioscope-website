@@ -22,6 +22,17 @@ type IngredientDoc = {
   badges?: string[]
   featuredImage?: { url?: string } | null
   specs?: { label?: string; value?: string }[]
+  technical?: Record<string, string | undefined>
+  regulatory?: {
+    status?: string[]
+    registrationNo?: string
+    usageLimit?: string
+    documents?: { title?: string; file?: { url?: string } | null }[]
+  }
+  research?: {
+    mechanism?: unknown
+    studies?: { title?: string; summary?: string; url?: string }[]
+  }
 }
 
 /** supplement/cosmetic → the localized industry label used by the catalog filters. */
@@ -92,6 +103,41 @@ function toIngredient(d: IngredientDoc, locale: Locale): Ingredient {
     imageSrc: mediaUrl(d.featuredImage?.url) ?? undefined,
     specs: (d.specs ?? []).map((s) => ({ label: pick(s.label), value: pick(s.value) })),
     applications: (d.applications ?? []).map(pick).filter(Boolean),
+    technical: d.technical
+      ? {
+          casNumber: d.technical.casNumber || undefined,
+          hsCode: d.technical.hsCode || undefined,
+          eNumber: d.technical.eNumber || undefined,
+          assay: pick(d.technical.assay) || undefined,
+          standardization: pick(d.technical.standardization) || undefined,
+          appearance: pick(d.technical.appearance) || undefined,
+          solubility: pick(d.technical.solubility) || undefined,
+          particleSize: d.technical.particleSize || undefined,
+          shelfLife: pick(d.technical.shelfLife) || undefined,
+          storage: pick(d.technical.storage) || undefined,
+          packaging: pick(d.technical.packaging) || undefined,
+          leadTime: pick(d.technical.leadTime) || undefined,
+          incompatibility: pick(d.technical.incompatibility) || undefined,
+        }
+      : undefined,
+    regulatory: d.regulatory
+      ? {
+          status: d.regulatory.status ?? [],
+          registrationNo: d.regulatory.registrationNo || undefined,
+          usageLimit: pick(d.regulatory.usageLimit) || undefined,
+          documents: (d.regulatory.documents ?? [])
+            .map((doc) => ({ title: pick(doc.title) || undefined, url: mediaUrl(doc.file?.url) ?? undefined }))
+            .filter((doc) => doc.url),
+        }
+      : undefined,
+    research: d.research
+      ? {
+          mechanism: pickLocaleText(lexicalToText(d.research.mechanism), locale) || undefined,
+          studies: (d.research.studies ?? [])
+            .map((s) => ({ title: pick(s.title) || undefined, summary: pick(s.summary) || undefined, url: s.url || undefined }))
+            .filter((s) => s.title),
+        }
+      : undefined,
   }
 }
 

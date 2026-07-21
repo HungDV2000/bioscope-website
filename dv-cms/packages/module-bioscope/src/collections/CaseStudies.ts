@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { isAdminOrEditor, readPublishedOrStaff, seoField, slugField } from '@dv/cms-core'
+import { isAdminOrEditor, readPublishedOrStaff, contentTabs, slugField } from '@dv/cms-core'
 
 /** Success stories / co-creation case studies. */
 export const CaseStudies: CollectionConfig = {
@@ -25,7 +25,8 @@ export const CaseStudies: CollectionConfig = {
     update: isAdminOrEditor,
     delete: isAdminOrEditor,
   },
-  fields: [
+  fields: contentTabs([
+    { label: { en: 'Content', vi: 'Nội dung' }, fields: [
     { name: 'brand', type: 'text', localized: true, required: true, label: { en: 'Brand', vi: 'Thương hiệu' } },
     slugField('brand'),
     {
@@ -88,6 +89,6 @@ export const CaseStudies: CollectionConfig = {
     { name: 'coverImage', type: 'upload', relationTo: 'media', label: { en: 'Cover image', vi: 'Ảnh bìa' } },
     { name: 'featured', type: 'checkbox', defaultValue: false, label: { en: 'Featured', vi: 'Nổi bật' }, admin: { position: 'sidebar' } },
     { name: 'order', type: 'number', defaultValue: 0, admin: { position: 'sidebar' } },
-    seoField(),
-  ],
+    ]},
+  ]),
 }

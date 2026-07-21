@@ -1,5 +1,5 @@
 import type { CollectionConfig, CollectionSlug, Field } from 'payload'
-import { isAdminOrEditor, readPublishedOrStaff, seoField, slugField } from '@dv/cms-core'
+import { isAdminOrEditor, readPublishedOrStaff, contentTabs, slugField } from '@dv/cms-core'
 import { specsField } from '../fields/specs.js'
 
 export type ProductCollectionOptions = {
@@ -34,7 +34,8 @@ export const createProductCollection = (opts: ProductCollectionOptions = {}): Co
       update: isAdminOrEditor,
       delete: isAdminOrEditor,
     },
-    fields: [
+    fields: contentTabs([
+      { label: { en: 'Content', vi: 'Nội dung' }, fields: [
       { name: 'name', type: 'text', localized: true, required: true },
       slugField('name'),
       { name: 'subtitle', type: 'text', localized: true },
@@ -64,7 +65,7 @@ export const createProductCollection = (opts: ProductCollectionOptions = {}): Co
       specsField('specs'),
       { name: 'featured', type: 'checkbox', defaultValue: false, admin: { position: 'sidebar' } },
       ...(opts.extraFields ?? []),
-      seoField(),
-    ],
+      ]},
+    ]),
   }
 }

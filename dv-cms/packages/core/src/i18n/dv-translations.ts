@@ -26,6 +26,15 @@ export const dvTranslations = {
         failed: 'Seed failed.',
         apiError: 'Could not reach the API.',
       },
+      backup: {
+        title: 'Database backup',
+        description:
+          'Download a full backup of the database (pg_dump custom format). Keep a copy before migrations or bulk imports. Restore with: pg_restore -c -d <db> <file>.',
+        run: 'Download backup',
+        running: 'Creating backup…',
+        failed: 'Backup failed.',
+        apiError: 'Could not reach the API.',
+      },
     },
   },
   vi: {
@@ -52,6 +61,15 @@ export const dvTranslations = {
         running: 'Đang chạy seed…',
         success: '✅ Seed thành công',
         failed: 'Seed thất bại.',
+        apiError: 'Không gọi được API.',
+      },
+      backup: {
+        title: 'Sao lưu dữ liệu',
+        description:
+          'Tải về bản sao lưu toàn bộ cơ sở dữ liệu (định dạng pg_dump custom). Nên tải một bản trước khi chạy migration hoặc nhập liệu hàng loạt. Khôi phục bằng: pg_restore -c -d <db> <file>.',
+        run: 'Tải bản sao lưu',
+        running: 'Đang tạo bản sao lưu…',
+        failed: 'Sao lưu thất bại.',
         apiError: 'Không gọi được API.',
       },
     },

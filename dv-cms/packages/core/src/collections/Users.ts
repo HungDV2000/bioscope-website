@@ -9,6 +9,11 @@ export const Users: CollectionConfig = {
   auth: {
     maxLoginAttempts: 5,
     lockTime: 15 * 60 * 1000,
+    // Payload's default is 2h. The admin schedules an inactivity logout from the
+    // token's remaining life, so editors were being kicked to /admin/login in the
+    // middle of a task — e.g. right as the "choose from library" media drawer
+    // opened, which left a blank screen behind the drawer. 8h covers a work day.
+    tokenExpiration: 60 * 60 * 8,
   },
   admin: {
     useAsTitle: 'name',

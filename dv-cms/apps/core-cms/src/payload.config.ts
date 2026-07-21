@@ -2,7 +2,13 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import { buildConfig } from 'payload'
 import { postgresAdapter } from '@payloadcms/db-postgres'
-import { lexicalEditor, FixedToolbarFeature } from '@payloadcms/richtext-lexical'
+import {
+  lexicalEditor,
+  FixedToolbarFeature,
+  InlineToolbarFeature,
+  EXPERIMENTAL_TableFeature,
+  TextStateFeature,
+} from '@payloadcms/richtext-lexical'
 import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
 import { en } from 'payload/i18n/en'
 import { vi } from 'payload/i18n/vi'
@@ -22,6 +28,8 @@ import { languagesPlugin, resolveLocalizationConfig } from '@dv/module-languages
 import { permissionsPlugin } from '@dv/module-permissions'
 
 import { seedEndpoint } from './endpoints/seed.js'
+import { backupEndpoint } from './endpoints/backup.js'
+import { ingredientDuplicatesEndpoint } from './endpoints/duplicates.js'
 import { cmsSyncSourceEndpoint } from './endpoints/cmsSyncSource.js'
 import { cmsSyncEndpoint } from './endpoints/cmsSync.js'
 import { cmsSyncRunsEndpoint } from './endpoints/cmsSyncRuns.js'
@@ -102,8 +110,31 @@ export default buildConfig({
     },
   },
   serverURL,
-  // Always-visible toolbar (Word-like) instead of the floating on-selection one.
-  editor: lexicalEditor({ features: ({ defaultFeatures }) => [...defaultFeatures, FixedToolbarFeature()] }),
+  // Rich text: Word-like fixed toolbar + on-selection inline toolbar, tables, and
+  // brand text colors / highlights. NOTE: keep the color keys below in sync with the
+  // frontend renderer (apps/bioscope-frontend/src/components/ui/rich-text.tsx).
+  editor: lexicalEditor({
+    features: ({ defaultFeatures }) => [
+      ...defaultFeatures,
+      FixedToolbarFeature(),
+      InlineToolbarFeature(),
+      EXPERIMENTAL_TableFeature(),
+      TextStateFeature({
+        state: {
+          color: {
+            green: { label: 'Xanh Bioscope', css: { color: '#008E4D' } },
+            orange: { label: 'Cam', css: { color: '#F58E33' } },
+            red: { label: 'Đỏ', css: { color: '#DC2626' } },
+            muted: { label: 'Xám', css: { color: '#5B6B62' } },
+          },
+          highlight: {
+            greenBg: { label: 'Nền xanh nhạt', css: { 'background-color': '#EEF6F1' } },
+            orangeBg: { label: 'Nền cam nhạt', css: { 'background-color': '#FFF4E8' } },
+          },
+        },
+      }),
+    ],
+  }),
   secret: process.env.PAYLOAD_SECRET || '',
   ...(email ? { email } : {}),
   db,
@@ -125,7 +156,7 @@ export default buildConfig({
     collectionSpecific: true,
   },
   typescript: { outputFile: path.resolve(dirname, 'payload-types.ts') },
-  endpoints: [seedEndpoint, cmsSyncSourceEndpoint, cmsSyncEndpoint, cmsSyncRunsEndpoint, driveSyncTriggerEndpoint, driveSyncListEndpoint, driveSyncGetEndpoint, driveSyncCancelEndpoint, csvImportEndpoint, aiGenerateTriggerEndpoint, aiGenerateBulkEndpoint, aiGenerateImageEndpoint, aiGenerateListEndpoint, aiGenerateGetEndpoint],
+  endpoints: [seedEndpoint, backupEndpoint, ingredientDuplicatesEndpoint, cmsSyncSourceEndpoint, cmsSyncEndpoint, cmsSyncRunsEndpoint, driveSyncTriggerEndpoint, driveSyncListEndpoint, driveSyncGetEndpoint, driveSyncCancelEndpoint, csvImportEndpoint, aiGenerateTriggerEndpoint, aiGenerateBulkEndpoint, aiGenerateImageEndpoint, aiGenerateListEndpoint, aiGenerateGetEndpoint],
   collections: [],
   plugins: [
     // Tier 1 — generic core (must come first: users + media).
@@ -145,6 +176,8 @@ export default buildConfig({
     }),
     dashboardPlugin({
       seedComponent: '/components/SeedButton#SeedButton',
+      backupComponent: '/components/BackupButton#BackupButton',
+      duplicateComponent: '/components/DuplicatePanel#DuplicatePanel',
       cmsSyncComponent: '/components/CmsSyncPanel/CmsSyncPanel#CmsSyncPanel',
       aiGenerateComponent: '/components/AiGeneratePanel/AiGeneratePanel#AiGeneratePanel',
     }),

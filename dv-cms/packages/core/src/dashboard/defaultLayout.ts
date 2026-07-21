@@ -41,6 +41,8 @@ export const defaultDashboardLayout = ({ req }: { req: PayloadRequest }): Widget
       data: { slugs: [...DEFAULT_DASHBOARD_SHORTCUTS].filter((s) => collections.includes(s)) },
     },
     { widgetSlug: 'dv-seed', width: 'full' },
+    { widgetSlug: 'dv-backup', width: 'full' },
+    { widgetSlug: 'dv-duplicates', width: 'full' },
   ]
 
   return layout

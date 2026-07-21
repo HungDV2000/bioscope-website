@@ -176,18 +176,32 @@ export default async function IngredientDetail({ params }: { params: Promise<{ s
                   </div>
                 )}
               </div>
-              <div className="rounded-[2rem] border border-primary-border/60 bg-white p-7 shadow-sm">
-                <div className="grid grid-cols-2 gap-4 text-center">
-                  <div>
-                    <div className="text-[12px] font-medium text-ink/45">{m.ingredientsCatalog.originLabel}</div>
-                    <div className="mt-1 text-[15px] font-bold text-ink">{it.origin || '—'}</div>
+              <div className="rounded-[2rem] border border-primary-border/60 bg-white p-6 shadow-[0_8px_30px_-12px_rgba(0,0,0,0.12)]">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">
+                  {en ? 'Request info' : 'Nhận báo giá & mẫu'}
+                </div>
+
+                {/* Key facts — icon rows handle long MOQ text without cramping */}
+                <div className="mt-4 space-y-2.5">
+                  <div className="flex items-start gap-3 rounded-2xl bg-mist/50 px-4 py-3">
+                    <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" strokeWidth={1.9} />
+                    <div className="min-w-0">
+                      <div className="text-[11px] font-medium uppercase tracking-wide text-ink/45">
+                        {m.ingredientsCatalog.originLabel}
+                      </div>
+                      <div className="text-[14.5px] font-bold text-ink">{it.origin || '—'}</div>
+                    </div>
                   </div>
-                  <div>
-                    <div className="text-[12px] font-medium text-ink/45">MOQ</div>
-                    <div className="mt-1 text-[15px] font-bold text-ink">{it.moq || '—'}</div>
+                  <div className="flex items-start gap-3 rounded-2xl bg-mist/50 px-4 py-3">
+                    <Package className="mt-0.5 h-4 w-4 shrink-0 text-primary" strokeWidth={1.9} />
+                    <div className="min-w-0">
+                      <div className="text-[11px] font-medium uppercase tracking-wide text-ink/45">MOQ</div>
+                      <div className="text-[13.5px] font-bold leading-snug text-ink">{it.moq || '—'}</div>
+                    </div>
                   </div>
                 </div>
-                <div className="mt-6 flex flex-col gap-2.5">
+
+                <div className="mt-5 flex flex-col gap-2.5">
                   <Button href="/lien-he" className="w-full justify-between">
                     {m.header.requestSamples}
                   </Button>

@@ -279,7 +279,7 @@ export function DetailTabs({ ingredient }: { ingredient: Ingredient }) {
           </div>
         )}
 
-        {tab === 'docs' && <DocGating ingredient={ingredient.name} />}
+        {tab === 'docs' && <DocGating ingredient={ingredient.name} documents={ingredient.regulatory?.documents} />}
 
         {tab === 'applications' &&
           (ingredient.applications.length > 0 ? (

@@ -221,19 +221,24 @@ export const Ingredients: CollectionConfig = {
         },
         { name: 'registrationNo', type: 'text', label: { en: 'Registration / notification no.', vi: 'Số công bố / đăng ký' } },
         { name: 'usageLimit', type: 'text', localized: true, label: { en: 'Permitted usage level', vi: 'Ngưỡng sử dụng cho phép' }, admin: { description: 'Vd: tối đa 500 mg/ngày.' } },
-        {
-          name: 'documents',
-          type: 'array',
-          label: { en: 'Certificates / documents', vi: 'Chứng nhận / tài liệu' },
-          admin: { description: 'File công khai. Tài liệu cần đăng nhập mới tải thì dùng Cổng B2B → Tài liệu giới hạn.' },
-          fields: [
-            { name: 'title', type: 'text', localized: true, label: { en: 'Title', vi: 'Tên tài liệu' } },
-            { name: 'file', type: 'upload', relationTo: 'media', label: { en: 'File', vi: 'Tệp' } },
-          ],
-        },
       ],
     },
 
+    ]},
+
+    // ── Tab · Tài liệu ───────────────────────────────────────────────────────
+    { label: { en: 'Documents', vi: 'Tài liệu' }, fields: [
+    {
+      name: 'documents',
+      type: 'array',
+      label: { en: 'Documents', vi: 'Tài liệu' },
+      labels: { singular: { en: 'Document', vi: 'Tài liệu' }, plural: { en: 'Documents', vi: 'Tài liệu' } },
+      admin: { description: 'File công khai (TDS · COA · SDS…) hiển thị & tải trực tiếp ở tab "Tài liệu" ngoài web. Tài liệu cần đăng nhập mới tải thì dùng Cổng B2B → Tài liệu giới hạn.' },
+      fields: [
+        { name: 'title', type: 'text', localized: true, label: { en: 'Title', vi: 'Tên tài liệu' } },
+        { name: 'file', type: 'upload', relationTo: 'media', label: { en: 'File', vi: 'Tệp' } },
+      ],
+    },
     ]},
 
     // ── Tab 6 · Nghiên cứu ───────────────────────────────────────────────────

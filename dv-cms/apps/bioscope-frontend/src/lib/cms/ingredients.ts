@@ -23,6 +23,7 @@ type IngredientDoc = {
   featuredImage?: { url?: string } | null
   specs?: { label?: string; value?: string }[]
   technical?: Record<string, string | undefined>
+  documents?: { title?: string; file?: { url?: string } | null }[]
   regulatory?: {
     status?: string[]
     registrationNo?: string
@@ -120,16 +121,20 @@ function toIngredient(d: IngredientDoc, locale: Locale): Ingredient {
           incompatibility: pick(d.technical.incompatibility) || undefined,
         }
       : undefined,
-    regulatory: d.regulatory
-      ? {
-          status: d.regulatory.status ?? [],
-          registrationNo: d.regulatory.registrationNo || undefined,
-          usageLimit: pick(d.regulatory.usageLimit) || undefined,
-          documents: (d.regulatory.documents ?? [])
-            .map((doc) => ({ title: pick(doc.title) || undefined, url: mediaUrl(doc.file?.url) ?? undefined }))
-            .filter((doc) => doc.url),
-        }
-      : undefined,
+    regulatory: (() => {
+      // Documents moved to a top-level `documents` field (own "Tài liệu" tab);
+      // fall back to legacy `regulatory.documents` for older records.
+      const docs = ((d.documents?.length ? d.documents : d.regulatory?.documents) ?? [])
+        .map((doc) => ({ title: pick(doc.title) || undefined, url: mediaUrl(doc.file?.url) ?? undefined }))
+        .filter((doc) => doc.url)
+      if (!d.regulatory && docs.length === 0) return undefined
+      return {
+        status: d.regulatory?.status ?? [],
+        registrationNo: d.regulatory?.registrationNo || undefined,
+        usageLimit: pick(d.regulatory?.usageLimit) || undefined,
+        documents: docs,
+      }
+    })(),
     research: d.research
       ? {
           mechanism: pickLocaleText(lexicalToText(d.research.mechanism), locale) || undefined,

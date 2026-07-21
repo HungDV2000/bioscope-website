@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { anyone, isAdminOrEditor, seoField, slugField } from '@dv/cms-core'
+import { anyone, isAdminOrEditor, contentTabs, slugField } from '@dv/cms-core'
 
 /** ODM / service offerings — powers the `/giai-phap/[slug]` landing pages. */
 export const Services: CollectionConfig = {
@@ -7,7 +7,8 @@ export const Services: CollectionConfig = {
   admin: { useAsTitle: 'title', group: 'Bioscope', defaultColumns: ['title', 'order'] },
   defaultSort: 'order',
   access: { read: anyone, create: isAdminOrEditor, update: isAdminOrEditor, delete: isAdminOrEditor },
-  fields: [
+  fields: contentTabs([
+    { label: { en: 'Content', vi: 'Nội dung' }, fields: [
     { name: 'title', type: 'text', localized: true, required: true },
     slugField('title'),
     { name: 'forWho', type: 'textarea', localized: true, admin: { description: 'Đối tượng phù hợp (mô tả ngắn dưới tiêu đề).' } },
@@ -48,6 +49,6 @@ export const Services: CollectionConfig = {
     { name: 'image', type: 'upload', relationTo: 'media' },
     { name: 'features', type: 'text', hasMany: true, localized: true },
     { name: 'order', type: 'number', defaultValue: 0, admin: { position: 'sidebar' } },
-    seoField(),
-  ],
+    ]},
+  ]),
 }

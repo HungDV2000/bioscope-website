@@ -1,7 +1,7 @@
 import type { CollectionConfig } from 'payload'
 import { isAdminOrEditor, readPublishedOrStaff } from '../access/index.js'
 import { slugField } from '../fields/slug.js'
-import { seoField } from '../fields/seo.js'
+import { contentTabs } from '../fields/tabs.js'
 import { ADMIN_GROUP_CONTENT } from '../i18n/admin-groups.js'
 
 /** Frontend URL for a page (live preview + preview button). */
@@ -44,16 +44,17 @@ export const Pages: CollectionConfig = {
     update: isAdminOrEditor,
     delete: isAdminOrEditor,
   },
-  fields: [
-    // Invisible — mounts the Live Preview click-to-focus listener in the form.
-    {
-      name: 'blockFocusListener',
-      type: 'ui',
-      admin: { components: { Field: '/components/BlockFocusListener/BlockFocusListener#BlockFocusListener' } },
-    },
-    { name: 'title', type: 'text', localized: true, required: true },
-    slugField('title'),
-    { name: 'hero', type: 'upload', relationTo: 'media', admin: { position: 'sidebar' } },
-    seoField(),
-  ],
+  fields: contentTabs([
+    { label: { en: 'Content', vi: 'Nội dung' }, fields: [
+      // Invisible — mounts the Live Preview click-to-focus listener in the form.
+      {
+        name: 'blockFocusListener',
+        type: 'ui',
+        admin: { components: { Field: '/components/BlockFocusListener/BlockFocusListener#BlockFocusListener' } },
+      },
+      { name: 'title', type: 'text', localized: true, required: true },
+      slugField('title'),
+      { name: 'hero', type: 'upload', relationTo: 'media', admin: { position: 'sidebar' } },
+    ]},
+  ]),
 }

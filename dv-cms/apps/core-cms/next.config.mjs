@@ -10,6 +10,9 @@ const nextConfig = {
   // The admin's assets go under a distinct `/cms-static` prefix so they never
   // collide with the frontend's `/_next` behind the shared proxy origin.
   assetPrefix: process.env.CMS_ASSET_PREFIX || undefined,
+  // Keep pdfjs-dist out of the server bundle so its worker file stays resolvable
+  // from node_modules (AI content generation reads source PDFs through it).
+  serverExternalPackages: ['pdfjs-dist'],
   // Workspace packages ship raw TS with `.js` import specifiers (NodeNext style).
   transpilePackages: [
     '@dv/cms-core',

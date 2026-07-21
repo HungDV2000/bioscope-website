@@ -2,36 +2,52 @@
 
 import { useConfig, usePreferences, useEditDepth } from '@payloadcms/ui'
 import { formatAdminURL } from 'payload/shared'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 
-/** Mở Media bằng chế độ thư mục (grid thumbnail) thay vì bảng danh sách. */
-export const MediaLibraryRedirect: React.FC = () => {
+/**
+ * Mở Media bằng chế độ thư mục (grid thumbnail) thay vì bảng danh sách.
+ *
+ * Đây là một PROVIDER, không phải `views.list`. Trước kia nó được gắn vào
+ * `Media.admin.components.views.list` — nhưng drawer "Chọn từ thư viện" của
+ * trường upload dùng lại đúng list view đó, nên component (vốn render `null`)
+ * làm drawer TRẮNG TRƠN. Là provider thì nó chạy song song, luôn render
+ * `children`, và chỉ hành động khi đang ở đúng route danh sách Media.
+ */
+export const MediaLibraryRedirect: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
   const { config } = useConfig()
   const { setPreference } = usePreferences()
   const router = useRouter()
-  // >0 means this list is rendered inside a drawer (the "choose from library"
-  // picker of an upload/relationship field). Never redirect there — that would
-  // navigate the whole admin away instead of letting the user pick an image.
+  const pathname = usePathname()
   const editDepth = useEditDepth()
 
   useEffect(() => {
+    // Trong drawer (upload/relationship picker) — tuyệt đối không điều hướng.
     if (editDepth > 0) return
 
+    const adminRoute = config.routes.admin
+    const listPath = formatAdminURL({ adminRoute, path: '/collections/media' })
+    const norm = (s: string) => s.replace(/\/+$/, '')
+
+    // Chỉ redirect khi URL hiện tại đúng là trang danh sách Media. Khi component
+    // được render trong drawer, pathname vẫn là trang đang mở (vd trang sửa Page)
+    // nên điều kiện này false và ta bỏ qua an toàn.
+    if (!pathname || norm(pathname) !== norm(listPath)) return
+
     const foldersSlug = config.folders?.slug ?? 'payload-folders'
-    const path = `/collections/media/${foldersSlug}`
 
     void setPreference('collection-media', { listViewType: 'folders' })
 
     router.replace(
       formatAdminURL({
-        adminRoute: config.routes.admin,
-        path: path as `/${string}`,
+        adminRoute,
+        path: `/collections/media/${foldersSlug}` as `/${string}`,
       }),
     )
-  }, [config, router, setPreference, editDepth])
+  }, [config, router, setPreference, editDepth, pathname])
 
-  return null
+  // Provider: luôn render children, nếu không cả admin sẽ trắng.
+  return <>{children}</>
 }
 
 export default MediaLibraryRedirect

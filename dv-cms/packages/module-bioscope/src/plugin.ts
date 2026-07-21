@@ -1,4 +1,4 @@
-import type { Config, Plugin } from 'payload'
+import type { Config, Field, Plugin } from 'payload'
 import { HOME_BLOCKS } from './blocks/home.js'
 import { PAGE_BLOCKS } from './blocks/pages.js'
 import { IngredientCategories } from './collections/IngredientCategories.js'
@@ -62,11 +62,20 @@ export const bioscopePlugin =
     if (options.homeBlocks !== false) {
       config.collections = config.collections.map((col) => {
         if (col.slug !== 'pages') return col
-        const fields = (col.fields ?? []).map((f) => {
-          if (!('name' in f) || f.name !== 'layout' || f.type !== 'blocks') return f
-          return { ...f, blocks: [...f.blocks, ...HOME_BLOCKS, ...PAGE_BLOCKS] }
-        })
-        return { ...col, fields }
+        // `layout` may sit at the top level OR inside a tab (see `contentTabs`),
+        // so recurse. Missing it would silently drop every home* block from the
+        // schema — and `push` would then DELETE those block tables and their data.
+        const addBlocks = (fields: Field[]): Field[] =>
+          fields.map((f) => {
+            if ('name' in f && f.name === 'layout' && f.type === 'blocks') {
+              return { ...f, blocks: [...f.blocks, ...HOME_BLOCKS, ...PAGE_BLOCKS] }
+            }
+            if (f.type === 'tabs') {
+              return { ...f, tabs: f.tabs.map((t) => ({ ...t, fields: addBlocks(t.fields) })) }
+            }
+            return f
+          })
+        return { ...col, fields: addBlocks(col.fields ?? []) }
       })
     }
 

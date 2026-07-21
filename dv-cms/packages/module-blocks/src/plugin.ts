@@ -38,12 +38,28 @@ export const blocksPlugin =
       const existingIdx = fields.findIndex((f) => 'name' in f && f.name === fieldName)
       if (existingIdx >= 0) {
         fields[existingIdx] = layoutField
-      } else {
-        // Insert before the SEO group if present, else append.
-        const seoIdx = fields.findIndex((f) => 'name' in f && f.name === 'seo')
-        if (seoIdx >= 0) fields.splice(seoIdx, 0, layoutField)
-        else fields.push(layoutField)
+        return { ...col, fields }
       }
+
+      // Tabbed collections (see `contentTabs`): give the layout its own tab and
+      // keep it BEFORE the SEO tab. Appending to the top level instead would
+      // dump the whole page builder underneath the tab bar.
+      const tabsIdx = fields.findIndex((f) => f.type === 'tabs')
+      if (tabsIdx >= 0) {
+        const tabsField = fields[tabsIdx] as { type: 'tabs'; tabs: { label?: unknown; fields: Field[] }[] }
+        const tabs = [...tabsField.tabs]
+        const seoTabIdx = tabs.findIndex((t) => t.fields.some((f) => 'name' in f && f.name === 'seo'))
+        const layoutTab = { label: { en: 'Layout', vi: 'Bố cục' }, fields: [layoutField] }
+        if (seoTabIdx >= 0) tabs.splice(seoTabIdx, 0, layoutTab)
+        else tabs.push(layoutTab)
+        fields[tabsIdx] = { ...tabsField, tabs }
+        return { ...col, fields }
+      }
+
+      // Flat collections: insert before the SEO group if present, else append.
+      const seoIdx = fields.findIndex((f) => 'name' in f && f.name === 'seo')
+      if (seoIdx >= 0) fields.splice(seoIdx, 0, layoutField)
+      else fields.push(layoutField)
       return { ...col, fields }
     })
 

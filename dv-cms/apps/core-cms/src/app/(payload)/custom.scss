@@ -121,6 +121,33 @@ html {
   height: auto !important;
 }
 
+/* Nút phải nằm GỌN TRONG wrapper. Payload định vị tuyệt đối các phần tử bên
+   trong, nên dù wrapper đã được canh sang mép phải sidebar thì cái nút vẫn văng
+   về bên trái và đè lên logo. Ép chúng về dòng chảy bình thường của wrapper. */
+.template-default__nav-toggler-wrapper .template-default__nav-toggler-container,
+.template-default__nav-toggler-wrapper .template-default__nav-toggler,
+.template-default__nav-toggler-wrapper .hamburger {
+  position: static !important;
+  inset: auto !important;
+  margin: 0 !important;
+}
+
+/* Sidebar thu gọn: không còn `--nav-open` nên quy tắc canh phải ở trên không
+   áp dụng — neo nút theo bề rộng dải icon để nó không nhảy vào giữa nội dung. */
+@media (min-width: 1441px) {
+  div:has(> .template-default:not(.template-default--nav-open)) > .template-default__nav-toggler-wrapper {
+    position: absolute !important;
+    top: 0 !important;
+    left: calc(var(--dv-nav-collapsed-width) - 0.25rem) !important;
+    right: auto !important;
+    height: var(--app-header-height) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    z-index: calc(var(--z-modal) + 3) !important;
+  }
+}
+
 .template-default__nav-toggler.nav-toggler {
   display: flex;
   align-items: center;
@@ -653,6 +680,21 @@ html {
 
 .dv-account-menu__popup .popup-button:hover {
   opacity: 0.9;
+}
+
+/* Avatar chữ cái đầu — thay cho <Account /> (xem chú thích trong AccountMenu.tsx) */
+.dv-account-menu__avatar {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  background: var(--dv-primary);
+  color: #fff;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  line-height: 1;
+  user-select: none;
 }
 
 /* Ẩn đăng xuất sidebar (đã chuyển lên menu user) */

@@ -28,6 +28,7 @@ export type Messages = {
     privacy: string
     terms: string
     company: { taxCode: string; registered: string; office: string }
+    newsletter: { title: string; desc: string; placeholder: string; cta: string; success: string; error: string }
   }
   home: {
     hero: {
@@ -194,6 +195,14 @@ const vi: Messages = {
     privacy: 'Chính sách bảo mật',
     terms: 'Điều khoản sử dụng',
     company: { taxCode: 'MST', registered: 'ĐKKD', office: 'Văn phòng' },
+    newsletter: {
+      title: 'Đăng ký nhận bản tin',
+      desc: 'Cập nhật nguyên liệu mới, xu hướng R&D và tài liệu kỹ thuật — gửi thẳng đến hộp thư của bạn.',
+      placeholder: 'Email của bạn',
+      cta: 'Đăng ký',
+      success: 'Cảm ơn bạn! Chúng tôi sẽ giữ liên lạc.',
+      error: 'Đã có lỗi, vui lòng thử lại.',
+    },
   },
   home: {
     hero: {
@@ -419,6 +428,14 @@ const en: Messages = {
     privacy: 'Privacy policy',
     terms: 'Terms of use',
     company: { taxCode: 'Tax code', registered: 'Business reg.', office: 'Office' },
+    newsletter: {
+      title: 'Subscribe to our newsletter',
+      desc: 'Get updates on new ingredients, R&D trends and technical resources — straight to your inbox.',
+      placeholder: 'Your email',
+      cta: 'Subscribe',
+      success: 'Thank you! We’ll stay in touch.',
+      error: 'Something went wrong, please try again.',
+    },
   },
   home: {
     hero: {

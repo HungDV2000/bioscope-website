@@ -25,6 +25,10 @@ FROM base AS runner
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_OPTIONS=--no-deprecation
+# pg_dump for the admin "Sao lưu dữ liệu" endpoint (GET /api/backup).
+# Pinned to 16 to match the postgres:16-alpine service — pg_dump refuses to dump
+# a server newer than itself.
+RUN apk add --no-cache postgresql16-client
 # Keep the same prefix at runtime so the server-rendered HTML matches the bundle.
 ARG CMS_ASSET_PREFIX=
 ENV CMS_ASSET_PREFIX=${CMS_ASSET_PREFIX}

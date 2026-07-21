@@ -181,6 +181,8 @@ export interface Config {
     'dv-seed': DvSeedWidget;
     'dv-cms-sync': DvCmsSyncWidget;
     'dv-ai-generate': DvAiGenerateWidget;
+    'dv-backup': DvBackupWidget;
+    'dv-duplicates': DvDuplicatesWidget;
     collections: CollectionsWidget;
   };
   user: User | Member;
@@ -441,11 +443,6 @@ export interface Page {
   id: number;
   title: string;
   /**
-   * Để trống sẽ tự tạo từ tiêu đề.
-   */
-  slug?: string | null;
-  hero?: (number | null) | Media;
-  /**
    * Bố cục trang ghép từ các block tái dùng.
    */
   layout?:
@@ -532,6 +529,11 @@ export interface Page {
     twitterTitle?: string | null;
     twitterDescription?: string | null;
   };
+  /**
+   * Đường dẫn theo từng ngôn ngữ. Để trống sẽ tự tạo từ tiêu đề của ngôn ngữ đang chọn.
+   */
+  slug?: string | null;
+  hero?: (number | null) | Media;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -745,9 +747,26 @@ export interface HomeHeroBlock {
 export interface HomeBrandsBlock {
   title?: string | null;
   /**
-   * Search + select ingredient categories.
+   * Search + select ingredient categories. Leave empty to use the custom chips below.
    */
   categories?: (number | IngredientCategory)[] | null;
+  /**
+   * Full control over the chip strip: label, icon and link. Used when no categories are selected above.
+   */
+  customChips?:
+    | {
+        label?: string | null;
+        icon?: ('sprout' | 'sparkles' | 'leaf' | 'flask' | 'heart' | 'pill') | null;
+        /**
+         * e.g. /nguyen-lieu?category=omega
+         */
+        href?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Logos shown in the scrolling strip. Leave empty to hide the strip.
+   */
   logos?:
     | {
         logo?: (number | null) | Media;
@@ -767,7 +786,7 @@ export interface IngredientCategory {
   id: number;
   name: string;
   /**
-   * Để trống sẽ tự tạo từ tiêu đề.
+   * Đường dẫn theo từng ngôn ngữ. Để trống sẽ tự tạo từ tiêu đề của ngôn ngữ đang chọn.
    */
   slug?: string | null;
   /**
@@ -1293,10 +1312,6 @@ export interface LegalContentBlock {
 export interface Post {
   id: number;
   title: string;
-  /**
-   * Để trống sẽ tự tạo từ tiêu đề.
-   */
-  slug?: string | null;
   excerpt?: string | null;
   content?: {
     root: {
@@ -1313,11 +1328,6 @@ export interface Post {
     };
     [k: string]: unknown;
   } | null;
-  cover?: (number | null) | Media;
-  author?: (number | null) | User;
-  categories?: (number | Category)[] | null;
-  tags?: (number | Tag)[] | null;
-  publishedAt?: string | null;
   /**
    * Meta cho công cụ tìm kiếm & mạng xã hội (phân tích kiểu Yoast).
    */
@@ -1366,6 +1376,15 @@ export interface Post {
     twitterTitle?: string | null;
     twitterDescription?: string | null;
   };
+  /**
+   * Đường dẫn theo từng ngôn ngữ. Để trống sẽ tự tạo từ tiêu đề của ngôn ngữ đang chọn.
+   */
+  slug?: string | null;
+  cover?: (number | null) | Media;
+  author?: (number | null) | User;
+  categories?: (number | Category)[] | null;
+  tags?: (number | Tag)[] | null;
+  publishedAt?: string | null;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -1378,7 +1397,7 @@ export interface Category {
   id: number;
   name: string;
   /**
-   * Để trống sẽ tự tạo từ tiêu đề.
+   * Đường dẫn theo từng ngôn ngữ. Để trống sẽ tự tạo từ tiêu đề của ngôn ngữ đang chọn.
    */
   slug?: string | null;
   updatedAt: string;
@@ -1392,7 +1411,7 @@ export interface Tag {
   id: number;
   name: string;
   /**
-   * Để trống sẽ tự tạo từ tiêu đề.
+   * Đường dẫn theo từng ngôn ngữ. Để trống sẽ tự tạo từ tiêu đề của ngôn ngữ đang chọn.
    */
   slug?: string | null;
   updatedAt: string;
@@ -1735,20 +1754,7 @@ export interface Partner {
 export interface Ingredient {
   id: number;
   name: string;
-  /**
-   * Để trống sẽ tự tạo từ tiêu đề.
-   */
-  slug?: string | null;
-  /**
-   * Khóa duy nhất từ hệ thống ngoài. Đồng bộ tự động.
-   */
-  externalId?: string | null;
   subtitle?: string | null;
-  type: 'supplement' | 'cosmetic' | 'both';
-  /**
-   * Badge hiển thị trên thẻ nguyên liệu (NEW / TRENDING / EXCLUSIVE).
-   */
-  tag?: ('NEW' | 'TRENDING' | 'EXCLUSIVE') | null;
   /**
    * Tên khoa học / INCI.
    */
@@ -1757,7 +1763,6 @@ export interface Ingredient {
    * Liều dùng gợi ý — tab Ứng dụng.
    */
   suggestedDosage?: string | null;
-  category?: (number | null) | IngredientCategory;
   /**
    * Mã quốc gia, vd JP.
    */
@@ -1766,7 +1771,6 @@ export interface Ingredient {
    * Thương hiệu OEM.
    */
   brandName?: string | null;
-  partner?: (number | null) | Partner;
   moq?: string | null;
   description?: {
     root: {
@@ -1816,45 +1820,86 @@ export interface Ingredient {
         id?: string | null;
       }[]
     | null;
-  featured?: boolean | null;
-  /**
-   * Danh sách file ID (cũ) — tương thích ngược với DB.
-   */
-  sourceFileIds?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  /**
-   * Timestamp lần index cuối (cũ) — tương thích ngược với DB.
-   */
-  lastIndexedAt?: string | null;
-  /**
-   * Google Drive folder ID của nguyên liệu này.
-   */
-  driveId?: string | null;
-  driveParentId?: string | null;
-  driveFiles?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  /**
-   * Số file trong Drive folder.
-   */
-  fileCount?: number | null;
-  /**
-   * Lần cuối sync từ Google Drive.
-   */
-  lastDriveSyncAt?: string | null;
+  technical?: {
+    casNumber?: string | null;
+    /**
+     * Dùng khai hải quan.
+     */
+    hsCode?: string | null;
+    eNumber?: string | null;
+    /**
+     * Vd: 95% curcuminoids.
+     */
+    assay?: string | null;
+    standardization?: string | null;
+    /**
+     * Bột / dịch / hạt, màu, mùi.
+     */
+    appearance?: string | null;
+    solubility?: string | null;
+    /**
+     * Vd: 80 mesh.
+     */
+    particleSize?: string | null;
+    /**
+     * Vd: 24 tháng.
+     */
+    shelfLife?: string | null;
+    /**
+     * Vd: 2-8°C, tránh ánh sáng.
+     */
+    storage?: string | null;
+    /**
+     * Vd: 25 kg/thùng.
+     */
+    packaging?: string | null;
+    leadTime?: string | null;
+    incompatibility?: string | null;
+  };
+  regulatory?: {
+    status?: ('fda_gras' | 'efsa' | 'vn_moh' | 'novel_food')[] | null;
+    registrationNo?: string | null;
+    /**
+     * Vd: tối đa 500 mg/ngày.
+     */
+    usageLimit?: string | null;
+    /**
+     * File công khai. Tài liệu cần đăng nhập mới tải thì dùng Cổng B2B → Tài liệu giới hạn.
+     */
+    documents?:
+      | {
+          title?: string | null;
+          file?: (number | null) | Media;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  research?: {
+    mechanism?: {
+      root: {
+        type: string;
+        children: {
+          type: any;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
+        version: number;
+      };
+      [k: string]: unknown;
+    } | null;
+    studies?:
+      | {
+          title?: string | null;
+          summary?: string | null;
+          url?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  relatedIngredients?: (number | Ingredient)[] | null;
   /**
    * Meta cho công cụ tìm kiếm & mạng xã hội (phân tích kiểu Yoast).
    */
@@ -1903,6 +1948,60 @@ export interface Ingredient {
     twitterTitle?: string | null;
     twitterDescription?: string | null;
   };
+  /**
+   * Đường dẫn theo từng ngôn ngữ. Để trống sẽ tự tạo từ tiêu đề của ngôn ngữ đang chọn.
+   */
+  slug?: string | null;
+  /**
+   * Khóa duy nhất từ hệ thống ngoài. Đồng bộ tự động.
+   */
+  externalId?: string | null;
+  type: 'supplement' | 'cosmetic' | 'both';
+  /**
+   * Badge hiển thị trên thẻ nguyên liệu (NEW / TRENDING / EXCLUSIVE).
+   */
+  tag?: ('NEW' | 'TRENDING' | 'EXCLUSIVE') | null;
+  category?: (number | null) | IngredientCategory;
+  partner?: (number | null) | Partner;
+  featured?: boolean | null;
+  /**
+   * Danh sách file ID (cũ) — tương thích ngược với DB.
+   */
+  sourceFileIds?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Timestamp lần index cuối (cũ) — tương thích ngược với DB.
+   */
+  lastIndexedAt?: string | null;
+  /**
+   * Google Drive folder ID của nguyên liệu này.
+   */
+  driveId?: string | null;
+  driveParentId?: string | null;
+  driveFiles?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Số file trong Drive folder.
+   */
+  fileCount?: number | null;
+  /**
+   * Lần cuối sync từ Google Drive.
+   */
+  lastDriveSyncAt?: string | null;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -1914,10 +2013,6 @@ export interface Ingredient {
 export interface Technology {
   id: number;
   name: string;
-  /**
-   * Để trống sẽ tự tạo từ tiêu đề.
-   */
-  slug?: string | null;
   tagline?: string | null;
   description?: {
     root: {
@@ -1973,7 +2068,6 @@ export interface Technology {
         id?: string | null;
       }[]
     | null;
-  order?: number | null;
   /**
    * Meta cho công cụ tìm kiếm & mạng xã hội (phân tích kiểu Yoast).
    */
@@ -2022,6 +2116,11 @@ export interface Technology {
     twitterTitle?: string | null;
     twitterDescription?: string | null;
   };
+  /**
+   * Đường dẫn theo từng ngôn ngữ. Để trống sẽ tự tạo từ tiêu đề của ngôn ngữ đang chọn.
+   */
+  slug?: string | null;
+  order?: number | null;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -2205,10 +2304,6 @@ export interface Service {
   id: number;
   title: string;
   /**
-   * Để trống sẽ tự tạo từ tiêu đề.
-   */
-  slug?: string | null;
-  /**
    * Đối tượng phù hợp (mô tả ngắn dưới tiêu đề).
    */
   forWho?: string | null;
@@ -2275,7 +2370,6 @@ export interface Service {
   icon?: string | null;
   image?: (number | null) | Media;
   features?: string[] | null;
-  order?: number | null;
   /**
    * Meta cho công cụ tìm kiếm & mạng xã hội (phân tích kiểu Yoast).
    */
@@ -2324,6 +2418,11 @@ export interface Service {
     twitterTitle?: string | null;
     twitterDescription?: string | null;
   };
+  /**
+   * Đường dẫn theo từng ngôn ngữ. Để trống sẽ tự tạo từ tiêu đề của ngôn ngữ đang chọn.
+   */
+  slug?: string | null;
+  order?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -2358,14 +2457,9 @@ export interface CaseStudy {
   id: number;
   brand: string;
   /**
-   * Để trống sẽ tự tạo từ tiêu đề.
-   */
-  slug?: string | null;
-  /**
    * Ingredient partner or applied technology (e.g. GC Rieber Oils, wet Phytosome).
    */
   partner?: string | null;
-  industry?: ('Thực phẩm chức năng' | 'Dược phẩm' | 'Mỹ phẩm' | 'Dinh dưỡng') | null;
   summary?: string | null;
   /**
    * e.g. 500K USD, 70%+, #1
@@ -2385,8 +2479,6 @@ export interface CaseStudy {
    */
   tags?: string[] | null;
   coverImage?: (number | null) | Media;
-  featured?: boolean | null;
-  order?: number | null;
   /**
    * Meta cho công cụ tìm kiếm & mạng xã hội (phân tích kiểu Yoast).
    */
@@ -2435,6 +2527,13 @@ export interface CaseStudy {
     twitterTitle?: string | null;
     twitterDescription?: string | null;
   };
+  /**
+   * Đường dẫn theo từng ngôn ngữ. Để trống sẽ tự tạo từ tiêu đề của ngôn ngữ đang chọn.
+   */
+  slug?: string | null;
+  industry?: ('Thực phẩm chức năng' | 'Dược phẩm' | 'Mỹ phẩm' | 'Dinh dưỡng') | null;
+  featured?: boolean | null;
+  order?: number | null;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -2956,8 +3055,6 @@ export interface MediaSelect<T extends boolean = true> {
  */
 export interface PagesSelect<T extends boolean = true> {
   title?: T;
-  slug?: T;
-  hero?: T;
   layout?:
     | T
     | {
@@ -3011,6 +3108,8 @@ export interface PagesSelect<T extends boolean = true> {
         twitterTitle?: T;
         twitterDescription?: T;
       };
+  slug?: T;
+  hero?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
@@ -3172,6 +3271,14 @@ export interface HomeHeroBlockSelect<T extends boolean = true> {
 export interface HomeBrandsBlockSelect<T extends boolean = true> {
   title?: T;
   categories?: T;
+  customChips?:
+    | T
+    | {
+        label?: T;
+        icon?: T;
+        href?: T;
+        id?: T;
+      };
   logos?:
     | T
     | {
@@ -3580,14 +3687,8 @@ export interface LegalContentBlockSelect<T extends boolean = true> {
  */
 export interface PostsSelect<T extends boolean = true> {
   title?: T;
-  slug?: T;
   excerpt?: T;
   content?: T;
-  cover?: T;
-  author?: T;
-  categories?: T;
-  tags?: T;
-  publishedAt?: T;
   seo?:
     | T
     | {
@@ -3605,6 +3706,12 @@ export interface PostsSelect<T extends boolean = true> {
         twitterTitle?: T;
         twitterDescription?: T;
       };
+  slug?: T;
+  cover?: T;
+  author?: T;
+  categories?: T;
+  tags?: T;
+  publishedAt?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
@@ -3846,17 +3953,11 @@ export interface IngredientCategoriesSelect<T extends boolean = true> {
  */
 export interface IngredientsSelect<T extends boolean = true> {
   name?: T;
-  slug?: T;
-  externalId?: T;
   subtitle?: T;
-  type?: T;
-  tag?: T;
   inci?: T;
   suggestedDosage?: T;
-  category?: T;
   originCountry?: T;
   brandName?: T;
-  partner?: T;
   moq?: T;
   description?: T;
   benefits?: T;
@@ -3880,14 +3981,51 @@ export interface IngredientsSelect<T extends boolean = true> {
         percent?: T;
         id?: T;
       };
-  featured?: T;
-  sourceFileIds?: T;
-  lastIndexedAt?: T;
-  driveId?: T;
-  driveParentId?: T;
-  driveFiles?: T;
-  fileCount?: T;
-  lastDriveSyncAt?: T;
+  technical?:
+    | T
+    | {
+        casNumber?: T;
+        hsCode?: T;
+        eNumber?: T;
+        assay?: T;
+        standardization?: T;
+        appearance?: T;
+        solubility?: T;
+        particleSize?: T;
+        shelfLife?: T;
+        storage?: T;
+        packaging?: T;
+        leadTime?: T;
+        incompatibility?: T;
+      };
+  regulatory?:
+    | T
+    | {
+        status?: T;
+        registrationNo?: T;
+        usageLimit?: T;
+        documents?:
+          | T
+          | {
+              title?: T;
+              file?: T;
+              id?: T;
+            };
+      };
+  research?:
+    | T
+    | {
+        mechanism?: T;
+        studies?:
+          | T
+          | {
+              title?: T;
+              summary?: T;
+              url?: T;
+              id?: T;
+            };
+      };
+  relatedIngredients?: T;
   seo?:
     | T
     | {
@@ -3905,6 +4043,20 @@ export interface IngredientsSelect<T extends boolean = true> {
         twitterTitle?: T;
         twitterDescription?: T;
       };
+  slug?: T;
+  externalId?: T;
+  type?: T;
+  tag?: T;
+  category?: T;
+  partner?: T;
+  featured?: T;
+  sourceFileIds?: T;
+  lastIndexedAt?: T;
+  driveId?: T;
+  driveParentId?: T;
+  driveFiles?: T;
+  fileCount?: T;
+  lastDriveSyncAt?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
@@ -3992,7 +4144,6 @@ export interface CmsSyncRunsSelect<T extends boolean = true> {
  */
 export interface TechnologiesSelect<T extends boolean = true> {
   name?: T;
-  slug?: T;
   tagline?: T;
   description?: T;
   mechanism?: T;
@@ -4014,7 +4165,6 @@ export interface TechnologiesSelect<T extends boolean = true> {
         percent?: T;
         id?: T;
       };
-  order?: T;
   seo?:
     | T
     | {
@@ -4032,6 +4182,8 @@ export interface TechnologiesSelect<T extends boolean = true> {
         twitterTitle?: T;
         twitterDescription?: T;
       };
+  slug?: T;
+  order?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
@@ -4042,7 +4194,6 @@ export interface TechnologiesSelect<T extends boolean = true> {
  */
 export interface ServicesSelect<T extends boolean = true> {
   title?: T;
-  slug?: T;
   forWho?: T;
   summary?: T;
   heroQuote?: T;
@@ -4069,7 +4220,6 @@ export interface ServicesSelect<T extends boolean = true> {
   icon?: T;
   image?: T;
   features?: T;
-  order?: T;
   seo?:
     | T
     | {
@@ -4087,6 +4237,8 @@ export interface ServicesSelect<T extends boolean = true> {
         twitterTitle?: T;
         twitterDescription?: T;
       };
+  slug?: T;
+  order?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -4110,9 +4262,7 @@ export interface CertificationsSelect<T extends boolean = true> {
  */
 export interface CaseStudiesSelect<T extends boolean = true> {
   brand?: T;
-  slug?: T;
   partner?: T;
-  industry?: T;
   summary?: T;
   kpi?: T;
   kpiLabel?: T;
@@ -4123,8 +4273,6 @@ export interface CaseStudiesSelect<T extends boolean = true> {
   testimonial?: T;
   tags?: T;
   coverImage?: T;
-  featured?: T;
-  order?: T;
   seo?:
     | T
     | {
@@ -4142,6 +4290,10 @@ export interface CaseStudiesSelect<T extends boolean = true> {
         twitterTitle?: T;
         twitterDescription?: T;
       };
+  slug?: T;
+  industry?: T;
+  featured?: T;
+  order?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
@@ -4386,6 +4538,15 @@ export interface Navigation {
         id?: string | null;
       }[]
     | null;
+  companyInfo?: {
+    name?: string | null;
+    taxCode?: string | null;
+    registeredAddress?: string | null;
+    officeAddress?: string | null;
+    hotline?: string | null;
+    email?: string | null;
+    website?: string | null;
+  };
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -4886,6 +5047,17 @@ export interface NavigationSelect<T extends boolean = true> {
             };
         id?: T;
       };
+  companyInfo?:
+    | T
+    | {
+        name?: T;
+        taxCode?: T;
+        registeredAddress?: T;
+        officeAddress?: T;
+        hotline?: T;
+        email?: T;
+        website?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
@@ -5317,6 +5489,26 @@ export interface DvCmsSyncWidget {
  * via the `definition` "dv-ai-generate_widget".
  */
 export interface DvAiGenerateWidget {
+  data?: {
+    [k: string]: unknown;
+  };
+  width: 'medium' | 'large' | 'x-large' | 'full';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "dv-backup_widget".
+ */
+export interface DvBackupWidget {
+  data?: {
+    [k: string]: unknown;
+  };
+  width: 'medium' | 'large' | 'x-large' | 'full';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "dv-duplicates_widget".
+ */
+export interface DvDuplicatesWidget {
   data?: {
     [k: string]: unknown;
   };

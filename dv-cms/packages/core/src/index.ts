@@ -9,6 +9,7 @@ export * from './access/index.js'
 // Field helpers
 export { slugField } from './fields/slug.js'
 export { seoField } from './fields/seo.js'
+export { contentTabs } from './fields/tabs.js'
 
 // Hooks
 export { buildRevalidateHooks, type RevalidateOptions } from './hooks/revalidate.js'

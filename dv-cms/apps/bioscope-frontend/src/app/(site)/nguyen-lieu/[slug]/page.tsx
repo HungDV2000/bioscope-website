@@ -150,7 +150,7 @@ export default async function IngredientDetail({ params }: { params: Promise<{ s
                     fill
                     unoptimized
                     sizes="(max-width: 1024px) 100vw, 360px"
-                    className="object-cover"
+                    className="object-contain p-4"
                   />
                 ) : (
                   <div className="flex h-full flex-col items-center justify-center gap-3 text-primary/50">
@@ -159,7 +159,7 @@ export default async function IngredientDetail({ params }: { params: Promise<{ s
                       alt=""
                       fill
                       sizes="360px"
-                      className="object-cover opacity-40"
+                      className="object-contain p-6 opacity-40"
                     />
                     <div className="relative flex flex-col items-center gap-2">
                       <ImageOff className="h-8 w-8" strokeWidth={1.4} />

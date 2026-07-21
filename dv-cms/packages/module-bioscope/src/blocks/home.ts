@@ -70,10 +70,60 @@ export const HOME_BLOCKS: Block[] = [
         type: 'relationship',
         relationTo: 'ingredient-categories',
         hasMany: true,
-        label: { en: 'Category chips', vi: 'Chip danh mục' },
-        admin: { description: { en: 'Search + select ingredient categories.', vi: 'Tìm + chọn danh mục nguyên liệu (nhiều).' } },
+        label: { en: 'Category chips (from collection)', vi: 'Chip danh mục (lấy từ collection)' },
+        admin: {
+          description: {
+            en: 'Search + select ingredient categories. Leave empty to use the custom chips below.',
+            vi: 'Tìm + chọn danh mục nguyên liệu. Để trống nếu muốn dùng danh sách chip tự nhập bên dưới.',
+          },
+        },
       },
-      { name: 'logos', type: 'array', label: { en: 'Partner logos', vi: 'Logo đối tác' }, fields: [IMG('logo', { en: 'Logo', vi: 'Logo' }), { name: 'name', type: 'text' }] },
+      {
+        name: 'customChips',
+        type: 'array',
+        label: { en: 'Custom chips', vi: 'Chip tự nhập' },
+        admin: {
+          description: {
+            en: 'Full control over the chip strip: label, icon and link. Used when no categories are selected above.',
+            vi: 'Tự quyết định dải chip: nhãn, icon và liên kết. Dùng khi ở trên không chọn danh mục nào.',
+          },
+        },
+        fields: [
+          T('label', { en: 'Label', vi: 'Nhãn hiển thị' }),
+          {
+            name: 'icon',
+            type: 'select',
+            label: { en: 'Icon', vi: 'Biểu tượng' },
+            defaultValue: 'sprout',
+            options: [
+              { label: { en: 'Sprout (leafy)', vi: 'Mầm cây' }, value: 'sprout' },
+              { label: { en: 'Sparkles (cosmetic)', vi: 'Lấp lánh (mỹ phẩm)' }, value: 'sparkles' },
+              { label: { en: 'Leaf (botanical)', vi: 'Lá (thực vật)' }, value: 'leaf' },
+              { label: { en: 'Flask (lab)', vi: 'Bình thí nghiệm' }, value: 'flask' },
+              { label: { en: 'Heart pulse (health)', vi: 'Nhịp tim (sức khoẻ)' }, value: 'heart' },
+              { label: { en: 'Pill (pharma)', vi: 'Viên thuốc (dược)' }, value: 'pill' },
+            ],
+          },
+          {
+            name: 'href',
+            type: 'text',
+            label: { en: 'Link', vi: 'Liên kết' },
+            admin: { description: { en: 'e.g. /nguyen-lieu?category=omega', vi: 'Ví dụ: /nguyen-lieu?category=omega' } },
+          },
+        ],
+      },
+      {
+        name: 'logos',
+        type: 'array',
+        label: { en: 'Partner logos', vi: 'Logo đối tác' },
+        admin: {
+          description: {
+            en: 'Logos shown in the scrolling strip. Leave empty to hide the strip.',
+            vi: 'Logo hiển thị ở dải chạy. Để trống thì ẩn dải logo.',
+          },
+        },
+        fields: [IMG('logo', { en: 'Logo', vi: 'Logo' }), { name: 'name', type: 'text', label: { en: 'Name', vi: 'Tên' } }],
+      },
     ],
   },
   {

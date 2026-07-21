@@ -33,8 +33,11 @@ export type SectionMedia = {
   logos?: { image?: string; name?: string }[]
   /** RichText (lexical) description edited in the CMS — overrides the i18n string. */
   descRich?: unknown
-  /** Category chips selected from the ingredient-categories collection. */
-  categoryChips?: { name: string; href: string }[]
+  /**
+   * Chips for the brands strip — either picked from the ingredient-categories
+   * collection or typed by hand in the CMS (then `icon` names the lucide glyph).
+   */
+  categoryChips?: { name: string; href: string; icon?: string }[]
   /** Hero CTA links + optional background video. */
   ctaPrimaryHref?: string
   ctaSecondaryHref?: string
@@ -113,9 +116,25 @@ function extractMedia(block: Block): SectionMedia | undefined {
           return { name, href: cat.slug ? `/nguyen-lieu?category=${encodeURIComponent(cat.slug)}` : '/nguyen-lieu' }
         })
         .filter(Boolean) as { name: string; href: string }[]
+
+      // Custom chips (label + icon + link) take over when no categories are picked.
+      const custom = Array.isArray(b.customChips) ? (b.customChips as Record<string, unknown>[]) : []
+      const customChips = custom
+        .map((c) => {
+          const name = typeof c.label === 'string' ? c.label.trim() : ''
+          if (!name) return null
+          return {
+            name,
+            href: typeof c.href === 'string' && c.href.trim() ? c.href.trim() : '/nguyen-lieu',
+            icon: typeof c.icon === 'string' ? c.icon : undefined,
+          }
+        })
+        .filter(Boolean) as { name: string; href: string; icon?: string }[]
+
+      const chips = categoryChips.length ? categoryChips : customChips
       return {
         logos: logos.map((l) => ({ image: uploadUrl(l.logo), name: typeof l.name === 'string' ? l.name : undefined })),
-        ...(categoryChips.length ? { categoryChips } : {}),
+        ...(chips.length ? { categoryChips: chips } : {}),
       }
     }
     default:

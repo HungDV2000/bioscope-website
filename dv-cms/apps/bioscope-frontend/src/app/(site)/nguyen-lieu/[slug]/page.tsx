@@ -113,7 +113,7 @@ export default async function IngredientDetail({ params }: { params: Promise<{ s
 
               {/* Quick facts — vertical list so long values (MOQ, manufacturer) show in full */}
               {facts.length > 0 && (
-              <dl className="mt-8 max-w-xl overflow-hidden rounded-2xl border border-primary-border/50 bg-white/70">
+              <dl className="mt-8 w-full overflow-hidden rounded-2xl border border-primary-border/50 bg-white/70">
                 {facts.map(({ icon: Icon, label, value }, i) => (
                   <div
                     key={label}

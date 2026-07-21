@@ -111,23 +111,22 @@ export default async function IngredientDetail({ params }: { params: Promise<{ s
                 </div>
               )}
 
-              {/* Quick facts */}
+              {/* Quick facts — vertical list so long values (MOQ, manufacturer) show in full */}
               {facts.length > 0 && (
-              <dl
-                className={cn(
-                  'mt-8 grid grid-cols-2 gap-3',
-                  facts.length >= 4 ? 'sm:grid-cols-4' : 'sm:grid-cols-3',
-                )}
-              >
-                {facts.map(({ icon: Icon, label, value }) => (
-                  <div key={label} className="rounded-2xl border border-primary-border/50 bg-white/70 px-4 py-3.5">
-                    <dt className="flex items-center gap-1.5 text-[11.5px] font-medium uppercase tracking-wide text-ink/45">
-                      <Icon className="h-3.5 w-3.5 text-primary" strokeWidth={1.8} />
+              <dl className="mt-8 max-w-xl overflow-hidden rounded-2xl border border-primary-border/50 bg-white/70">
+                {facts.map(({ icon: Icon, label, value }, i) => (
+                  <div
+                    key={label}
+                    className={cn(
+                      'flex items-start gap-3 px-4 py-3',
+                      i > 0 && 'border-t border-primary-border/40',
+                    )}
+                  >
+                    <Icon className="mt-0.5 h-4 w-4 shrink-0 text-primary" strokeWidth={1.9} />
+                    <dt className="w-32 shrink-0 pt-px text-[11.5px] font-medium uppercase tracking-wide text-ink/45">
                       {label}
                     </dt>
-                    <dd className="mt-1 truncate text-[15px] font-bold text-ink" title={value}>
-                      {value}
-                    </dd>
+                    <dd className="flex-1 text-[14.5px] font-semibold leading-snug text-ink">{value}</dd>
                   </div>
                 ))}
               </dl>

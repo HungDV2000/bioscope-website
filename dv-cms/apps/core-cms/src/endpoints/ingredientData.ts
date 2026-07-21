@@ -42,6 +42,7 @@ const COLUMNS = [
   'tech_leadTime_vi', 'tech_leadTime_en', 'tech_incompatibility_vi', 'tech_incompatibility_en',
   'reg_status', 'reg_registrationNo', 'reg_usageLimit_vi', 'reg_usageLimit_en',
   'research_mechanism_vi', 'research_mechanism_en',
+  'seo_title_vi', 'seo_title_en', 'seo_description_vi', 'seo_description_en',
 ] as const
 
 type Col = (typeof COLUMNS)[number]
@@ -139,6 +140,8 @@ function docToRow(vi: Doc, en: Doc | undefined): FlatRow {
     reg_usageLimit_vi: rvi.usageLimit ?? '', reg_usageLimit_en: ren.usageLimit ?? '',
     research_mechanism_vi: lexicalToText((vi.research ?? {}).mechanism),
     research_mechanism_en: lexicalToText((e.research ?? {}).mechanism),
+    seo_title_vi: (vi.seo ?? {}).title ?? '', seo_title_en: (e.seo ?? {}).title ?? '',
+    seo_description_vi: (vi.seo ?? {}).description ?? '', seo_description_en: (e.seo ?? {}).description ?? '',
   }
 }
 
@@ -216,6 +219,10 @@ async function applyRow(
       usageLimit: row.reg_usageLimit_vi || null,
     },
     research: { mechanism: textToLexical(row.research_mechanism_vi || '') },
+    // Only touch SEO when the row carries it (old CSVs without these columns keep existing SEO).
+    ...((row.seo_title_vi || row.seo_description_vi)
+      ? { seo: { title: row.seo_title_vi || null, description: row.seo_description_vi || null } }
+      : {}),
   }
 
   // EN-locale localized values only (send full groups so nested localized subfields stick).
@@ -237,6 +244,9 @@ async function applyRow(
     },
     regulatory: { usageLimit: row.reg_usageLimit_en || null },
     research: { mechanism: textToLexical(row.research_mechanism_en || '') },
+    ...((row.seo_title_en || row.seo_description_en)
+      ? { seo: { title: row.seo_title_en || null, description: row.seo_description_en || null } }
+      : {}),
   }
 
   const found = targetId

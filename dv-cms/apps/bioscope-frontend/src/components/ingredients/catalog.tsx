@@ -242,9 +242,8 @@ export function Catalog({ items }: { items: Ingredient[] }) {
                     unoptimized
                     sizes="(max-width: 768px) 100vw, 360px"
                     className={cn(
-                      // `contain` so the whole product shot is visible — ingredient
-                      // photos are packshots and get their labels cropped by `cover`.
-                      'object-contain p-3 transition-transform duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:scale-105',
+                      // Full-bleed cover so the image fills the whole card frame.
+                      'object-cover transition-transform duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:scale-105',
                     )}
                   />
                   <span className="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-[11px] font-semibold text-primary-dark backdrop-blur-sm">

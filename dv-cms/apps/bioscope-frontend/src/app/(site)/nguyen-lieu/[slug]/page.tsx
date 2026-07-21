@@ -68,15 +68,16 @@ export default async function IngredientDetail({ params }: { params: Promise<{ s
     <article className="bg-white">
       <JsonLd data={productLd} />
 
-      {/* Header band */}
-      <section className="relative overflow-hidden border-b border-primary-border/40 bg-gradient-to-b from-mist to-white pt-32 lg:pt-40">
+      {/* Header + content — one 2-column grid so the sticky media/CTA column
+          runs alongside the full left content (no empty gap under the facts). */}
+      <section className="relative overflow-hidden bg-gradient-to-b from-mist to-white pt-24 lg:pt-28">
         <div
           className="pointer-events-none absolute -right-24 -top-16 h-80 w-80 rounded-full bg-primary/10 blur-3xl"
           aria-hidden
         />
-        <div className="container-bs relative pb-10">
+        <div className="container-bs relative pb-16">
           <Breadcrumbs crumbs={crumbs} />
-          <div className="mt-8 grid gap-10 lg:grid-cols-[1fr_360px]">
+          <div className="mt-6 grid gap-10 lg:grid-cols-[1fr_360px] lg:items-start">
             <div>
               <div className="flex flex-wrap items-center gap-2">
                 <span className="rounded-full bg-primary-tint px-3 py-1 text-[12px] font-semibold text-primary-dark">
@@ -131,6 +132,11 @@ export default async function IngredientDetail({ params }: { params: Promise<{ s
                 ))}
               </dl>
               )}
+
+              {/* Tabbed detail content flows under the header info in the same column */}
+              <div className="mt-10 border-t border-primary-border/40 pt-8">
+                <DetailTabs ingredient={it} />
+              </div>
             </div>
 
             {/* Sticky media + CTA */}
@@ -150,7 +156,7 @@ export default async function IngredientDetail({ params }: { params: Promise<{ s
                     fill
                     unoptimized
                     sizes="(max-width: 1024px) 100vw, 360px"
-                    className="object-contain p-4"
+                    className="object-cover"
                   />
                 ) : (
                   <div className="flex h-full flex-col items-center justify-center gap-3 text-primary/50">
@@ -198,16 +204,6 @@ export default async function IngredientDetail({ params }: { params: Promise<{ s
           </div>
         </div>
       </section>
-
-      {/* Detail content */}
-      <div className="container-bs pb-4 pt-12">
-        <div className="grid gap-10 lg:grid-cols-[1fr_360px]">
-          <div>
-            <DetailTabs ingredient={it} />
-          </div>
-          <div aria-hidden className="hidden lg:block" />
-        </div>
-      </div>
 
       <CtaBand />
     </article>

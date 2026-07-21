@@ -154,10 +154,17 @@ async function resolveRelId(
   return (res.docs[0] as { id?: string | number } | undefined)?.id
 }
 
-async function applyRow(payload: Payload, row: FlatRow): Promise<'created' | 'updated'> {
+async function applyRow(
+  payload: Payload,
+  row: FlatRow,
+  targetId?: string | number,
+): Promise<'created' | 'updated'> {
   const slug = (row.slug ?? '').trim()
   const name = (row.name ?? '').trim()
-  if (!slug || !name) throw new Error('Thiếu slug hoặc name.')
+  // targetId = importing INTO a specific ingredient (from its own edit page): only
+  // `name` is required, and we must NOT touch that record's slug.
+  if (!name) throw new Error('Thiếu name.')
+  if (!targetId && !slug) throw new Error('Thiếu slug.')
 
   const [categoryId, partnerId] = await Promise.all([
     resolveRelId(payload, 'ingredient-categories', 'slug', row.categorySlug?.trim()),
@@ -174,9 +181,11 @@ async function applyRow(payload: Payload, row: FlatRow): Promise<'created' | 'up
     } catch { return [] }
   })()
 
-  // Shared (non-localized) + VI-locale values.
+  // Shared (non-localized) + VI-locale values. Keep the target record's own slug
+  // when importing into a specific ingredient (don't rewrite its URL).
   const viData: Doc = {
-    name, slug,
+    name,
+    ...(targetId ? {} : { slug }),
     type: (row.type || 'supplement').trim(),
     tag: row.tag?.trim() || null,
     featured: String(row.featured).toLowerCase() === 'true',
@@ -230,8 +239,9 @@ async function applyRow(payload: Payload, row: FlatRow): Promise<'created' | 'up
     research: { mechanism: textToLexical(row.research_mechanism_en || '') },
   }
 
-  const existing = await payload.find({ collection: 'ingredients', where: { slug: { equals: slug } }, limit: 1, depth: 0, overrideAccess: true })
-  const found = existing.docs[0] as { id: string | number } | undefined
+  const found = targetId
+    ? ({ id: targetId } as { id: string | number })
+    : ((await payload.find({ collection: 'ingredients', where: { slug: { equals: slug } }, limit: 1, depth: 0, overrideAccess: true })).docs[0] as { id: string | number } | undefined)
 
   let id: string | number
   let outcome: 'created' | 'updated'
@@ -311,7 +321,7 @@ export const ingredientImportEndpoint: Endpoint = {
   method: 'post',
   handler: async (req: PayloadRequest): Promise<Response> => {
     if (!isAdmin(req)) return Response.json({ ok: false, error: 'Chỉ admin/editor được phép.' }, { status: 403 })
-    let body: { format?: string; content?: string; rows?: FlatRow[] }
+    let body: { format?: string; content?: string; rows?: FlatRow[]; targetId?: string | number }
     try { body = await (req as unknown as Request).json() } catch {
       return Response.json({ ok: false, error: 'Body phải là JSON.' }, { status: 400 })
     }
@@ -325,6 +335,19 @@ export const ingredientImportEndpoint: Endpoint = {
       } else return Response.json({ ok: false, error: 'Cần { rows } hoặc { content: "<base64>" }.' }, { status: 400 })
     } catch (err) {
       return Response.json({ ok: false, error: `Lỗi đọc dữ liệu: ${err instanceof Error ? err.message : String(err)}` }, { status: 400 })
+    }
+
+    // targetId present = import from a specific ingredient's edit page → update ONLY
+    // that record with the first row (never create, never touch other records).
+    if (body.targetId != null) {
+      const row = rows[0]
+      if (!row) return Response.json({ ok: false, error: 'File không có dòng dữ liệu nào.' }, { status: 400 })
+      try {
+        await applyRow(req.payload, row, body.targetId)
+        return Response.json({ ok: true, created: 0, updated: 1, total: 1, errors: [] })
+      } catch (err) {
+        return Response.json({ ok: false, error: err instanceof Error ? err.message : String(err) }, { status: 400 })
+      }
     }
 
     let created = 0, updated = 0

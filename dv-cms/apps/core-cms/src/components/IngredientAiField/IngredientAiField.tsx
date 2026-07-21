@@ -80,23 +80,25 @@ export const IngredientAiField: React.FC = () => {
     const file = e.target.files?.[0]
     e.target.value = ''
     if (!file) return
+    if (!window.confirm(`Import "${file.name}" sẽ GHI ĐÈ nội dung của nguyên liệu đang mở. Tiếp tục?`)) return
     setBusy(true)
     setMsg({ t: 'ok', m: `Đang import ${file.name}…` })
     try {
       const text = await file.text()
       const base64 = btoa(unescape(encodeURIComponent(text)))
       const format = file.name.toLowerCase().endsWith('.json') ? 'json' : 'csv'
+      // targetId = update THIS ingredient (never create a new record).
       const r = await fetch('/api/ingredients-content-import', {
         method: 'POST', credentials: 'include',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ format, content: base64 }),
+        body: JSON.stringify({ format, content: base64, targetId: id }),
       })
       const data = await r.json()
       if (!r.ok || data.ok === false) {
         const detail = Array.isArray(data.errors) && data.errors.length ? ` (${data.errors[0].error})` : ''
         setMsg({ t: 'err', m: `${data.error ?? 'Import lỗi'}${detail}` }); setBusy(false); return
       }
-      setMsg({ t: 'ok', m: `Đã import: +${data.created} mới, ~${data.updated} cập nhật — đang tải lại…` })
+      setMsg({ t: 'ok', m: 'Đã cập nhật nguyên liệu này — đang tải lại…' })
       setTimeout(() => window.location.reload(), 900)
     } catch (err) {
       setMsg({ t: 'err', m: err instanceof Error ? err.message : 'Lỗi đọc file.' })
@@ -112,7 +114,7 @@ export const IngredientAiField: React.FC = () => {
   const sep: React.CSSProperties = { height: 1, background: 'var(--theme-elevation-100, #eee)', margin: '4px 0' }
 
   return (
-    <div style={{ marginBottom: 16 }}>
+    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginRight: 8 }}>
       <div style={{ position: 'relative', display: 'inline-block' }} ref={menuRef}>
         <button
           type="button"
@@ -156,7 +158,7 @@ export const IngredientAiField: React.FC = () => {
                 </button>
                 <div style={sep} />
                 <button type="button" role="menuitem" style={item} onClick={() => { setMenu(false); fileRef.current?.click() }}>
-                  ⬆ Import nội dung — CSV / JSON…
+                  ⬆ Import — cập nhật nguyên liệu này (CSV/JSON)…
                 </button>
               </>
             )}

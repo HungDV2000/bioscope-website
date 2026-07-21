@@ -12,6 +12,10 @@ export const Ingredients: CollectionConfig = {
     components: {
       // Bulk "Tạo nội dung tự động" bar on the list view (selected / all).
       beforeListTable: ['/components/BulkAiGenerate/BulkAiGenerate#BulkAiGenerate'],
+      edit: {
+        // "⚙ Công cụ nguyên liệu" dropdown (AI + Import/Export) next to Save/Publish.
+        beforeDocumentControls: ['/components/IngredientAiField/IngredientAiField#IngredientAiField'],
+      },
     },
   },
   versions: { drafts: { autosave: false }, maxPerDoc: 10 },
@@ -26,16 +30,6 @@ export const Ingredients: CollectionConfig = {
     { label: { en: 'Overview', vi: 'Tổng quan' }, fields: [
     { name: 'name', type: 'text', localized: true, required: true },
     slugField('name'),
-    {
-      // "Tạo nội dung tự động" button — reads Drive files → OpenAI → writes back.
-      name: 'aiGenerate',
-      type: 'ui',
-      admin: {
-        components: {
-          Field: '/components/IngredientAiField/IngredientAiField#IngredientAiField',
-        },
-      },
-    },
     {
       // Stable key used by CMS sync to upsert without duplicating records.
       // Drawn from external source (e.g. RAG product_name field).

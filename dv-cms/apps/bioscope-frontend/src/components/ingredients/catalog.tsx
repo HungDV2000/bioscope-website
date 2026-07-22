@@ -278,14 +278,30 @@ export function Catalog({ items, imageSeed }: { items: Ingredient[]; imageSeed: 
                     </span>
                   )}
                 </div>
-                <div className="flex flex-1 flex-col p-6">
-                  <h3 className="text-[18px] font-bold text-ink">{it.name}</h3>
-                  <p className="mt-2 flex-1 text-[13.5px] leading-relaxed text-ink/60">{it.shortDesc}</p>
-                  <div className="mt-5 flex items-center justify-between border-t border-primary-border/50 pt-4 text-[12.5px] text-ink/55">
-                    <span>{cat.originLabel}: {it.origin}</span>
-                    <span>MOQ {it.moq}</span>
-                  </div>
-                  <span className="mt-4 inline-flex items-center gap-1 text-[13px] font-semibold text-primary">
+                <div className="flex flex-1 flex-col p-5">
+                  {/* Tên nguyên liệu hay rất dài ("019.001 Chiết xuất cúc la mã/
+                      Cúc đức - Camomile Flower CO2-to extract - Đức") và đẩy thẻ
+                      cao lên; chặn 2 dòng để các thẻ đều nhau. */}
+                  <h3 className="line-clamp-2 text-[16.5px] font-bold leading-snug text-ink">{it.name}</h3>
+                  {/* Mô tả ngắn lấy từ `subtitle` trong CMS. Nhiều bản ghi cũ
+                      chưa có — bỏ hẳn thẻ <p> thay vì để nó chiếm chỗ rỗng. */}
+                  {it.shortDesc && (
+                    <p className="mt-1.5 line-clamp-2 text-[13px] leading-relaxed text-ink/60">
+                      {it.shortDesc}
+                    </p>
+                  )}
+                  {/* Đẩy phần chân xuống đáy để nút "Xem chi tiết" thẳng hàng
+                      giữa các thẻ cùng dòng, dù nội dung dài ngắn khác nhau. */}
+                  <div className="flex-1" />
+                  {/* Hầu hết bản ghi chưa nhập MOQ, và ~29% chưa có xuất xứ —
+                      hiện nhãn trống chỉ tổ chiếm một dòng vô nghĩa. */}
+                  {(it.origin || it.moq) && (
+                    <div className="mt-4 flex items-center justify-between gap-3 border-t border-primary-border/50 pt-3 text-[12.5px] text-ink/55">
+                      {it.origin ? <span>{cat.originLabel}: {it.origin}</span> : <span />}
+                      {it.moq && <span>MOQ {it.moq}</span>}
+                    </div>
+                  )}
+                  <span className="mt-3 inline-flex items-center gap-1 text-[13px] font-semibold text-primary">
                     {cat.viewDetails}
                     <ArrowUpRight className="h-4 w-4 transition-transform duration-500 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                   </span>

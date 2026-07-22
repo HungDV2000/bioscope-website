@@ -8,7 +8,8 @@ import { INGREDIENTS } from '@/lib/content'
 import { getContent } from '@/lib/get-content'
 import { getLocale } from '@/lib/i18n/server'
 import { getMessages } from '@/lib/i18n/messages'
-import { ingredientImg, INGREDIENT_PLACEHOLDER } from '@/lib/images'
+import { ingredientImg } from '@/lib/images'
+import { DEFAULT_INGREDIENT_IMAGES } from '@/lib/default-images'
 import { getIngredient } from '@/lib/cms/ingredients'
 import { JsonLd } from '@/components/seo/json-ld'
 import { Breadcrumbs } from '@/components/seo/Breadcrumbs'
@@ -39,6 +40,11 @@ export default async function IngredientDetail({ params }: { params: Promise<{ s
 
   const askExpert = en ? 'Ask an expert' : 'Hỏi chuyên gia'
   const hasImage = Boolean(it.imageSrc)
+  // One of i1…i7, re-picked on every request. This route is dynamic (getLocale
+  // reads cookies) so it is not baked into static HTML, and picking here rather
+  // than on the client avoids a visible image swap after hydration.
+  const defaultImage =
+    DEFAULT_INGREDIENT_IMAGES[Math.floor(Math.random() * DEFAULT_INGREDIENT_IMAGES.length)]
 
   const url = absUrl(`/nguyen-lieu/${it.slug}`)
   const productLd = productSchema({
@@ -140,15 +146,13 @@ export default async function IngredientDetail({ params }: { params: Promise<{ s
 
             {/* Sticky media + CTA */}
             <aside className="lg:sticky lg:top-28 lg:self-start">
-              {/* A real photo gets the full square; the placeholder stays short so
-                  it doesn't dominate the column with empty space. */}
-              <div
-                className={cn(
-                  'relative mb-5 overflow-hidden rounded-[2rem] border border-primary-border/60 bg-mist',
-                  hasImage ? 'aspect-square' : 'aspect-[16/9]',
-                )}
-              >
-                {hasImage ? (
+              {/* A real photo gets the square frame. A default one instead sizes
+                  the frame to its OWN ratio — the seven files are 3:2, 16:9 and
+                  1.83:1, and each has a contact strip along the bottom edge, so
+                  a fixed frame would object-cover it and slice the text. Matching
+                  the ratio means nothing is cropped. */}
+              {hasImage ? (
+                <div className="relative mb-5 aspect-square overflow-hidden rounded-[2rem] border border-primary-border/60 bg-mist">
                   <Image
                     src={ingredientImg(it, 700)}
                     alt={it.name}
@@ -157,24 +161,26 @@ export default async function IngredientDetail({ params }: { params: Promise<{ s
                     sizes="(max-width: 1024px) 100vw, 360px"
                     className="object-cover"
                   />
-                ) : (
-                  <div className="flex h-full flex-col items-center justify-center gap-3 text-primary/50">
-                    <Image
-                      src={INGREDIENT_PLACEHOLDER}
-                      alt=""
-                      fill
-                      sizes="360px"
-                      className="object-contain p-6 opacity-40"
-                    />
-                    <div className="relative flex flex-col items-center gap-2">
-                      <ImageOff className="h-8 w-8" strokeWidth={1.4} />
-                      <span className="text-[12.5px] font-medium text-ink/45">
-                        {en ? 'Image coming soon' : 'Ảnh đang cập nhật'}
-                      </span>
-                    </div>
-                  </div>
-                )}
-              </div>
+                </div>
+              ) : (
+                <div
+                  className="relative mb-5 overflow-hidden rounded-[2rem] border border-primary-border/60 bg-mist"
+                  style={{ aspectRatio: `${defaultImage.width} / ${defaultImage.height}` }}
+                >
+                  <Image
+                    src={defaultImage.src}
+                    alt={it.name}
+                    width={defaultImage.width}
+                    height={defaultImage.height}
+                    sizes="(max-width: 1024px) 100vw, 360px"
+                    className="h-full w-full object-cover"
+                  />
+                  <span className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-white/85 px-3 py-1.5 text-[11.5px] font-medium text-ink/60 backdrop-blur-sm">
+                    <ImageOff className="h-3.5 w-3.5" strokeWidth={1.6} />
+                    {en ? 'Image coming soon' : 'Ảnh đang cập nhật'}
+                  </span>
+                </div>
+              )}
               <div className="rounded-[2rem] border border-primary-border/60 bg-white p-6 shadow-[0_8px_30px_-12px_rgba(0,0,0,0.12)]">
                 <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">
                   {en ? 'Request info' : 'Nhận báo giá & mẫu'}

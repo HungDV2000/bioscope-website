@@ -7,9 +7,10 @@ import { Search, ArrowUpRight, SlidersHorizontal, X, ChevronLeft, ChevronRight }
 import { ingredientForm, parseMoqKg, type Ingredient } from '@/lib/content'
 import { useLocale } from '@/lib/i18n/context'
 import { ingredientImg } from '@/lib/images'
+import { pickDefaultImages, seededRandom } from '@/lib/default-images'
 import { cn } from '@/lib/utils'
 
-const PAGE_SIZE = 6
+const PAGE_SIZE = 9
 
 const TAG_STYLE: Record<string, string> = {
   NEW: 'bg-accent-soft text-accent',
@@ -78,7 +79,7 @@ function matchesAdvanced(it: Ingredient, f: AdvancedFilters) {
   return true
 }
 
-export function Catalog({ items }: { items: Ingredient[] }) {
+export function Catalog({ items, imageSeed }: { items: Ingredient[]; imageSeed: number }) {
   const { content, t } = useLocale()
   const cat = t.ingredientsCatalog
   const { INDUSTRIES, CERT_FILTERS, INGREDIENT_TAGS, INGREDIENT_CATEGORIES, ORIGINS, PRODUCT_FORMS, APPLICATION_TYPES } =
@@ -142,6 +143,23 @@ export function Catalog({ items }: { items: Ingredient[] }) {
   const safePage = Math.min(page, totalPages)
   const paginated = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
   const advancedCount = countAdvanced(advancedApplied)
+
+  // Default imagery for cards with no featured image in the CMS, resolved to a
+  // slug -> src map so rendering stays pure (no counter mutated mid-render).
+  //
+  // `imageSeed` comes from the server (this route is dynamic — `getLocale()`
+  // reads cookies — so it is regenerated on every request, i.e. every refresh).
+  // Seeding on the server rather than after mount means the markup React
+  // hydrates already has the final image, so there is no swap on load and no
+  // second round of image downloads.
+  //
+  // Offsetting by `safePage` gives each page its own assignment while keeping it
+  // stable as the user pages back and forth without refreshing.
+  const defaultImageBySlug = useMemo(() => {
+    const needsDefault = paginated.filter((it) => !it.imageSrc)
+    const pool = pickDefaultImages(needsDefault.length, seededRandom(imageSeed + safePage))
+    return new Map<string, string>(needsDefault.map((it, i) => [it.slug, pool[i].src]))
+  }, [paginated, imageSeed, safePage])
 
   const openAdvanced = () => {
     setAdvancedDraft(advancedApplied)
@@ -236,7 +254,7 @@ export function Catalog({ items }: { items: Ingredient[] }) {
               >
                 <div className="relative aspect-[16/10] overflow-hidden bg-mist">
                   <Image
-                    src={ingredientImg(it, 600)}
+                    src={it.imageSrc ? ingredientImg(it, 600) : defaultImageBySlug.get(it.slug)!}
                     alt={it.name}
                     fill
                     unoptimized

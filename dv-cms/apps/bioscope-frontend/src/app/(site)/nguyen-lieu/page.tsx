@@ -18,6 +18,11 @@ export default async function IngredientsPage() {
   const intro = content.INGREDIENT_PAGE_INTRO
   // Catalog from the CMS `ingredients` collection; falls back to static content.
   const items = (await getIngredients(locale)) ?? content.INGREDIENTS
+  // Reshuffles the default ingredient imagery on every request. Safe to do on
+  // the server because this route is dynamic (getLocale reads cookies), so it
+  // is never cached into static HTML — and seeding here rather than after mount
+  // keeps the hydrated markup identical, avoiding an image swap on load.
+  const imageSeed = Math.floor(Math.random() * 0xffffffff)
 
   return (
     <>
@@ -40,7 +45,7 @@ export default async function IngredientsPage() {
           </Reveal>
         </div>
       </section>
-      <Catalog items={items} />
+      <Catalog items={items} imageSeed={imageSeed} />
     </>
   )
 }

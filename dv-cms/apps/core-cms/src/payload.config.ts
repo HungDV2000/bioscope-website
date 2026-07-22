@@ -30,6 +30,7 @@ import { permissionsPlugin } from '@dv/module-permissions'
 import { seedEndpoint } from './endpoints/seed.js'
 import { backupEndpoint } from './endpoints/backup.js'
 import { ingredientDuplicatesEndpoint } from './endpoints/duplicates.js'
+import { duplicateScanEndpoints } from './endpoints/duplicateScan.js'
 import { cmsSyncSourceEndpoint } from './endpoints/cmsSyncSource.js'
 import { cmsSyncEndpoint } from './endpoints/cmsSync.js'
 import { cmsSyncRunsEndpoint } from './endpoints/cmsSyncRuns.js'
@@ -157,7 +158,7 @@ export default buildConfig({
     collectionSpecific: true,
   },
   typescript: { outputFile: path.resolve(dirname, 'payload-types.ts') },
-  endpoints: [seedEndpoint, backupEndpoint, ingredientDuplicatesEndpoint, cmsSyncSourceEndpoint, cmsSyncEndpoint, cmsSyncRunsEndpoint, driveSyncTriggerEndpoint, driveSyncListEndpoint, driveSyncGetEndpoint, driveSyncCancelEndpoint, csvImportEndpoint, ingredientExportEndpoint, ingredientImportEndpoint, aiGenerateTriggerEndpoint, aiGenerateBulkEndpoint, aiGenerateImageEndpoint, aiGenerateListEndpoint, aiGenerateGetEndpoint],
+  endpoints: [seedEndpoint, backupEndpoint, ingredientDuplicatesEndpoint, ...duplicateScanEndpoints, cmsSyncSourceEndpoint, cmsSyncEndpoint, cmsSyncRunsEndpoint, driveSyncTriggerEndpoint, driveSyncListEndpoint, driveSyncGetEndpoint, driveSyncCancelEndpoint, csvImportEndpoint, ingredientExportEndpoint, ingredientImportEndpoint, aiGenerateTriggerEndpoint, aiGenerateBulkEndpoint, aiGenerateImageEndpoint, aiGenerateListEndpoint, aiGenerateGetEndpoint],
   collections: [],
   plugins: [
     // Tier 1 — generic core (must come first: users + media).

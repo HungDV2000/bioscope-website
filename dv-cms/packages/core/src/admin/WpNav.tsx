@@ -34,7 +34,7 @@ const GROUP_DEFS: { key: string; icon: NavIconName; label: Record<Lang, string>;
   { key: 'seo', icon: 'newspaper', label: { en: 'SEO & Marketing', vi: 'SEO & Marketing' }, slugs: ['seo-settings', 'redirects', 'image-settings', 'bioscope-ai'] },
   { key: 'security', icon: 'shield', label: { en: 'Security', vi: 'Bảo mật' }, slugs: ['security-settings', 'blocked-ips', 'security-events', 'consent-settings', 'consent-log'] },
   { key: 'custom', icon: 'layers', label: { en: 'Custom types', vi: 'Loại tùy chỉnh' }, slugs: ['ct-definitions', 'tax-definitions', 'field-groups'] },
-  { key: 'ops', icon: 'cpu', label: { en: 'Operations', vi: 'Vận hành' }, slugs: ['ai-generate-jobs', 'drive-sync-jobs', 'cms-sync-runs'] },
+  { key: 'ops', icon: 'cpu', label: { en: 'Operations', vi: 'Vận hành' }, slugs: ['duplicate-scans', 'ai-generate-jobs', 'drive-sync-jobs', 'cms-sync-runs'] },
   { key: 'system', icon: 'settings', label: { en: 'System', vi: 'Hệ thống' }, slugs: ['users', 'staff-roles', 'media', 'site-settings', 'navigation', 'branding', 'languages', 'better-editor-settings'] },
 ]
 

@@ -31,10 +31,11 @@ import { ItalicFeatureClient as ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0
 import { SeoAnalysis as SeoAnalysis_d252c196ab7663648e3feb5f8f6e2c8f } from '../../../components/SeoAnalysis/SeoAnalysis'
 import { InternalLinkSuggestions as InternalLinkSuggestions_a162ffc73369ce8e3ad0032bcc96d7b7 } from '../../../components/InternalLinkSuggestions/InternalLinkSuggestions'
 import { ContentCollectionSlugsField as ContentCollectionSlugsField_f8b2c5cd74f162a2f9852cdf8f8c19f7 } from '@dv/module-custom-types/fields'
-import { IngredientAiField as IngredientAiField_d58fb5a0d75374311f1eedb9e89183ac } from '../../../components/IngredientAiField/IngredientAiField'
 import { DriveFilesPanel as DriveFilesPanel_e800e5de3d6644596c0db139b456e845 } from '../../../components/DriveFilesPanel/DriveFilesPanel'
 import { BulkAiGenerate as BulkAiGenerate_233a08fc34bc75fb9cb51c76ec9d609c } from '../../../components/BulkAiGenerate/BulkAiGenerate'
+import { IngredientAiField as IngredientAiField_d58fb5a0d75374311f1eedb9e89183ac } from '../../../components/IngredientAiField/IngredientAiField'
 import { AiJobLogViewer as AiJobLogViewer_cbe5331e68a1b6faa2791bcfa661c147 } from '../../../components/AiJobLogViewer/AiJobLogViewer'
+import { DuplicateScanView as DuplicateScanView_2cc2f9d7b54cefb0e8ae2bcaf4c42cd8 } from '../../../components/DuplicateScanView/DuplicateScanView'
 import { FolderTypeField as FolderTypeField_2b8867833a34864a02ddf429b0728a40 } from '@payloadcms/next/client'
 import { HexColorField as HexColorField_c3949c88f94613bf8ab39d0e00ee34b2 } from '@dv/cms-core/fields'
 import { ImageStats as ImageStats_7c6bea9edbf2db83a7c1f5e5a5b2459e } from '../../../components/ImageStats/ImageStats'
@@ -101,10 +102,11 @@ export const importMap = {
   "/components/SeoAnalysis/SeoAnalysis#SeoAnalysis": SeoAnalysis_d252c196ab7663648e3feb5f8f6e2c8f,
   "/components/InternalLinkSuggestions/InternalLinkSuggestions#InternalLinkSuggestions": InternalLinkSuggestions_a162ffc73369ce8e3ad0032bcc96d7b7,
   "@dv/module-custom-types/fields#ContentCollectionSlugsField": ContentCollectionSlugsField_f8b2c5cd74f162a2f9852cdf8f8c19f7,
-  "/components/IngredientAiField/IngredientAiField#IngredientAiField": IngredientAiField_d58fb5a0d75374311f1eedb9e89183ac,
   "/components/DriveFilesPanel/DriveFilesPanel#DriveFilesPanel": DriveFilesPanel_e800e5de3d6644596c0db139b456e845,
   "/components/BulkAiGenerate/BulkAiGenerate#BulkAiGenerate": BulkAiGenerate_233a08fc34bc75fb9cb51c76ec9d609c,
+  "/components/IngredientAiField/IngredientAiField#IngredientAiField": IngredientAiField_d58fb5a0d75374311f1eedb9e89183ac,
   "/components/AiJobLogViewer/AiJobLogViewer#AiJobLogViewer": AiJobLogViewer_cbe5331e68a1b6faa2791bcfa661c147,
+  "/components/DuplicateScanView/DuplicateScanView#DuplicateScanView": DuplicateScanView_2cc2f9d7b54cefb0e8ae2bcaf4c42cd8,
   "@payloadcms/next/client#FolderTypeField": FolderTypeField_2b8867833a34864a02ddf429b0728a40,
   "@dv/cms-core/fields#HexColorField": HexColorField_c3949c88f94613bf8ab39d0e00ee34b2,
   "/components/ImageStats/ImageStats#ImageStats": ImageStats_7c6bea9edbf2db83a7c1f5e5a5b2459e,

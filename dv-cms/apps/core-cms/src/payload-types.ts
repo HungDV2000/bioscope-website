@@ -86,6 +86,7 @@ export interface Config {
     ingredients: Ingredient;
     'drive-sync-jobs': DriveSyncJob;
     'ai-generate-jobs': AiGenerateJob;
+    'duplicate-scans': DuplicateScan;
     'cms-sync-runs': CmsSyncRun;
     technologies: Technology;
     services: Service;
@@ -128,6 +129,7 @@ export interface Config {
     ingredients: IngredientsSelect<false> | IngredientsSelect<true>;
     'drive-sync-jobs': DriveSyncJobsSelect<false> | DriveSyncJobsSelect<true>;
     'ai-generate-jobs': AiGenerateJobsSelect<false> | AiGenerateJobsSelect<true>;
+    'duplicate-scans': DuplicateScansSelect<false> | DuplicateScansSelect<true>;
     'cms-sync-runs': CmsSyncRunsSelect<false> | CmsSyncRunsSelect<true>;
     technologies: TechnologiesSelect<false> | TechnologiesSelect<true>;
     services: ServicesSelect<false> | ServicesSelect<true>;
@@ -1863,17 +1865,17 @@ export interface Ingredient {
      * Vd: tối đa 500 mg/ngày.
      */
     usageLimit?: string | null;
-    /**
-     * File công khai. Tài liệu cần đăng nhập mới tải thì dùng Cổng B2B → Tài liệu giới hạn.
-     */
-    documents?:
-      | {
-          title?: string | null;
-          file?: (number | null) | Media;
-          id?: string | null;
-        }[]
-      | null;
   };
+  /**
+   * File công khai (TDS · COA · SDS…) hiển thị & tải trực tiếp ở tab "Tài liệu" ngoài web. Tài liệu cần đăng nhập mới tải thì dùng Cổng B2B → Tài liệu giới hạn.
+   */
+  documents?:
+    | {
+        title?: string | null;
+        file?: (number | null) | Media;
+        id?: string | null;
+      }[]
+    | null;
   research?: {
     mechanism?: {
       root: {
@@ -2190,7 +2192,7 @@ export interface DriveSyncJob {
   updatedAt: string;
 }
 /**
- * Job history — Tạo nội dung tự động bằng AI (GPT-4o + DALL·E 3)
+ * Job history — Tạo nội dung tự động bằng AI
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "ai-generate-jobs".
@@ -2243,6 +2245,68 @@ export interface AiGenerateJob {
     | string
     | number
     | boolean
+    | null;
+  /**
+   * Token theo từng loại call (content / vision / imagePrompt), số ảnh, và ước tính USD khi đã đặt OPENAI_PRICE_*.
+   */
+  usage?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  errorMessage?: string | null;
+  startedAt?: string | null;
+  finishedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Tìm bản ghi trùng lặp theo tên và các trường định danh.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "duplicate-scans".
+ */
+export interface DuplicateScan {
+  id: number;
+  targetCollection: string;
+  targetLabel?: string | null;
+  status: 'queued' | 'running' | 'done' | 'error' | 'cancelled';
+  phase?: string | null;
+  /**
+   * Giữ lại để đối chiếu vì sao lần quét này ra kết quả như vậy.
+   */
+  config?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  groupsFound?: number | null;
+  docsScanned?: number | null;
+  docsInGroups?: number | null;
+  results?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  logs?:
+    | {
+        ts?: string | null;
+        level?: ('info' | 'warn' | 'error') | null;
+        message?: string | null;
+        id?: string | null;
+      }[]
     | null;
   errorMessage?: string | null;
   startedAt?: string | null;
@@ -2797,6 +2861,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'ai-generate-jobs';
         value: number | AiGenerateJob;
+      } | null)
+    | ({
+        relationTo: 'duplicate-scans';
+        value: number | DuplicateScan;
       } | null)
     | ({
         relationTo: 'cms-sync-runs';
@@ -4004,13 +4072,13 @@ export interface IngredientsSelect<T extends boolean = true> {
         status?: T;
         registrationNo?: T;
         usageLimit?: T;
-        documents?:
-          | T
-          | {
-              title?: T;
-              file?: T;
-              id?: T;
-            };
+      };
+  documents?:
+    | T
+    | {
+        title?: T;
+        file?: T;
+        id?: T;
       };
   research?:
     | T
@@ -4109,6 +4177,35 @@ export interface AiGenerateJobsSelect<T extends boolean = true> {
         id?: T;
       };
   result?: T;
+  usage?: T;
+  errorMessage?: T;
+  startedAt?: T;
+  finishedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "duplicate-scans_select".
+ */
+export interface DuplicateScansSelect<T extends boolean = true> {
+  targetCollection?: T;
+  targetLabel?: T;
+  status?: T;
+  phase?: T;
+  config?: T;
+  groupsFound?: T;
+  docsScanned?: T;
+  docsInGroups?: T;
+  results?: T;
+  logs?:
+    | T
+    | {
+        ts?: T;
+        level?: T;
+        message?: T;
+        id?: T;
+      };
   errorMessage?: T;
   startedAt?: T;
   finishedAt?: T;
@@ -4563,6 +4660,10 @@ export interface Branding {
    * Used on the website, admin login, and sidebar.
    */
   logo?: (number | null) | Media;
+  /**
+   * Square icon shown on the browser tab, for both the website and this admin. Upload a square PNG or SVG, at least 512x512. Browsers cache favicons aggressively — a change can take a while to appear, and a hard refresh may be needed.
+   */
+  favicon?: (number | null) | Media;
   loginSubtitle?: string | null;
   /**
    * Maps to CSS variables on the public site (Tailwind tokens).
@@ -5069,6 +5170,7 @@ export interface NavigationSelect<T extends boolean = true> {
 export interface BrandingSelect<T extends boolean = true> {
   brandName?: T;
   logo?: T;
+  favicon?: T;
   loginSubtitle?: T;
   frontendTheme?:
     | T

@@ -30,7 +30,63 @@ export function isQueueRunning(): boolean {
   return running
 }
 
+/** In-progress statuses — a job sitting in one of these has a live runner… normally. */
+const IN_PROGRESS = ['downloading', 'extracting', 'generating_content', 'generating_image', 'saving']
+
+/**
+ * Age (ms) after which an in-progress job is considered abandoned. Must exceed
+ * the slowest realistic job: OPENAI_TIMEOUT_MS × (1 + retries) plus Drive
+ * downloads and Vision OCR per file. 30 min is comfortably above that.
+ */
+const STUCK_AFTER_MS = Number(process.env.AI_QUEUE_STUCK_AFTER_MS ?? 30 * 60 * 1000)
+
+/**
+ * Return jobs abandoned by a previous process to the queue.
+ *
+ * The runner is in-memory (`running` above) and work is driven by an async loop
+ * inside the Node process — so a container restart mid-job leaves that job
+ * parked in an in-progress status with no runner, forever. Nothing else ever
+ * reaps them. Run this before each drain so a restart self-heals the next time
+ * anything touches the queue.
+ */
+async function requeueStuckJobs(payload: Payload): Promise<void> {
+  const cutoff = new Date(Date.now() - STUCK_AFTER_MS).toISOString()
+  try {
+    const stuck = await payload.find({
+      collection: 'ai-generate-jobs',
+      where: {
+        and: [
+          { status: { in: IN_PROGRESS } },
+          // `startedAt` is set at claim time; treat a missing one as stuck too.
+          { or: [{ startedAt: { less_than: cutoff } }, { startedAt: { exists: false } }] },
+        ],
+      },
+      limit: 100,
+      depth: 0,
+      overrideAccess: true,
+    })
+
+    for (const job of stuck.docs) {
+      await payload.update({
+        collection: 'ai-generate-jobs',
+        id: job.id,
+        data: {
+          status: 'queued',
+          phase: 'Xếp lại hàng đợi (tiến trình trước bị gián đoạn)...',
+        },
+        overrideAccess: true,
+      })
+      console.warn(`[ai-queue] requeued stuck job ${job.id}`)
+    }
+  } catch (err) {
+    // Never block draining because the reaper failed.
+    console.error('[ai-queue] requeue check failed:', err)
+  }
+}
+
 async function drain(payload: Payload): Promise<void> {
+  await requeueStuckJobs(payload)
+
   // Hard cap on iterations as a safety valve against an unexpected infinite loop.
   for (let i = 0; i < 100_000; i++) {
     let job: { id: string | number; ingredientId?: string; locale?: string; mode?: string } | undefined

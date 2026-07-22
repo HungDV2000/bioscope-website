@@ -1,9 +1,17 @@
 /**
- * OpenAI Service — gọi GPT-4o cho nội dung + DALL·E 3 cho hình ảnh.
+ * OpenAI Service — sinh nội dung + hình ảnh cho nguyên liệu.
+ * Model mặc định: GPT-5.6 (nội dung/vision) + gpt-image-2 (ảnh), đổi qua env.
  *
  * Hai tác vụ tách biệt:
- *   1. GPT-4o → sinh nội dung (description, benefits, applications, badges, subtitle, INCI...)
- *   2. DALL·E 3 → sinh featured image prompt → vẽ hình → upload lên Payload Media
+ *   1. Nội dung → hồ sơ nguyên liệu đầy đủ. Prompt chia 2 tầng:
+ *      · LOẠI A (specs, technical.*, regulatory.*) = TRÍCH XUẤT từ TDS,
+ *        cấm suy diễn — bỏ trống khi tài liệu không ghi.
+ *      · LOẠI B (description, benefits, research.mechanism, SEO) = BIÊN TẬP,
+ *        được suy luận khoa học nhưng mọi con số vẫn phải có trong tài liệu.
+ *   2. Ảnh → refine prompt → vẽ hình → upload lên Payload Media.
+ *      Prompt ảnh do worker dựng từ bản ghi ĐÃ LƯU (xem
+ *      buildImagePromptFromIngredient) nên chạy full và chạy lẻ cho chất lượng
+ *      như nhau.
  *
  * KHÔNG dùng n8n — gọi trực tiếp từ CMS backend để đảm bảo:
  *   - Không phụ thuộc external webhook
@@ -19,13 +27,27 @@ import OpenAI from 'openai'
 
 let _client: OpenAI | null = null
 
+/**
+ * Per-request timeout (ms). The SDK default is 10 minutes, and with the default
+ * 2 retries a single hung call could hold the sequential AI queue for ~30 min
+ * while every other ingredient waits. Image generation is the slowest legitimate
+ * call (~30-90s), so 3 minutes leaves generous headroom while still failing fast.
+ */
+const OPENAI_TIMEOUT_MS = Number(process.env.OPENAI_TIMEOUT_MS ?? 180_000)
+/** Retries per call. Worst case queue occupancy = TIMEOUT × (1 + retries). */
+const OPENAI_MAX_RETRIES = Number(process.env.OPENAI_MAX_RETRIES ?? 1)
+
 export function getOpenAIClient(): OpenAI {
   if (_client) return _client
 
   const apiKey = process.env.OPENAI_API_KEY
   if (!apiKey) throw new Error('OPENAI_API_KEY env var is not set')
 
-  _client = new OpenAI({ apiKey })
+  _client = new OpenAI({
+    apiKey,
+    timeout: OPENAI_TIMEOUT_MS,
+    maxRetries: OPENAI_MAX_RETRIES,
+  })
   return _client
 }
 
@@ -35,26 +57,137 @@ export function getOpenAIClient(): OpenAI {
 
 export type Locale = 'vi' | 'en'
 
+export type LocalizedText = { vi: string; en: string }
+
+/**
+ * Technical dossier — mirrors the `technical` group on the Ingredients
+ * collection. These are TRANSCRIPTION fields: the model must copy them from the
+ * TDS/COA or leave them empty. It must never infer a CAS number or a shelf life.
+ */
+export type GeneratedTechnical = {
+  casNumber?: string
+  hsCode?: string
+  eNumber?: string
+  particleSize?: string
+  assay?: LocalizedText
+  standardization?: LocalizedText
+  appearance?: LocalizedText
+  solubility?: LocalizedText
+  shelfLife?: LocalizedText
+  storage?: LocalizedText
+  packaging?: LocalizedText
+  leadTime?: LocalizedText
+  incompatibility?: LocalizedText
+}
+
+/** Regulatory group. `status` values must match the select options on the collection. */
+export type RegulatoryStatus = 'fda_gras' | 'efsa' | 'vn_moh' | 'novel_food'
+
+export type GeneratedRegulatory = {
+  status?: RegulatoryStatus[]
+  registrationNo?: string
+  usageLimit?: LocalizedText
+}
+
+export type GeneratedResearch = {
+  mechanism?: LocalizedText
+}
+
+export type GeneratedSpec = {
+  label: LocalizedText | string
+  value: string
+  unit?: string
+  /** Render style on the frontend. `bar`/`donut` also need `percent`. */
+  display?: 'text' | 'number' | 'bar' | 'donut'
+  /** 0–100, only meaningful for bar/donut. */
+  percent?: number
+}
+
 export type GeneratedContent = {
-  name?: { vi: string; en: string }
-  subtitle: { vi: string; en: string }
-  description: { vi: string; en: string }
+  name?: LocalizedText
+  subtitle: LocalizedText
+  description: LocalizedText
   benefits: { vi: string[]; en: string[] }
   applications: { vi: string[]; en: string[] }
   badges: string[]
-  suggestedDosage: string
-  inci?: { vi: string; en: string }
+  suggestedDosage?: LocalizedText
+  inci?: LocalizedText
   originCountry?: string
+  brandName?: string
+  moq?: string
   tag?: 'NEW' | 'TRENDING' | 'EXCLUSIVE' | null
-  specs?: Array<{ label: { vi: string; en: string } | string; value: string; unit?: string }>
-  seoTitle?: { vi: string; en: string }
-  seoDescription?: { vi: string; en: string }
-  imagePrompt: { vi: string; en: string }
+  specs?: GeneratedSpec[]
+  technical?: GeneratedTechnical
+  regulatory?: GeneratedRegulatory
+  research?: GeneratedResearch
+  seoTitle?: LocalizedText
+  seoDescription?: LocalizedText
+  imagePrompt: LocalizedText
 }
 
 export type GenerationResult =
   | { ok: true; content: GeneratedContent }
   | { ok: false; error: string }
+
+// ---------------------------------------------------------------------------
+// Token / cost accounting
+// ---------------------------------------------------------------------------
+
+type CallUsage = { prompt: number; completion: number; calls: number }
+
+/**
+ * Per-job token accounting, split by purpose so a job's cost can be attributed
+ * (a scanned TDS drives the `vision` bucket; a long TDS drives `content`).
+ * Passed in by the worker and mutated in place by each call.
+ */
+export type AiUsage = {
+  content: CallUsage
+  vision: CallUsage
+  imagePrompt: CallUsage
+  /** Images actually generated (billed per image, not per token). */
+  images: number
+}
+
+export function createUsage(): AiUsage {
+  return {
+    content: { prompt: 0, completion: 0, calls: 0 },
+    vision: { prompt: 0, completion: 0, calls: 0 },
+    imagePrompt: { prompt: 0, completion: 0, calls: 0 },
+    images: 0,
+  }
+}
+
+/** Fold one chat-completion's `usage` block into the accumulator. */
+function recordUsage(
+  usage: AiUsage | undefined,
+  bucket: keyof Omit<AiUsage, 'images'>,
+  raw: { prompt_tokens?: number; completion_tokens?: number } | undefined,
+): void {
+  if (!usage) return
+  usage[bucket].prompt += raw?.prompt_tokens ?? 0
+  usage[bucket].completion += raw?.completion_tokens ?? 0
+  usage[bucket].calls += 1
+}
+
+/**
+ * Estimated USD cost. Rates are NOT hardcoded — model pricing changes and a
+ * stale constant silently produces wrong numbers. Set the env vars below to get
+ * a cost figure; leave them unset and the job records tokens only.
+ *   OPENAI_PRICE_INPUT_PER_1M, OPENAI_PRICE_OUTPUT_PER_1M, OPENAI_PRICE_PER_IMAGE
+ */
+export function estimateCostUsd(usage: AiUsage): number | undefined {
+  const inRate = Number(process.env.OPENAI_PRICE_INPUT_PER_1M)
+  const outRate = Number(process.env.OPENAI_PRICE_OUTPUT_PER_1M)
+  const imgRate = Number(process.env.OPENAI_PRICE_PER_IMAGE)
+  if (!Number.isFinite(inRate) || !Number.isFinite(outRate)) return undefined
+
+  const promptTokens = usage.content.prompt + usage.vision.prompt + usage.imagePrompt.prompt
+  const completionTokens = usage.content.completion + usage.vision.completion + usage.imagePrompt.completion
+  const imageCost = Number.isFinite(imgRate) ? usage.images * imgRate : 0
+
+  const cost = (promptTokens / 1_000_000) * inRate + (completionTokens / 1_000_000) * outRate + imageCost
+  return Math.round(cost * 10_000) / 10_000
+}
 
 // ---------------------------------------------------------------------------
 // Model selection (per OpenAI docs, 2026). All overridable via env so the model
@@ -141,18 +274,111 @@ function normalizeGenerated(raw: unknown): GeneratedContent {
     return { vi: flat.map((s) => splitBilingual(s).vi), en: flat.map((s) => splitBilingual(s).en) }
   }
 
+  /** Drop a {vi,en} pair whose both sides are blank, so we never write "" over real data. */
+  const pairOrUndef = (v: unknown): LocalizedText | undefined => {
+    const p = pair(v)
+    return p && (p.vi.trim() || p.en.trim()) ? p : undefined
+  }
+
+  /** Trimmed non-empty string, else undefined — same "never overwrite with blank" rule. */
+  const strOrUndef = (v: unknown): string | undefined => {
+    const s = str(v)?.trim()
+    return s ? s : undefined
+  }
+
+  // The technical dossier arrives as a nested object; tolerate a flat shape too
+  // (some models emit `technical_casNumber` instead of `technical.casNumber`).
+  const groupOf = (key: string): Record<string, unknown> => {
+    const nested = o[key]
+    if (nested && typeof nested === 'object' && !Array.isArray(nested)) {
+      return nested as Record<string, unknown>
+    }
+    const prefix = `${key}_`
+    const flatKeys = Object.keys(o).filter((k) => k.startsWith(prefix))
+    if (!flatKeys.length) return {}
+    return Object.fromEntries(flatKeys.map((k) => [k.slice(prefix.length), o[k]]))
+  }
+
+  const t = groupOf('technical')
+  const technical: GeneratedTechnical = {
+    casNumber: strOrUndef(t.casNumber),
+    hsCode: strOrUndef(t.hsCode),
+    eNumber: strOrUndef(t.eNumber),
+    particleSize: strOrUndef(t.particleSize),
+    assay: pairOrUndef(t.assay),
+    standardization: pairOrUndef(t.standardization),
+    appearance: pairOrUndef(t.appearance),
+    solubility: pairOrUndef(t.solubility),
+    shelfLife: pairOrUndef(t.shelfLife),
+    storage: pairOrUndef(t.storage),
+    packaging: pairOrUndef(t.packaging),
+    leadTime: pairOrUndef(t.leadTime),
+    incompatibility: pairOrUndef(t.incompatibility),
+  }
+
+  const VALID_REG_STATUS: RegulatoryStatus[] = ['fda_gras', 'efsa', 'vn_moh', 'novel_food']
+  const r = groupOf('regulatory')
+  // `status` may come back as an array, or as a "efsa | vn_moh" / "efsa, vn_moh"
+  // string. Keep only values the collection's select actually accepts —
+  // an unknown value would fail validation and sink the whole write.
+  const regStatus = (Array.isArray(r.status) ? r.status : String(r.status ?? '').split(/[|,]/))
+    .map((s) => String(s).trim().toLowerCase())
+    .filter((s): s is RegulatoryStatus => (VALID_REG_STATUS as string[]).includes(s))
+  const regulatory: GeneratedRegulatory = {
+    status: regStatus.length ? Array.from(new Set(regStatus)) : undefined,
+    registrationNo: strOrUndef(r.registrationNo),
+    usageLimit: pairOrUndef(r.usageLimit),
+  }
+
+  const research: GeneratedResearch = { mechanism: pairOrUndef(groupOf('research').mechanism) }
+
+  /** Keep a group only if at least one member survived — avoids empty writes. */
+  const nonEmpty = <T extends object>(g: T): T | undefined =>
+    Object.values(g).some((v) => v !== undefined) ? g : undefined
+
+  const VALID_DISPLAY = ['text', 'number', 'bar', 'donut'] as const
+  const specs: GeneratedSpec[] | undefined = Array.isArray(o.specs)
+    ? (o.specs as Array<Record<string, unknown>>).map((s) => {
+        const display = VALID_DISPLAY.includes(s?.display as (typeof VALID_DISPLAY)[number])
+          ? (s.display as GeneratedSpec['display'])
+          : 'text'
+        // `percent` is only meaningful for bar/donut, and the field is clamped
+        // 0–100 on the collection — send nothing rather than an out-of-range
+        // number that would fail validation.
+        const rawPct = Number(s?.percent)
+        const percent =
+          (display === 'bar' || display === 'donut') && Number.isFinite(rawPct)
+            ? Math.min(100, Math.max(0, Math.round(rawPct)))
+            : undefined
+        return {
+          label: (s?.label ?? '') as GeneratedSpec['label'],
+          value: String(s?.value ?? ''),
+          unit: strOrUndef(s?.unit),
+          display,
+          percent,
+        }
+      })
+    : undefined
+
   return {
+    technical: nonEmpty(technical),
+    regulatory: nonEmpty(regulatory),
+    research: nonEmpty(research),
+    brandName: strOrUndef(o.brandName),
+    moq: strOrUndef(o.moq),
     name: pair(o.name),
     subtitle: pair(o.subtitle) ?? { vi: '', en: '' },
     description: pair(o.description) ?? { vi: '', en: '' },
     benefits: listPair(o.benefits),
     applications: listPair(o.applications),
     badges: list(o.badges),
-    suggestedDosage: str(o.suggestedDosage) ?? '',
+    // Localized on the collection — accept a plain string (older prompt shape)
+    // and mirror it into both locales via `pair`.
+    suggestedDosage: pairOrUndef(o.suggestedDosage),
     inci: pair(o.inci),
-    originCountry: str(o.originCountry),
+    originCountry: strOrUndef(o.originCountry),
     tag: (['NEW', 'TRENDING', 'EXCLUSIVE'].includes(o.tag as string) ? o.tag : null) as GeneratedContent['tag'],
-    specs: Array.isArray(o.specs) ? (o.specs as GeneratedContent['specs']) : undefined,
+    specs,
     seoTitle: pair(o.seoTitle),
     seoDescription: pair(o.seoDescription),
     imagePrompt: pair(o.imagePrompt) ?? { vi: '', en: '' },
@@ -177,6 +403,7 @@ export async function generateIngredientContent(
     driveFiles?: Array<{ fileName: string; mimeType: string }>
   },
   driveFileContents: string,
+  usage?: AiUsage,
 ): Promise<GenerationResult> {
   const client = getOpenAIClient()
 
@@ -193,6 +420,8 @@ export async function generateIngredientContent(
       response_format: { type: 'json_object' },
       ...completionParams(CONTENT_MODEL, 8192, 0.3),
     })
+
+    recordUsage(usage, 'content', completion.usage)
 
     const raw = completion.choices[0]?.message?.content
     if (!raw) return { ok: false, error: 'No response from OpenAI' }
@@ -250,8 +479,11 @@ export async function generateAndUploadFeaturedImage(
   ingredientName: string,
   locale: Locale,
   imagePromptText: { vi: string; en: string },
-  uploadToPayload: (buffer: Buffer, filename: string, mimeType: string, alt: string) => Promise<{ id: string; url: string } | null>,
-): Promise<{ id: string; url: string } | null> {
+  // Payload's `create` returns a numeric id on Postgres and a string id on
+  // Mongo — accept both rather than forcing the caller into an `as never` cast.
+  uploadToPayload: (buffer: Buffer, filename: string, mimeType: string, alt: string) => Promise<{ id: string | number; url: string } | null>,
+  usage?: AiUsage,
+): Promise<{ id: string | number; url: string } | null> {
   const client = getOpenAIClient()
   const preferredPrompt = imagePromptText[locale] || imagePromptText.vi
 
@@ -282,6 +514,7 @@ Trả về JSON: {"prompt": "<image prompt bằng tiếng Anh, tối đa 400 ký
       response_format: { type: 'json_object' },
       ...completionParams(IMAGE_PROMPT_MODEL, 500, 0.3),
     })
+    recordUsage(usage, 'imagePrompt', refinement.usage)
     const refined = JSON.parse(refinement.choices[0]?.message?.content ?? '{}') as { prompt?: string }
     refinedPrompt = refined.prompt ?? preferredPrompt
   } catch {
@@ -301,6 +534,7 @@ Trả về JSON: {"prompt": "<image prompt bằng tiếng Anh, tối đa 400 ký
       n: 1,
     })
 
+    if (usage) usage.images += 1
     const first = imageResponse.data?.[0]
     // dall-e-3 returns `url`; some image models return base64 in `b64_json`.
     if (first?.b64_json) {
@@ -342,18 +576,57 @@ Bạn làm việc cho CÔNG TY BIOSCOPE — chuyên gia nghiên cứu, phát tri
 - Đối tác tin cậy của các nhà sản xuất uy tín toàn cầu
 - Các công nghệ nổi bật: Nano hoạt chất, làm giàu khoáng thực vật, dẫn thuốc qua da Novaskin, Phytosome ướt
 
-NGUYÊN TẮC VIẾT:
-1. Viết bằng tiếng VIỆT CHUẨN cho field "vi", tiếng ANH CHUYÊN NGÀNH cho field "en"
-2. Không bịa đặt thông tin — chỉ dựa trên dữ liệu được cung cấp từ TDS/PDF. TUYỆT ĐỐI không tự chế số liệu specs/hàm lượng/độ tinh khiết: chỉ điền specs khi con số đó XUẤT HIỆN trong tài liệu; nếu tài liệu không có số → để specs rỗng, KHÔNG đoán bừa
-3. Nếu thiếu thông tin định tính (mô tả, ứng dụng), có thể suy luận khoa học hợp lý dựa trên tên hoạt chất và nguồn gốc — nhưng KHÔNG áp dụng cho số liệu định lượng
-4. Description: 250-400 từ, chia 2-3 đoạn, chuyên nghiệp, có điểm nhấn khoa học (cơ chế tác dụng, nguồn gốc/công nghệ chiết xuất, ứng dụng thực tế trong công thức)
-5. Benefits: 4-8 items, ngắn gọn, dễ hiểu, có số liệu nếu có
-6. Applications: 3-6 items, liệt kê dạng bào chế cụ thể
-7. Badges: chứng nhận phổ biến trong ngành (Halal, Kosher, Non-GMO, FDA, GMP...)
-8. SuggestedDosage: liều tham khảo an toàn, ghi rõ nguồn tham khảo
-9. INCI: tên khoa học/Latin nếu suy ra được; specs: 3-6 thông số kỹ thuật rút từ TDS (hàm lượng, độ tinh khiết, dạng...)
-10. SEO: seoTitle ≤ 60 ký tự (tên + lợi ích chính), seoDescription 120-155 ký tự hấp dẫn có từ khóa — CẢ vi + en
-11. NAME: chuẩn hóa lại tên sản phẩm — BỎ số thứ tự đầu dòng ("1.", "2."), BỎ mã nội bộ và hậu tố như "(TM)", "- TQ", "- Đức", "- VN"; viết hoa đúng chuẩn; giữ tên thương mại + hoạt chất chính. KHÔNG tự bịa thêm chữ không có trong tên gốc
+═══════════════════════════════════════════════════════════════
+HAI LOẠI TRƯỜNG — HAI TIÊU CHUẨN KHÁC NHAU. ĐỌC KỸ PHẦN NÀY.
+═══════════════════════════════════════════════════════════════
+
+▶ LOẠI A — TRÍCH XUẤT (transcription). TUYỆT ĐỐI KHÔNG SUY DIỄN.
+   Gồm: specs, technical.*, regulatory.*, moq, brandName, originCountry.
+
+   Quy tắc DUY NHẤT: con số/mã/giá trị phải XUẤT HIỆN TRONG TÀI LIỆU
+   được cung cấp. Chép lại đúng như tài liệu ghi (giữ nguyên dấu ≤ ≥ –,
+   đơn vị, khoảng giá trị).
+
+   Nếu tài liệu KHÔNG ghi → BỎ TRỐNG trường đó (bỏ hẳn key, hoặc để "").
+   Bỏ trống là ĐÚNG. Đoán là SAI và gây hậu quả pháp lý.
+
+   Đặc biệt nghiêm ngặt — KHÔNG BAO GIỜ được suy đoán:
+     · casNumber, hsCode, eNumber  → chỉ chép khi tài liệu ghi rõ
+     · regulatory.registrationNo   → chỉ chép số công bố có thật trong tài liệu
+     · regulatory.status           → chỉ chọn khi tài liệu chứng minh
+     · shelfLife, storage, packaging, assay → chỉ chép từ TDS
+   Một mã CAS bịa ra sẽ được đăng công khai cho khách hàng công nghiệp —
+   thà để trống còn hơn sai.
+
+▶ LOẠI B — BIÊN TẬP (editorial). ĐƯỢC suy luận khoa học hợp lý.
+   Gồm: subtitle, description, benefits, applications, badges,
+        research.mechanism, seoTitle, seoDescription, imagePrompt.
+
+   Được viết dựa trên tên hoạt chất, nhóm chất, nguồn gốc và kiến thức
+   ngành. NHƯNG mọi CON SỐ nhắc trong phần này vẫn phải có trong tài liệu.
+   Không viết "tăng 47%" nếu tài liệu không ghi con số đó.
+
+═══════════════════════════════════════════════════════════════
+
+NGUYÊN TẮC CHUNG:
+1. Viết tiếng VIỆT CHUẨN cho field "vi", tiếng ANH CHUYÊN NGÀNH cho field "en". Mọi trường song ngữ phải điền ĐỦ CẢ HAI.
+2. Description: 250-400 từ, chia 2-3 đoạn (giới thiệu → đặc điểm/công nghệ → ứng dụng thực tế trong công thức).
+3. Benefits: 4-8 items. Applications: 3-6 items, ghi rõ dạng bào chế.
+4. Badges: chỉ ghi chứng nhận tài liệu có nêu (Halal, Kosher, Non-GMO, GMP...). Không có → mảng rỗng.
+5. SuggestedDosage: liều tham khảo, song ngữ. Không rõ → bỏ trống.
+6. SEO: seoTitle ≤ 60 ký tự, seoDescription 120-155 ký tự — cả vi + en.
+7. NAME: chuẩn hoá tên — BỎ số thứ tự đầu dòng ("1.", "2."), BỎ mã nội bộ và hậu tố như "(TM)", "- TQ", "- Đức", "- VN"; viết hoa đúng chuẩn; giữ tên thương mại + hoạt chất chính. KHÔNG thêm chữ không có trong tên gốc.
+
+SPECS — chú ý định dạng hiển thị:
+   · Mỗi spec có "display": "text" | "bar".
+   · Dùng "bar" + "percent" (0-100) CHỈ KHI thông số là tỉ lệ phần trăm
+     và bạn đọc được giá trị điển hình. VD: DHA ≥ 50 area% (điển hình 56)
+     → {"display": "bar", "percent": 56}.
+   · Mọi thông số còn lại (mg/g, mg/kg, °C, chỉ số không đơn vị, định tính)
+     → "display": "text", KHÔNG kèm percent.
+   · Số lượng: lấy HẾT thông số có trong TDS (10-25 dòng là bình thường),
+     không giới hạn 3-6. Ưu tiên: hoạt chất chính → chỉ tiêu chất lượng →
+     kim loại nặng/tạp chất → vi sinh.
 
 TRẢ VỀ ĐỊNH DẠNG JSON — KHÔNG giải thích, KHÔNG markdown code block.`
 }
@@ -405,8 +678,8 @@ Trả về JSON với format sau (VIẾT ĐẦY ĐỦ cả 2 ngôn ngữ):
     "en": "<tiếng Anh chuyên ngành, 1 dòng, thu hút, 20-80 ký tự>"
   },
   "description": {
-    "vi": "<mô tả 150-300 từ tiếng Việt, có cấu trúc: giới thiệu → đặc điểm → ứng dụng → tại sao Bioscope chọn>",
-    "en": "<150-300 words English, professional pharma/cosmetic tone>"
+    "vi": "<mô tả 250-400 từ tiếng Việt, có cấu trúc: giới thiệu → đặc điểm → ứng dụng → tại sao Bioscope chọn>",
+    "en": "<250-400 words English, professional pharma/cosmetic tone>"
   },
   "benefits": {
     "vi": ["<lợi ích 1 tiếng Việt — có số liệu nếu có, VD: Tăng sinh collagen lên 47% sau 4 tuần (in vitro)>", "<lợi ích 2>", "... 4-8 items>"],
@@ -422,7 +695,12 @@ Trả về JSON với format sau (VIẾT ĐẦY ĐỦ cả 2 ngôn ngữ):
     "<chứng nhận 3 — VD: Non-GMO Verified>",
     "... các chứng nhận phù hợp với ngành và nguồn gốc>"
   ],
-  "suggestedDosage": "<liều dùng gợi ý, VD: 100-500mg/ngày (tham khảo từ TDS và tài liệu khoa học)>",
+  "suggestedDosage": {
+    "vi": "<liều dùng gợi ý tiếng Việt, VD: 100-500 mg/ngày (tham khảo từ TDS) — bỏ trống nếu tài liệu không nêu>",
+    "en": "<suggested dosage in English — leave empty if the document does not state it>"
+  },
+  "brandName": "<[LOẠI A] thương hiệu/nhà sản xuất ghi trên tài liệu, VD: GC Rieber VivoMega — rỗng nếu không có>",
+  "moq": "<[LOẠI A] số lượng đặt tối thiểu nếu tài liệu nêu, VD: 190 kg (1 phuy) — rỗng nếu không có>",
   "inci": {
     "vi": "<tên khoa học / INCI (tên Latin), VD: Oryza Sativa Bran Oil — nếu không xác định được để chuỗi rỗng>",
     "en": "<INCI name, thường giống tiếng Việt>"
@@ -431,12 +709,46 @@ Trả về JSON với format sau (VIẾT ĐẦY ĐỦ cả 2 ngôn ngữ):
   "tag": "<một trong: NEW | TRENDING | EXCLUSIVE — hoặc null nếu không phù hợp>",
   "specs": [
     {
-      "label": { "vi": "<tên thông số, VD: Hàm lượng>", "en": "<English label, e.g. Content>" },
-      "value": "<giá trị, VD: 95>",
-      "unit": "<đơn vị nếu có, VD: % — bỏ trống nếu không có>"
+      "label": { "vi": "<tên thông số, VD: DHA (C22:6n3)>", "en": "<English label, e.g. DHA (C22:6n3)>" },
+      "value": "<giá trị ĐÚNG NHƯ TÀI LIỆU GHI, VD: ≥ 50 (điển hình 56)>",
+      "unit": "<đơn vị, VD: area% — bỏ trống nếu không có>",
+      "display": "<'bar' nếu là tỉ lệ phần trăm và đọc được giá trị điển hình, ngược lại 'text'>",
+      "percent": "<CHỈ khi display='bar': số 0-100, VD: 56 — bỏ hẳn key này khi display='text'>"
     },
-    "... 3-6 thông số kỹ thuật rút ra từ TDS (hàm lượng hoạt chất, độ tinh khiết, dạng, xuất xứ...)>"
+    "... LẤY HẾT thông số có trong TDS/COA (10-25 dòng là bình thường): hoạt chất chính, chỉ tiêu chất lượng, kim loại nặng, tạp chất, vi sinh>"
   ],
+
+  "technical": {
+    "_comment": "[LOẠI A — TRÍCH XUẤT] Chỉ điền khi tài liệu ghi rõ. Không suy đoán. Bỏ trống trường nào tài liệu không nêu.",
+    "casNumber": "<số CAS, VD: 8016-13-5 — RỖNG nếu tài liệu không ghi>",
+    "hsCode": "<mã HS, VD: 1504.20 — RỖNG nếu không ghi>",
+    "eNumber": "<mã E, VD: E306 — RỖNG nếu không ghi>",
+    "particleSize": "<kích thước hạt, VD: 80 mesh — RỖNG nếu không ghi>",
+    "assay": { "vi": "<hàm lượng/độ tinh khiết, VD: DHA ≥ 50 area%>", "en": "<assay / purity>" },
+    "standardization": { "vi": "<chuẩn hoá theo, VD: tối thiểu 500 mg/g DHA>", "en": "<standardized to>" },
+    "appearance": { "vi": "<dạng & ngoại quan, VD: Lỏng, vàng nhạt, mùi cá đặc trưng>", "en": "<appearance / form>" },
+    "solubility": { "vi": "<độ tan, VD: Không tan trong nước>", "en": "<solubility>" },
+    "shelfLife": { "vi": "<hạn dùng, VD: 3 năm kể từ NSX>", "en": "<shelf life>" },
+    "storage": { "vi": "<điều kiện bảo quản, VD: 15-25°C, tránh ánh sáng>", "en": "<storage conditions>" },
+    "packaging": { "vi": "<quy cách đóng gói, VD: 190 kg/phuy thép>", "en": "<packaging>" },
+    "leadTime": { "vi": "<thời gian giao hàng nếu tài liệu nêu>", "en": "<lead time>" },
+    "incompatibility": { "vi": "<lưu ý phối trộn/tương kỵ, xử lý trước khi dùng>", "en": "<handling / incompatibility notes>" }
+  },
+
+  "regulatory": {
+    "_comment": "[LOẠI A — TRÍCH XUẤT] Pháp lý. Sai ở đây là rủi ro pháp lý thật. Không chắc thì bỏ trống.",
+    "status": "<mảng, chỉ chọn khi tài liệu CHỨNG MINH, các giá trị hợp lệ: fda_gras | efsa | vn_moh | novel_food — mảng rỗng nếu không rõ>",
+    "registrationNo": "<số công bố/đăng ký CHÍNH XÁC như tài liệu ghi — RỖNG nếu không có. TUYỆT ĐỐI không bịa>",
+    "usageLimit": { "vi": "<ngưỡng sử dụng cho phép / quy chuẩn áp dụng>", "en": "<permitted usage level>" }
+  },
+
+  "research": {
+    "_comment": "[LOẠI B — BIÊN TẬP] Được suy luận khoa học, nhưng số liệu phải có trong tài liệu.",
+    "mechanism": {
+      "vi": "<cơ chế tác dụng, 2-4 câu tiếng Việt: hoạt chất tác động thế nào ở mức sinh học>",
+      "en": "<mechanism of action, 2-4 sentences>"
+    }
+  },
   "seoTitle": {
     "vi": "<tiêu đề SEO tiếng Việt, ≤ 60 ký tự, chứa tên nguyên liệu + lợi ích chính>",
     "en": "<SEO title English, ≤ 60 chars>"
@@ -551,6 +863,7 @@ export function truncateForAI(text: string, maxChars = 80_000): string {
 export async function extractTextFromImageUsingVision(
   imageBuffer: Buffer,
   fileName: string,
+  usage?: AiUsage,
 ): Promise<string> {
   const client = getOpenAIClient()
 
@@ -599,6 +912,7 @@ Nếu ảnh không chứa text có ý nghĩa, trả về: "[No readable text fou
       ...completionParams(VISION_MODEL, 4096, 0.1),
     })
 
+    recordUsage(usage, 'vision', response.usage)
     const text = response.choices[0]?.message?.content ?? ''
     return text.trim()
   } catch (err) {

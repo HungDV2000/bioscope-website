@@ -25,7 +25,7 @@ export const AiGenerateJobs: CollectionConfig = {
     useAsTitle: 'ingredientName',
     defaultColumns: ['ingredientName', 'mode', 'status', 'phase', 'locale', 'createdAt'],
     group: 'Bioscope',
-    description: 'Job history — Tạo nội dung tự động bằng AI (GPT-4o + DALL·E 3)',
+    description: 'Job history — Tạo nội dung tự động bằng AI',
   },
   access: {
     read: isAdminOrEditor,
@@ -138,6 +138,18 @@ export const AiGenerateJobs: CollectionConfig = {
       type: 'json',
       label: 'AI Result',
       admin: { readOnly: true },
+    },
+
+    // ── Token / cost accounting ──────────────────────────────────────────
+    {
+      name: 'usage',
+      type: 'json',
+      label: { en: 'Token usage & cost', vi: 'Token & chi phí' },
+      admin: {
+        readOnly: true,
+        description:
+          'Token theo từng loại call (content / vision / imagePrompt), số ảnh, và ước tính USD khi đã đặt OPENAI_PRICE_*.',
+      },
     },
 
     // ── Error ────────────────────────────────────────────────────────────

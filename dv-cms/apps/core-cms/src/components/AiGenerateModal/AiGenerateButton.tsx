@@ -37,7 +37,9 @@ type AiGenerateResult = {
   benefits?: string[]
   applications?: string[]
   badges?: string[]
-  suggestedDosage?: string
+  // Localized since the "hồ sơ nguyên liệu" prompt rewrite. Jobs generated
+  // before that stored a plain string, and job records persist — accept both.
+  suggestedDosage?: string | { vi?: string; en?: string }
   imagePrompt?: { vi: string; en: string }
   featuredImage?: { id: string | number; url: string }
   metadata?: {
@@ -112,6 +114,17 @@ const MODAL_CONTENT_STYLE: React.CSSProperties = {
   maxHeight: '90vh',
   overflowY: 'auto',
   boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+}
+
+/**
+ * `suggestedDosage` is `{vi,en}` for jobs generated after the dossier prompt
+ * rewrite, and a plain string for older job records still in the database.
+ * Render whichever shape we get — an object reaching JSX would throw.
+ */
+function resolveDosage(v?: string | { vi?: string; en?: string }): string {
+  if (!v) return ''
+  if (typeof v === 'string') return v
+  return (v.vi || v.en || '').trim()
 }
 
 const SECTION_STYLE: React.CSSProperties = {
@@ -393,10 +406,10 @@ export const AiGenerateModal: React.FC<AiGenerateModalProps> = ({
               )}
 
               {/* Suggested Dosage */}
-              {job.result.suggestedDosage && (
+              {resolveDosage(job.result.suggestedDosage) && (
                 <div style={SECTION_STYLE}>
                   <p style={{ fontSize: 12, color: '#888', marginBottom: 4 }}>Suggested Dosage</p>
-                  <p style={{ fontSize: 13, margin: 0 }}>{job.result.suggestedDosage}</p>
+                  <p style={{ fontSize: 13, margin: 0 }}>{resolveDosage(job.result.suggestedDosage)}</p>
                 </div>
               )}
 
@@ -416,6 +429,17 @@ export const AiGenerateModal: React.FC<AiGenerateModalProps> = ({
             </div>
           )}
 
+          {/* Draft notice — the worker writes with draft: true, so nothing the AI
+              produced is live yet. Without this, an editor checks the website,
+              sees no change, and assumes the run failed. */}
+          {step === 'preview' && job?.result && (
+            <div style={{ padding: '10px 14px', borderRadius: 8, background: 'rgba(230,150,20,0.10)', border: '1px solid rgba(230,150,20,0.35)', fontSize: 13, marginTop: 12 }}>
+              ⚠️ <strong>Đã lưu dạng bản nháp.</strong> Nội dung chưa hiển thị trên web.
+              Hãy đối chiếu lại số liệu kỹ thuật và pháp lý (CAS, mã HS, số công bố) với tài liệu gốc,
+              sau đó bấm <strong>Publish</strong> trong trang nguyên liệu.
+            </div>
+          )}
+
           {/* Footer buttons */}
           <div style={{ display: 'flex', gap: 8, marginTop: 20, justifyContent: 'flex-end' }}>
             {step === 'preview' && job?.result && (
@@ -425,7 +449,7 @@ export const AiGenerateModal: React.FC<AiGenerateModalProps> = ({
                 onClick={() => { void handleApply() }}
                 style={{ padding: '8px 20px' }}
               >
-                ✅ Áp dụng kết quả
+                ✅ Xem bản nháp
               </button>
             )}
             {step === 'idle' && (

@@ -6,13 +6,19 @@
  *   GET  /api/ai-generate/jobs     → Danh sách jobs gần đây
  *   GET  /api/ai-generate/jobs/:id → Chi tiết job + kết quả JSON
  *
+ * Mọi trigger (lẻ / hàng loạt / chỉ ảnh) chỉ TẠO job ở trạng thái `queued` rồi
+ * gọi ensureQueueRunner — hàng đợi tuần tự claim từng job. Không được gọi thẳng
+ * runAiGenerate() ở đây: job vừa tạo mang đúng trạng thái mà queue đang quét,
+ * nên chạy trực tiếp sẽ đua với queue và xử lý cùng một job hai lần.
+ *
  * Backend worker:
  *   1. Lấy ingredient từ Payload
  *   2. Download tất cả file từ driveFiles (PDF) bằng Google Drive API
- *   3. Trích xuất text từ PDF bằng pdfjs-dist
- *   4. Gọi GPT-4o → sinh nội dung (description, benefits, applications...)
- *   5. Gọi DALL·E 3 → sinh featured image
- *   6. Upload image lên Payload Media
+ *   3. Trích xuất text từ PDF bằng pdfjs-dist (scan → Vision OCR)
+ *   4. Gọi AI → sinh nội dung + hồ sơ kỹ thuật/pháp lý/nghiên cứu
+ *   5. Ghi nội dung vào ingredient (cả 2 ngôn ngữ + specs)
+ *   6. Sinh featured image TỪ BẢN GHI ĐÃ LƯU rồi upload lên Payload Media
+ *      (ảnh chạy sau cùng: lỗi ảnh không làm mất phần nội dung đã lưu)
  *   7. Lưu kết quả vào job record (preview JSON)
  *
  * Result format (returned as JSON preview in modal):
@@ -157,24 +163,14 @@ const triggerGenerateEndpoint: Endpoint = {
       })
       jobId = String(job.id)
 
-      // Reuse the request's Payload instance (global.__payload isn't set in the
-      // running server — only in CLI scripts).
-      const payload = req.payload
-
-      // Chạy nền ngay
-      setImmediate(async () => {
-        try {
-          const { runAiGenerate } = await import('../ai-generate/AiGenerateWorker.js')
-          await runAiGenerate({
-            jobId: String(jobId),
-            ingredientId: String(ingredientId),
-            locale: locale as Locale,
-            payload,
-          })
-        } catch (err) {
-          console.error('[ai-generate] Background error:', err)
-        }
-      })
+      // Hand off to the shared sequential queue — same path as bulk + image-only.
+      // Calling runAiGenerate() directly here used to race the queue drainer:
+      // this job is created with status 'queued', which is exactly what the
+      // drainer polls for, so a bulk run in progress could claim and run the
+      // same job concurrently — double OpenAI spend and interleaved writes.
+      // The queue claims each job before running it, so one runner wins.
+      const { ensureQueueRunner } = await import('../ai-generate/queue.js')
+      ensureQueueRunner(req.payload)
 
       return Response.json(
         {

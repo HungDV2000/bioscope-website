@@ -37,7 +37,9 @@ type AiGenerateResult = {
   benefits?: string[]
   applications?: string[]
   badges?: string[]
-  suggestedDosage?: string
+  // Localized since the "hồ sơ nguyên liệu" prompt rewrite. Jobs generated
+  // before that stored a plain string, and job records persist — accept both.
+  suggestedDosage?: string | { vi?: string; en?: string }
   imagePrompt?: { vi: string; en: string }
   featuredImage?: { id: string | number; url: string }
   metadata?: {
@@ -94,6 +96,17 @@ const CARD_STYLE: React.CSSProperties = {
   paddingBottom: 24,
   borderBottom: '1px solid var(--color-input-border)',
 }
+/**
+ * `suggestedDosage` is `{vi,en}` for jobs generated after the dossier prompt
+ * rewrite, and a plain string for older job records still in the database.
+ * Render whichever shape we get — an object reaching JSX would throw.
+ */
+function resolveDosage(v?: string | { vi?: string; en?: string }): string {
+  if (!v) return ''
+  if (typeof v === 'string') return v
+  return (v.vi || v.en || '').trim()
+}
+
 const SECTION_STYLE: React.CSSProperties = {
   marginBottom: 14,
   padding: '10px 14px',
@@ -442,10 +455,10 @@ const MiniModal: React.FC<MiniModalProps> = ({ onClose }) => {
                 </div>
               )}
 
-              {job.result.suggestedDosage && (
+              {resolveDosage(job.result.suggestedDosage) && (
                 <div style={SECTION_STYLE}>
                   <p style={{ fontSize: 11, color: '#aaa', marginBottom: 2 }}>Suggested Dosage</p>
-                  <p style={{ fontSize: 13, margin: 0 }}>{job.result.suggestedDosage}</p>
+                  <p style={{ fontSize: 13, margin: 0 }}>{resolveDosage(job.result.suggestedDosage)}</p>
                 </div>
               )}
 

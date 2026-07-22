@@ -21,7 +21,10 @@ set -euo pipefail
 
 # ─── Config ─────────────────────────────────────────────────────
 DV_CMS_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-REPO_DIR="$(cd "$DV_CMS_DIR/../.." && pwd)"
+# Hỏi git thay vì đếm số cấp thư mục: repo root là thư mục CHA của dv-cms
+# (dv-cms là thư mục con), nên "../.." vượt quá một cấp và trỏ ra ngoài repo.
+# rev-parse cũng đúng luôn nếu sau này cấu trúc thư mục thay đổi.
+REPO_DIR="$(git -C "$DV_CMS_DIR" rev-parse --show-toplevel 2>/dev/null || (cd "$DV_CMS_DIR/.." && pwd))"
 DATA_DIR="${DATA_DIR:-/opt/bioscope-data}"
 
 # ─── Banner ────────────────────────────────────────────────────

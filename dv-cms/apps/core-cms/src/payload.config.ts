@@ -48,6 +48,7 @@ import {
   aiGenerateImageEndpoint,
   aiGenerateListEndpoint,
   aiGenerateGetEndpoint,
+  aiGenerateQueueStatusEndpoint,
 } from './endpoints/aiGenerate.js'
 
 const filename = fileURLToPath(import.meta.url)
@@ -158,7 +159,7 @@ export default buildConfig({
     collectionSpecific: true,
   },
   typescript: { outputFile: path.resolve(dirname, 'payload-types.ts') },
-  endpoints: [seedEndpoint, backupEndpoint, ingredientDuplicatesEndpoint, ...duplicateScanEndpoints, cmsSyncSourceEndpoint, cmsSyncEndpoint, cmsSyncRunsEndpoint, driveSyncTriggerEndpoint, driveSyncListEndpoint, driveSyncGetEndpoint, driveSyncCancelEndpoint, csvImportEndpoint, ingredientExportEndpoint, ingredientImportEndpoint, aiGenerateTriggerEndpoint, aiGenerateBulkEndpoint, aiGenerateImageEndpoint, aiGenerateListEndpoint, aiGenerateGetEndpoint],
+  endpoints: [seedEndpoint, backupEndpoint, ingredientDuplicatesEndpoint, ...duplicateScanEndpoints, cmsSyncSourceEndpoint, cmsSyncEndpoint, cmsSyncRunsEndpoint, driveSyncTriggerEndpoint, driveSyncListEndpoint, driveSyncGetEndpoint, driveSyncCancelEndpoint, csvImportEndpoint, ingredientExportEndpoint, ingredientImportEndpoint, aiGenerateTriggerEndpoint, aiGenerateBulkEndpoint, aiGenerateImageEndpoint, aiGenerateListEndpoint, aiGenerateGetEndpoint, aiGenerateQueueStatusEndpoint],
   collections: [],
   plugins: [
     // Tier 1 — generic core (must come first: users + media).

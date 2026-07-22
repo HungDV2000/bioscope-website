@@ -10,24 +10,68 @@ import type { Payload } from 'payload'
 import type { Locale } from '../lib/openaiService.js'
 
 let running = false
+/** Mốc thời gian lần cuối vòng drain nhúc nhích. Dùng để phát hiện runner chết cứng. */
+let lastProgressAt = 0
 
 /** Gap between jobs (ms) — eases OpenAI rate limits and lets the event loop breathe. */
 const GAP_MS = Number(process.env.AI_QUEUE_GAP_MS ?? 2000)
+
+/**
+ * Trần thời gian cho MỘT job. Vượt qua thì bỏ job đó và chạy tiếp.
+ *
+ * Không có trần này, một lời gọi treo sẽ khiến `drain` không bao giờ kết thúc,
+ * cờ `running` kẹt ở true, và MỌI lần bấm sau đều bị `ensureQueueRunner` bỏ qua
+ * im lặng — job mới nằm mãi ở trạng thái "đã xếp hàng" mà không ai chạy. Đây
+ * đúng là triệu chứng đã gặp trên production.
+ *
+ * Phải lớn hơn job hợp lệ chậm nhất: OPENAI_TIMEOUT_MS × (1 + retries) cộng
+ * thời gian tải Drive và OCR từng file.
+ */
+const JOB_TIMEOUT_MS = Number(process.env.AI_JOB_TIMEOUT_MS ?? 15 * 60 * 1000)
 
 /**
  * Start draining the queue if not already running. Returns immediately; the
  * draining continues in the background. Safe to call repeatedly.
  */
 export function ensureQueueRunner(payload: Payload): void {
-  if (running) return
+  if (running) {
+    // Cờ `running` chỉ nằm trong RAM và không ai quan sát được từ bên ngoài.
+    // Nếu tiến trình trước chết cứng mà không settle, hàng đợi sẽ tắc vĩnh viễn
+    // cho tới khi restart container. Tự phục hồi khi quá lâu không nhúc nhích.
+    const idleMs = Date.now() - lastProgressAt
+    if (lastProgressAt === 0 || idleMs < JOB_TIMEOUT_MS * 2) return
+    console.warn(`[ai-queue] runner treo ${Math.round(idleMs / 1000)}s không tiến triển — khởi động lại`)
+    running = false
+  }
   running = true
+  lastProgressAt = Date.now()
   void drain(payload).finally(() => {
     running = false
   })
 }
 
+/** Chạy `p`, nhưng bỏ cuộc sau `ms` để vòng drain không bao giờ tắc. */
+function withTimeout<T>(p: Promise<T>, ms: number, label: string): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`${label} quá ${Math.round(ms / 60000)} phút — bỏ qua`)), ms)
+    p.then(
+      (v) => { clearTimeout(t); resolve(v) },
+      (e) => { clearTimeout(t); reject(e) },
+    )
+  })
+}
+
 export function isQueueRunning(): boolean {
   return running
+}
+
+/** Ảnh chụp trạng thái runner — cho endpoint chẩn đoán. */
+export function queueSnapshot(): { running: boolean; lastProgressAt: string | null; idleSeconds: number | null } {
+  return {
+    running,
+    lastProgressAt: lastProgressAt ? new Date(lastProgressAt).toISOString() : null,
+    idleSeconds: lastProgressAt ? Math.round((Date.now() - lastProgressAt) / 1000) : null,
+  }
 }
 
 /** In-progress statuses — a job sitting in one of these has a live runner… normally. */
@@ -89,6 +133,7 @@ async function drain(payload: Payload): Promise<void> {
 
   // Hard cap on iterations as a safety valve against an unexpected infinite loop.
   for (let i = 0; i < 100_000; i++) {
+    lastProgressAt = Date.now()
     let job: { id: string | number; ingredientId?: string; locale?: string; mode?: string } | undefined
     try {
       const res = await payload.find({
@@ -123,12 +168,16 @@ async function drain(payload: Payload): Promise<void> {
     try {
       const { runAiGenerate, runAiGenerateImage } = await import('./AiGenerateWorker.js')
       const run = job.mode === 'image' ? runAiGenerateImage : runAiGenerate
-      await run({
-        jobId: String(job.id),
-        ingredientId: String(job.ingredientId ?? ''),
-        locale: (job.locale as Locale) ?? 'vi',
-        payload,
-      })
+      await withTimeout(
+        run({
+          jobId: String(job.id),
+          ingredientId: String(job.ingredientId ?? ''),
+          locale: (job.locale as Locale) ?? 'vi',
+          payload,
+        }),
+        JOB_TIMEOUT_MS,
+        `Job ${job.id}`,
+      )
     } catch (err) {
       // runAiGenerate handles its own errors, but guard so the queue never dies.
       console.error('[ai-queue] job failed', job.id, err)

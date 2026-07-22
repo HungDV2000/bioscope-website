@@ -17,9 +17,11 @@
  *   3. Trích xuất text từ PDF bằng pdfjs-dist (scan → Vision OCR)
  *   4. Gọi AI → sinh nội dung + hồ sơ kỹ thuật/pháp lý/nghiên cứu
  *   5. Ghi nội dung vào ingredient (cả 2 ngôn ngữ + specs)
- *   6. Sinh featured image TỪ BẢN GHI ĐÃ LƯU rồi upload lên Payload Media
- *      (ảnh chạy sau cùng: lỗi ảnh không làm mất phần nội dung đã lưu)
- *   7. Lưu kết quả vào job record (preview JSON)
+ *   6. Lưu kết quả vào job record (preview JSON)
+ *
+ * ẢNH KHÔNG nằm trong luồng này. Tạo ảnh là job riêng (mode 'image', endpoint
+ * POST /api/ai-generate/image) để bước nội dung nhanh và không chết theo lời
+ * gọi tạo ảnh — vốn chậm nhất, đắt nhất và hay lỗi nhất.
  *
  * Result format (returned as JSON preview in modal):
  * {
@@ -463,8 +465,49 @@ const getJobEndpoint: Endpoint = {
 // Exports
 // ---------------------------------------------------------------------------
 
+/**
+ * GET /api/ai-generate/queue-status — chẩn đoán khi job "xếp hàng mãi không chạy".
+ *
+ * Runner sống trong RAM nên từ ngoài không thể biết nó còn chạy hay đã chết.
+ * Endpoint này trả về cờ `running`, thời điểm cuối vòng drain nhúc nhích, và số
+ * job đang chờ — đủ để phân biệt "đang bận chạy job khác" với "runner đã chết".
+ */
+const queueStatusEndpoint: Endpoint = {
+  path: '/ai-generate/queue-status',
+  method: 'get',
+  handler: async (req: PayloadRequest): Promise<Response> => {
+    if (!isAdmin(req)) {
+      return Response.json({ ok: false, error: 'Chỉ admin được phép.' }, { status: 403 })
+    }
+    const { queueSnapshot } = await import('../ai-generate/queue.js')
+    const counts: Record<string, number> = {}
+    for (const status of ['queued', 'downloading', 'generating_content', 'saving', 'done', 'error']) {
+      try {
+        const r = await req.payload.find({
+          collection: 'ai-generate-jobs',
+          where: { status: { equals: status } },
+          limit: 0,
+          depth: 0,
+          overrideAccess: true,
+        })
+        counts[status] = r.totalDocs
+      } catch (err) {
+        // Đếm lỗi ở đây chính là manh mối: nếu truy vấn ai-generate-jobs hỏng
+        // (vd thiếu cột sau khi đổi schema mà chưa chạy migration) thì vòng
+        // drain cũng hỏng y hệt và job sẽ nằm mãi ở "queued".
+        return Response.json(
+          { ok: false, error: `Truy vấn ai-generate-jobs lỗi — nhiều khả năng thiếu migration DB: ${String(err)}` },
+          { status: 500 },
+        )
+      }
+    }
+    return Response.json({ ok: true, queue: queueSnapshot(), counts })
+  },
+}
+
 export const aiGenerateTriggerEndpoint = triggerGenerateEndpoint
 export const aiGenerateBulkEndpoint = bulkGenerateEndpoint
 export const aiGenerateImageEndpoint = imageOnlyEndpoint
 export const aiGenerateListEndpoint = listJobsEndpoint
 export const aiGenerateGetEndpoint = getJobEndpoint
+export const aiGenerateQueueStatusEndpoint = queueStatusEndpoint

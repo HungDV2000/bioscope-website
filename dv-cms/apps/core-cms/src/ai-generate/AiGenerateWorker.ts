@@ -685,10 +685,6 @@ export async function runAiGenerate(input: WorkerInput): Promise<void> {
       `Content generated: ${generatedContent.benefits.vi.length} benefits, ${generatedContent.applications.vi.length} applications`,
     )
 
-    // Image generation happens AFTER the content writeback (step 8) — see the
-    // comment there. Declared here so the job result can reference it.
-    let featuredImage: { id: string | number; url: string } | null = null
-
     // ── 7. Write generated content back to the ingredient (correct structure) ──
     await updateJob(payload, jobId, { status: 'saving', phase: 'Đang lưu nội dung vào nguyên liệu...', logs })
 
@@ -897,91 +893,19 @@ export async function runAiGenerate(input: WorkerInput): Promise<void> {
     }
     addLog(logs, 'info', `Đã ghi nội dung vào nguyên liệu (${Object.keys(primaryData).join(', ')}${cleanedSpecs.length ? ', specs' : ''})`)
 
-    // ── 8. Generate the featured image, LAST ──────────────────────────────
-    // Deliberately after the content writeback, for two reasons:
-    //  1. The prompt is built by re-reading the saved record, so it sees the
-    //     real description/benefits/appearance — the same input the image-only
-    //     rerun uses. Building it from the raw `imagePrompt` string the content
-    //     model returned gave noticeably worse images.
-    //  2. Image generation is the slowest and most failure-prone step. Running
-    //     it last means a failure here leaves all the text content saved.
-    addLog(logs, 'info', 'Gọi AI tạo hình ảnh...')
-    await updateJob(payload, jobId, {
-      status: 'generating_image',
-      phase: 'Đang gọi AI tạo hình ảnh...',
-      totals,
-      logs,
-    })
-
-    try {
-      // depth 1 so `category` is populated for the prompt context.
-      const saved = await payload.findByID({
-        collection: 'ingredients',
-        id: ingredientId,
-        depth: 1,
-        locale,
-        // The content above was written as a draft, so the published version
-        // does not have it yet — read the draft or the prompt loses all context.
-        draft: true,
-        overrideAccess: true,
-      })
-      const { prompt: imagePrompt, context } = buildImagePromptFromIngredient(
-        saved as unknown as Record<string, unknown>,
-        ingredientName,
-      )
-      addLog(logs, 'info', `Ngữ cảnh sản phẩm đưa vào prompt ảnh: ${context.replace(/\n/g, ' | ').slice(0, 300)}…`)
-
-      featuredImage = await generateAndUploadFeaturedImage(
-        ingredientName,
-        locale,
-        imagePrompt,
-        async (buffer, filename, mimeType, alt) => {
-          addLog(logs, 'info', `Uploading image: ${filename}`)
-          const media = await payload.create({
-            collection: 'media',
-            // `alt` is localized, so the generated types declare it as a plain
-            // string while the API accepts the per-locale object at runtime.
-            data: { alt: { vi: alt, en: alt } } as never,
-            file: { buffer, filename, mimeType } as never,
-            overrideAccess: true,
-          })
-          addLog(logs, 'info', `Image uploaded: ${media.id}`)
-          return {
-            id: media.id,
-            url: (media.url as string) ?? `/_uploads/media/${filename}`,
-          }
-        },
-        usage,
-      )
-    } catch (imgErr) {
-      const msg = imgErr instanceof Error ? imgErr.message : String(imgErr)
-      addLog(logs, 'error', `Tạo ảnh thất bại: ${msg}`)
-    }
-
-    if (featuredImage) {
-      // `name` is required + localized, so include it for validation to pass.
-      await payload.update({
-        collection: 'ingredients',
-        id: ingredientId,
-        data: { name: nameFor(locale), featuredImage: featuredImage.id } as never,
-        locale,
-        draft: true,
-        overrideAccess: true,
-      })
-      addLog(logs, 'info', `Featured image generated: ${featuredImage.url}`)
-    } else {
-      addLog(logs, 'warn', 'Không tạo được ảnh — nội dung đã lưu, nguyên liệu giữ ảnh cũ.')
-    }
+    // Ảnh KHÔNG tạo ở đây. Tách hẳn sang nút "Tạo lại ảnh đại diện (AI)" để
+    // bước nội dung chạy nhanh và không phụ thuộc lời gọi tạo ảnh — vốn là bước
+    // chậm nhất, tốn nhất và hay lỗi nhất (gpt-image cần Organization
+    // Verification). Sinh nội dung xong là job kết thúc.
 
     // ── 9. Save result ────────────────────────────────────────────────────
     const result = {
       ...generatedContent,
-      featuredImage: featuredImage ?? undefined,
       metadata: {
         filesProcessed: totals.filesExtracted,
         filesSkipped: totals.filesSkipped,
-        modelUsed: `${process.env.OPENAI_CONTENT_MODEL || 'gpt-5.6-terra'} + ${process.env.OPENAI_IMAGE_MODEL || 'gpt-image-2'}`,
-        imageGenerated: Boolean(featuredImage),
+        modelUsed: process.env.OPENAI_CONTENT_MODEL || 'gpt-5.6-terra',
+        imageGenerated: false,
         locale,
         fileTypes: typeSummary,
         errors: totals.errors > 0 ? [`${totals.errors} file(s) có lỗi`] : undefined,
@@ -999,13 +923,14 @@ export async function runAiGenerate(input: WorkerInput): Promise<void> {
       `Chi phí job: ${totalTokens.toLocaleString('vi-VN')} token + ${usage.images} ảnh` +
         (costUsd != null ? ` ≈ $${costUsd}` : ' (đặt OPENAI_PRICE_* để ước tính tiền)'),
     )
-    addLog(logs, 'warn', '⚠️ Toàn bộ nội dung lưu dạng BẢN NHÁP — mở nguyên liệu, đối chiếu lại số liệu kỹ thuật/pháp lý rồi bấm Publish.')
-    addLog(logs, 'info', `✅ Job completed: ${generatedContent.benefits.vi.length} benefits, ${generatedContent.applications.vi.length} applications, image: ${featuredImage ? 'yes' : 'no'}`)
+    addLog(logs, 'warn', '⚠️ Nội dung lưu dạng BẢN NHÁP — mở nguyên liệu, đối chiếu số liệu kỹ thuật/pháp lý rồi bấm Publish.')
+    addLog(logs, 'info', 'Ảnh đại diện KHÔNG tạo ở bước này. Dùng nút "Tạo lại ảnh đại diện (AI)" khi cần.')
+    addLog(logs, 'info', `✅ Job completed: ${generatedContent.benefits.vi.length} benefits, ${generatedContent.applications.vi.length} applications, ảnh: tách riêng`)
 
     await updateJob(payload, jobId, {
       usage: { ...usage, totalTokens, costUsd },
       status: 'done',
-      phase: 'Hoàn tất — nội dung đã lưu dạng BẢN NHÁP, cần bấm Publish để lên web.',
+      phase: 'Hoàn tất — nội dung lưu dạng BẢN NHÁP. Ảnh tạo riêng bằng "Tạo lại ảnh đại diện".',
       finishedAt: new Date().toISOString(),
       totals,
       logs,

@@ -27,6 +27,8 @@ export type AdminTheme = {
 export type BrandingGlobal = {
   brandName?: string | null
   logo?: { url?: string | null } | null
+  /** Square browser-tab icon, shared by the website and the admin. */
+  favicon?: { url?: string | null; mimeType?: string | null } | null
   loginSubtitle?: string | null
   /** Admin dashboard — flat fields (match existing DB columns). */
   primaryColor?: string | null

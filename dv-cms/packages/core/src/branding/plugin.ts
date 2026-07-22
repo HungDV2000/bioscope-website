@@ -1,5 +1,6 @@
 import type { Config, Plugin } from 'payload'
 import { Branding } from '../globals/Branding.js'
+import { brandingFaviconEndpoint } from './faviconEndpoint.js'
 
 export type BrandingPluginOptions = {
   /** Used for the admin <title> suffix when not overridden. */
@@ -36,6 +37,11 @@ export const brandingPlugin =
       ...(admin.meta ?? {}),
       titleSuffix: options.titleSuffix ?? `· ${brand}`,
       description: options.description ?? admin.meta?.description,
+      // Fixed URL, editable target. `admin.meta` is a static object evaluated at
+      // config-build time and cannot read the Branding global per request, so the
+      // endpoint resolves the current upload instead (see faviconEndpoint.ts).
+      // It 404s when nothing is uploaded, which the browser treats as "no icon".
+      icons: admin.meta?.icons ?? [{ rel: 'icon', url: '/api/branding-favicon' }],
     }
 
     const components = { ...(admin.components ?? {}) }
@@ -73,6 +79,7 @@ export const brandingPlugin =
 
     if (options.enableGlobal !== false) {
       config.globals = [...(config.globals ?? []), Branding]
+      config.endpoints = [...(config.endpoints ?? []), brandingFaviconEndpoint]
     }
 
     return config

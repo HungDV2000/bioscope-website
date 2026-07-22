@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { CmsThemeStyle } from '@/components/theme/cms-theme-style'
-import { getFrontendThemeColor } from '@/lib/branding'
+import { getFaviconUrl, getFrontendThemeColor } from '@/lib/branding'
 import { getLocale } from '@/lib/i18n/server'
 import { DEFAULT_OG_IMAGE } from '@/lib/seo'
 import { getSeoSettings } from '@/lib/cms/seo-settings'
@@ -26,6 +26,9 @@ export async function generateMetadata(): Promise<Metadata> {
   const homeTitle = s.homeTitle ?? 'Bioscope — Đối tác đổi mới y tế · Nguyên liệu & Đồng kiến tạo'
   const description = s.homeDescription ?? DESCRIPTION
   const ogImage = s.defaultImage ?? DEFAULT_OG_IMAGE
+  // Favicon is managed in the CMS (Branding global) so it can be changed
+  // without a deploy. Omitted entirely when nothing is uploaded.
+  const favicon = await getFaviconUrl()
 
   return {
     metadataBase: new URL(s.siteUrl),
@@ -33,6 +36,15 @@ export async function generateMetadata(): Promise<Metadata> {
     description,
     keywords: KEYWORDS,
     alternates: { canonical: '/' },
+    ...(favicon
+      ? {
+          icons: {
+            icon: [{ url: favicon.url, type: favicon.type }],
+            shortcut: [{ url: favicon.url, type: favicon.type }],
+            apple: [{ url: favicon.url }],
+          },
+        }
+      : {}),
     // Yoast "discourage search engines" → noindex the whole site.
     robots: s.discourageSearchEngines ? { index: false, follow: false } : { index: true, follow: true },
     openGraph: {

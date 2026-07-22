@@ -68,6 +68,18 @@ export const Branding: GlobalConfig = {
       },
     },
     {
+      name: 'favicon',
+      type: 'upload',
+      relationTo: 'media',
+      label: { en: 'Favicon', vi: 'Favicon (icon tab trình duyệt)' },
+      admin: {
+        description: {
+          en: 'Square icon shown on the browser tab, for both the website and this admin. Upload a square PNG or SVG, at least 512x512. Browsers cache favicons aggressively — a change can take a while to appear, and a hard refresh may be needed.',
+          vi: 'Icon vuông hiển thị trên tab trình duyệt, dùng cho cả website lẫn trang admin này. Tải lên ảnh PNG hoặc SVG VUÔNG, tối thiểu 512x512. Trình duyệt cache favicon rất dai — đổi xong có thể phải chờ hoặc Ctrl+F5 mới thấy.',
+        },
+      },
+    },
+    {
       name: 'loginSubtitle',
       type: 'text',
       localized: true,

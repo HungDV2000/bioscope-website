@@ -73,13 +73,18 @@ function detectFileType(mimeType: string, fileName: string): FileType {
   const ext = fileName.split('.').pop()?.toLowerCase() ?? ''
   const lower = mimeType.toLowerCase()
 
-  // Google Apps native types
-  if (lower === 'application/vnd.google-apps.document') return 'google_doc'
-  if (lower === 'application/vnd.google-apps.spreadsheet') return 'google_sheet'
-  if (lower === 'application/vnd.google-apps.presentation') return 'google_slide'
+  // Google Apps native types — nhận CẢ mimeType đầy đủ
+  // ('application/vnd.google-apps.document') LẪN dạng rút gọn mà CSV import lưu
+  // trong cột `type` ('google-document'). Trước đây chỉ khớp dạng đầy đủ, nên
+  // file Google Docs từ CSV bị rơi vào 'unknown' → tải binary → 403
+  // fileNotDownloadable ("Use Export with Docs Editors files").
+  const isGoogle = lower.includes('google')
+  if (isGoogle && (lower.includes('document') || lower.includes('.document') || lower.endsWith('doc'))) return 'google_doc'
+  if (isGoogle && (lower.includes('spreadsheet') || lower.includes('sheet'))) return 'google_sheet'
+  if (isGoogle && (lower.includes('presentation') || lower.includes('slide'))) return 'google_slide'
 
-  // Google Apps exported formats
-  if (lower.includes('application/vnd.google-apps')) return 'unknown'
+  // Loại Google Apps khác (form, drawing, site...) — không xuất text được.
+  if (lower.includes('google-apps') || lower.startsWith('google-')) return 'unknown'
 
   // PDF
   if (lower === 'application/pdf' || ext === 'pdf') {
@@ -108,6 +113,9 @@ function getMimeTypeLabel(mimeType: string): string {
     'application/vnd.google-apps.document': 'Google Docs',
     'application/vnd.google-apps.spreadsheet': 'Google Sheets',
     'application/vnd.google-apps.presentation': 'Google Slides',
+    'google-document': 'Google Docs',
+    'google-spreadsheet': 'Google Sheets',
+    'google-presentation': 'Google Slides',
   }
   return map[mimeType] ?? mimeType
 }

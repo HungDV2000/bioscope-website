@@ -170,23 +170,56 @@ function recordUsage(
 }
 
 /**
- * Estimated USD cost. Rates are NOT hardcoded — model pricing changes and a
- * stale constant silently produces wrong numbers. Set the env vars below to get
- * a cost figure; leave them unset and the job records tokens only.
- *   OPENAI_PRICE_INPUT_PER_1M, OPENAI_PRICE_OUTPUT_PER_1M, OPENAI_PRICE_PER_IMAGE
+ * Đơn giá MẶC ĐỊNH (USD). Đây là ƯỚC LƯỢNG để log luôn có con số — giá model
+ * thật đổi theo thời gian, nên hãy đặt OPENAI_PRICE_* để ghi đè cho chính xác.
+ * Mức mặc định lấy theo tầm giá model đa năng hạng trung.
  */
-export function estimateCostUsd(usage: AiUsage): number | undefined {
-  const inRate = Number(process.env.OPENAI_PRICE_INPUT_PER_1M)
-  const outRate = Number(process.env.OPENAI_PRICE_OUTPUT_PER_1M)
-  const imgRate = Number(process.env.OPENAI_PRICE_PER_IMAGE)
-  if (!Number.isFinite(inRate) || !Number.isFinite(outRate)) return undefined
+const DEFAULT_PRICE_INPUT_PER_1M = 2.5
+const DEFAULT_PRICE_OUTPUT_PER_1M = 10
+const DEFAULT_PRICE_PER_IMAGE = 0.04
+/** Tỉ giá USD→VND để log kèm tiền Việt. Đổi qua OPENAI_USD_TO_VND. */
+const DEFAULT_USD_TO_VND = 25_400
+
+const numOr = (v: string | undefined, fallback: number): number => {
+  const n = Number(v)
+  return Number.isFinite(n) && n >= 0 ? n : fallback
+}
+
+export type CostEstimate = {
+  usd: number
+  vnd: number
+  /** true nếu đang dùng đơn giá mặc định (chưa đặt OPENAI_PRICE_*). */
+  usingDefaults: boolean
+  rates: { inputPer1M: number; outputPer1M: number; perImage: number; usdToVnd: number }
+}
+
+/**
+ * Ước tính chi phí một job. Luôn trả về con số (dùng đơn giá mặc định khi chưa
+ * cấu hình), kèm cờ `usingDefaults` để log nói rõ đây là ước lượng.
+ */
+export function estimateCost(usage: AiUsage): CostEstimate {
+  const usingDefaults =
+    process.env.OPENAI_PRICE_INPUT_PER_1M == null && process.env.OPENAI_PRICE_OUTPUT_PER_1M == null
+
+  const inputPer1M = numOr(process.env.OPENAI_PRICE_INPUT_PER_1M, DEFAULT_PRICE_INPUT_PER_1M)
+  const outputPer1M = numOr(process.env.OPENAI_PRICE_OUTPUT_PER_1M, DEFAULT_PRICE_OUTPUT_PER_1M)
+  const perImage = numOr(process.env.OPENAI_PRICE_PER_IMAGE, DEFAULT_PRICE_PER_IMAGE)
+  const usdToVnd = numOr(process.env.OPENAI_USD_TO_VND, DEFAULT_USD_TO_VND)
 
   const promptTokens = usage.content.prompt + usage.vision.prompt + usage.imagePrompt.prompt
   const completionTokens = usage.content.completion + usage.vision.completion + usage.imagePrompt.completion
-  const imageCost = Number.isFinite(imgRate) ? usage.images * imgRate : 0
 
-  const cost = (promptTokens / 1_000_000) * inRate + (completionTokens / 1_000_000) * outRate + imageCost
-  return Math.round(cost * 10_000) / 10_000
+  const usd =
+    (promptTokens / 1_000_000) * inputPer1M +
+    (completionTokens / 1_000_000) * outputPer1M +
+    usage.images * perImage
+
+  return {
+    usd: Math.round(usd * 1_000_000) / 1_000_000,
+    vnd: Math.round(usd * usdToVnd),
+    usingDefaults,
+    rates: { inputPer1M, outputPer1M, perImage, usdToVnd },
+  }
 }
 
 // ---------------------------------------------------------------------------

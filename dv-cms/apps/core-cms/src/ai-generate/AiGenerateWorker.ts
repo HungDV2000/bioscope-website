@@ -14,7 +14,7 @@ import {
   generateIngredientContent,
   generateAndUploadFeaturedImage,
   createUsage,
-  estimateCostUsd,
+  estimateCost,
 } from '../lib/openaiService.js'
 import type { AiUsage, GeneratedContent, Locale } from '../lib/openaiService.js'
 
@@ -945,7 +945,7 @@ export async function runAiGenerate(input: WorkerInput): Promise<void> {
       },
     }
 
-    const costUsd = estimateCostUsd(usage)
+    const cost = estimateCost(usage)
     const totalTokens =
       usage.content.prompt + usage.content.completion +
       usage.vision.prompt + usage.vision.completion +
@@ -954,14 +954,17 @@ export async function runAiGenerate(input: WorkerInput): Promise<void> {
       logs,
       'info',
       `Chi phí job: ${totalTokens.toLocaleString('vi-VN')} token + ${usage.images} ảnh` +
-        (costUsd != null ? ` ≈ $${costUsd}` : ' (đặt OPENAI_PRICE_* để ước tính tiền)'),
+        ` ≈ ${cost.vnd.toLocaleString('vi-VN')}đ ($${cost.usd.toFixed(4)})` +
+        (cost.usingDefaults
+          ? ` — ước tính theo đơn giá mặc định ($${cost.rates.inputPer1M}/1M vào, $${cost.rates.outputPer1M}/1M ra); đặt OPENAI_PRICE_* cho chính xác`
+          : ''),
     )
     addLog(logs, 'warn', '⚠️ Nội dung lưu dạng BẢN NHÁP — mở nguyên liệu, đối chiếu số liệu kỹ thuật/pháp lý rồi bấm Publish.')
     addLog(logs, 'info', 'Ảnh đại diện KHÔNG tạo ở bước này. Dùng nút "Tạo lại ảnh đại diện (AI)" khi cần.')
     addLog(logs, 'info', `✅ Job completed: ${generatedContent.benefits.vi.length} benefits, ${generatedContent.applications.vi.length} applications, ảnh: tách riêng`)
 
     await updateJob(payload, jobId, {
-      usage: { ...usage, totalTokens, costUsd },
+      usage: { ...usage, totalTokens, costUsd: cost.usd, costVnd: cost.vnd, rates: cost.rates },
       status: 'done',
       phase: 'Hoàn tất — nội dung lưu dạng BẢN NHÁP. Ảnh tạo riêng bằng "Tạo lại ảnh đại diện".',
       finishedAt: new Date().toISOString(),

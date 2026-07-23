@@ -142,58 +142,62 @@ async function getDriveClient() {
 // Download file from Drive (all types)
 // ---------------------------------------------------------------------------
 
+/**
+ * Rút thông điệp lỗi có ý nghĩa từ lỗi của googleapis. Lỗi Drive gói nội dung
+ * thật trong response.data.error.message — `String(err)` chỉ cho "Error: Not
+ * Found" vô dụng.
+ */
+function driveErrorMessage(err: unknown): string {
+  const e = err as {
+    message?: string
+    code?: number | string
+    response?: { data?: { error?: { message?: string; errors?: { reason?: string }[] } }; status?: number }
+  }
+  const apiMsg = e?.response?.data?.error?.message
+  const reason = e?.response?.data?.error?.errors?.[0]?.reason
+  const status = e?.code ?? e?.response?.status
+  return [status && `HTTP ${status}`, reason, apiMsg ?? e?.message].filter(Boolean).join(' · ')
+}
+
+// `supportsAllDrives` là bắt buộc khi file nằm trong Shared Drive (Team Drive):
+// service account có thể LIỆT KÊ file nhưng export/download sẽ lỗi nếu thiếu cờ
+// này — đúng triệu chứng "tải file được trong sync nhưng AI không đọc được".
+const DRIVE_SHARED = { supportsAllDrives: true }
+
 async function downloadDriveFile(
   driveClient: Awaited<ReturnType<typeof getDriveClient>>,
   file: DriveFileEntry,
-): Promise<{ buffer: Buffer; detectedType: FileType } | null> {
+): Promise<{ buffer: Buffer; detectedType: FileType } | { error: string }> {
   const detectedType = detectFileType(file.mimeType, file.fileName)
 
   // Google Docs/Sheets/Slides → export
-  if (detectedType === 'google_doc') {
-    try {
-      const response = await driveClient.files.export(
-        { fileId: file.fileId, mimeType: 'text/plain' },
-        { responseType: 'arraybuffer' },
-      )
-      return { buffer: Buffer.from(response.data as ArrayBuffer), detectedType }
-    } catch {
-      return null
-    }
+  const exportAs: Partial<Record<FileType, string>> = {
+    google_doc: 'text/plain',
+    google_sheet: 'text/csv',
+    google_slide: 'text/plain',
   }
-
-  if (detectedType === 'google_sheet') {
+  const exportMime = exportAs[detectedType]
+  if (exportMime) {
     try {
       const response = await driveClient.files.export(
-        { fileId: file.fileId, mimeType: 'text/csv' },
+        { fileId: file.fileId, mimeType: exportMime, ...DRIVE_SHARED },
         { responseType: 'arraybuffer' },
       )
       return { buffer: Buffer.from(response.data as ArrayBuffer), detectedType }
-    } catch {
-      return null
-    }
-  }
-
-  if (detectedType === 'google_slide') {
-    try {
-      const response = await driveClient.files.export(
-        { fileId: file.fileId, mimeType: 'text/plain' },
-        { responseType: 'arraybuffer' },
-      )
-      return { buffer: Buffer.from(response.data as ArrayBuffer), detectedType }
-    } catch {
-      return null
+    } catch (err) {
+      return { error: `export ${exportMime} lỗi: ${driveErrorMessage(err)}` }
     }
   }
 
   // Direct download for everything else
   try {
     const response = await driveClient.files.get(
-      { fileId: file.fileId, alt: 'media' },
+      { fileId: file.fileId, alt: 'media', ...DRIVE_SHARED },
       { responseType: 'arraybuffer' },
     )
     return { buffer: Buffer.from(response.data as ArrayBuffer), detectedType }
-  } catch {
-    return null
+  } catch (err) {
+    return { error: `download lỗi: ${driveErrorMessage(err)}` }
   }
 }
 
@@ -211,18 +215,31 @@ async function extractTextFromFile(
 
   switch (detectedType) {
     case 'pdf_text': {
-      const text = await extractTextFromPdf(buffer)
-      // If empty, it might be a scanned PDF → try vision
-      if (!text.trim()) {
-        addLog(logs, 'warn', `PDF "${file.fileName}" không có text — thử GPT-4o Vision...`)
-        return await extractTextFromImageUsingVision(buffer, file.fileName, usage)
+      let text = ''
+      try {
+        text = await extractTextFromPdf(buffer)
+      } catch (err) {
+        // Phân biệt "PDF hỏng/khó đọc" với "PDF scan không có text" — trước
+        // đây cả hai đều hiện thành cùng một cảnh báo mơ hồ.
+        addLog(logs, 'warn', `pdfjs không đọc được "${file.fileName}": ${err instanceof Error ? err.message : String(err)}`)
       }
-      return text
+      if (text.trim()) {
+        addLog(logs, 'info', `PDF "${file.fileName}": đọc được ${text.trim().length} ký tự từ lớp text`)
+        return text
+      }
+      // Không có lớp text → PDF scan. Vision không đọc trực tiếp file PDF được
+      // (cần rasterize), nên báo rõ và bỏ qua file này thay vì gửi rác.
+      addLog(
+        logs,
+        'warn',
+        `PDF "${file.fileName}" không có lớp text (bản scan). Bỏ qua — hãy dùng PDF có text, ảnh chụp, hoặc Google Docs.`,
+      )
+      return ''
     }
 
     case 'pdf_image':
     case 'image': {
-      // Images → GPT-4o Vision
+      // Ảnh thật → Vision. Lỗi được ném ra để nơi gọi ghi vào log.
       return await extractTextFromImageUsingVision(buffer, file.fileName, usage)
     }
 
@@ -571,8 +588,10 @@ export async function runAiGenerate(input: WorkerInput): Promise<void> {
 
       const downloaded = await downloadDriveFile(googleDrive, file)
 
-      if (!downloaded) {
-        addLog(logs, 'warn', `Không tải được file: ${file.fileName}`)
+      if ('error' in downloaded) {
+        // Nêu rõ lý do thật (HTTP 404, thiếu quyền, Shared Drive...) thay vì
+        // "Không tải được file" chung chung — trước đây lỗi bị nuốt sạch.
+        addLog(logs, 'error', `Không tải được "${file.fileName}": ${downloaded.error}`)
         totals.errors++
         totals.filesSkipped++
         await updateJob(payload, jobId, { totals, logs })
@@ -616,7 +635,7 @@ export async function runAiGenerate(input: WorkerInput): Promise<void> {
           totals.filesSkipped++
         }
       } catch (err) {
-        addLog(logs, 'warn', `Lỗi trích xuất ${file.fileName}: ${err}`)
+        addLog(logs, 'error', `Lỗi trích xuất "${file.fileName}": ${err instanceof Error ? err.message : String(err)}`)
         totals.errors++
       }
 
@@ -629,7 +648,11 @@ export async function runAiGenerate(input: WorkerInput): Promise<void> {
       addLog(
         logs,
         'warn',
-        'Không trích xuất được nội dung từ file nào. Sẽ dùng thông tin cơ bản.',
+        driveFiles.length > 0
+          ? `⚠️ KHÔNG đọc được nội dung từ ${driveFiles.length} file đính kèm (xem lỗi ở trên). ` +
+              'AI sẽ viết CHỈ dựa trên TÊN nguyên liệu — nội dung có thể thiếu chính xác. ' +
+              'Sửa lỗi tải file rồi chạy lại để có nội dung sát tài liệu.'
+          : 'Nguyên liệu chưa có file đính kèm nào. AI viết dựa trên tên — hãy đính kèm TDS/COA rồi chạy lại.',
       )
     } else {
       addLog(logs, 'info', `Đã trích xuất ${extractedContents.length} file(s)`)

@@ -869,6 +869,20 @@ export async function extractTextFromImageUsingVision(
 
   // Detect MIME type từ magic bytes
   const mimeType = detectImageMimeType(imageBuffer)
+  if (!mimeType) {
+    // Vision CHỈ nhận ảnh thật. Buffer PDF (bắt đầu bằng %PDF) trước đây bị
+    // detectImageMimeType trả nhầm 'image/png' rồi gửi cho Vision → OpenAI từ
+    // chối ngay (~1 giây). PDF scan cần được rasterize thành ảnh trước, việc mà
+    // pipeline này chưa làm — nên báo rõ thay vì gửi dữ liệu rác.
+    const head = imageBuffer.subarray(0, 5).toString('latin1')
+    if (head.startsWith('%PDF')) {
+      throw new Error(
+        'PDF không có lớp text (scan). Vision không đọc trực tiếp được file PDF — ' +
+          'hãy tải lên bản PDF có text, ảnh chụp (JPG/PNG), hoặc Google Docs.',
+      )
+    }
+    throw new Error('Định dạng không phải ảnh nên Vision không đọc được.')
+  }
 
   // Convert to base64
   const base64Image = imageBuffer.toString('base64')
@@ -917,15 +931,18 @@ Nếu ảnh không chứa text có ý nghĩa, trả về: "[No readable text fou
     return text.trim()
   } catch (err) {
     console.error('[Vision OCR] Failed:', err)
-    return ''
+    // Ném lại để worker ghi được lý do thật vào log job. Trước đây trả '' âm
+    // thầm nên mọi lỗi Vision đều hiện thành "Không trích xuất được nội dung".
+    throw err instanceof Error ? err : new Error(String(err))
   }
 }
 
 /**
- * Detect image MIME type từ magic bytes (buffer).
+ * Detect image MIME type từ magic bytes. Trả về null nếu KHÔNG phải ảnh —
+ * để nơi gọi từ chối sớm thay vì gửi buffer rác cho Vision.
  */
-function detectImageMimeType(buffer: Buffer): string {
-  if (buffer.length < 4) return 'image/png'
+function detectImageMimeType(buffer: Buffer): string | null {
+  if (buffer.length < 4) return null
 
   // PNG: 89 50 4E 47
   if (buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4e && buffer[3] === 0x47) {
@@ -946,6 +963,6 @@ function detectImageMimeType(buffer: Buffer): string {
   if (buffer[0] === 0x47 && buffer[1] === 0x49 && buffer[2] === 0x46 && buffer[3] === 0x38) {
     return 'image/gif'
   }
-  // Default
-  return 'image/png'
+  // Không khớp magic bytes ảnh nào → không phải ảnh.
+  return null
 }

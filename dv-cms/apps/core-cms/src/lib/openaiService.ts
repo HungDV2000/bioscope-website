@@ -847,13 +847,71 @@ export function truncateForAI(text: string, maxChars = 80_000): string {
 }
 
 // ---------------------------------------------------------------------------
-// Vision — GPT-4o đọc hình ảnh (OCR, scanned PDF, ingredient photos)
+// Vision / OCR — đọc hình ảnh và PDF scan
 // ---------------------------------------------------------------------------
+
+const OCR_SYSTEM_PROMPT = `Bạn là chuyên gia OCR trong ngành dược phẩm, mỹ phẩm và thực phẩm chức năng.
+
+Từ tài liệu được cung cấp, hãy:
+1. Trích xuất TẤT CẢ text có trong tài liệu
+2. Giữ nguyên cấu trúc: tiêu đề, bảng, danh sách, bullet points
+3. Nếu là tài liệu kỹ thuật (TDS, MSDS, COA, Certificate...), trích xuất đầy đủ:
+   - Tên hoạt chất, CAS number, INCI name
+   - Thông số kỹ thuật (purity, moisture, particle size...)
+   - Liều dùng khuyến nghị
+   - Điều kiện bảo quản
+   - Thông tin nhà sản xuất
+4. Nếu là ảnh chụp sản phẩm/nguyên liệu, mô tả những gì bạn thấy
+5. Trả về text thuần, KHÔNG giải thích, KHÔNG markdown
+
+Nếu không có text có ý nghĩa, trả về: "[No readable text found]"`
+
+/** Giới hạn kích thước PDF gửi cho model (OpenAI trần ~32MB). */
+const PDF_OCR_MAX_BYTES = Number(process.env.OPENAI_PDF_OCR_MAX_BYTES ?? 20 * 1024 * 1024)
+
+/**
+ * OCR một PDF SCAN (không có lớp text) bằng cách gửi thẳng file cho model.
+ *
+ * OpenAI nhận PDF qua content part kiểu `file` (file_data base64) và tự rasterize
+ * từng trang để đọc cả chữ lẫn hình — nên không cần thư viện canvas/native trong
+ * container. Đây là đường đúng cho COA/TDS bản scan; gửi bytes PDF vào ô ảnh
+ * (image_url) thì OpenAI từ chối vì không phải ảnh.
+ */
+export async function extractTextFromPdfUsingVision(
+  pdfBuffer: Buffer,
+  fileName: string,
+  usage?: AiUsage,
+): Promise<string> {
+  if (pdfBuffer.length > PDF_OCR_MAX_BYTES) {
+    throw new Error(
+      `PDF ${(pdfBuffer.length / 1024 / 1024).toFixed(1)}MB vượt trần OCR ${(PDF_OCR_MAX_BYTES / 1024 / 1024).toFixed(0)}MB.`,
+    )
+  }
+  const client = getOpenAIClient()
+  const dataUrl = `data:application/pdf;base64,${pdfBuffer.toString('base64')}`
+
+  const response = await client.chat.completions.create({
+    model: VISION_MODEL,
+    messages: [
+      { role: 'system', content: OCR_SYSTEM_PROMPT },
+      {
+        role: 'user',
+        content: [
+          { type: 'file', file: { filename: fileName, file_data: dataUrl } },
+          { type: 'text', text: `Trích xuất toàn bộ text từ tài liệu PDF: ${fileName}` },
+        ],
+      },
+    ],
+    ...completionParams(VISION_MODEL, 8192, 0.1),
+  })
+  recordUsage(usage, 'vision', response.usage)
+  const text = (response.choices[0]?.message?.content ?? '').trim()
+  return text === '[No readable text found]' ? '' : text
+}
 
 /**
  * Trích xuất text từ hình ảnh bằng GPT-4o Vision.
  * Dùng cho:
- *   - Scanned PDF (pdfjs-dist trả về text rỗng → dùng vision)
  *   - Hình ảnh chụp TDS, tài liệu, ingredient photos
  *
  * @param imageBuffer Buffer của ảnh (JPEG, PNG, WebP...)
@@ -888,21 +946,7 @@ export async function extractTextFromImageUsingVision(
   const base64Image = imageBuffer.toString('base64')
   const dataUrl = `data:${mimeType};base64,${base64Image}`
 
-  const systemPrompt = `Bạn là chuyên gia OCR trong ngành dược phẩm, mỹ phẩm và thực phẩm chức năng.
-
-Từ hình ảnh được cung cấp, hãy:
-1. Trích xuất TẤT CẢ text có trong ảnh
-2. Giữ nguyên cấu trúc: tiêu đề, bảng, danh sách, bullet points
-3. Nếu là tài liệu kỹ thuật (TDS, MSDS, COA, Certificate...), trích xuất đầy đủ:
-   - Tên hoạt chất, CAS number, INCI name
-   - Thông số kỹ thuật (purity, moisture, particle size...)
-   - Liều dùng khuyến nghị
-   - Điều kiện bảo quản
-   - Thông tin nhà sản xuất
-4. Nếu là ảnh chụp sản phẩm/nguyên liệu, mô tả những gì bạn thấy
-5. Trả về text thuần, KHÔNG giải thích, KHÔNG markdown
-
-Nếu ảnh không chứa text có ý nghĩa, trả về: "[No readable text found]"`
+  const systemPrompt = OCR_SYSTEM_PROMPT
 
   try {
     const response = await client.chat.completions.create({

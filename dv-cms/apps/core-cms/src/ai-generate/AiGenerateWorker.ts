@@ -6,6 +6,7 @@ import { google } from 'googleapis'
 import {
   extractTextFromPdf,
   extractTextFromImageUsingVision,
+  extractTextFromPdfUsingVision,
   truncateForAI,
 } from '../lib/openaiService.js'
 import {
@@ -235,14 +236,15 @@ async function extractTextFromFile(
         addLog(logs, 'info', `PDF "${file.fileName}": đọc được ${text.trim().length} ký tự từ lớp text`)
         return text
       }
-      // Không có lớp text → PDF scan. Vision không đọc trực tiếp file PDF được
-      // (cần rasterize), nên báo rõ và bỏ qua file này thay vì gửi rác.
-      addLog(
-        logs,
-        'warn',
-        `PDF "${file.fileName}" không có lớp text (bản scan). Bỏ qua — hãy dùng PDF có text, ảnh chụp, hoặc Google Docs.`,
-      )
-      return ''
+      // Không có lớp text → PDF scan. Gửi thẳng file cho model để OCR (OpenAI tự
+      // rasterize từng trang). Chậm và tốn token hơn đọc lớp text, nhưng là cách
+      // duy nhất lấy được nội dung COA/TDS bản scan.
+      addLog(logs, 'info', `PDF "${file.fileName}" là bản scan — đang OCR bằng AI...`)
+      const ocr = await extractTextFromPdfUsingVision(buffer, file.fileName, usage)
+      if (ocr.trim()) {
+        addLog(logs, 'info', `OCR "${file.fileName}": đọc được ${ocr.trim().length} ký tự`)
+      }
+      return ocr
     }
 
     case 'pdf_image':

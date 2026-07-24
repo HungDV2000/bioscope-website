@@ -15,9 +15,10 @@ import {
   generateAndUploadFeaturedImage,
   createUsage,
   estimateCost,
+  ATTACHMENT_MAX_TOTAL_BYTES,
 } from '../lib/openaiService.js'
 import { extractTextFromPdfUsingMistral, isMistralOcrConfigured } from '../lib/mistralOcr.js'
-import type { AiUsage, GeneratedContent, Locale } from '../lib/openaiService.js'
+import type { AiUsage, GeneratedContent, Locale, PdfAttachment } from '../lib/openaiService.js'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -220,6 +221,7 @@ async function extractTextFromFile(
   downloaded: { buffer: Buffer; detectedType: FileType },
   logs: AiGenerateLog[],
   usage?: AiUsage,
+  attachments?: PdfAttachment[],
 ): Promise<string> {
   const { buffer, detectedType } = downloaded
 
@@ -237,13 +239,35 @@ async function extractTextFromFile(
         addLog(logs, 'info', `PDF "${file.fileName}": đọc được ${text.trim().length} ký tự từ lớp text`)
         return text
       }
-      // Không có lớp text → PDF scan, phải OCR.
+      // Không có lớp text → PDF scan.
       //
-      // Ưu tiên Mistral OCR: model CHUYÊN tài liệu, giữ được bảng (COA/TDS gần
-      // như toàn bảng thông số) và rẻ hơn ~4 lần so với để OpenAI rasterize từng
-      // trang rồi tính token ảnh. Chưa cấu hình key thì lùi về OpenAI.
+      // ĐÍNH KÈM NGUYÊN BẢN vào lời gọi sinh nội dung thay vì OCR ra text trước.
+      // OCR trước tạo một bước CHÉP LẠI: model sinh nội dung chỉ thấy bản chép,
+      // nên một chữ số đọc nhầm (0,05 → 0,06) trôi thẳng vào hồ sơ mà không có
+      // cách nào phát hiện. Đính kèm thì OpenAI gửi cho model cả ảnh từng trang,
+      // model tự đọc bảng trên trang gốc — và rẻ hơn vì bỏ hẳn một lời gọi API.
+      if (attachments) {
+        const used = attachments.reduce((n, a) => n + a.buffer.length, 0)
+        if (used + buffer.length <= ATTACHMENT_MAX_TOTAL_BYTES) {
+          attachments.push({ filename: file.fileName, buffer })
+          addLog(
+            logs,
+            'info',
+            `PDF "${file.fileName}" là bản scan — đính kèm nguyên bản để AI tự đọc (${(buffer.length / 1024 / 1024).toFixed(1)}MB)`,
+          )
+          // Trả rỗng: nội dung nằm ở file đính kèm, không phải ở text.
+          return ''
+        }
+        addLog(
+          logs,
+          'warn',
+          `Tổng file đính kèm sẽ vượt ${(ATTACHMENT_MAX_TOTAL_BYTES / 1024 / 1024).toFixed(0)}MB — chuyển "${file.fileName}" sang OCR.`,
+        )
+      }
+
+      // Fallback khi không đính kèm được (quá dung lượng): OCR ra text.
       if (isMistralOcrConfigured()) {
-        addLog(logs, 'info', `PDF "${file.fileName}" là bản scan — đang OCR bằng Mistral...`)
+        addLog(logs, 'info', `OCR "${file.fileName}" bằng Mistral...`)
         try {
           const r = await extractTextFromPdfUsingMistral(buffer, file.fileName)
           if (usage) usage.ocrPages += r.pages
@@ -251,13 +275,10 @@ async function extractTextFromFile(
             addLog(logs, 'info', `OCR Mistral "${file.fileName}": ${r.pages} trang, ${r.text.trim().length} ký tự`)
             return r.text
           }
-          addLog(logs, 'warn', `Mistral OCR không đọc ra chữ nào từ "${file.fileName}" — thử lại bằng OpenAI...`)
+          addLog(logs, 'warn', `Mistral OCR không đọc ra chữ nào — thử lại bằng OpenAI...`)
         } catch (err) {
-          // Không để hỏng cả file: báo rõ rồi thử đường OpenAI.
           addLog(logs, 'warn', `Mistral OCR lỗi: ${err instanceof Error ? err.message : String(err)} — thử lại bằng OpenAI...`)
         }
-      } else {
-        addLog(logs, 'info', `PDF "${file.fileName}" là bản scan — OCR bằng OpenAI (đặt MISTRAL_API_KEY để dùng Mistral, rẻ hơn ~4 lần)...`)
       }
 
       const ocr = await extractTextFromPdfUsingVision(buffer, file.fileName, usage)
@@ -602,6 +623,9 @@ export async function runAiGenerate(input: WorkerInput): Promise<void> {
 
     // ── 3. Download + extract all file types ─────────────────────────────
     const extractedContents: string[] = []
+    // PDF scan được gom vào đây rồi gửi kèm nguyên bản cho model (xem
+    // extractTextFromFile) — không qua bước OCR chép lại.
+    const attachments: PdfAttachment[] = []
     const googleDrive = await getDriveClient()
 
     for (let i = 0; i < driveFiles.length; i++) {
@@ -640,7 +664,7 @@ export async function runAiGenerate(input: WorkerInput): Promise<void> {
 
       // Extract text
       try {
-        const text = await extractTextFromFile(file, downloaded, logs, usage)
+        const text = await extractTextFromFile(file, downloaded, logs, usage, attachments)
 
         if (text.trim().length > 20) {
           const preview = text.trim().slice(0, 100).replace(/\n/g, ' ')
@@ -660,6 +684,9 @@ export async function runAiGenerate(input: WorkerInput): Promise<void> {
             `File quá ngắn (${text.trim().length} ký tự): ${file.fileName}`,
           )
           totals.filesSkipped++
+        } else if (attachments.some((a) => a.filename === file.fileName)) {
+          // Đã đính kèm nguyên bản — không có text là đúng, không phải lỗi.
+          totals.filesExtracted++
         } else {
           addLog(logs, 'warn', `Không trích xuất được nội dung: ${file.fileName}`)
           totals.filesSkipped++
@@ -674,7 +701,7 @@ export async function runAiGenerate(input: WorkerInput): Promise<void> {
 
     const combinedDriveContent = truncateForAI(extractedContents.join('\n\n'), 80_000)
 
-    if (extractedContents.length === 0) {
+    if (extractedContents.length === 0 && attachments.length === 0) {
       addLog(
         logs,
         'warn',
@@ -685,7 +712,12 @@ export async function runAiGenerate(input: WorkerInput): Promise<void> {
           : 'Nguyên liệu chưa có file đính kèm nào. AI viết dựa trên tên — hãy đính kèm TDS/COA rồi chạy lại.',
       )
     } else {
-      addLog(logs, 'info', `Đã trích xuất ${extractedContents.length} file(s)`)
+      addLog(
+        logs,
+        'info',
+        `Đã trích xuất ${extractedContents.length} file(s) dạng text` +
+          (attachments.length ? ` + ${attachments.length} PDF scan đính kèm nguyên bản` : ''),
+      )
     }
 
     // ── 4. Update to generating phase ───────────────────────────────────
@@ -725,7 +757,7 @@ export async function runAiGenerate(input: WorkerInput): Promise<void> {
 
     // ── 6. Generate content with GPT-4o ───────────────────────────────────
     addLog(logs, 'info', `Calling GPT-4o for "${ingredientName}"...`)
-    const contentResult = await generateIngredientContent(ingredientMeta, combinedDriveContent, usage)
+    const contentResult = await generateIngredientContent(ingredientMeta, combinedDriveContent, usage, attachments)
 
     if (!contentResult.ok) {
       throw new Error(`GPT-4o generation failed: ${contentResult.error}`)

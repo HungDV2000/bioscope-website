@@ -20,6 +20,7 @@
  */
 
 import OpenAI from 'openai'
+import type { ChatCompletionContentPart } from 'openai/resources/chat/completions'
 
 // ---------------------------------------------------------------------------
 // Client singleton
@@ -124,6 +125,17 @@ export type GeneratedContent = {
   seoDescription?: LocalizedText
   imagePrompt: LocalizedText
 }
+
+/** PDF scan gửi kèm thẳng vào lời gọi sinh nội dung. */
+export type PdfAttachment = { filename: string; buffer: Buffer }
+
+/**
+ * Trần tổng dung lượng file đính kèm. OpenAI giới hạn 50MB cho CẢ request, nên
+ * chừa biên an toàn cho phần prompt text.
+ */
+export const ATTACHMENT_MAX_TOTAL_BYTES = Number(
+  process.env.OPENAI_ATTACHMENT_MAX_BYTES ?? 40 * 1024 * 1024,
+)
 
 export type GenerationResult =
   | { ok: true; content: GeneratedContent }
@@ -457,18 +469,35 @@ export async function generateIngredientContent(
   },
   driveFileContents: string,
   usage?: AiUsage,
+  attachments: PdfAttachment[] = [],
 ): Promise<GenerationResult> {
   const client = getOpenAIClient()
 
   const systemPrompt = buildContentSystemPrompt()
-  const userPrompt = buildContentUserPrompt(ingredientData, driveFileContents)
+  const userPrompt = buildContentUserPrompt(ingredientData, driveFileContents, attachments)
+
+  // PDF scan đi THẲNG vào lời gọi này thay vì OCR ra text trước. OpenAI gửi cho
+  // model cả text trích được LẪN ảnh từng trang, nên model tự đọc bảng trên
+  // trang giấy gốc. Bỏ được bước chép lại — nơi một chữ số đọc nhầm sẽ trôi
+  // xuống mà không ai phát hiện, vì model chỉ thấy bản chép chứ không thấy bản gốc.
+  const userContent: ChatCompletionContentPart[] = [
+    ...attachments.map(
+      (a): ChatCompletionContentPart => ({
+        type: 'file',
+        file: { filename: a.filename, file_data: `data:application/pdf;base64,${a.buffer.toString('base64')}` },
+      }),
+    ),
+    { type: 'text', text: userPrompt },
+  ]
 
   try {
     const completion = await client.chat.completions.create({
       model: CONTENT_MODEL,
       messages: [
         { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
+        // Chỉ dùng mảng content khi có file — chuỗi thuần giữ prompt gọn và
+        // tránh khác biệt không cần thiết cho trường hợp phổ biến nhất.
+        { role: 'user', content: attachments.length ? userContent : userPrompt },
       ],
       response_format: { type: 'json_object' },
       ...completionParams(CONTENT_MODEL, 8192, 0.3),
@@ -794,6 +823,7 @@ function buildContentUserPrompt(
     driveFiles?: Array<{ fileName: string; mimeType: string }>
   },
   driveFileContents: string,
+  attachments: PdfAttachment[] = [],
 ): string {
   const fileList = ingredient.driveFiles
     ?.map((f) => `- ${f.fileName} (${f.mimeType})`)
@@ -813,9 +843,17 @@ ${fileList}
 
 ## NỘI DUNG TRÍCH XUẤT TỪ TDS/PDF
 ---
-${driveFileContents || 'Không có nội dung từ file Drive'}
+${driveFileContents || 'Không có nội dung trích xuất dạng text'}
 ---
+${attachments.length ? `
+## FILE PDF ĐÍNH KÈM TRỰC TIẾP (${attachments.length})
+${attachments.map((a) => `- ${a.filename}`).join('\n')}
 
+Các file trên là bản SCAN, được đính kèm nguyên bản ở đầu tin nhắn này — hãy ĐỌC
+TRỰC TIẾP từ trang tài liệu. Đọc kỹ các BẢNG thông số: chép đúng từng chữ số,
+đơn vị và dấu (≤ ≥ ±). Nếu một giá trị mờ hoặc không chắc, BỎ TRỐNG trường đó
+thay vì đoán.
+` : ''}
 `
 }
 

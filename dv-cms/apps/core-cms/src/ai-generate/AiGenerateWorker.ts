@@ -8,6 +8,7 @@ import {
   extractTextFromImageUsingVision,
   extractTextFromPdfUsingVision,
   truncateForAI,
+  TEXT_MAX_CHARS,
 } from '../lib/openaiService.js'
 import {
   getOpenAIClient,
@@ -216,6 +217,30 @@ async function downloadDriveFile(
 // Extract text from file based on type
 // ---------------------------------------------------------------------------
 
+/**
+ * Gom file vào danh sách đính kèm nếu còn trong trần dung lượng.
+ * @returns true nếu đã đính kèm.
+ */
+function tryAttach(
+  attachments: PdfAttachment[] | undefined,
+  filename: string,
+  buffer: Buffer,
+  logs: AiGenerateLog[],
+): boolean {
+  if (!attachments) return false
+  const used = attachments.reduce((n, a) => n + a.buffer.length, 0)
+  if (used + buffer.length > ATTACHMENT_MAX_TOTAL_BYTES) {
+    addLog(
+      logs,
+      'warn',
+      `Tổng đính kèm sẽ vượt ${(ATTACHMENT_MAX_TOTAL_BYTES / 1024 / 1024).toFixed(0)}MB — "${filename}" không đính kèm được.`,
+    )
+    return false
+  }
+  attachments.push({ filename, buffer })
+  return true
+}
+
 async function extractTextFromFile(
   file: DriveFileEntry,
   downloaded: { buffer: Buffer; detectedType: FileType },
@@ -227,45 +252,39 @@ async function extractTextFromFile(
 
   switch (detectedType) {
     case 'pdf_text': {
+      // ĐÍNH KÈM MỌI PDF, kể cả loại có lớp text.
+      //
+      // pdfjs nối mọi mẩu chữ bằng .join(' ') nên CẤU TRÚC BẢNG BIẾN MẤT — COA
+      // từ bảng 3 cột thành một dòng token dài, AI phải đoán con số nào thuộc
+      // chỉ tiêu nào. Với COA/TDS thì bảng CHÍNH LÀ dữ liệu.
+      //
+      // Đính kèm thì OpenAI gửi cho model cả text LẪN ảnh từng trang, model tự
+      // đọc bảng trên trang gốc. Vẫn gửi kèm text pdfjs vì nó cho ký tự chính
+      // xác tuyệt đối (không lỗi OCR), bổ trợ cho phần nhìn.
       let text = ''
       try {
         text = await extractTextFromPdf(buffer)
       } catch (err) {
-        // Phân biệt "PDF hỏng/khó đọc" với "PDF scan không có text" — trước
-        // đây cả hai đều hiện thành cùng một cảnh báo mơ hồ.
         addLog(logs, 'warn', `pdfjs không đọc được "${file.fileName}": ${err instanceof Error ? err.message : String(err)}`)
       }
-      if (text.trim()) {
-        addLog(logs, 'info', `PDF "${file.fileName}": đọc được ${text.trim().length} ký tự từ lớp text`)
-        return text
-      }
-      // Không có lớp text → PDF scan.
-      //
-      // ĐÍNH KÈM NGUYÊN BẢN vào lời gọi sinh nội dung thay vì OCR ra text trước.
-      // OCR trước tạo một bước CHÉP LẠI: model sinh nội dung chỉ thấy bản chép,
-      // nên một chữ số đọc nhầm (0,05 → 0,06) trôi thẳng vào hồ sơ mà không có
-      // cách nào phát hiện. Đính kèm thì OpenAI gửi cho model cả ảnh từng trang,
-      // model tự đọc bảng trên trang gốc — và rẻ hơn vì bỏ hẳn một lời gọi API.
-      if (attachments) {
-        const used = attachments.reduce((n, a) => n + a.buffer.length, 0)
-        if (used + buffer.length <= ATTACHMENT_MAX_TOTAL_BYTES) {
-          attachments.push({ filename: file.fileName, buffer })
-          addLog(
-            logs,
-            'info',
-            `PDF "${file.fileName}" là bản scan — đính kèm nguyên bản để AI tự đọc (${(buffer.length / 1024 / 1024).toFixed(1)}MB)`,
-          )
-          // Trả rỗng: nội dung nằm ở file đính kèm, không phải ở text.
-          return ''
+
+      const attached = tryAttach(attachments, file.fileName, buffer, logs)
+      if (attached) {
+        if (text.trim()) {
+          addLog(logs, 'info', `PDF "${file.fileName}": đính kèm nguyên bản + ${text.trim().length} ký tự lớp text`)
+          return text
         }
-        addLog(
-          logs,
-          'warn',
-          `Tổng file đính kèm sẽ vượt ${(ATTACHMENT_MAX_TOTAL_BYTES / 1024 / 1024).toFixed(0)}MB — chuyển "${file.fileName}" sang OCR.`,
-        )
+        addLog(logs, 'info', `PDF "${file.fileName}" là bản scan — đính kèm nguyên bản để AI tự đọc`)
+        return ''
       }
 
-      // Fallback khi không đính kèm được (quá dung lượng): OCR ra text.
+      // Không đính kèm được (vượt trần dung lượng).
+      if (text.trim()) {
+        addLog(logs, 'info', `PDF "${file.fileName}": chỉ dùng lớp text (${text.trim().length} ký tự) — bảng có thể bị làm phẳng`)
+        return text
+      }
+
+      // Scan mà không đính kèm được → buộc phải OCR.
       if (isMistralOcrConfigured()) {
         addLog(logs, 'info', `OCR "${file.fileName}" bằng Mistral...`)
         try {
@@ -275,22 +294,24 @@ async function extractTextFromFile(
             addLog(logs, 'info', `OCR Mistral "${file.fileName}": ${r.pages} trang, ${r.text.trim().length} ký tự`)
             return r.text
           }
-          addLog(logs, 'warn', `Mistral OCR không đọc ra chữ nào — thử lại bằng OpenAI...`)
+          addLog(logs, 'warn', 'Mistral OCR không đọc ra chữ nào — thử lại bằng OpenAI...')
         } catch (err) {
           addLog(logs, 'warn', `Mistral OCR lỗi: ${err instanceof Error ? err.message : String(err)} — thử lại bằng OpenAI...`)
         }
       }
-
       const ocr = await extractTextFromPdfUsingVision(buffer, file.fileName, usage)
-      if (ocr.trim()) {
-        addLog(logs, 'info', `OCR OpenAI "${file.fileName}": đọc được ${ocr.trim().length} ký tự`)
-      }
+      if (ocr.trim()) addLog(logs, 'info', `OCR OpenAI "${file.fileName}": ${ocr.trim().length} ký tự`)
       return ocr
     }
 
     case 'pdf_image':
     case 'image': {
-      // Ảnh thật → Vision. Lỗi được ném ra để nơi gọi ghi vào log.
+      // Ảnh cũng đính kèm để model tự nhìn, thay vì OCR ra text rồi mới đưa vào
+      // — cùng lý do như PDF: bỏ bước chép lại.
+      if (tryAttach(attachments, file.fileName, buffer, logs)) {
+        addLog(logs, 'info', `Ảnh "${file.fileName}" — đính kèm để AI tự đọc`)
+        return ''
+      }
       return await extractTextFromImageUsingVision(buffer, file.fileName, usage)
     }
 
@@ -699,7 +720,16 @@ export async function runAiGenerate(input: WorkerInput): Promise<void> {
       await updateJob(payload, jobId, { totals, logs })
     }
 
-    const combinedDriveContent = truncateForAI(extractedContents.join('\n\n'), 80_000)
+    // Ghi log khi cắt — trước đây cắt IM LẶNG nên mất dữ liệu mà không ai biết.
+    const rawCombined = extractedContents.join('\n\n')
+    const combinedDriveContent = truncateForAI(rawCombined)
+    if (combinedDriveContent.length < rawCombined.length) {
+      addLog(
+        logs,
+        'warn',
+        `Text từ Drive dài ${rawCombined.length.toLocaleString('vi-VN')} ký tự — đã cắt còn ${TEXT_MAX_CHARS.toLocaleString('vi-VN')}. Tăng AI_TEXT_MAX_CHARS nếu cần đủ.`,
+      )
+    }
 
     if (extractedContents.length === 0 && attachments.length === 0) {
       addLog(

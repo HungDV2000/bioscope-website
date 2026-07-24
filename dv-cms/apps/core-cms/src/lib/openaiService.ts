@@ -135,8 +135,31 @@ export type GeneratedContent = {
   imagePrompt: LocalizedText
 }
 
-/** PDF scan gửi kèm thẳng vào lời gọi sinh nội dung. */
+/**
+ * File gửi kèm thẳng vào lời gọi sinh nội dung (PDF hoặc ảnh).
+ * Tên giữ là PdfAttachment cho tương thích; `buffer` tự quyết định loại content
+ * part khi dựng request (xem toContentPart).
+ */
 export type PdfAttachment = { filename: string; buffer: Buffer }
+
+/** Nhận diện ảnh qua magic bytes để chọn đúng loại content part. */
+function attachmentMime(buf: Buffer): { mime: string; isImage: boolean } {
+  const img = detectImageMimeType(buf)
+  if (img) return { mime: img, isImage: true }
+  return { mime: 'application/pdf', isImage: false }
+}
+
+/**
+ * PDF đi qua content part `file`; ảnh đi qua `image_url`. OpenAI không nhận ảnh
+ * ở ô file và không nhận PDF ở ô image_url — gửi sai ô là bị từ chối ngay.
+ */
+function toContentPart(a: PdfAttachment): ChatCompletionContentPart {
+  const { mime, isImage } = attachmentMime(a.buffer)
+  const dataUri = `data:${mime};base64,${a.buffer.toString('base64')}`
+  return isImage
+    ? { type: 'image_url', image_url: { url: dataUri, detail: 'high' } }
+    : { type: 'file', file: { filename: a.filename, file_data: dataUri } }
+}
 
 /**
  * Trần tổng dung lượng file đính kèm. OpenAI giới hạn 50MB cho CẢ request, nên
@@ -513,12 +536,7 @@ export async function generateIngredientContent(
   // trang giấy gốc. Bỏ được bước chép lại — nơi một chữ số đọc nhầm sẽ trôi
   // xuống mà không ai phát hiện, vì model chỉ thấy bản chép chứ không thấy bản gốc.
   const userContent: ChatCompletionContentPart[] = [
-    ...attachments.map(
-      (a): ChatCompletionContentPart => ({
-        type: 'file',
-        file: { filename: a.filename, file_data: `data:application/pdf;base64,${a.buffer.toString('base64')}` },
-      }),
-    ),
+    ...attachments.map(toContentPart),
     { type: 'text', text: userPrompt },
   ]
 
@@ -905,13 +923,19 @@ ${fileList}
 ${driveFileContents || 'Không có nội dung trích xuất dạng text'}
 ---
 ${attachments.length ? `
-## FILE PDF ĐÍNH KÈM TRỰC TIẾP (${attachments.length})
+## FILE ĐÍNH KÈM TRỰC TIẾP (${attachments.length})
 ${attachments.map((a) => `- ${a.filename}`).join('\n')}
 
-Các file trên là bản SCAN, được đính kèm nguyên bản ở đầu tin nhắn này — hãy ĐỌC
-TRỰC TIẾP từ trang tài liệu. Đọc kỹ các BẢNG thông số: chép đúng từng chữ số,
-đơn vị và dấu (≤ ≥ ±). Nếu một giá trị mờ hoặc không chắc, BỎ TRỐNG trường đó
-thay vì đoán.
+Các file trên được đính kèm NGUYÊN BẢN ở đầu tin nhắn này — hãy ĐỌC TRỰC TIẾP
+từ trang tài liệu, đây là nguồn ĐÁNG TIN NHẤT.
+
+Phần "NỘI DUNG TRÍCH XUẤT" ở trên là text máy bóc ra từ cùng những file này;
+nó chính xác về mặt KÝ TỰ nhưng ĐÃ MẤT CẤU TRÚC BẢNG (mọi ô bị nối thành một
+dòng). Khi hai nguồn mâu thuẫn, TIN VÀO FILE ĐÍNH KÈM.
+
+Đọc kỹ các BẢNG thông số: chép đúng từng chữ số, đơn vị và dấu (≤ ≥ ±), và
+ghép đúng giá trị với đúng chỉ tiêu theo hàng/cột. Giá trị nào mờ hoặc không
+chắc thì BỎ TRỐNG, không đoán.
 ` : ''}
 `
 }
@@ -972,7 +996,9 @@ export async function extractTextFromPdf(buffer: Buffer): Promise<string> {
   const pdf = await loadingTask.promise
 
   const texts: string[] = []
-  const maxPages = Math.min(pdf.numPages, 20) // Giới hạn 20 trang để tránh token explosion
+  // Cửa sổ ngữ cảnh là 1,05M token nên trần 20 trang cũ quá chặt. 100 trang vẫn
+  // chỉ chiếm một phần nhỏ, mà không còn cắt mất tài liệu dày (dossier đăng ký).
+  const maxPages = Math.min(pdf.numPages, Number(process.env.PDF_MAX_PAGES ?? 100))
 
   for (let i = 1; i <= maxPages; i++) {
     const page = await pdf.getPage(i)
@@ -993,7 +1019,14 @@ export async function extractTextFromPdf(buffer: Buffer): Promise<string> {
  * Truncate text để fit trong GPT-4o context window.
  * GPT-4o supports 128k tokens → giới hạn 100k chars cho an toàn.
  */
-export function truncateForAI(text: string, maxChars = 80_000): string {
+/**
+ * Trần ký tự text gửi kèm. Cũ là 80.000 (~27k token) — đặt từ thời giả định cửa
+ * sổ nhỏ. Cửa sổ thật là 1,05M token nên 300.000 ký tự (~100k token) vẫn chỉ
+ * chiếm ~10%, mà không còn cắt mất tài liệu dày.
+ */
+export const TEXT_MAX_CHARS = Number(process.env.AI_TEXT_MAX_CHARS ?? 300_000)
+
+export function truncateForAI(text: string, maxChars = TEXT_MAX_CHARS): string {
   if (text.length <= maxChars) return text
   return text.slice(0, maxChars) + '\n\n[...content truncated due to length...]'
 }

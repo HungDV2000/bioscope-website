@@ -146,6 +146,8 @@ export type AiUsage = {
   imagePrompt: CallUsage
   /** Images actually generated (billed per image, not per token). */
   images: number
+  /** Số trang PDF do Mistral OCR xử lý (tính tiền theo trang, không theo token). */
+  ocrPages: number
 }
 
 export function createUsage(): AiUsage {
@@ -154,13 +156,14 @@ export function createUsage(): AiUsage {
     vision: { prompt: 0, completion: 0, calls: 0 },
     imagePrompt: { prompt: 0, completion: 0, calls: 0 },
     images: 0,
+    ocrPages: 0,
   }
 }
 
 /** Fold one chat-completion's `usage` block into the accumulator. */
 function recordUsage(
   usage: AiUsage | undefined,
-  bucket: keyof Omit<AiUsage, 'images'>,
+  bucket: keyof Omit<AiUsage, 'images' | 'ocrPages'>,
   raw: { prompt_tokens?: number; completion_tokens?: number } | undefined,
 ): void {
   if (!usage) return
@@ -184,6 +187,8 @@ const MODEL_PRICES: Record<string, { input: number; cachedInput: number; output:
 /** Dùng khi model không có trong bảng — lấy mức terra cho khỏi ước quá thấp. */
 const FALLBACK_PRICE = MODEL_PRICES['gpt-5.6-terra']
 const DEFAULT_PRICE_PER_IMAGE = 0.04
+/** Mistral OCR: $4 / 1.000 trang (tra 07/2026). Đổi qua MISTRAL_OCR_PRICE_PER_PAGE. */
+const DEFAULT_PRICE_PER_OCR_PAGE = 0.004
 /** Tỉ giá USD→VND để log kèm tiền Việt. Đổi qua OPENAI_USD_TO_VND. */
 const DEFAULT_USD_TO_VND = 25_400
 
@@ -199,7 +204,7 @@ export type CostEstimate = {
   usingDefaults: boolean
   /** Model được dùng để tra bảng giá. */
   model: string
-  rates: { inputPer1M: number; outputPer1M: number; perImage: number; usdToVnd: number }
+  rates: { inputPer1M: number; outputPer1M: number; perImage: number; perOcrPage: number; usdToVnd: number }
 }
 
 /**
@@ -216,6 +221,7 @@ export function estimateCost(usage: AiUsage): CostEstimate {
   const inputPer1M = numOr(process.env.OPENAI_PRICE_INPUT_PER_1M, table.input)
   const outputPer1M = numOr(process.env.OPENAI_PRICE_OUTPUT_PER_1M, table.output)
   const perImage = numOr(process.env.OPENAI_PRICE_PER_IMAGE, DEFAULT_PRICE_PER_IMAGE)
+  const perOcrPage = numOr(process.env.MISTRAL_OCR_PRICE_PER_PAGE, DEFAULT_PRICE_PER_OCR_PAGE)
   const usdToVnd = numOr(process.env.OPENAI_USD_TO_VND, DEFAULT_USD_TO_VND)
 
   const promptTokens = usage.content.prompt + usage.vision.prompt + usage.imagePrompt.prompt
@@ -224,14 +230,15 @@ export function estimateCost(usage: AiUsage): CostEstimate {
   const usd =
     (promptTokens / 1_000_000) * inputPer1M +
     (completionTokens / 1_000_000) * outputPer1M +
-    usage.images * perImage
+    usage.images * perImage +
+    usage.ocrPages * perOcrPage
 
   return {
     usd: Math.round(usd * 1_000_000) / 1_000_000,
     vnd: Math.round(usd * usdToVnd),
     usingDefaults,
     model,
-    rates: { inputPer1M, outputPer1M, perImage, usdToVnd },
+    rates: { inputPer1M, outputPer1M, perImage, perOcrPage, usdToVnd },
   }
 }
 

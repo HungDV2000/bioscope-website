@@ -16,6 +16,7 @@ import {
   createUsage,
   estimateCost,
 } from '../lib/openaiService.js'
+import { extractTextFromPdfUsingMistral, isMistralOcrConfigured } from '../lib/mistralOcr.js'
 import type { AiUsage, GeneratedContent, Locale } from '../lib/openaiService.js'
 
 // ---------------------------------------------------------------------------
@@ -236,13 +237,32 @@ async function extractTextFromFile(
         addLog(logs, 'info', `PDF "${file.fileName}": đọc được ${text.trim().length} ký tự từ lớp text`)
         return text
       }
-      // Không có lớp text → PDF scan. Gửi thẳng file cho model để OCR (OpenAI tự
-      // rasterize từng trang). Chậm và tốn token hơn đọc lớp text, nhưng là cách
-      // duy nhất lấy được nội dung COA/TDS bản scan.
-      addLog(logs, 'info', `PDF "${file.fileName}" là bản scan — đang OCR bằng AI...`)
+      // Không có lớp text → PDF scan, phải OCR.
+      //
+      // Ưu tiên Mistral OCR: model CHUYÊN tài liệu, giữ được bảng (COA/TDS gần
+      // như toàn bảng thông số) và rẻ hơn ~4 lần so với để OpenAI rasterize từng
+      // trang rồi tính token ảnh. Chưa cấu hình key thì lùi về OpenAI.
+      if (isMistralOcrConfigured()) {
+        addLog(logs, 'info', `PDF "${file.fileName}" là bản scan — đang OCR bằng Mistral...`)
+        try {
+          const r = await extractTextFromPdfUsingMistral(buffer, file.fileName)
+          if (usage) usage.ocrPages += r.pages
+          if (r.text.trim()) {
+            addLog(logs, 'info', `OCR Mistral "${file.fileName}": ${r.pages} trang, ${r.text.trim().length} ký tự`)
+            return r.text
+          }
+          addLog(logs, 'warn', `Mistral OCR không đọc ra chữ nào từ "${file.fileName}" — thử lại bằng OpenAI...`)
+        } catch (err) {
+          // Không để hỏng cả file: báo rõ rồi thử đường OpenAI.
+          addLog(logs, 'warn', `Mistral OCR lỗi: ${err instanceof Error ? err.message : String(err)} — thử lại bằng OpenAI...`)
+        }
+      } else {
+        addLog(logs, 'info', `PDF "${file.fileName}" là bản scan — OCR bằng OpenAI (đặt MISTRAL_API_KEY để dùng Mistral, rẻ hơn ~4 lần)...`)
+      }
+
       const ocr = await extractTextFromPdfUsingVision(buffer, file.fileName, usage)
       if (ocr.trim()) {
-        addLog(logs, 'info', `OCR "${file.fileName}": đọc được ${ocr.trim().length} ký tự`)
+        addLog(logs, 'info', `OCR OpenAI "${file.fileName}": đọc được ${ocr.trim().length} ký tự`)
       }
       return ocr
     }
@@ -954,6 +974,7 @@ export async function runAiGenerate(input: WorkerInput): Promise<void> {
       logs,
       'info',
       `Chi phí job: ${totalTokens.toLocaleString('vi-VN')} token + ${usage.images} ảnh` +
+        (usage.ocrPages ? ` + ${usage.ocrPages} trang OCR` : '') +
         ` ≈ ${cost.vnd.toLocaleString('vi-VN')}đ ($${cost.usd.toFixed(4)})` +
         ` — ${cost.model} @ $${cost.rates.inputPer1M}/1M vào, $${cost.rates.outputPer1M}/1M ra` +
         (cost.usingDefaults ? ' (bảng giá dựng sẵn; đặt OPENAI_PRICE_* để ghi đè)' : ' (giá bạn cấu hình)'),

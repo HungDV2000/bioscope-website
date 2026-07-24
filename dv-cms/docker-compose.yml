@@ -50,6 +50,9 @@ services:
       GOOGLE_APPLICATION_CREDENTIALS: ${GOOGLE_APPLICATION_CREDENTIALS:-/app/apps/core-cms/credentials/service-account.json}
       # AI auto-content generation (Tạo nội dung tự động) — required for that feature.
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      # Mistral OCR — chỉ dùng cho PDF scan. Bỏ trống = lùi về OCR bằng OpenAI.
+      MISTRAL_API_KEY: ${MISTRAL_API_KEY:-}
+      MISTRAL_OCR_MODEL: ${MISTRAL_OCR_MODEL:-}
       # Model overrides (optional — sensible defaults baked in). See openaiService.ts.
       OPENAI_CONTENT_MODEL: ${OPENAI_CONTENT_MODEL:-}
       OPENAI_VISION_MODEL: ${OPENAI_VISION_MODEL:-}

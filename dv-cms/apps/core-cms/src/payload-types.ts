@@ -1773,7 +1773,42 @@ export interface Ingredient {
    * Thương hiệu OEM.
    */
   brandName?: string | null;
+  /**
+   * MOQ nhỏ nhất, dạng chữ. Bảng giá nhiều bậc nhập ở mục dưới.
+   */
   moq?: string | null;
+  /**
+   * CHỈ NHÂN VIÊN xem được — không lộ ra API công khai. Giá lấy từ file "Mô tả" trên Drive.
+   */
+  pricing?: {
+    /**
+     * Vd: "Giá ngày 11/01/2024".
+     */
+    quoteDate?: string | null;
+    currency?: ('VND' | 'USD') | null;
+    /**
+     * Vd: "đã gồm CB, chưa VAT".
+     */
+    terms?: string | null;
+    /**
+     * Mỗi bậc một dòng. Có nguyên liệu tới 6 bậc (vd Nanocumin: dưới 20kg → 400-500kg).
+     */
+    tiers?:
+      | {
+          /**
+           * Vd: "25kg", "dưới 20kg", "100-200kg".
+           */
+          moq: string;
+          /**
+           * Chỉ số, vd 5678000.
+           */
+          price?: number | null;
+          unit?: string | null;
+          note?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
   description?: {
     root: {
       type: string;
@@ -4027,6 +4062,22 @@ export interface IngredientsSelect<T extends boolean = true> {
   originCountry?: T;
   brandName?: T;
   moq?: T;
+  pricing?:
+    | T
+    | {
+        quoteDate?: T;
+        currency?: T;
+        terms?: T;
+        tiers?:
+          | T
+          | {
+              moq?: T;
+              price?: T;
+              unit?: T;
+              note?: T;
+              id?: T;
+            };
+      };
   description?: T;
   benefits?: T;
   applications?: T;

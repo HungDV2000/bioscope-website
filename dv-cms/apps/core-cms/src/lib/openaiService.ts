@@ -94,6 +94,14 @@ export type GeneratedResearch = {
   mechanism?: LocalizedText
 }
 
+/** Bảng giá NỘI BỘ lấy từ file "Mô tả". Chỉ điền khi tài liệu có ghi. */
+export type GeneratedPricing = {
+  quoteDate?: string
+  currency?: 'VND' | 'USD'
+  terms?: LocalizedText
+  tiers?: Array<{ moq: string; price?: number; unit?: string; note?: string }>
+}
+
 export type GeneratedSpec = {
   label: LocalizedText | string
   value: string
@@ -121,6 +129,7 @@ export type GeneratedContent = {
   technical?: GeneratedTechnical
   regulatory?: GeneratedRegulatory
   research?: GeneratedResearch
+  pricing?: GeneratedPricing
   seoTitle?: LocalizedText
   seoDescription?: LocalizedText
   imagePrompt: LocalizedText
@@ -397,6 +406,28 @@ function normalizeGenerated(raw: unknown): GeneratedContent {
 
   const research: GeneratedResearch = { mechanism: pairOrUndef(groupOf('research').mechanism) }
 
+  const pr = groupOf('pricing')
+  const rawTiers = Array.isArray(pr.tiers) ? (pr.tiers as Array<Record<string, unknown>>) : []
+  const tiers = rawTiers
+    .map((t) => {
+      const moq = strOrUndef(t.moq)
+      if (!moq) return undefined // bậc phải có MOQ, nếu không thì vô nghĩa
+      const priceNum = Number(String(t.price ?? '').replace(/[^\d.]/g, ''))
+      return {
+        moq,
+        price: Number.isFinite(priceNum) && priceNum > 0 ? priceNum : undefined,
+        unit: strOrUndef(t.unit) ?? 'kg',
+        note: strOrUndef(t.note),
+      }
+    })
+    .filter((t): t is NonNullable<typeof t> => Boolean(t))
+  const pricing: GeneratedPricing = {
+    quoteDate: strOrUndef(pr.quoteDate),
+    currency: pr.currency === 'USD' ? 'USD' : strOrUndef(pr.currency) ? 'VND' : undefined,
+    terms: pairOrUndef(pr.terms),
+    tiers: tiers.length ? tiers : undefined,
+  }
+
   /** Keep a group only if at least one member survived — avoids empty writes. */
   const nonEmpty = <T extends object>(g: T): T | undefined =>
     Object.values(g).some((v) => v !== undefined) ? g : undefined
@@ -429,6 +460,7 @@ function normalizeGenerated(raw: unknown): GeneratedContent {
     technical: nonEmpty(technical),
     regulatory: nonEmpty(regulatory),
     research: nonEmpty(research),
+    pricing: nonEmpty(pricing),
     brandName: strOrUndef(o.brandName),
     moq: strOrUndef(o.moq),
     name: pair(o.name),
@@ -710,6 +742,18 @@ SPECS — chú ý định dạng hiển thị:
      không giới hạn 3-6. Ưu tiên: hoạt chất chính → chỉ tiêu chất lượng →
      kim loại nặng/tạp chất → vi sinh.
 
+FILE MÔ TẢ CÓ NHIỀU BIẾN THỂ:
+   Một số file "Mô tả" liệt kê NHIỀU sản phẩm/biến thể trong cùng tài liệu (VD
+   "Kiku Flower Extract-WSP" và "Kiku Flower Extract-P"; hay "Red Vine Pr1432"
+   và "Pr1419"). CHỈ lấy dữ liệu của biến thể KHỚP với tên nguyên liệu đang xử
+   lý (xem "Tên nguyên liệu" ở phần dữ liệu). TUYỆT ĐỐI không trộn giá/MOQ của
+   biến thể khác vào. Nếu không chắc biến thể nào khớp → bỏ trống pricing.
+
+BẢNG GIÁ (pricing):
+   Lấy từ các dòng "MOQ ...: ...đ/kg" trong file Mô tả. Chép đúng từng con số.
+   Một MOQ nhiều mức giá thì mỗi mức là một bậc (tiers). Bỏ dấu chấm phân cách
+   nghìn khi ghi price. Ngày báo giá đổi sang YYYY-MM-DD.
+
 TRẢ VỀ ĐỊNH DẠNG JSON — KHÔNG giải thích, KHÔNG markdown code block.
 
 ## YÊU CẦU ĐẦU RA
@@ -796,6 +840,21 @@ Trả về JSON với format sau (VIẾT ĐẦY ĐỦ cả 2 ngôn ngữ):
       "vi": "<cơ chế tác dụng, 2-4 câu tiếng Việt: hoạt chất tác động thế nào ở mức sinh học>",
       "en": "<mechanism of action, 2-4 sentences>"
     }
+  },
+  "pricing": {
+    "_comment": "[LOẠI A — TRÍCH XUẤT] Bảng giá từ file Mô tả. Chép ĐÚNG con số, KHÔNG suy đoán. Không có giá thì bỏ cả object.",
+    "quoteDate": "<ngày báo giá YYYY-MM-DD nếu tài liệu ghi, VD từ 'Giá ngày 11/01/2024' → 2024-01-11 — rỗng nếu không có>",
+    "currency": "<VND | USD — mặc định VND cho giá tiền Việt>",
+    "terms": { "vi": "<điều kiện giá, VD: đã gồm CB, chưa VAT>", "en": "<price terms in English>" },
+    "tiers": [
+      {
+        "moq": "<bậc MOQ ĐÚNG như tài liệu, VD: '25kg', 'dưới 20kg', '100-200kg'>",
+        "price": "<CHỈ SỐ, bỏ dấu chấm phân cách, VD '5.271.500đ/kg' → 5271500>",
+        "unit": "<đơn vị tính giá, VD: kg>",
+        "note": "<ghi chú riêng của bậc này nếu có>"
+      },
+      "... LẤY HẾT các bậc giá (có nguyên liệu tới 6 bậc, VD Nanocumin: dưới 20kg, 21-50kg, 50-100kg, 100-200kg, 200-400kg, 400-500kg)"
+    ]
   },
   "seoTitle": {
     "vi": "<tiêu đề SEO tiếng Việt, ≤ 60 ký tự, chứa tên nguyên liệu + lợi ích chính>",

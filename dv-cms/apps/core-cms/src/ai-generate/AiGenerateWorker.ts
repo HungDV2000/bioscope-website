@@ -855,6 +855,29 @@ export async function runAiGenerate(input: WorkerInput): Promise<void> {
       return m ? { mechanism: textToLexical(m) } : undefined
     }
 
+    // pricing.terms là localized; quoteDate/currency/tiers dùng chung — ghi phần
+    // chung một lần ở primary, phần localized ghi ở cả hai locale.
+    const pricingFor = (l: 'vi' | 'en', includeShared: boolean): Record<string, unknown> | undefined => {
+      const pr = gc.pricing
+      if (!pr) return undefined
+      const out: Record<string, unknown> = {}
+      if (includeShared) {
+        if (pr.quoteDate) out.quoteDate = pr.quoteDate
+        if (pr.currency) out.currency = pr.currency
+        if (pr.tiers?.length) {
+          out.tiers = pr.tiers.map((t) => ({
+            moq: t.moq,
+            price: t.price,
+            unit: t.unit || 'kg',
+            note: t.note || undefined,
+          }))
+        }
+      }
+      const terms = pr.terms?.[l]?.trim()
+      if (terms) out.terms = terms
+      return Object.keys(out).length ? out : undefined
+    }
+
     const primaryData: Record<string, unknown> = { name: nameFor(locale) }
     if (gc.subtitle?.[locale]) primaryData.subtitle = gc.subtitle[locale]
     if (gc.description?.[locale]) primaryData.description = textToLexical(gc.description[locale])
@@ -865,6 +888,7 @@ export async function runAiGenerate(input: WorkerInput): Promise<void> {
     if (technicalFor(locale, true)) primaryData.technical = technicalFor(locale, true)
     if (regulatoryFor(locale, true)) primaryData.regulatory = regulatoryFor(locale, true)
     if (researchFor(locale)) primaryData.research = researchFor(locale)
+    if (pricingFor(locale, true)) primaryData.pricing = pricingFor(locale, true)
     if (gc.benefits?.[locale]?.length) primaryData.benefits = gc.benefits[locale]
     if (gc.applications?.[locale]?.length) primaryData.applications = gc.applications[locale]
     if (gc.badges?.length) primaryData.badges = gc.badges // not localized
@@ -900,6 +924,7 @@ export async function runAiGenerate(input: WorkerInput): Promise<void> {
     if (technicalFor(otherLocale, false)) otherData.technical = technicalFor(otherLocale, false)
     if (regulatoryFor(otherLocale, false)) otherData.regulatory = regulatoryFor(otherLocale, false)
     if (researchFor(otherLocale)) otherData.research = researchFor(otherLocale)
+    if (pricingFor(otherLocale, false)) otherData.pricing = pricingFor(otherLocale, false)
     if (gc.benefits?.[otherLocale]?.length) otherData.benefits = gc.benefits[otherLocale]
     if (gc.applications?.[otherLocale]?.length) otherData.applications = gc.applications[otherLocale]
     if (seoFor(otherLocale)) otherData.seo = seoFor(otherLocale)

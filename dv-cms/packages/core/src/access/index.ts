@@ -41,3 +41,13 @@ export const readPublishedOrStaff: Access = ({ req: { user } }) => {
 /** Field-level: only admins may edit. */
 export const isAdminFieldLevel: FieldAccess = ({ req: { user } }) =>
   isStaff(user as AnyUser) && (user as AnyUser)?.role === 'admin'
+
+/**
+ * Field-level: chỉ nhân viên nội bộ mới ĐỌC được trường này.
+ *
+ * Dùng cho dữ liệu thương mại nhạy cảm (bảng giá sỉ). Collection `ingredients`
+ * cho public đọc mọi bản đã publish qua REST API, nên nếu không khoá ở cấp
+ * TRƯỜNG thì bảng giá sẽ lộ ra `/api/ingredients` — chỉ một lệnh curl là đối
+ * thủ lấy sạch. Payload loại hẳn trường khỏi phản hồi khi hàm này trả false.
+ */
+export const isStaffFieldLevel: FieldAccess = ({ req: { user } }) => isStaff(user as AnyUser)

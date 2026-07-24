@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { contentTabs, isAdminOrEditor, readPublishedOrStaff, slugField } from '@dv/cms-core'
+import { contentTabs, isAdminOrEditor, isStaffFieldLevel, readPublishedOrStaff, slugField } from '@dv/cms-core'
 import { specsField } from '@dv/module-catalog'
 
 /** Imported nutraceutical / cosmetic raw ingredients. */
@@ -100,7 +100,91 @@ export const Ingredients: CollectionConfig = {
       relationTo: 'partners',
       admin: { position: 'sidebar' },
     },
-    { name: 'moq', type: 'text', label: 'MOQ' },
+    { name: 'moq', type: 'text', label: 'MOQ', admin: { description: 'MOQ nhỏ nhất, dạng chữ. Bảng giá nhiều bậc nhập ở mục dưới.' } },
+
+    // ── Bảng giá — NỘI BỘ ────────────────────────────────────────────────────
+    // KHOÁ QUYỀN ĐỌC Ở CẤP TRƯỜNG. Collection này cho public đọc mọi bản đã
+    // publish (readPublishedOrStaff), nên nếu không khoá thì giá sỉ lộ thẳng ra
+    // GET /api/ingredients — một lệnh curl là đối thủ lấy sạch bảng giá.
+    // Payload loại hẳn nhóm này khỏi phản hồi khi người gọi không phải nhân viên.
+    {
+      name: 'pricing',
+      type: 'group',
+      label: { en: 'Pricing (internal only)', vi: 'Bảng giá (chỉ nội bộ)' },
+      access: { read: isStaffFieldLevel },
+      admin: {
+        description:
+          'CHỈ NHÂN VIÊN xem được — không lộ ra API công khai. Giá lấy từ file "Mô tả" trên Drive.',
+      },
+      fields: [
+        {
+          type: 'row',
+          fields: [
+            {
+              name: 'quoteDate',
+              type: 'date',
+              label: { en: 'Quote date', vi: 'Ngày báo giá' },
+              admin: { width: '50%', description: 'Vd: "Giá ngày 11/01/2024".' },
+            },
+            {
+              name: 'currency',
+              type: 'select',
+              defaultValue: 'VND',
+              options: [
+                { label: 'VNĐ', value: 'VND' },
+                { label: 'USD', value: 'USD' },
+              ],
+              label: { en: 'Currency', vi: 'Đơn vị tiền' },
+              admin: { width: '50%' },
+            },
+          ],
+        },
+        {
+          name: 'terms',
+          type: 'text',
+          localized: true,
+          label: { en: 'Price terms', vi: 'Điều kiện giá' },
+          admin: { description: 'Vd: "đã gồm CB, chưa VAT".' },
+        },
+        {
+          name: 'tiers',
+          type: 'array',
+          label: { en: 'Price tiers', vi: 'Bậc giá theo MOQ' },
+          admin: {
+            description:
+              'Mỗi bậc một dòng. Có nguyên liệu tới 6 bậc (vd Nanocumin: dưới 20kg → 400-500kg).',
+          },
+          fields: [
+            {
+              type: 'row',
+              fields: [
+                {
+                  name: 'moq',
+                  type: 'text',
+                  required: true,
+                  label: 'MOQ',
+                  admin: { width: '40%', description: 'Vd: "25kg", "dưới 20kg", "100-200kg".' },
+                },
+                {
+                  name: 'price',
+                  type: 'number',
+                  label: { en: 'Price per unit', vi: 'Đơn giá' },
+                  admin: { width: '35%', description: 'Chỉ số, vd 5678000.' },
+                },
+                {
+                  name: 'unit',
+                  type: 'text',
+                  defaultValue: 'kg',
+                  label: { en: 'Per', vi: 'Trên' },
+                  admin: { width: '25%' },
+                },
+              ],
+            },
+            { name: 'note', type: 'text', label: { en: 'Note', vi: 'Ghi chú' } },
+          ],
+        },
+      ],
+    },
     { name: 'description', type: 'richText', localized: true },
     ]},
 

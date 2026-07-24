@@ -6,6 +6,7 @@ import { DriveSyncJobs } from './collections/DriveSyncJobs.js'
 import { CmsSyncRuns } from './collections/CmsSyncRuns.js'
 import { AiGenerateJobs } from './collections/AiGenerateJobs.js'
 import { DuplicateScans } from './collections/DuplicateScans.js'
+import { IngredientFacets } from './collections/IngredientFacets.js'
 import { Technologies } from './collections/Technologies.js'
 import { Ingredients } from './collections/Ingredients.js'
 import { Services } from './collections/Services.js'
@@ -46,7 +47,7 @@ export const bioscopePlugin =
     const c = options.collections ?? {}
     const add = []
 
-    if (c.ingredients !== false) add.push(IngredientCategories, Ingredients)
+    if (c.ingredients !== false) add.push(IngredientCategories, IngredientFacets, Ingredients)
     if (c.driveSyncJobs !== false) add.push(DriveSyncJobs)
     if (c.aiGenerateJobs !== false) add.push(AiGenerateJobs)
     if (c.duplicateScans !== false) add.push(DuplicateScans)

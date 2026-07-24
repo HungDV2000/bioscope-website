@@ -778,6 +778,38 @@ export async function runAiGenerate(input: WorkerInput): Promise<void> {
       }
     }
 
+    // ── 5.5 Nạp thẻ lọc khả dụng ─────────────────────────────────────────
+    // AI chọn theo TÊN trong danh sách này; tên lạ sẽ bị loại ở bước đối chiếu
+    // bên dưới, nên bộ lọc không bao giờ nhiễm giá trị rác.
+    const facetDocs = await payload.find({
+      collection: 'ingredient-facets',
+      limit: 500,
+      depth: 0,
+      locale,
+      sort: 'order',
+      overrideAccess: true,
+    })
+    const FACET_FIELD: Record<string, 'functions' | 'natures' | 'forms' | 'properties'> = {
+      function: 'functions',
+      nature: 'natures',
+      form: 'forms',
+      property: 'properties',
+    }
+    const availableFacets: Record<string, string[]> = {}
+    const facetIdByName = new Map<string, { id: string | number; field: string }>()
+    for (const f of facetDocs.docs) {
+      const field = FACET_FIELD[f.group as string]
+      const name = String(f.name ?? '').trim()
+      if (!field || !name) continue
+      ;(availableFacets[field] ??= []).push(name)
+      facetIdByName.set(`${field}::${name.toLowerCase()}`, { id: f.id, field })
+    }
+    if (facetDocs.docs.length) {
+      addLog(logs, 'info', `Có ${facetDocs.docs.length} thẻ lọc khả dụng cho AI chọn`)
+    } else {
+      addLog(logs, 'warn', 'Chưa có thẻ lọc nào — chạy scripts/facets-seed.ts để tạo.')
+    }
+
     const ingredientMeta = {
       name: ingredientName,
       type: (ingredient.type as string | undefined) ?? 'both',
@@ -785,6 +817,7 @@ export async function runAiGenerate(input: WorkerInput): Promise<void> {
       originCountry: (ingredient.originCountry as string | undefined) ?? '',
       brandName: (ingredient.brandName as string | undefined) ?? '',
       category: categoryName,
+      availableFacets,
       driveFiles: driveFiles.map((f) => ({
         fileName: f.fileName,
         mimeType: f.mimeType,
@@ -926,6 +959,30 @@ export async function runAiGenerate(input: WorkerInput): Promise<void> {
     if (regulatoryFor(locale, true)) primaryData.regulatory = regulatoryFor(locale, true)
     if (researchFor(locale)) primaryData.research = researchFor(locale)
     if (pricingFor(locale, true)) primaryData.pricing = pricingFor(locale, true)
+
+    // Thẻ lọc: đối chiếu TÊN do AI trả về sang id thật. Tên không có trong danh
+    // sách bị loại — đây là chốt chặn giữ bộ lọc sạch, không nhiễm giá trị bịa.
+    if (gc.facets) {
+      const unknown: string[] = []
+      for (const field of ['functions', 'natures', 'forms', 'properties'] as const) {
+        const names = gc.facets[field] ?? []
+        if (!names.length) continue
+        const ids: (string | number)[] = []
+        for (const raw of names) {
+          const hit = facetIdByName.get(`${field}::${String(raw).trim().toLowerCase()}`)
+          if (hit) ids.push(hit.id)
+          else unknown.push(`${field}:${raw}`)
+        }
+        if (ids.length) primaryData[field] = ids
+      }
+      if (unknown.length) {
+        addLog(logs, 'warn', `Bỏ ${unknown.length} thẻ AI tự nghĩ ra (không có trong danh sách): ${unknown.slice(0, 5).join(', ')}`)
+      }
+      const assigned = (['functions', 'natures', 'forms', 'properties'] as const)
+        .map((f) => (primaryData[f] as unknown[] | undefined)?.length ?? 0)
+        .reduce((a, b) => a + b, 0)
+      if (assigned) addLog(logs, 'info', `Gán ${assigned} thẻ lọc`)
+    }
     if (gc.benefits?.[locale]?.length) primaryData.benefits = gc.benefits[locale]
     if (gc.applications?.[locale]?.length) primaryData.applications = gc.applications[locale]
     if (gc.badges?.length) primaryData.badges = gc.badges // not localized

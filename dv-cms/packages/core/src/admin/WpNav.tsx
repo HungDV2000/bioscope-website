@@ -29,7 +29,7 @@ type Group = { key: string; icon: NavIconName; label: Record<Lang, string>; item
 
 const GROUP_DEFS: { key: string; icon: NavIconName; label: Record<Lang, string>; slugs: string[] }[] = [
   { key: 'content', icon: 'file', label: { en: 'Content', vi: 'Nội dung' }, slugs: ['pages', 'posts', 'categories', 'tags', 'forms', 'form-submissions'] },
-  { key: 'bioscope', icon: 'flask', label: { en: 'Bioscope', vi: 'Bioscope' }, slugs: ['ingredients', 'ingredient-categories', 'technologies', 'services', 'certifications', 'case-studies', 'faqs', 'partners', 'product-categories', 'products'] },
+  { key: 'bioscope', icon: 'flask', label: { en: 'Bioscope', vi: 'Bioscope' }, slugs: ['ingredients', 'ingredient-categories', 'ingredient-facets', 'technologies', 'services', 'certifications', 'case-studies', 'faqs', 'partners', 'product-categories', 'products'] },
   { key: 'b2b', icon: 'user-circle', label: { en: 'B2B portal', vi: 'Cổng B2B' }, slugs: ['members', 'gated-documents'] },
   { key: 'seo', icon: 'newspaper', label: { en: 'SEO & Marketing', vi: 'SEO & Marketing' }, slugs: ['seo-settings', 'redirects', 'image-settings', 'bioscope-ai'] },
   { key: 'security', icon: 'shield', label: { en: 'Security', vi: 'Bảo mật' }, slugs: ['security-settings', 'blocked-ips', 'security-events', 'consent-settings', 'consent-log'] },

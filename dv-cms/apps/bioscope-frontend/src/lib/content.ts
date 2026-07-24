@@ -10,6 +10,16 @@ export type Ingredient = {
   name: string
   inci?: string
   category: string
+  /**
+   * Thẻ lọc từ CMS (collection ingredient-facets). Tách khỏi `category` vốn
+   * sinh từ thư mục Drive nên lẫn thư mục NCC và rác — không lọc được.
+   */
+  facets?: {
+    functions: string[]
+    natures: string[]
+    forms: string[]
+    properties: string[]
+  }
   industry: 'Dược phẩm' | 'Thực phẩm chức năng' | 'Mỹ phẩm'
   origin: string
   manufacturer?: string

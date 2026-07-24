@@ -1,4 +1,7 @@
 import { cmsFetch, mediaUrl } from '@/lib/payload'
+
+/** Thẻ lọc trả về từ CMS ở depth=1. */
+type FacetRef = { id?: string | number; name?: string; slug?: string }
 import type { Locale } from '@/lib/i18n/config'
 import type { Ingredient } from '@/lib/content'
 import { pickLocaleText } from '@/lib/i18n/pick-locale-text'
@@ -21,6 +24,10 @@ type IngredientDoc = {
   applications?: string[]
   badges?: string[]
   featuredImage?: { url?: string } | null
+  functions?: FacetRef[] | null
+  natures?: FacetRef[] | null
+  forms?: FacetRef[] | null
+  properties?: FacetRef[] | null
   specs?: { label?: string; value?: string }[]
   technical?: Record<string, string | undefined>
   documents?: { title?: string; file?: { url?: string } | null }[]
@@ -102,6 +109,12 @@ function toIngredient(d: IngredientDoc, locale: Locale): Ingredient {
     badges: d.badges ?? [],
     image: 'powder',
     imageSrc: mediaUrl(d.featuredImage?.url) ?? undefined,
+    facets: {
+      functions: facetNames(d.functions, pick),
+      natures: facetNames(d.natures, pick),
+      forms: facetNames(d.forms, pick),
+      properties: facetNames(d.properties, pick),
+    },
     specs: (d.specs ?? []).map((s) => ({ label: pick(s.label), value: pick(s.value) })),
     applications: (d.applications ?? []).map(pick).filter(Boolean),
     technical: d.technical
@@ -146,6 +159,12 @@ function toIngredient(d: IngredientDoc, locale: Locale): Ingredient {
   }
 }
 
+/** Tên thẻ đã bản địa hoá; bỏ qua mục chưa populate (depth=0 trả về id thô). */
+function facetNames(list: FacetRef[] | null | undefined, pick: (v?: string) => string): string[] {
+  if (!Array.isArray(list)) return []
+  return list.map((f) => (typeof f === 'object' && f ? pick(f.name) : '')).filter(Boolean)
+}
+
 /** All published ingredients from the CMS. Returns null on failure/empty (caller falls back to static). */
 // Only the fields the catalog list + filters actually use. Dropping the heavy
 // `description` richText keeps the full-catalog response under Next's 2MB data
@@ -164,6 +183,11 @@ const LIST_SELECT = [
   'badges',
   'featuredImage',
   'specs',
+  // Thẻ lọc — bắt buộc có trong select, nếu không bộ lọc trên web sẽ rỗng.
+  'functions',
+  'natures',
+  'forms',
+  'properties',
 ]
   .map((f) => `select[${f}]=true`)
   .join('&')

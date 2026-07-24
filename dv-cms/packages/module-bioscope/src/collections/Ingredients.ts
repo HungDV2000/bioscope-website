@@ -204,6 +204,47 @@ export const Ingredients: CollectionConfig = {
       localized: true,
       admin: { description: 'Ứng dụng / dạng bào chế.' },
     },
+    // ── Thẻ lọc ──────────────────────────────────────────────────────────────
+    // Phân loại CÓ CHỦ ĐÍCH để lọc trên web, tách khỏi `category` (vốn sinh từ
+    // thư mục Drive nên lẫn thư mục NCC và rác test). `filterOptions` khiến mỗi
+    // ô chỉ cho chọn thẻ đúng nhóm của nó, nên biên tập viên không chọn nhầm.
+    {
+      name: 'functions',
+      type: 'relationship',
+      relationTo: 'ingredient-facets',
+      hasMany: true,
+      label: { en: 'Functions / benefits', vi: 'Công dụng' },
+      filterOptions: () => ({ group: { equals: 'function' } }),
+      admin: { description: 'Miễn dịch, Tim mạch, Não bộ, Xương khớp… — quản lý ở mục "Thẻ lọc nguyên liệu".' },
+    },
+    {
+      name: 'natures',
+      type: 'relationship',
+      relationTo: 'ingredient-facets',
+      hasMany: true,
+      label: { en: 'Ingredient class', vi: 'Bản chất nguyên liệu' },
+      filterOptions: () => ({ group: { equals: 'nature' } }),
+      admin: { description: 'Chiết xuất thực vật, Dầu & Omega, Vitamin, Khoáng chất…' },
+    },
+    {
+      name: 'forms',
+      type: 'relationship',
+      relationTo: 'ingredient-facets',
+      hasMany: true,
+      label: { en: 'Physical form', vi: 'Dạng bào chế' },
+      filterOptions: () => ({ group: { equals: 'form' } }),
+      admin: { description: 'Bột, Dầu/lỏng, Dịch chiết, Viên nang…' },
+    },
+    {
+      name: 'properties',
+      type: 'relationship',
+      relationTo: 'ingredient-facets',
+      hasMany: true,
+      label: { en: 'Technical properties', vi: 'Đặc tính kỹ thuật' },
+      filterOptions: () => ({ group: { equals: 'property' } }),
+      admin: { description: 'Tan trong nước, Tan trong dầu, Chịu nhiệt, Vi bao…' },
+    },
+
     {
       name: 'badges',
       type: 'text',

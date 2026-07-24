@@ -83,6 +83,7 @@ export interface Config {
     'field-groups': FieldGroup;
     partners: Partner;
     'ingredient-categories': IngredientCategory;
+    'ingredient-facets': IngredientFacet;
     ingredients: Ingredient;
     'drive-sync-jobs': DriveSyncJob;
     'ai-generate-jobs': AiGenerateJob;
@@ -126,6 +127,7 @@ export interface Config {
     'field-groups': FieldGroupsSelect<false> | FieldGroupsSelect<true>;
     partners: PartnersSelect<false> | PartnersSelect<true>;
     'ingredient-categories': IngredientCategoriesSelect<false> | IngredientCategoriesSelect<true>;
+    'ingredient-facets': IngredientFacetsSelect<false> | IngredientFacetsSelect<true>;
     ingredients: IngredientsSelect<false> | IngredientsSelect<true>;
     'drive-sync-jobs': DriveSyncJobsSelect<false> | DriveSyncJobsSelect<true>;
     'ai-generate-jobs': AiGenerateJobsSelect<false> | AiGenerateJobsSelect<true>;
@@ -1750,6 +1752,38 @@ export interface Partner {
   createdAt: string;
 }
 /**
+ * Thẻ dùng để lọc nguyên liệu trên website. Thêm/sửa tự do — AI chỉ được chọn trong danh sách này, không tự bịa thẻ mới.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ingredient-facets".
+ */
+export interface IngredientFacet {
+  id: number;
+  name: string;
+  /**
+   * Đường dẫn theo từng ngôn ngữ. Để trống sẽ tự tạo từ tiêu đề của ngôn ngữ đang chọn.
+   */
+  slug?: string | null;
+  /**
+   * Quyết định thẻ này xuất hiện ở bộ lọc nào trên web.
+   */
+  group: 'function' | 'nature' | 'form' | 'property';
+  /**
+   * Số nhỏ hiện trước.
+   */
+  order?: number | null;
+  /**
+   * Dùng để TỰ ĐỘNG gán thẻ cho nguyên liệu cũ (script backfill quét tên + mô tả). Vd thẻ "Dầu & Omega": omega, dha, epa, fish oil, dầu cá. Không phân biệt hoa thường và dấu tiếng Việt.
+   */
+  keywords?: string[] | null;
+  /**
+   * Giải thích ngắn cho biên tập viên. Không hiện trên web.
+   */
+  description?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "ingredients".
  */
@@ -1832,6 +1866,22 @@ export interface Ingredient {
    * Ứng dụng / dạng bào chế.
    */
   applications?: string[] | null;
+  /**
+   * Miễn dịch, Tim mạch, Não bộ, Xương khớp… — quản lý ở mục "Thẻ lọc nguyên liệu".
+   */
+  functions?: (number | IngredientFacet)[] | null;
+  /**
+   * Chiết xuất thực vật, Dầu & Omega, Vitamin, Khoáng chất…
+   */
+  natures?: (number | IngredientFacet)[] | null;
+  /**
+   * Bột, Dầu/lỏng, Dịch chiết, Viên nang…
+   */
+  forms?: (number | IngredientFacet)[] | null;
+  /**
+   * Tan trong nước, Tan trong dầu, Chịu nhiệt, Vi bao…
+   */
+  properties?: (number | IngredientFacet)[] | null;
   /**
    * Nhãn chứng nhận hiển thị trên thẻ (Halal, Non-GMO…).
    */
@@ -2884,6 +2934,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'ingredient-categories';
         value: number | IngredientCategory;
+      } | null)
+    | ({
+        relationTo: 'ingredient-facets';
+        value: number | IngredientFacet;
       } | null)
     | ({
         relationTo: 'ingredients';
@@ -4052,6 +4106,20 @@ export interface IngredientCategoriesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ingredient-facets_select".
+ */
+export interface IngredientFacetsSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  group?: T;
+  order?: T;
+  keywords?: T;
+  description?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "ingredients_select".
  */
 export interface IngredientsSelect<T extends boolean = true> {
@@ -4081,6 +4149,10 @@ export interface IngredientsSelect<T extends boolean = true> {
   description?: T;
   benefits?: T;
   applications?: T;
+  functions?: T;
+  natures?: T;
+  forms?: T;
+  properties?: T;
   badges?: T;
   featuredImage?: T;
   gallery?:

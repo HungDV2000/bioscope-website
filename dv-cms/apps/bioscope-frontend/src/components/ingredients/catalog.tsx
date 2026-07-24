@@ -21,6 +21,10 @@ const TAG_STYLE: Record<string, string> = {
 type MoqFilter = 'any' | '10' | '25'
 
 type AdvancedFilters = {
+  // Thẻ lọc từ CMS — nhóm chính xác nhất vì do biên tập viên/AI gán có chủ đích.
+  functions: string[]
+  natures: string[]
+  properties: string[]
   industries: string[]
   categories: string[]
   origins: string[]
@@ -32,6 +36,9 @@ type AdvancedFilters = {
 }
 
 const EMPTY_ADVANCED: AdvancedFilters = {
+  functions: [],
+  natures: [],
+  properties: [],
   industries: [],
   categories: [],
   origins: [],
@@ -44,6 +51,9 @@ const EMPTY_ADVANCED: AdvancedFilters = {
 
 function countAdvanced(f: AdvancedFilters) {
   return (
+    f.functions.length +
+    f.natures.length +
+    f.properties.length +
     f.industries.length +
     f.categories.length +
     f.origins.length +
@@ -55,7 +65,14 @@ function countAdvanced(f: AdvancedFilters) {
   )
 }
 
+/** Chọn nhiều thẻ trong CÙNG một nhóm = OR (mở rộng kết quả), giữa các nhóm = AND. */
+const matchesFacet = (selected: string[], owned: string[] | undefined) =>
+  !selected.length || selected.some((s) => (owned ?? []).includes(s))
+
 function matchesAdvanced(it: Ingredient, f: AdvancedFilters) {
+  if (!matchesFacet(f.functions, it.facets?.functions)) return false
+  if (!matchesFacet(f.natures, it.facets?.natures)) return false
+  if (!matchesFacet(f.properties, it.facets?.properties)) return false
   if (f.industries.length && !f.industries.includes(it.industry)) return false
   if (f.categories.length && !f.categories.includes(it.category)) return false
   if (f.origins.length && !f.origins.includes(it.origin)) return false
@@ -63,7 +80,12 @@ function matchesAdvanced(it: Ingredient, f: AdvancedFilters) {
     return false
   }
   if (f.tags.length && (!it.tag || !f.tags.includes(it.tag))) return false
-  if (f.forms.length && !f.forms.includes(ingredientForm(it))) return false
+  // Dạng bào chế: ưu tiên thẻ CMS; nguyên liệu chưa gán thẻ thì lùi về suy từ
+  // specs "Dạng" như trước, để bộ lọc không bỏ sót dữ liệu cũ.
+  if (f.forms.length) {
+    const owned = it.facets?.forms?.length ? it.facets.forms : [ingredientForm(it)].filter(Boolean)
+    if (!f.forms.some((x) => owned.includes(x))) return false
+  }
   if (
     f.applications.length &&
     !f.applications.some((app) => it.applications.some((a) => a.includes(app) || app.includes(a)))
@@ -101,11 +123,22 @@ export function Catalog({ items, imageSeed }: { items: Ingredient[]; imageSeed: 
       ...order.filter((v) => present.includes(v)),
       ...present.filter((v) => !order.includes(v)),
     ]
+    // Thẻ lọc CMS: gom từ chính dữ liệu nên chip nào cũng ra ≥1 kết quả, và
+    // thẻ mới biên tập viên thêm trong admin tự xuất hiện, không cần sửa code.
+    const fromFacets = (key: 'functions' | 'natures' | 'forms' | 'properties') =>
+      [...new Set(items.flatMap((it) => it.facets?.[key] ?? []))].sort((a, b) => a.localeCompare(b, 'vi'))
+
     return {
+      functions: fromFacets('functions'),
+      natures: fromFacets('natures'),
+      properties: fromFacets('properties'),
       industries: ordered(uniq(items.map((it) => it.industry)), INDUSTRIES),
       categories: ordered(uniq(items.map((it) => it.category)), INGREDIENT_CATEGORIES),
       origins: ordered(uniq(items.map((it) => it.origin)), ORIGINS),
-      forms: ordered(uniq(items.map((it) => ingredientForm(it))), PRODUCT_FORMS),
+      forms: ordered(
+        uniq([...items.flatMap((it) => it.facets?.forms ?? []), ...items.map((it) => ingredientForm(it))]),
+        PRODUCT_FORMS,
+      ),
       tags: INGREDIENT_TAGS.filter((tg) => items.some((it) => it.tag === tg)),
       certs: CERT_FILTERS.filter((c) => items.some((it) => it.badges.some((b) => b.toLowerCase().includes(c.toLowerCase())))),
       applications: APPLICATION_TYPES.filter((app) =>
@@ -412,6 +445,9 @@ function pageWindow(page: number, total: number): (number | '…')[] {
 }
 
 type Facets = {
+  functions: string[]
+  natures: string[]
+  properties: string[]
   industries: string[]
   categories: string[]
   origins: string[]
@@ -440,6 +476,7 @@ function AdvancedSearchModal({
   const cat = t.ingredientsCatalog
   const f = cat.filters
   const { industries: INDUSTRIES, certs: CERT_FILTERS, tags: INGREDIENT_TAGS, categories: INGREDIENT_CATEGORIES, origins: ORIGINS, forms: PRODUCT_FORMS, applications: APPLICATION_TYPES } = facets
+  const { functions: FUNCTIONS, natures: NATURES, properties: PROPERTIES } = facets
 
   const toggle = <K extends keyof AdvancedFilters>(key: K, value: string) => {
     const list = draft[key] as string[]
@@ -470,6 +507,22 @@ function AdvancedSearchModal({
         </div>
 
         <div className="flex-1 space-y-6 overflow-y-auto px-6 py-5">
+          {FUNCTIONS.length > 0 && (
+            <FilterSection title={cat.filters.function ?? 'Công dụng'}>
+              {FUNCTIONS.map((v) => (
+                <Chip key={v} label={v} active={draft.functions.includes(v)} onClick={() => toggle('functions', v)} />
+              ))}
+            </FilterSection>
+          )}
+
+          {NATURES.length > 0 && (
+            <FilterSection title={cat.filters.nature ?? 'Bản chất nguyên liệu'}>
+              {NATURES.map((v) => (
+                <Chip key={v} label={v} active={draft.natures.includes(v)} onClick={() => toggle('natures', v)} />
+              ))}
+            </FilterSection>
+          )}
+
           <FilterSection title={f.industry}>
             {INDUSTRIES.map((v) => (
               <Chip key={v} label={v} active={draft.industries.includes(v)} onClick={() => toggle('industries', v)} />
@@ -499,6 +552,14 @@ function AdvancedSearchModal({
               <Chip key={v} label={v} active={draft.applications.includes(v)} onClick={() => toggle('applications', v)} />
             ))}
           </FilterSection>
+
+          {PROPERTIES.length > 0 && (
+            <FilterSection title={cat.filters.property ?? 'Đặc tính kỹ thuật'}>
+              {PROPERTIES.map((v) => (
+                <Chip key={v} label={v} active={draft.properties.includes(v)} onClick={() => toggle('properties', v)} />
+              ))}
+            </FilterSection>
+          )}
 
           <FilterSection title={f.cert}>
             {CERT_FILTERS.map((v) => (

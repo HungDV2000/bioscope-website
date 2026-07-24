@@ -130,6 +130,8 @@ export type GeneratedContent = {
   regulatory?: GeneratedRegulatory
   research?: GeneratedResearch
   pricing?: GeneratedPricing
+  /** Thẻ lọc — AI chọn theo TÊN, worker đối chiếu sang id. Không được bịa tên mới. */
+  facets?: { functions?: string[]; natures?: string[]; forms?: string[]; properties?: string[] }
   seoTitle?: LocalizedText
   seoDescription?: LocalizedText
   imagePrompt: LocalizedText
@@ -429,6 +431,14 @@ function normalizeGenerated(raw: unknown): GeneratedContent {
 
   const research: GeneratedResearch = { mechanism: pairOrUndef(groupOf('research').mechanism) }
 
+  const fc = groupOf('facets')
+  const facets = {
+    functions: list(fc.functions),
+    natures: list(fc.natures),
+    forms: list(fc.forms),
+    properties: list(fc.properties),
+  }
+
   const pr = groupOf('pricing')
   const rawTiers = Array.isArray(pr.tiers) ? (pr.tiers as Array<Record<string, unknown>>) : []
   const tiers = rawTiers
@@ -484,6 +494,7 @@ function normalizeGenerated(raw: unknown): GeneratedContent {
     regulatory: nonEmpty(regulatory),
     research: nonEmpty(research),
     pricing: nonEmpty(pricing),
+    facets: Object.values(facets).some((v) => v.length) ? facets : undefined,
     brandName: strOrUndef(o.brandName),
     moq: strOrUndef(o.moq),
     name: pair(o.name),
@@ -521,6 +532,8 @@ export async function generateIngredientContent(
     category?: string
     driveId?: string
     driveFiles?: Array<{ fileName: string; mimeType: string }>
+    /** Danh sách thẻ lọc khả dụng, nhóm theo loại — AI chỉ được chọn trong đây. */
+    availableFacets?: Record<string, string[]>
   },
   driveFileContents: string,
   usage?: AiUsage,
@@ -874,6 +887,13 @@ Trả về JSON với format sau (VIẾT ĐẦY ĐỦ cả 2 ngôn ngữ):
       "... LẤY HẾT các bậc giá (có nguyên liệu tới 6 bậc, VD Nanocumin: dưới 20kg, 21-50kg, 50-100kg, 100-200kg, 200-400kg, 400-500kg)"
     ]
   },
+  "facets": {
+    "_comment": "Thẻ để LỌC trên web. CHỈ chọn tên có trong 'THẺ LỌC KHẢ DỤNG' ở trên, chép chính xác. Không có thẻ phù hợp thì để mảng rỗng.",
+    "functions": ["<công dụng, chọn 1-3 thẻ sát nhất>"],
+    "natures": ["<bản chất nguyên liệu, thường 1-2 thẻ>"],
+    "forms": ["<dạng bào chế theo tài liệu, thường 1 thẻ>"],
+    "properties": ["<đặc tính kỹ thuật nếu tài liệu nêu rõ>"]
+  },
   "seoTitle": {
     "vi": "<tiêu đề SEO tiếng Việt, ≤ 60 ký tự, chứa tên nguyên liệu + lợi ích chính>",
     "en": "<SEO title English, ≤ 60 chars>"
@@ -898,6 +918,7 @@ function buildContentUserPrompt(
     brandName?: string
     category?: string
     driveFiles?: Array<{ fileName: string; mimeType: string }>
+    availableFacets?: Record<string, string[]>
   },
   driveFileContents: string,
   attachments: PdfAttachment[] = [],
@@ -918,7 +939,21 @@ function buildContentUserPrompt(
 ## FILE ĐÍNH KÈM TỪ GOOGLE DRIVE
 ${fileList}
 
-${attachments.length ? `## TÀI LIỆU ĐÍNH KÈM (${attachments.length}) — NGUỒN DỮ LIỆU CHÍNH
+${
+    ingredient.availableFacets && Object.values(ingredient.availableFacets).some((v) => v.length)
+      ? `## THẺ LỌC KHẢ DỤNG — CHỈ ĐƯỢC CHỌN TRONG DANH SÁCH NÀY
+${Object.entries(ingredient.availableFacets)
+  .filter(([, v]) => v.length)
+  .map(([g, v]) => `${g}: ${v.join(' | ')}`)
+  .join('\n')}
+
+Chép CHÍNH XÁC tên thẻ (kể cả dấu tiếng Việt). Thẻ nào không có trong danh sách
+thì BỎ QUA — tuyệt đối không tự nghĩ ra thẻ mới, vì thẻ lạ sẽ bị loại và làm
+hỏng bộ lọc. Không chắc thì để mảng rỗng.
+
+`
+      : ''
+  }${attachments.length ? `## TÀI LIỆU ĐÍNH KÈM (${attachments.length}) — NGUỒN DỮ LIỆU CHÍNH
 ${attachments.map((a) => `- ${a.filename}`).join('\n')}
 
 Các file trên được đính kèm NGUYÊN BẢN ở đầu tin nhắn này. Hãy ĐỌC TRỰC TIẾP

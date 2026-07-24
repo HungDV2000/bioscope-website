@@ -170,12 +170,19 @@ function recordUsage(
 }
 
 /**
- * Đơn giá MẶC ĐỊNH (USD). Đây là ƯỚC LƯỢNG để log luôn có con số — giá model
- * thật đổi theo thời gian, nên hãy đặt OPENAI_PRICE_* để ghi đè cho chính xác.
- * Mức mặc định lấy theo tầm giá model đa năng hạng trung.
+ * Bảng đơn giá theo model (USD / 1M token), tra tại openai.com/api/pricing
+ * tháng 07/2026. Giá model CÓ đổi theo thời gian — OPENAI_PRICE_* luôn ghi đè,
+ * và log ghi rõ đang dùng bảng này hay giá do bạn đặt.
+ *
+ * Chênh lệch rất đáng kể: luna rẻ hơn terra 2,5 lần ở CẢ hai chiều.
  */
-const DEFAULT_PRICE_INPUT_PER_1M = 2.5
-const DEFAULT_PRICE_OUTPUT_PER_1M = 10
+const MODEL_PRICES: Record<string, { input: number; cachedInput: number; output: number }> = {
+  'gpt-5.6-sol': { input: 5, cachedInput: 0.5, output: 30 },
+  'gpt-5.6-terra': { input: 2.5, cachedInput: 0.25, output: 15 },
+  'gpt-5.6-luna': { input: 1, cachedInput: 0.1, output: 6 },
+}
+/** Dùng khi model không có trong bảng — lấy mức terra cho khỏi ước quá thấp. */
+const FALLBACK_PRICE = MODEL_PRICES['gpt-5.6-terra']
 const DEFAULT_PRICE_PER_IMAGE = 0.04
 /** Tỉ giá USD→VND để log kèm tiền Việt. Đổi qua OPENAI_USD_TO_VND. */
 const DEFAULT_USD_TO_VND = 25_400
@@ -188,21 +195,26 @@ const numOr = (v: string | undefined, fallback: number): number => {
 export type CostEstimate = {
   usd: number
   vnd: number
-  /** true nếu đang dùng đơn giá mặc định (chưa đặt OPENAI_PRICE_*). */
+  /** true nếu đang dùng bảng giá dựng sẵn (chưa đặt OPENAI_PRICE_*). */
   usingDefaults: boolean
+  /** Model được dùng để tra bảng giá. */
+  model: string
   rates: { inputPer1M: number; outputPer1M: number; perImage: number; usdToVnd: number }
 }
 
 /**
- * Ước tính chi phí một job. Luôn trả về con số (dùng đơn giá mặc định khi chưa
- * cấu hình), kèm cờ `usingDefaults` để log nói rõ đây là ước lượng.
+ * Ước tính chi phí một job. Luôn trả về con số — tra bảng giá theo CONTENT_MODEL
+ * đang cấu hình, nên đổi model là log tự tính theo giá đúng của model đó.
  */
 export function estimateCost(usage: AiUsage): CostEstimate {
   const usingDefaults =
     process.env.OPENAI_PRICE_INPUT_PER_1M == null && process.env.OPENAI_PRICE_OUTPUT_PER_1M == null
 
-  const inputPer1M = numOr(process.env.OPENAI_PRICE_INPUT_PER_1M, DEFAULT_PRICE_INPUT_PER_1M)
-  const outputPer1M = numOr(process.env.OPENAI_PRICE_OUTPUT_PER_1M, DEFAULT_PRICE_OUTPUT_PER_1M)
+  const model = CONTENT_MODEL
+  const table = MODEL_PRICES[model] ?? FALLBACK_PRICE
+
+  const inputPer1M = numOr(process.env.OPENAI_PRICE_INPUT_PER_1M, table.input)
+  const outputPer1M = numOr(process.env.OPENAI_PRICE_OUTPUT_PER_1M, table.output)
   const perImage = numOr(process.env.OPENAI_PRICE_PER_IMAGE, DEFAULT_PRICE_PER_IMAGE)
   const usdToVnd = numOr(process.env.OPENAI_USD_TO_VND, DEFAULT_USD_TO_VND)
 
@@ -218,6 +230,7 @@ export function estimateCost(usage: AiUsage): CostEstimate {
     usd: Math.round(usd * 1_000_000) / 1_000_000,
     vnd: Math.round(usd * usdToVnd),
     usingDefaults,
+    model,
     rates: { inputPer1M, outputPer1M, perImage, usdToVnd },
   }
 }
@@ -661,41 +674,7 @@ SPECS — chú ý định dạng hiển thị:
      không giới hạn 3-6. Ưu tiên: hoạt chất chính → chỉ tiêu chất lượng →
      kim loại nặng/tạp chất → vi sinh.
 
-TRẢ VỀ ĐỊNH DẠNG JSON — KHÔNG giải thích, KHÔNG markdown code block.`
-}
-
-function buildContentUserPrompt(
-  ingredient: {
-    name: string
-    type?: string
-    inci?: string
-    originCountry?: string
-    brandName?: string
-    category?: string
-    driveFiles?: Array<{ fileName: string; mimeType: string }>
-  },
-  driveFileContents: string,
-): string {
-  const fileList = ingredient.driveFiles
-    ?.map((f) => `- ${f.fileName} (${f.mimeType})`)
-    .join('\n') ?? 'Không có file đính kèm'
-
-  return `## NGUYÊN LIỆU CẦN VIẾT NỘI DUNG
-
-**Tên nguyên liệu:** ${ingredient.name}
-**Loại:** ${ingredient.type ?? 'Không xác định'}
-**Tên INCI:** ${ingredient.inci ?? 'Không có'}
-**Quốc gia gốc:** ${ingredient.originCountry ?? 'Không xác định'}
-**Thương hiệu OEM:** ${ingredient.brandName ?? 'Không có'}
-**Danh mục:** ${ingredient.category ?? 'Không xác định'}
-
-## FILE ĐÍNH KÈM TỪ GOOGLE DRIVE
-${fileList}
-
-## NỘI DUNG TRÍCH XUẤT TỪ TDS/PDF
----
-${driveFileContents || 'Không có nội dung từ file Drive'}
----
+TRẢ VỀ ĐỊNH DẠNG JSON — KHÔNG giải thích, KHÔNG markdown code block.
 
 ## YÊU CẦU ĐẦU RA
 
@@ -795,6 +774,42 @@ Trả về JSON với format sau (VIẾT ĐẦY ĐỦ cả 2 ngôn ngữ):
     "en": "<English image description for DALL·E 3 — professional pharmaceutical/cosmetic studio style, close-up view, realistic, no text, max 200 chars>"
   }
 }`
+}
+
+function buildContentUserPrompt(
+  ingredient: {
+    name: string
+    type?: string
+    inci?: string
+    originCountry?: string
+    brandName?: string
+    category?: string
+    driveFiles?: Array<{ fileName: string; mimeType: string }>
+  },
+  driveFileContents: string,
+): string {
+  const fileList = ingredient.driveFiles
+    ?.map((f) => `- ${f.fileName} (${f.mimeType})`)
+    .join('\n') ?? 'Không có file đính kèm'
+
+  return `## NGUYÊN LIỆU CẦN VIẾT NỘI DUNG
+
+**Tên nguyên liệu:** ${ingredient.name}
+**Loại:** ${ingredient.type ?? 'Không xác định'}
+**Tên INCI:** ${ingredient.inci ?? 'Không có'}
+**Quốc gia gốc:** ${ingredient.originCountry ?? 'Không xác định'}
+**Thương hiệu OEM:** ${ingredient.brandName ?? 'Không có'}
+**Danh mục:** ${ingredient.category ?? 'Không xác định'}
+
+## FILE ĐÍNH KÈM TỪ GOOGLE DRIVE
+${fileList}
+
+## NỘI DUNG TRÍCH XUẤT TỪ TDS/PDF
+---
+${driveFileContents || 'Không có nội dung từ file Drive'}
+---
+
+`
 }
 
 // ---------------------------------------------------------------------------

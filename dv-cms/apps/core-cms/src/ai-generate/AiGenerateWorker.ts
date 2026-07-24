@@ -955,9 +955,8 @@ export async function runAiGenerate(input: WorkerInput): Promise<void> {
       'info',
       `Chi phí job: ${totalTokens.toLocaleString('vi-VN')} token + ${usage.images} ảnh` +
         ` ≈ ${cost.vnd.toLocaleString('vi-VN')}đ ($${cost.usd.toFixed(4)})` +
-        (cost.usingDefaults
-          ? ` — ước tính theo đơn giá mặc định ($${cost.rates.inputPer1M}/1M vào, $${cost.rates.outputPer1M}/1M ra); đặt OPENAI_PRICE_* cho chính xác`
-          : ''),
+        ` — ${cost.model} @ $${cost.rates.inputPer1M}/1M vào, $${cost.rates.outputPer1M}/1M ra` +
+        (cost.usingDefaults ? ' (bảng giá dựng sẵn; đặt OPENAI_PRICE_* để ghi đè)' : ' (giá bạn cấu hình)'),
     )
     addLog(logs, 'warn', '⚠️ Nội dung lưu dạng BẢN NHÁP — mở nguyên liệu, đối chiếu số liệu kỹ thuật/pháp lý rồi bấm Publish.')
     addLog(logs, 'info', 'Ảnh đại diện KHÔNG tạo ở bước này. Dùng nút "Tạo lại ảnh đại diện (AI)" khi cần.')

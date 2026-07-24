@@ -5,14 +5,22 @@ import Link from 'next/link'
 import { Globe, MessageCircle, Share2, Send, Phone, Mail, MapPin, ChevronRight, FileText } from 'lucide-react'
 import { useLocale } from '@/lib/i18n/context'
 import { FooterNewsletter } from '@/components/footer-newsletter'
-import type { CompanyInfo } from '@/lib/cms/navigation'
+import type { FooterContent } from '@/lib/cms/footer'
 
-const SOCIAL: { Icon: typeof Globe; label: string }[] = [
-  { Icon: Globe, label: 'Website' },
-  { Icon: MessageCircle, label: 'Zalo' },
-  { Icon: Share2, label: 'LinkedIn' },
-  { Icon: Send, label: 'Telegram' },
-]
+/**
+ * Icon theo nền tảng. Trước đây danh sách này cứng trong code và mọi link đều
+ * href="#" — tức là bốn nút bấm không đi đâu cả. Nay lấy từ CMS.
+ */
+const SOCIAL_ICON: Record<string, typeof Globe> = {
+  website: Globe,
+  zalo: MessageCircle,
+  linkedin: Share2,
+  facebook: Share2,
+  instagram: Share2,
+  youtube: Send,
+  tiktok: Send,
+  x: Send,
+}
 
 const FOOTER_HREFS = [
   ['/nguyen-lieu', '/nguyen-lieu', '/nguyen-lieu', '/nguyen-lieu'],
@@ -55,7 +63,8 @@ function NavGroup({ col }: { col: Col }) {
   )
 }
 
-export function SiteFooter({ columns, company }: { columns?: Col[]; company?: CompanyInfo }) {
+export function SiteFooter({ columns, footer }: { columns?: Col[]; footer?: FooterContent | null }) {
+  const company = footer?.company
   const { t } = useLocale()
   // Footer columns from the CMS `navigation` global (falls back to static i18n).
   const fallback: Col[] = (['ingredients', 'solutions', 'company', 'support'] as const).map((key, c) => ({
@@ -76,17 +85,17 @@ export function SiteFooter({ columns, company }: { columns?: Col[]; company?: Co
           <div>
             <Image src="/logo.avif" alt="Bioscope" width={150} height={42} className="h-11 w-auto" />
             <p className="mt-4 max-w-md text-[13.5px] leading-relaxed text-ink/60">
-              {company?.name && <span className="font-semibold text-ink">{company.name} — </span>}
-              {t.footer.tagline}
+              {company?.companyName && <span className="font-semibold text-ink">{company.companyName} — </span>}
+              {company?.tagline || t.footer.tagline}
             </p>
 
             <div className="mt-5 space-y-3 text-[13px] leading-relaxed text-ink/65">
-              {company?.registeredAddress && (
+              {company?.address && (
                 <p className="flex items-start gap-2.5">
                   <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" strokeWidth={1.7} />
                   <span>
                     <span className="font-medium text-ink/80">{t.footer.company.registered}: </span>
-                    {company.registeredAddress}
+                    {company.address}
                   </span>
                 </p>
               )}
@@ -99,19 +108,19 @@ export function SiteFooter({ columns, company }: { columns?: Col[]; company?: Co
                   </span>
                 </p>
               )}
-              {company?.taxCode && (
+              {company?.mst && (
                 <p className="flex items-center gap-2.5">
                   <FileText className="h-4 w-4 shrink-0 text-primary" strokeWidth={1.7} />
                   <span>
                     <span className="font-medium text-ink/80">{t.footer.company.taxCode}: </span>
-                    {company.taxCode}
+                    {company.mst}
                   </span>
                 </p>
               )}
-              {company?.hotline && (
-                <a href={`tel:${company.hotline.replace(/\s+/g, '')}`} className="flex items-center gap-2.5 font-semibold text-ink transition-colors hover:text-primary">
+              {company?.phone && (
+                <a href={`tel:${company.phone.replace(/\s+/g, '')}`} className="flex items-center gap-2.5 font-semibold text-ink transition-colors hover:text-primary">
                   <Phone className="h-4 w-4 shrink-0 text-primary" strokeWidth={1.8} />
-                  {company.hotline}
+                  {company.phone}
                 </a>
               )}
               {company?.email && (
@@ -135,16 +144,21 @@ export function SiteFooter({ columns, company }: { columns?: Col[]; company?: Co
 
             {/* social */}
             <div className="mt-6 flex gap-2.5">
-              {SOCIAL.map(({ Icon, label }) => (
+              {(footer?.social ?? []).map(({ platform, url }) => {
+                const Icon = SOCIAL_ICON[platform ?? ''] ?? Globe
+                return (
                 <a
-                  key={label}
-                  href="#"
-                  aria-label={label}
+                  key={url}
+                  href={url}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  aria-label={platform ?? 'Liên kết'}
                   className="group grid h-9 w-9 place-items-center rounded-full border border-primary-border bg-white text-ink/55 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary hover:text-primary hover:shadow-md"
                 >
                   <Icon className="h-[17px] w-[17px] transition-transform group-hover:scale-110" strokeWidth={1.6} />
                 </a>
-              ))}
+                )
+              })}
             </div>
           </div>
 
@@ -156,9 +170,12 @@ export function SiteFooter({ columns, company }: { columns?: Col[]; company?: Co
 
           {/* Column 4 — newsletter */}
           <div>
-            <ColTitle>{t.footer.newsletter.title}</ColTitle>
-            <p className="mb-4 mt-4 text-[13px] leading-relaxed text-ink/60">{t.footer.newsletter.desc}</p>
-            <FooterNewsletter />
+            <ColTitle>{footer?.newsletter?.title || t.footer.newsletter.title}</ColTitle>
+            <p className="mb-4 mt-4 text-[13px] leading-relaxed text-ink/60">{footer?.newsletter?.description || t.footer.newsletter.desc}</p>
+            <FooterNewsletter
+              placeholder={footer?.newsletter?.placeholder}
+              buttonLabel={footer?.newsletter?.buttonLabel}
+            />
           </div>
         </div>
       </div>
@@ -166,7 +183,7 @@ export function SiteFooter({ columns, company }: { columns?: Col[]; company?: Co
       {/* ── Copyright + policy (dark anchor bar) ───────────────────────── */}
       <div className="relative bg-primary-dark text-white/70">
         <div className="container-bs flex flex-col items-center justify-between gap-2 py-5 text-[12.5px] sm:flex-row">
-          <span>{t.footer.copyright}</span>
+          <span>{footer?.copyright || t.footer.copyright}</span>
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
             <Link href="/chinh-sach-bao-mat" className="transition-colors hover:text-white">
               {t.footer.privacy}

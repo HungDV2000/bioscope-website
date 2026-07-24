@@ -43,19 +43,7 @@ export const Navigation: GlobalConfig = {
   fields: [
     navItems('header', 'Menu đầu trang'),
     navItems('footer', 'Menu chân trang'),
-    {
-      name: 'companyInfo',
-      label: 'Thông tin công ty (chân trang)',
-      type: 'group',
-      fields: [
-        { name: 'name', label: 'Tên công ty', type: 'text', localized: true },
-        { name: 'taxCode', label: 'Mã số thuế', type: 'text' },
-        { name: 'registeredAddress', label: 'Địa chỉ đăng ký kinh doanh', type: 'textarea', localized: true },
-        { name: 'officeAddress', label: 'Văn phòng', type: 'textarea', localized: true },
-        { name: 'hotline', label: 'Hotline', type: 'text' },
-        { name: 'email', label: 'Email', type: 'text' },
-        { name: 'website', label: 'Website', type: 'text' },
-      ],
-    },
+    // Thông tin công ty (tên, địa chỉ, MST, email…) ĐÃ CHUYỂN sang
+    // Site Settings → tab "Chân trang". Global này chỉ giữ MENU.
   ],
 }

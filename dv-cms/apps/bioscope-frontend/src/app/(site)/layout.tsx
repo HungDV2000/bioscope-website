@@ -1,5 +1,6 @@
 import { SiteHeader } from '@/components/site-header'
 import { SiteFooter } from '@/components/site-footer'
+import { getFooterContent } from '@/lib/cms/footer'
 import { LocaleProvider } from '@/lib/i18n/context'
 import { getMessages } from '@/lib/i18n/messages'
 import { getLocale } from '@/lib/i18n/server'
@@ -14,7 +15,9 @@ export default async function SiteLayout({
   const locale = await getLocale()
   const messages = getMessages(locale)
   // Header menu + footer columns from the CMS (falls back to static i18n).
-  const nav = await getNavigation(locale)
+  // Nội dung chân trang (thông tin công ty, bản tin, mạng xã hội) lấy riêng từ
+  // Site Settings — hai lời gọi chạy song song để không cộng dồn độ trễ.
+  const [nav, footer] = await Promise.all([getNavigation(locale), getFooterContent(locale)])
 
   const skipLabel = locale === 'en' ? 'Skip to main content' : 'Bỏ qua tới nội dung chính'
 
@@ -32,7 +35,7 @@ export default async function SiteLayout({
       <main id="main-content" className="min-h-[60vh]">
         {children}
       </main>
-      <SiteFooter columns={nav?.footerColumns} company={nav?.companyInfo} />
+      <SiteFooter columns={nav?.footerColumns} footer={footer} />
     </LocaleProvider>
   )
 }

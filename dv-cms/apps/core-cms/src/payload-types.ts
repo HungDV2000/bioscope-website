@@ -4696,21 +4696,50 @@ export interface SiteSetting {
   logo?: (number | null) | Media;
   logoDark?: (number | null) | Media;
   contact?: {
-    address?: string | null;
+    /**
+     * In đậm ở đầu khối chân trang. Vd: CÔNG TY CỔ PHẦN BIOSCOPE VIỆT NAM
+     */
+    companyName?: string | null;
+    /**
+     * Câu mô tả ngắn ngay sau tên công ty.
+     */
+    tagline?: string | null;
+    mst?: string | null;
     phone?: string | null;
     /**
-     * Email liên hệ chung, hiển thị công khai trên website.
+     * Hiện sau nhãn "ĐKKD:" ở chân trang.
+     */
+    address?: string | null;
+    /**
+     * Hiện sau nhãn "Văn phòng:". Bỏ trống thì không hiện dòng này.
+     */
+    officeAddress?: string | null;
+    /**
+     * Email liên hệ chung, hiển thị công khai.
      */
     email?: string | null;
     /**
-     * Email nhận hoá đơn điện tử / chứng từ kế toán. Tách riêng vì đây là địa chỉ nghiệp vụ, thường khác email liên hệ chung.
+     * Hoá đơn điện tử / chứng từ kế toán.
      */
     invoiceEmail?: string | null;
-    mst?: string | null;
+    website?: string | null;
   };
+  newsletter?: {
+    title?: string | null;
+    description?: string | null;
+    placeholder?: string | null;
+    buttonLabel?: string | null;
+  };
+  /**
+   * Bỏ trống để dùng mặc định.
+   */
+  copyright?: string | null;
   social?:
     | {
-        platform?: ('facebook' | 'linkedin' | 'youtube' | 'instagram' | 'zalo' | 'x' | 'tiktok') | null;
+        platform?: ('facebook' | 'linkedin' | 'youtube' | 'instagram' | 'zalo' | 'x' | 'tiktok' | 'website') | null;
+        /**
+         * Dán đầy đủ, vd https://facebook.com/bioscope
+         */
         url: string;
         id?: string | null;
       }[]
@@ -4765,15 +4794,6 @@ export interface Navigation {
         id?: string | null;
       }[]
     | null;
-  companyInfo?: {
-    name?: string | null;
-    taxCode?: string | null;
-    registeredAddress?: string | null;
-    officeAddress?: string | null;
-    hotline?: string | null;
-    email?: string | null;
-    website?: string | null;
-  };
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -5215,12 +5235,25 @@ export interface SiteSettingsSelect<T extends boolean = true> {
   contact?:
     | T
     | {
-        address?: T;
+        companyName?: T;
+        tagline?: T;
+        mst?: T;
         phone?: T;
+        address?: T;
+        officeAddress?: T;
         email?: T;
         invoiceEmail?: T;
-        mst?: T;
+        website?: T;
       };
+  newsletter?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        placeholder?: T;
+        buttonLabel?: T;
+      };
+  copyright?: T;
   social?:
     | T
     | {
@@ -5278,17 +5311,6 @@ export interface NavigationSelect<T extends boolean = true> {
               id?: T;
             };
         id?: T;
-      };
-  companyInfo?:
-    | T
-    | {
-        name?: T;
-        taxCode?: T;
-        registeredAddress?: T;
-        officeAddress?: T;
-        hotline?: T;
-        email?: T;
-        website?: T;
       };
   updatedAt?: T;
   createdAt?: T;

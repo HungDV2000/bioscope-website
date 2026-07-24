@@ -11,7 +11,14 @@ const isEmail = (v: string) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)
  * the "Newsletter" form title (resolved to a Payload form on the CMS side). Falls
  * back to a friendly error if the form isn't configured yet.
  */
-export function FooterNewsletter() {
+export function FooterNewsletter({
+  placeholder,
+  buttonLabel,
+}: {
+  /** Ghi đè từ CMS (Site Settings → Chân trang). Bỏ trống thì dùng bản dịch tĩnh. */
+  placeholder?: string
+  buttonLabel?: string
+} = {}) {
   const { t } = useLocale()
   const n = t.footer.newsletter
   const [email, setEmail] = useState('')
@@ -54,8 +61,8 @@ export function FooterNewsletter() {
             setEmail(e.target.value)
             if (status === 'error') setStatus('idle')
           }}
-          placeholder={n.placeholder}
-          aria-label={n.placeholder}
+          placeholder={placeholder || n.placeholder}
+          aria-label={placeholder || n.placeholder}
           className="w-full rounded-xl border border-primary-border bg-white px-4 py-3 text-[14px] text-ink shadow-sm transition-colors placeholder:text-ink/40 focus:border-primary focus:outline-none"
         />
         {/* Honeypot: hidden from real users. */}
@@ -78,7 +85,7 @@ export function FooterNewsletter() {
           ) : (
             <Send className="h-4 w-4" strokeWidth={2} />
           )}
-          {n.cta}
+          {buttonLabel || n.cta}
         </button>
       </div>
       {status === 'error' && <p className="mt-2 text-[12.5px] text-red-500">{n.error}</p>}

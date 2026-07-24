@@ -28,7 +28,23 @@ export const SiteSettings: GlobalConfig = {
       fields: [
         { name: 'address', type: 'textarea', localized: true },
         { name: 'phone', type: 'text' },
-        { name: 'email', type: 'text' },
+        {
+          name: 'email',
+          type: 'text',
+          label: { en: 'Email', vi: 'Email' },
+          admin: {
+            description: 'Email liên hệ chung, hiển thị công khai trên website.',
+          },
+        },
+        {
+          name: 'invoiceEmail',
+          type: 'text',
+          label: { en: 'Invoice email', vi: 'Email nhận hoá đơn' },
+          admin: {
+            description:
+              'Email nhận hoá đơn điện tử / chứng từ kế toán. Tách riêng vì đây là địa chỉ nghiệp vụ, thường khác email liên hệ chung.',
+          },
+        },
         { name: 'mst', type: 'text', label: 'Mã số thuế' },
       ],
     },

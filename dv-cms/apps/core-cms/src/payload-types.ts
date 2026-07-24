@@ -4626,7 +4626,14 @@ export interface SiteSetting {
   contact?: {
     address?: string | null;
     phone?: string | null;
+    /**
+     * Email liên hệ chung, hiển thị công khai trên website.
+     */
     email?: string | null;
+    /**
+     * Email nhận hoá đơn điện tử / chứng từ kế toán. Tách riêng vì đây là địa chỉ nghiệp vụ, thường khác email liên hệ chung.
+     */
+    invoiceEmail?: string | null;
     mst?: string | null;
   };
   social?:
@@ -5139,6 +5146,7 @@ export interface SiteSettingsSelect<T extends boolean = true> {
         address?: T;
         phone?: T;
         email?: T;
+        invoiceEmail?: T;
         mst?: T;
       };
   social?:

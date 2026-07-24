@@ -918,24 +918,24 @@ function buildContentUserPrompt(
 ## FILE ĐÍNH KÈM TỪ GOOGLE DRIVE
 ${fileList}
 
-## NỘI DUNG TRÍCH XUẤT TỪ TDS/PDF
----
-${driveFileContents || 'Không có nội dung trích xuất dạng text'}
----
-${attachments.length ? `
-## FILE ĐÍNH KÈM TRỰC TIẾP (${attachments.length})
+${attachments.length ? `## TÀI LIỆU ĐÍNH KÈM (${attachments.length}) — NGUỒN DỮ LIỆU CHÍNH
 ${attachments.map((a) => `- ${a.filename}`).join('\n')}
 
-Các file trên được đính kèm NGUYÊN BẢN ở đầu tin nhắn này — hãy ĐỌC TRỰC TIẾP
-từ trang tài liệu, đây là nguồn ĐÁNG TIN NHẤT.
-
-Phần "NỘI DUNG TRÍCH XUẤT" ở trên là text máy bóc ra từ cùng những file này;
-nó chính xác về mặt KÝ TỰ nhưng ĐÃ MẤT CẤU TRÚC BẢNG (mọi ô bị nối thành một
-dòng). Khi hai nguồn mâu thuẫn, TIN VÀO FILE ĐÍNH KÈM.
+Các file trên được đính kèm NGUYÊN BẢN ở đầu tin nhắn này. Hãy ĐỌC TRỰC TIẾP
+từ trang tài liệu — đây là nguồn duy nhất và đáng tin nhất.
 
 Đọc kỹ các BẢNG thông số: chép đúng từng chữ số, đơn vị và dấu (≤ ≥ ±), và
 ghép đúng giá trị với đúng chỉ tiêu theo hàng/cột. Giá trị nào mờ hoặc không
 chắc thì BỎ TRỐNG, không đoán.
+` : ''}${driveFileContents ? `
+## NỘI DUNG DẠNG TEXT
+---
+${driveFileContents}
+---
+` : ''}${!attachments.length && !driveFileContents ? `
+## KHÔNG CÓ TÀI LIỆU
+Không đọc được tài liệu nào. Chỉ viết phần BIÊN TẬP dựa trên tên nguyên liệu;
+BỎ TRỐNG toàn bộ specs, technical, regulatory, pricing.
 ` : ''}
 `
 }

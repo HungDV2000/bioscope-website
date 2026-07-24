@@ -182,11 +182,15 @@ async function downloadDriveFile(
 ): Promise<{ buffer: Buffer; detectedType: FileType } | { error: string }> {
   const detectedType = detectFileType(file.mimeType, file.fileName)
 
-  // Google Docs/Sheets/Slides → export
+  // Google Docs/Sheets/Slides → export ra PDF (KHÔNG phải text).
+  //
+  // OpenAI chỉ nhận PDF ở ô `file`, nên export ra text/plain thì không đính kèm
+  // được và buộc phải gửi text — mất bố cục, đúng thứ ta đang tránh. Export ra
+  // PDF giữ nguyên bảng, danh sách, và bảng giá theo bậc trong file "Mô tả".
   const exportAs: Partial<Record<FileType, string>> = {
-    google_doc: 'text/plain',
-    google_sheet: 'text/csv',
-    google_slide: 'text/plain',
+    google_doc: 'application/pdf',
+    google_sheet: 'application/pdf',
+    google_slide: 'application/pdf',
   }
   const exportMime = exportAs[detectedType]
   if (exportMime) {
@@ -251,6 +255,11 @@ async function extractTextFromFile(
   const { buffer, detectedType } = downloaded
 
   switch (detectedType) {
+    // google_doc/sheet/slide đã được export ra PDF ở downloadDriveFile, nên
+    // buffer của chúng LÀ PDF — dùng chung đường xử lý với PDF thật.
+    case 'google_doc':
+    case 'google_sheet':
+    case 'google_slide':
     case 'pdf_text': {
       // ĐÍNH KÈM MỌI PDF, kể cả loại có lớp text.
       //
@@ -270,11 +279,15 @@ async function extractTextFromFile(
 
       const attached = tryAttach(attachments, file.fileName, buffer, logs)
       if (attached) {
-        if (text.trim()) {
-          addLog(logs, 'info', `PDF "${file.fileName}": đính kèm nguyên bản + ${text.trim().length} ký tự lớp text`)
-          return text
-        }
-        addLog(logs, 'info', `PDF "${file.fileName}" là bản scan — đính kèm nguyên bản để AI tự đọc`)
+        // KHÔNG gửi kèm text nữa. Text pdfjs đã bị .join(' ') làm phẳng bảng,
+        // gửi thêm chỉ tạo một nguồn thứ hai kém tin cậy để model phân vân —
+        // và tốn token vô ích. File đính kèm là nguồn duy nhất.
+        addLog(
+          logs,
+          'info',
+          `"${file.fileName}" — đính kèm nguyên bản cho AI tự đọc` +
+            (text.trim() ? ` (bỏ ${text.trim().length} ký tự text phẳng)` : ' (bản scan)'),
+        )
         return ''
       }
 
@@ -315,7 +328,6 @@ async function extractTextFromFile(
       return await extractTextFromImageUsingVision(buffer, file.fileName, usage)
     }
 
-    case 'google_doc':
     case 'text': {
       // Try UTF-8, fallback to Latin-1
       let text = buffer.toString('utf8')
@@ -325,13 +337,8 @@ async function extractTextFromFile(
       return text
     }
 
-    case 'google_sheet':
     case 'csv': {
       // CSV → simple text extraction, keep structure
-      return buffer.toString('utf8')
-    }
-
-    case 'google_slide': {
       return buffer.toString('utf8')
     }
 

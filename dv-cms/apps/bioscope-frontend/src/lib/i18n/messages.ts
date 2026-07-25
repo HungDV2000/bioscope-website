@@ -27,7 +27,7 @@ export type Messages = {
     copyright: string
     privacy: string
     terms: string
-    company: { taxCode: string; registered: string; office: string }
+    company: { taxCode: string; registered: string; office: string; email: string; invoiceEmail: string }
     newsletter: { title: string; desc: string; placeholder: string; cta: string; success: string; error: string }
   }
   home: {
@@ -194,7 +194,7 @@ const vi: Messages = {
     copyright: '© 2026 Bioscope. Bảo lưu mọi quyền.',
     privacy: 'Chính sách bảo mật',
     terms: 'Điều khoản sử dụng',
-    company: { taxCode: 'MST', registered: 'ĐKKD', office: 'Văn phòng' },
+    company: { taxCode: 'MST', registered: 'ĐKKD', office: 'Văn phòng', email: 'Email', invoiceEmail: 'Email hoá đơn' },
     newsletter: {
       title: 'Đăng ký nhận bản tin',
       desc: 'Cập nhật nguyên liệu mới, xu hướng R&D và tài liệu kỹ thuật — gửi thẳng đến hộp thư của bạn.',
@@ -427,7 +427,7 @@ const en: Messages = {
     copyright: '© 2026 Bioscope. All rights reserved.',
     privacy: 'Privacy policy',
     terms: 'Terms of use',
-    company: { taxCode: 'Tax code', registered: 'Business reg.', office: 'Office' },
+    company: { taxCode: 'Tax code', registered: 'Business reg.', office: 'Office', email: 'Email', invoiceEmail: 'Invoice email' },
     newsletter: {
       title: 'Subscribe to our newsletter',
       desc: 'Get updates on new ingredients, R&D trends and technical resources — straight to your inbox.',

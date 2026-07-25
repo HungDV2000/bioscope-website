@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { Globe, MessageCircle, Share2, Send, Phone, Mail, MapPin, ChevronRight, FileText } from 'lucide-react'
+import { Globe, MessageCircle, Share2, Send, Phone, Mail, MailCheck, MapPin, ChevronRight, FileText } from 'lucide-react'
 import { useLocale } from '@/lib/i18n/context'
 import { FooterNewsletter } from '@/components/footer-newsletter'
 import type { FooterContent } from '@/lib/cms/footer'
@@ -126,7 +126,19 @@ export function SiteFooter({ columns, footer }: { columns?: Col[]; footer?: Foot
               {company?.email && (
                 <a href={`mailto:${company.email}`} className="flex items-center gap-2.5 transition-colors hover:text-primary">
                   <Mail className="h-4 w-4 shrink-0 text-primary" strokeWidth={1.8} />
-                  {company.email}
+                  <span>
+                    <span className="font-medium text-ink/80">{t.footer.company.email}: </span>
+                    {company.email}
+                  </span>
+                </a>
+              )}
+              {company?.invoiceEmail && (
+                <a href={`mailto:${company.invoiceEmail}`} className="flex items-center gap-2.5 transition-colors hover:text-primary">
+                  <MailCheck className="h-4 w-4 shrink-0 text-primary" strokeWidth={1.8} />
+                  <span>
+                    <span className="font-medium text-ink/80">{t.footer.company.invoiceEmail}: </span>
+                    {company.invoiceEmail}
+                  </span>
                 </a>
               )}
               {company?.website && (

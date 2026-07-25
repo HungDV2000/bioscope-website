@@ -308,15 +308,17 @@ export function Catalog({ items, imageSeed }: { items: Ingredient[]; imageSeed: 
           </div>
 
           <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-            <p className="text-[13.5px] font-medium text-ink/50">
-              {filtered.length} {cat.ingredientsUnit}
+            <div className="flex items-center gap-2.5 text-[13.5px]">
+              <span className="inline-flex items-baseline gap-1 rounded-full bg-primary-tint px-3 py-1 font-semibold text-primary-dark">
+                <span className="text-[15px] font-bold">{filtered.length.toLocaleString('vi-VN')}</span>
+                {cat.ingredientsUnit}
+              </span>
               {filtered.length > PAGE_SIZE && (
-                <span className="text-ink/40">
-                  {' '}
-                  · {cat.pageOf} {safePage}/{totalPages}
+                <span className="text-ink/45">
+                  {cat.pageOf} <span className="font-semibold text-ink/70">{safePage}</span>/{totalPages}
                 </span>
               )}
-            </p>
+            </div>
           </div>
 
           <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">

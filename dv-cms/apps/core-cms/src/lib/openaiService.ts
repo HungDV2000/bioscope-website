@@ -36,7 +36,7 @@ let _client: OpenAI | null = null
  */
 const OPENAI_TIMEOUT_MS = Number(process.env.OPENAI_TIMEOUT_MS ?? 180_000)
 /** Retries per call. Worst case queue occupancy = TIMEOUT × (1 + retries). */
-const OPENAI_MAX_RETRIES = Number(process.env.OPENAI_MAX_RETRIES ?? 1)
+const OPENAI_MAX_RETRIES = Number(process.env.OPENAI_MAX_RETRIES ?? 2)
 
 export function getOpenAIClient(): OpenAI {
   if (_client) return _client
@@ -543,40 +543,57 @@ export async function generateIngredientContent(
   const client = getOpenAIClient()
 
   const systemPrompt = buildContentSystemPrompt()
-  const userPrompt = buildContentUserPrompt(ingredientData, driveFileContents, attachments)
 
-  // PDF scan đi THẲNG vào lời gọi này thay vì OCR ra text trước. OpenAI gửi cho
-  // model cả text trích được LẪN ảnh từng trang, nên model tự đọc bảng trên
-  // trang giấy gốc. Bỏ được bước chép lại — nơi một chữ số đọc nhầm sẽ trôi
-  // xuống mà không ai phát hiện, vì model chỉ thấy bản chép chứ không thấy bản gốc.
-  const userContent: ChatCompletionContentPart[] = [
-    ...attachments.map(toContentPart),
-    { type: 'text', text: userPrompt },
-  ]
-
-  try {
+  /**
+   * Một lượt gọi model. Tách hàm để có thể gọi lại KHÔNG kèm file khi lần đầu
+   * lỗi — một PDF hỏng/khó xử có thể khiến OpenAI trả 500, và trước đây bỏ trích
+   * text nên không còn gì để lùi về ⇒ job mất trắng. Lùi về "chỉ tên" vẫn hơn
+   * là không có gì.
+   */
+  const callOnce = async (withAttachments: boolean) => {
+    const userPrompt = buildContentUserPrompt(
+      ingredientData,
+      driveFileContents,
+      withAttachments ? attachments : [],
+    )
+    const userContent: ChatCompletionContentPart[] = [
+      ...attachments.map(toContentPart),
+      { type: 'text', text: userPrompt },
+    ]
     const completion = await client.chat.completions.create({
       model: CONTENT_MODEL,
       messages: [
         { role: 'system', content: systemPrompt },
-        // Chỉ dùng mảng content khi có file — chuỗi thuần giữ prompt gọn và
-        // tránh khác biệt không cần thiết cho trường hợp phổ biến nhất.
-        { role: 'user', content: attachments.length ? userContent : userPrompt },
+        { role: 'user', content: withAttachments && attachments.length ? userContent : userPrompt },
       ],
       response_format: { type: 'json_object' },
       ...completionParams(CONTENT_MODEL, 8192, 0.3),
     })
-
     recordUsage(usage, 'content', completion.usage)
-
     const raw = completion.choices[0]?.message?.content
-    if (!raw) return { ok: false, error: 'No response from OpenAI' }
+    if (!raw) throw new Error('No response from OpenAI')
+    return normalizeGenerated(JSON.parse(raw))
+  }
 
-    const parsed = normalizeGenerated(JSON.parse(raw))
+  try {
+    let parsed: GeneratedContent
+    try {
+      parsed = await callOnce(attachments.length > 0)
+    } catch (firstErr) {
+      // Lỗi máy chủ (5xx) hoặc lỗi khác khi CÓ file đính kèm → thử lại KHÔNG kèm
+      // file. Nếu không có file thì ném tiếp cho khối catch ngoài xử lý.
+      const m = firstErr instanceof Error ? firstErr.message : String(firstErr)
+      const retriable = /\b5\d\d\b/.test(m) || m.includes('server had an error')
+      if (attachments.length && retriable) {
+        parsed = await callOnce(false)
+      } else {
+        throw firstErr
+      }
+    }
 
     // Only hard-fail if there is essentially no usable text at all.
     if (!parsed.subtitle?.vi && !parsed.description?.vi) {
-      return { ok: false, error: `AI trả JSON không có subtitle/description: ${raw.slice(0, 600)}` }
+      return { ok: false, error: 'AI không trả về subtitle/description.' }
     }
 
     return { ok: true, content: parsed }
@@ -584,6 +601,9 @@ export async function generateIngredientContent(
     const msg = err instanceof Error ? err.message : String(err)
     if (msg.includes('context_length_exceeded')) {
       return { ok: false, error: 'Nội dung Drive quá dài. Hãy cắt bớt file PDF trước khi thử lại.' }
+    }
+    if (/\b5\d\d\b/.test(msg) || msg.includes('server had an error')) {
+      return { ok: false, error: `OpenAI đang lỗi máy chủ (5xx) — thử chạy lại sau ít phút. Chi tiết: ${msg}` }
     }
     return { ok: false, error: `OpenAI error: ${msg}` }
   }

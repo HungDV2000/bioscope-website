@@ -312,6 +312,30 @@ function completionParams(model: string, maxTokens: number, temperature: number)
 }
 
 /**
+ * Bòn CHI TIẾT lỗi từ OpenAI SDK. `.message` thường chỉ là câu chung chung; các
+ * trường status/type/code/param mới nói được nguyên nhân thật (vd param sai,
+ * model không hỗ trợ input). Không có chúng thì lỗi 500 không thể chẩn đoán.
+ */
+function openaiErrorDetail(err: unknown): string {
+  const e = err as {
+    status?: number
+    code?: string | null
+    type?: string
+    param?: string | null
+    message?: string
+    error?: { message?: string; type?: string; code?: string; param?: string }
+  }
+  const parts = [
+    e?.status != null && `status=${e.status}`,
+    (e?.type || e?.error?.type) && `type=${e.type ?? e.error?.type}`,
+    (e?.code || e?.error?.code) && `code=${e.code ?? e.error?.code}`,
+    (e?.param || e?.error?.param) && `param=${e.param ?? e.error?.param}`,
+  ].filter(Boolean)
+  const msg = e?.error?.message || e?.message || String(err)
+  return parts.length ? `${msg} [${parts.join(' ')}]` : msg
+}
+
+/**
  * Coerce the model's JSON into the GeneratedContent shape. Different models
  * (gpt-4o vs gpt-5.6) vary: a bilingual field may come back as a plain string,
  * and list fields may be missing or contain objects. Normalize so downstream
@@ -575,16 +599,21 @@ export async function generateIngredientContent(
     return normalizeGenerated(JSON.parse(raw))
   }
 
+  const isServerErr = (err: unknown) => {
+    const status = (err as { status?: number })?.status
+    if (typeof status === 'number') return status >= 500
+    const m = err instanceof Error ? err.message : String(err)
+    return /\b5\d\d\b/.test(m) || m.includes('server had an error')
+  }
+
   try {
     let parsed: GeneratedContent
     try {
       parsed = await callOnce(attachments.length > 0)
     } catch (firstErr) {
-      // Lỗi máy chủ (5xx) hoặc lỗi khác khi CÓ file đính kèm → thử lại KHÔNG kèm
-      // file. Nếu không có file thì ném tiếp cho khối catch ngoài xử lý.
-      const m = firstErr instanceof Error ? firstErr.message : String(firstErr)
-      const retriable = /\b5\d\d\b/.test(m) || m.includes('server had an error')
-      if (attachments.length && retriable) {
+      // Lỗi máy chủ (5xx) khi CÓ file đính kèm → thử lại KHÔNG kèm file (một PDF
+      // khó xử có thể làm server 500). Không có file thì ném tiếp ra ngoài.
+      if (attachments.length && isServerErr(firstErr)) {
         parsed = await callOnce(false)
       } else {
         throw firstErr
@@ -598,14 +627,20 @@ export async function generateIngredientContent(
 
     return { ok: true, content: parsed }
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
-    if (msg.includes('context_length_exceeded')) {
+    const detail = openaiErrorDetail(err)
+    // Kèm model + số file để phân biệt lỗi do request (sai param/model không hỗ
+    // trợ input) với lỗi máy chủ thực sự.
+    const ctx = `model=${CONTENT_MODEL} attachments=${attachments.length}`
+    if (detail.includes('context_length_exceeded')) {
       return { ok: false, error: 'Nội dung Drive quá dài. Hãy cắt bớt file PDF trước khi thử lại.' }
     }
-    if (/\b5\d\d\b/.test(msg) || msg.includes('server had an error')) {
-      return { ok: false, error: `OpenAI đang lỗi máy chủ (5xx) — thử chạy lại sau ít phút. Chi tiết: ${msg}` }
+    if (isServerErr(err)) {
+      return {
+        ok: false,
+        error: `OpenAI lỗi máy chủ (5xx). Nếu lặp lại nhiều lần thì KHÔNG phải lỗi thoáng qua — kiểm tra model có hỗ trợ input này không. ${ctx} · ${detail}`,
+      }
     }
-    return { ok: false, error: `OpenAI error: ${msg}` }
+    return { ok: false, error: `OpenAI error (${ctx}): ${detail}` }
   }
 }
 

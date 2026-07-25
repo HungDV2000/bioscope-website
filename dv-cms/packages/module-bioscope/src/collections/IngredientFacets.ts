@@ -19,6 +19,9 @@ import type { CollectionConfig } from 'payload'
 import { anyone, isAdminOrEditor, slugField } from '@dv/cms-core'
 
 export const FACET_GROUPS = [
+  // 'primary' = danh mục chính (dùng cho card trang chủ + lọc cấp cao nhất).
+  // Mỗi nguyên liệu gắn 1 hoặc nhiều. "Nguyên liệu mới" là catch-all.
+  { label: { en: 'Primary category', vi: 'Danh mục chính' }, value: 'primary' },
   { label: { en: 'Function / benefit', vi: 'Công dụng' }, value: 'function' },
   { label: { en: 'Ingredient class', vi: 'Bản chất nguyên liệu' }, value: 'nature' },
   { label: { en: 'Physical form', vi: 'Dạng bào chế' }, value: 'form' },

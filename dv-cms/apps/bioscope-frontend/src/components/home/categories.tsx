@@ -21,7 +21,11 @@ const IMAGE_SRCS = [
 export function Categories({ media }: { media?: SectionMedia }) {
   const { t } = useLocale()
   const c = t.home.categories
-  const featuredHref = media?.featured?.href ?? '/nguyen-lieu'
+  // Mỗi card link sang trang nguyên liệu, lọc sẵn theo danh mục chính trùng tên
+  // card (facet name khớp theo cùng ngôn ngữ). CMS vẫn ghi đè được qua media.href.
+  const catHref = (name: string, cmsHref?: string) =>
+    cmsHref ?? `/nguyen-lieu?primary=${encodeURIComponent(name)}`
+  const featuredHref = catHref(c.featured.name, media?.featured?.href)
 
   return (
     <section className="bg-white py-14">
@@ -67,7 +71,7 @@ export function Categories({ media }: { media?: SectionMedia }) {
           <div className="grid h-full gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {c.items.map(({ name, desc }, i) => {
               const itemImg = media?.items?.[i]?.image ?? IMAGE_SRCS[i] ?? img(IMAGE_KEYS[i], 420)
-              const itemHref = media?.items?.[i]?.href ?? '/nguyen-lieu'
+              const itemHref = catHref(name, media?.items?.[i]?.href)
               return (
               <Reveal key={name} delay={i * 0.07} className="h-full">
                 <Link

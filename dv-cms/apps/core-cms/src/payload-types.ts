@@ -1767,7 +1767,7 @@ export interface IngredientFacet {
   /**
    * Quyết định thẻ này xuất hiện ở bộ lọc nào trên web.
    */
-  group: 'function' | 'nature' | 'form' | 'property';
+  group: 'primary' | 'function' | 'nature' | 'form' | 'property';
   /**
    * Số nhỏ hiện trước.
    */
@@ -1866,6 +1866,10 @@ export interface Ingredient {
    * Ứng dụng / dạng bào chế.
    */
   applications?: string[] | null;
+  /**
+   * BẮT BUỘC — Chiết xuất thực vật, Omega & dầu cá, Lợi khuẩn, Hoạt chất công nghệ cao, hoặc Nguyên liệu mới. Dùng cho card trang chủ và lọc chính. Gắn 1 hoặc nhiều.
+   */
+  primaries?: (number | IngredientFacet)[] | null;
   /**
    * Miễn dịch, Tim mạch, Não bộ, Xương khớp… — quản lý ở mục "Thẻ lọc nguyên liệu".
    */
@@ -4149,6 +4153,7 @@ export interface IngredientsSelect<T extends boolean = true> {
   description?: T;
   benefits?: T;
   applications?: T;
+  primaries?: T;
   functions?: T;
   natures?: T;
   forms?: T;

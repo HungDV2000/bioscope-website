@@ -131,7 +131,7 @@ export type GeneratedContent = {
   research?: GeneratedResearch
   pricing?: GeneratedPricing
   /** Thẻ lọc — AI chọn theo TÊN, worker đối chiếu sang id. Không được bịa tên mới. */
-  facets?: { functions?: string[]; natures?: string[]; forms?: string[]; properties?: string[] }
+  facets?: { primaries?: string[]; functions?: string[]; natures?: string[]; forms?: string[]; properties?: string[] }
   seoTitle?: LocalizedText
   seoDescription?: LocalizedText
   imagePrompt: LocalizedText
@@ -433,6 +433,7 @@ function normalizeGenerated(raw: unknown): GeneratedContent {
 
   const fc = groupOf('facets')
   const facets = {
+    primaries: list(fc.primaries),
     functions: list(fc.functions),
     natures: list(fc.natures),
     forms: list(fc.forms),
@@ -889,6 +890,7 @@ Trả về JSON với format sau (VIẾT ĐẦY ĐỦ cả 2 ngôn ngữ):
   },
   "facets": {
     "_comment": "Thẻ để LỌC trên web. CHỈ chọn tên có trong 'THẺ LỌC KHẢ DỤNG' ở trên, chép chính xác. Không có thẻ phù hợp thì để mảng rỗng.",
+    "primaries": ["<BẮT BUỘC ít nhất 1 danh mục chính. Nếu không thuộc Chiết xuất thực vật/Omega & dầu cá/Lợi khuẩn/Hoạt chất công nghệ cao thì chọn 'Nguyên liệu mới'>"],
     "functions": ["<công dụng, chọn 1-3 thẻ sát nhất>"],
     "natures": ["<bản chất nguyên liệu, thường 1-2 thẻ>"],
     "forms": ["<dạng bào chế theo tài liệu, thường 1 thẻ>"],

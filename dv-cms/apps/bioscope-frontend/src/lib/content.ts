@@ -15,6 +15,7 @@ export type Ingredient = {
    * sinh từ thư mục Drive nên lẫn thư mục NCC và rác — không lọc được.
    */
   facets?: {
+    primaries: string[]
     functions: string[]
     natures: string[]
     forms: string[]

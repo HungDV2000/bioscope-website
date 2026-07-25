@@ -209,6 +209,18 @@ export const Ingredients: CollectionConfig = {
     // thư mục Drive nên lẫn thư mục NCC và rác test). `filterOptions` khiến mỗi
     // ô chỉ cho chọn thẻ đúng nhóm của nó, nên biên tập viên không chọn nhầm.
     {
+      name: 'primaries',
+      type: 'relationship',
+      relationTo: 'ingredient-facets',
+      hasMany: true,
+      label: { en: 'Primary categories', vi: 'Danh mục chính' },
+      filterOptions: () => ({ group: { equals: 'primary' } }),
+      admin: {
+        description:
+          'BẮT BUỘC — Chiết xuất thực vật, Omega & dầu cá, Lợi khuẩn, Hoạt chất công nghệ cao, hoặc Nguyên liệu mới. Dùng cho card trang chủ và lọc chính. Gắn 1 hoặc nhiều.',
+      },
+    },
+    {
       name: 'functions',
       type: 'relationship',
       relationTo: 'ingredient-facets',

@@ -361,6 +361,7 @@ const vi: PageExtras = {
     nextPage: 'Trang sau',
     close: 'Đóng',
     filters: {
+      primary: 'Danh mục chính',
       function: 'Công dụng',
       nature: 'Bản chất nguyên liệu',
       property: 'Đặc tính kỹ thuật',
@@ -616,6 +617,7 @@ const en: PageExtras = {
     nextPage: 'Next page',
     close: 'Close',
     filters: {
+      primary: 'Primary category',
       function: 'Function / benefit',
       nature: 'Ingredient class',
       property: 'Technical property',

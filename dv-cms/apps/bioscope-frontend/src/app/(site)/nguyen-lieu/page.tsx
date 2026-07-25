@@ -32,16 +32,7 @@ export default async function IngredientsPage() {
           <Reveal>
             <h2 className="text-[1.5rem] font-bold text-ink sm:text-[1.75rem]">{intro.title}</h2>
             <p className="mt-4 max-w-3xl text-[14.5px] leading-relaxed text-ink/65">{intro.description}</p>
-            <div className="mt-5 flex flex-wrap gap-2">
-              {intro.quickFilters.map((f) => (
-                <span
-                  key={f}
-                  className="rounded-full border border-primary-border bg-white px-3.5 py-1.5 text-[12.5px] font-medium text-ink/60"
-                >
-                  {f}
-                </span>
-              ))}
-            </div>
+
           </Reveal>
         </div>
       </section>

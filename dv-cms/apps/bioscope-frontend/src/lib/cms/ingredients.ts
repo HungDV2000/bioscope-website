@@ -24,6 +24,7 @@ type IngredientDoc = {
   applications?: string[]
   badges?: string[]
   featuredImage?: { url?: string } | null
+  primaries?: FacetRef[] | null
   functions?: FacetRef[] | null
   natures?: FacetRef[] | null
   forms?: FacetRef[] | null
@@ -110,6 +111,7 @@ function toIngredient(d: IngredientDoc, locale: Locale): Ingredient {
     image: 'powder',
     imageSrc: mediaUrl(d.featuredImage?.url) ?? undefined,
     facets: {
+      primaries: facetNames(d.primaries, pick),
       functions: facetNames(d.functions, pick),
       natures: facetNames(d.natures, pick),
       forms: facetNames(d.forms, pick),
@@ -184,6 +186,7 @@ const LIST_SELECT = [
   'featuredImage',
   'specs',
   // Thẻ lọc — bắt buộc có trong select, nếu không bộ lọc trên web sẽ rỗng.
+  'primaries',
   'functions',
   'natures',
   'forms',

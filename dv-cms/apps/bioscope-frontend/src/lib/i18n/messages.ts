@@ -251,10 +251,10 @@ const vi: Messages = {
         cta: 'Khám phá ngay',
       },
       items: [
-        { name: 'Omega & dầu cá', desc: 'Hỗ trợ tim mạch, não bộ, lựa sức khỏe toàn diện.' },
-        { name: 'Nấm dược liệu', desc: 'Tăng cường miễn dịch, bảo vệ và phục hồi cơ thể.' },
-        { name: 'Hoạt chất công nghệ cao', desc: 'Hiệu quả vượt trội, ứng dụng đa dạng.' },
-        { name: 'Axit amin & vitamin', desc: 'Nền tảng cho sức khỏe và hiệu suất tối ưu.' },
+        { name: 'Omega & dầu cá', desc: 'Hỗ trợ phát triển thai nhi, trẻ em, giảm nguy cơ tim mạch, huyết áp và bệnh mãn tính ở người lớn.' },
+        { name: 'Lợi khuẩn', desc: 'Tái tạo hệ vi khuẩn cộng sinh khoẻ mạnh, chống lại nhiều căn bệnh mãn tính.' },
+        { name: 'Hoạt chất công nghệ cao', desc: 'Ứng dụng đa dạng, hiệu quả vượt trội.' },
+        { name: 'Nguyên liệu mới', desc: 'Nguyên liệu mới độc đáo khác.' },
       ],
     },
     certifications: {
@@ -479,15 +479,15 @@ const en: Messages = {
         '100+ high-performance ingredients — pharmaceuticals, nutraceuticals, cosmetics. Full TDS, COA, samples available.',
       viewAll: 'View all ingredients',
       featured: {
-        name: 'Botanical extracts',
+        name: 'Botanical extract',
         desc: 'Natural origin with scientifically proven efficacy.',
         cta: 'Explore now',
       },
       items: [
-        { name: 'Omega & fish oils', desc: 'Cardiovascular, brain, and whole-body wellness support.' },
-        { name: 'Medicinal mushrooms', desc: 'Immune support, protection, and recovery.' },
-        { name: 'High-tech actives', desc: 'Superior efficacy, diverse applications.' },
-        { name: 'Amino acids & vitamins', desc: 'Foundation for health and peak performance.' },
+        { name: 'Omega & fish oil', desc: 'Supports fetal and child development; lowers cardiovascular, blood pressure and chronic-disease risk in adults.' },
+        { name: 'Probiotics', desc: 'Rebuilds a healthy symbiotic microbiome to fight many chronic conditions.' },
+        { name: 'High-tech actives', desc: 'Diverse applications, superior efficacy.' },
+        { name: 'New ingredients', desc: 'Other unique new materials.' },
       ],
     },
     certifications: {

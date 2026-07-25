@@ -28,6 +28,20 @@ type Seed = { name: string; en: string; group: string; keywords: string[]; order
  * (khảo sát dữ liệu thật). Không phân biệt hoa thường / dấu tiếng Việt.
  */
 const SEEDS: Seed[] = [
+  // ── Danh mục chính (bắt buộc, dùng cho card trang chủ + lọc cấp cao) ───────
+  // "Nguyên liệu mới" là CATCH-ALL: script backfill gán nó cho nguyên liệu
+  // không khớp 4 danh mục kia (xử lý riêng ở cuối, không dựa vào keywords).
+  { name: 'Chiết xuất thực vật', en: 'Botanical extract', group: 'primary', order: 10,
+    keywords: ['chiết xuất', 'extract', 'thảo dược', 'botanical', 'herbal', 'dịch chiết', 'cao khô', 'flower', 'leaf', 'root', 'hoa', 'lá', 'rễ'] },
+  { name: 'Omega & dầu cá', en: 'Omega & fish oil', group: 'primary', order: 20,
+    keywords: ['omega', 'dầu cá', 'fish oil', 'dha', 'epa', 'krill', 'vivomega', 'triglyceride', 'cá hồi', 'salmon'] },
+  { name: 'Lợi khuẩn', en: 'Probiotics', group: 'primary', order: 30,
+    keywords: ['lợi khuẩn', 'probiotic', 'men vi sinh', 'lactobacillus', 'bifido', 'bào tử', 'postbiotic', 'prebiotic'] },
+  { name: 'Hoạt chất công nghệ cao', en: 'High-tech actives', group: 'primary', order: 40,
+    keywords: ['nano', 'liposome', 'phytosome', 'vi bao', 'microencapsul', 'công nghệ', 'peptide', 'ucii', 'uc-ii', 'chuẩn hoá', 'standardized'] },
+  { name: 'Nguyên liệu mới', en: 'New ingredients', group: 'primary', order: 50,
+    keywords: [] },
+
   // ── Công dụng ─────────────────────────────────────────────────────────────
   { name: 'Miễn dịch & kháng viêm', en: 'Immunity & anti-inflammatory', group: 'function', order: 10,
     keywords: ['miễn dịch', 'immune', 'immuno', 'beta glucan', 'beta-glucan', 'kháng viêm', 'anti-inflam', 'echinacea', 'elderberry'] },
@@ -200,12 +214,18 @@ async function main() {
       patterns: (f.keywords ?? []).map((k) => norm(String(k))),
     }))
 
-  const FIELD_OF: Record<string, 'functions' | 'natures' | 'forms' | 'properties'> = {
+  const FIELD_OF: Record<string, 'primaries' | 'functions' | 'natures' | 'forms' | 'properties'> = {
+    primary: 'primaries',
     function: 'functions',
     nature: 'natures',
     form: 'forms',
     property: 'properties',
   }
+  // Id của "Nguyên liệu mới" — catch-all khi không khớp danh mục chính nào.
+  const catchAllId = allFacets.docs.find(
+    (f: { group?: unknown; name?: unknown }) =>
+      f.group === 'primary' && String(f.name ?? '').toLowerCase().includes('nguyên liệu mới'),
+  )?.id
 
   let page = 1
   let totalPages = 1
@@ -242,6 +262,15 @@ async function main() {
         if (!field) continue
         ;(add[field] ??= []).push(f.id)
         tally.set(f.name, (tally.get(f.name) ?? 0) + 1)
+      }
+      // Catch-all: nguyên liệu không khớp danh mục chính nào → "Nguyên liệu mới".
+      // Chỉ khi bản ghi chưa có primary nào (kể cả gán tay) để không đè lựa chọn.
+      if (catchAllId && !add.primaries) {
+        const existingPrimary = ((ing as unknown as Record<string, unknown>).primaries as unknown[] | undefined) ?? []
+        if (!existingPrimary.length) {
+          add.primaries = [catchAllId]
+          tally.set('Nguyên liệu mới', (tally.get('Nguyên liệu mới') ?? 0) + 1)
+        }
       }
       if (!Object.keys(add).length) continue
 

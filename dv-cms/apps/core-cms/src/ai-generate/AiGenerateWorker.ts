@@ -789,7 +789,8 @@ export async function runAiGenerate(input: WorkerInput): Promise<void> {
       sort: 'order',
       overrideAccess: true,
     })
-    const FACET_FIELD: Record<string, 'functions' | 'natures' | 'forms' | 'properties'> = {
+    const FACET_FIELD: Record<string, 'primaries' | 'functions' | 'natures' | 'forms' | 'properties'> = {
+      primary: 'primaries',
       function: 'functions',
       nature: 'natures',
       form: 'forms',
@@ -964,7 +965,7 @@ export async function runAiGenerate(input: WorkerInput): Promise<void> {
     // sách bị loại — đây là chốt chặn giữ bộ lọc sạch, không nhiễm giá trị bịa.
     if (gc.facets) {
       const unknown: string[] = []
-      for (const field of ['functions', 'natures', 'forms', 'properties'] as const) {
+      for (const field of ['primaries', 'functions', 'natures', 'forms', 'properties'] as const) {
         const names = gc.facets[field] ?? []
         if (!names.length) continue
         const ids: (string | number)[] = []
@@ -978,7 +979,7 @@ export async function runAiGenerate(input: WorkerInput): Promise<void> {
       if (unknown.length) {
         addLog(logs, 'warn', `Bỏ ${unknown.length} thẻ AI tự nghĩ ra (không có trong danh sách): ${unknown.slice(0, 5).join(', ')}`)
       }
-      const assigned = (['functions', 'natures', 'forms', 'properties'] as const)
+      const assigned = (['primaries', 'functions', 'natures', 'forms', 'properties'] as const)
         .map((f) => (primaryData[f] as unknown[] | undefined)?.length ?? 0)
         .reduce((a, b) => a + b, 0)
       if (assigned) addLog(logs, 'info', `Gán ${assigned} thẻ lọc`)

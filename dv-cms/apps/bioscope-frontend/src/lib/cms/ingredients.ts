@@ -45,7 +45,7 @@ type IngredientDoc = {
 }
 
 /** supplement/cosmetic → the localized industry label used by the catalog filters. */
-function industryLabel(type: string | undefined, locale: Locale): string {
+export function industryLabel(type: string | undefined, locale: Locale): string {
   const map =
     locale === 'en'
       ? { supplement: 'Nutraceuticals', cosmetic: 'Cosmetics' }
@@ -102,7 +102,7 @@ const COUNTRY: Record<string, { vi: string; en: string }> = {
   HK: { vi: 'Hồng Kông', en: 'Hong Kong' },
 }
 
-function originLabel(code: string | undefined, locale: Locale): string {
+export function originLabel(code: string | undefined, locale: Locale): string {
   if (!code) return ''
   // Một số bản ghi ghép nhiều mã ("IN, NP", "CN/VN") — tách, map từng mã rồi
   // ghép lại để không hiện mã thô lẫn lộn với tên nước.

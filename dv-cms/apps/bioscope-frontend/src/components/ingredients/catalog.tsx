@@ -275,10 +275,15 @@ export function Catalog({ items, imageSeed }: { items: Ingredient[]; imageSeed: 
     setAdvancedOpen(false)
   }
 
-  const resetAdvanced = () => {
+  // Xoá SẠCH mọi bộ lọc: ô tìm kiếm + tab danh mục + 2 select + chip nâng cao
+  // (tất cả tab/select đều ghi vào advancedApplied). Dùng cho nút "Xoá bộ lọc"
+  // ở toolbar lẫn "Đặt lại" trong popup — xoá tức thì để catalog cập nhật ngay.
+  const clearAll = () => {
+    setQ('')
     setAdvancedDraft(EMPTY_ADVANCED)
     setAdvancedApplied(EMPTY_ADVANCED)
   }
+  const hasAnyFilter = q.trim().length > 0 || advancedCount > 0
 
   return (
     <>
@@ -297,16 +302,28 @@ export function Catalog({ items, imageSeed }: { items: Ingredient[]; imageSeed: 
                   onClick={() => setPrimary(activePrimary === p ? null : p)}
                 />
               ))}
-              {cloudHasData && (
-                <button
-                  type="button"
-                  onClick={() => setCloudOpen(true)}
-                  className="ml-auto inline-flex items-center gap-1 rounded-full border border-primary-border bg-white px-3.5 py-2 text-[13px] font-semibold text-primary transition-colors hover:border-primary/40"
-                >
-                  {cat.showMore}
-                  <ChevronRight className="h-3.5 w-3.5" />
-                </button>
-              )}
+              <div className="ml-auto flex items-center gap-2">
+                {hasAnyFilter && (
+                  <button
+                    type="button"
+                    onClick={clearAll}
+                    className="inline-flex items-center gap-1 rounded-full border border-accent/40 bg-accent-soft px-3.5 py-2 text-[13px] font-semibold text-accent transition-colors hover:border-accent"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                    {cat.clearFilters}
+                  </button>
+                )}
+                {cloudHasData && (
+                  <button
+                    type="button"
+                    onClick={() => setCloudOpen(true)}
+                    className="inline-flex items-center gap-1 rounded-full border border-primary-border bg-white px-3.5 py-2 text-[13px] font-semibold text-primary transition-colors hover:border-primary/40"
+                  >
+                    {cat.showMore}
+                    <ChevronRight className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Hàng 2: tìm kiếm + select xuất xứ + select nhóm + nút nâng cao */}
@@ -369,15 +386,6 @@ export function Catalog({ items, imageSeed }: { items: Ingredient[]; imageSeed: 
                 </span>
               )}
             </div>
-            {advancedCount > 0 && (
-              <button
-                type="button"
-                onClick={resetAdvanced}
-                className="text-[13px] font-medium text-primary hover:underline"
-              >
-                {cat.clearAdvanced}
-              </button>
-            )}
           </div>
 
           <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -463,7 +471,7 @@ export function Catalog({ items, imageSeed }: { items: Ingredient[]; imageSeed: 
           onChange={setAdvancedDraft}
           onClose={() => setAdvancedOpen(false)}
           onApply={applyAdvanced}
-          onReset={() => setAdvancedDraft(EMPTY_ADVANCED)}
+          onReset={clearAll}
         />
       )}
 

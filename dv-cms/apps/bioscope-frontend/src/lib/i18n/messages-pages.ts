@@ -135,6 +135,12 @@ export type PageExtras = {
     cancel: string
     applyFiltersFull: string
     moqMax: string
+    allPrimaries: string
+    allOrigins: string
+    allGroups: string
+    showMore: string
+    cloudTitle: string
+    cloudDesc: string
   }
 }
 
@@ -391,6 +397,12 @@ const vi: PageExtras = {
     cancel: 'Hủy',
     applyFiltersFull: 'Áp dụng bộ lọc',
     moqMax: 'MOQ tối đa',
+    allPrimaries: 'Tất cả',
+    allOrigins: 'Tất cả xuất xứ',
+    allGroups: 'Tất cả nhóm',
+    showMore: 'Xem thêm',
+    cloudTitle: 'Khám phá theo thẻ',
+    cloudDesc: 'Bấm một thẻ để lọc. Thẻ càng lớn thì càng nhiều nguyên liệu.',
   },
 }
 
@@ -647,6 +659,12 @@ const en: PageExtras = {
     cancel: 'Cancel',
     applyFiltersFull: 'Apply filters',
     moqMax: 'Max MOQ',
+    allPrimaries: 'All',
+    allOrigins: 'All origins',
+    allGroups: 'All groups',
+    showMore: 'More',
+    cloudTitle: 'Explore by tag',
+    cloudDesc: 'Tap a tag to filter. Bigger tag = more ingredients.',
   },
 }
 

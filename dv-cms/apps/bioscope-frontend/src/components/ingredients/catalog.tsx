@@ -4,7 +4,7 @@ import { Children, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Search, ArrowUpRight, SlidersHorizontal, X, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Search, ArrowUpRight, SlidersHorizontal, X, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react'
 import { ingredientForm, parseMoqKg, type Ingredient } from '@/lib/content'
 import { useLocale } from '@/lib/i18n/context'
 import { ingredientImg } from '@/lib/images'
@@ -12,6 +12,24 @@ import { pickDefaultImages, seededRandom } from '@/lib/default-images'
 import { cn } from '@/lib/utils'
 
 const PAGE_SIZE = 9
+
+// Thứ tự tab danh mục chính (khớp `order` khi seed facet, cả vi lẫn en) — dữ
+// liệu gửi lên chỉ có TÊN thẻ nên không mang theo `order`; giữ danh sách này để
+// tab luôn hiện đúng thứ tự chủ đích thay vì xếp theo abc. Tên lạ đẩy xuống cuối.
+const PRIMARY_ORDER = [
+  'Chiết xuất thực vật', 'Botanical extract',
+  'Omega & dầu cá', 'Omega & fish oil',
+  'Lợi khuẩn', 'Probiotics',
+  'Hoạt chất công nghệ cao', 'High-tech actives',
+  'Nguyên liệu mới', 'New ingredients',
+]
+const orderPrimaries = (names: string[]) =>
+  [...names].sort((a, b) => {
+    const ia = PRIMARY_ORDER.indexOf(a)
+    const ib = PRIMARY_ORDER.indexOf(b)
+    if (ia === -1 && ib === -1) return a.localeCompare(b, 'vi')
+    return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib)
+  })
 
 const TAG_STYLE: Record<string, string> = {
   NEW: 'bg-accent-soft text-accent',
@@ -114,12 +132,26 @@ export function Catalog({ items, imageSeed }: { items: Ingredient[]; imageSeed: 
     content
 
   const [q, setQ] = useState('')
-  const [industry, setIndustry] = useState<string | null>(null)
-  const [cert, setCert] = useState<string | null>(null)
   const [page, setPage] = useState(1)
   const [advancedOpen, setAdvancedOpen] = useState(false)
+  const [cloudOpen, setCloudOpen] = useState(false)
   const [advancedDraft, setAdvancedDraft] = useState<AdvancedFilters>(EMPTY_ADVANCED)
   const [advancedApplied, setAdvancedApplied] = useState<AdvancedFilters>(EMPTY_ADVANCED)
+
+  // Tab danh mục chính, select xuất xứ và select nhóm (công dụng) đều là bộ lọc
+  // NHANH đơn-chọn, ghi thẳng vào advancedApplied để chỉ có MỘT nguồn sự thật —
+  // modal nâng cao và tag cloud vẫn đọc/ghi cùng các mảng này.
+  const setPrimary = (v: string | null) =>
+    setAdvancedApplied((p) => ({ ...p, primaries: v ? [v] : [] }))
+  const setOrigin = (v: string | null) =>
+    setAdvancedApplied((p) => ({ ...p, origins: v ? [v] : [] }))
+  const setGroup = (v: string | null) =>
+    setAdvancedApplied((p) => ({ ...p, functions: v ? [v] : [] }))
+  // Tab chỉ sáng khi đúng một danh mục chính đang chọn (chọn nhiều qua tag cloud
+  // thì không tab nào sáng — vẫn đúng vì đó là trạng thái đa lựa chọn).
+  const activePrimary = advancedApplied.primaries.length === 1 ? advancedApplied.primaries[0] : null
+  const activeOrigin = advancedApplied.origins.length === 1 ? advancedApplied.origins[0] : null
+  const activeGroup = advancedApplied.functions.length === 1 ? advancedApplied.functions[0] : null
 
   // Card danh mục ở trang chủ link sang /nguyen-lieu?primary=<tên>. Áp ngay khi
   // mount để người dùng thấy đúng danh mục mình vừa bấm.
@@ -188,8 +220,6 @@ export function Catalog({ items, imageSeed }: { items: Ingredient[]; imageSeed: 
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase()
     return items.filter((it) => {
-      if (industry && it.industry !== industry) return false
-      if (cert && !it.badges.some((b) => b.toLowerCase().includes(cert.toLowerCase()))) return false
       if (!matchesAdvanced(it, advancedApplied)) return false
       if (
         term &&
@@ -199,10 +229,10 @@ export function Catalog({ items, imageSeed }: { items: Ingredient[]; imageSeed: 
       }
       return true
     })
-  }, [items, q, industry, cert, advancedApplied])
+  }, [items, q, advancedApplied])
 
   // Reset to page 1 when the active filters change (render-time, not an effect).
-  const filterKey = `${q}|${industry}|${cert}|${JSON.stringify(advancedApplied)}`
+  const filterKey = `${q}|${JSON.stringify(advancedApplied)}`
   const [prevFilterKey, setPrevFilterKey] = useState(filterKey)
   if (filterKey !== prevFilterKey) {
     setPrevFilterKey(filterKey)
@@ -214,6 +244,9 @@ export function Catalog({ items, imageSeed }: { items: Ingredient[]; imageSeed: 
   const safePage = Math.min(page, totalPages)
   const paginated = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
   const advancedCount = countAdvanced(advancedApplied)
+  // Tab danh mục chính theo thứ tự chủ đích; tag cloud chỉ mở khi có dữ liệu thẻ.
+  const orderedPrimaries = useMemo(() => orderPrimaries(facets.primaries), [facets.primaries])
+  const cloudHasData = facets.primaries.length > 0 || facets.functions.length > 0
 
   // Default imagery for cards with no featured image in the CMS, resolved to a
   // slug -> src map so rendering stays pure (no counter mutated mid-render).
@@ -251,12 +284,33 @@ export function Catalog({ items, imageSeed }: { items: Ingredient[]; imageSeed: 
     <>
       <section className="bg-white pb-24 pt-16">
         <div className="container-bs">
-          {/* Tag cloud — cỡ chữ to→nhỏ theo số lượng nguyên liệu. Bấm để lọc. */}
-          <TagCloud items={items} applied={advancedApplied} onToggle={toggleCloud} />
-
           {/* Toolbar */}
-          <div className="flex flex-col gap-5 rounded-[2rem] border border-primary-border/60 bg-mist/50 p-6">
-            <div className="flex gap-3">
+          <div className="flex flex-col gap-4 rounded-[2rem] border border-primary-border/60 bg-mist/50 p-5 sm:p-6">
+            {/* Hàng 1: tab danh mục chính + nút Xem thêm (mở tag cloud) */}
+            <div className="flex flex-wrap items-center gap-2">
+              <Filter label={cat.allPrimaries} active={activePrimary === null} onClick={() => setPrimary(null)} />
+              {orderedPrimaries.map((p) => (
+                <Filter
+                  key={p}
+                  label={p}
+                  active={activePrimary === p}
+                  onClick={() => setPrimary(activePrimary === p ? null : p)}
+                />
+              ))}
+              {cloudHasData && (
+                <button
+                  type="button"
+                  onClick={() => setCloudOpen(true)}
+                  className="ml-auto inline-flex items-center gap-1 rounded-full border border-primary-border bg-white px-3.5 py-2 text-[13px] font-semibold text-primary transition-colors hover:border-primary/40"
+                >
+                  {cat.showMore}
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
+
+            {/* Hàng 2: tìm kiếm + select xuất xứ + select nhóm + nút nâng cao */}
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               <div className="relative min-w-0 flex-1">
                 <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-ink/35" />
                 <input
@@ -266,44 +320,40 @@ export function Catalog({ items, imageSeed }: { items: Ingredient[]; imageSeed: 
                   className="w-full rounded-full border border-primary-border bg-white py-3 pl-11 pr-4 text-[14.5px] outline-none transition-colors focus:border-primary/50"
                 />
               </div>
-              <button
-                type="button"
-                onClick={openAdvanced}
-                aria-label={cat.advancedSearch}
-                className={cn(
-                  'relative grid h-12 w-12 shrink-0 place-items-center rounded-full border transition-colors duration-300',
-                  advancedCount > 0
-                    ? 'border-primary bg-primary text-white'
-                    : 'border-primary-border bg-white text-ink/50 hover:border-primary/40 hover:text-primary',
-                )}
-              >
-                <SlidersHorizontal className="h-4 w-4" />
-                {advancedCount > 0 && (
-                  <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-accent px-1 text-[10px] font-bold text-white">
-                    {advancedCount}
-                  </span>
-                )}
-              </button>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2">
-              <Filter label={cat.allIndustries} active={!industry} onClick={() => setIndustry(null)} />
-              {facets.industries.map((ind) => (
-                <Filter key={ind} label={ind} active={industry === ind} onClick={() => setIndustry(ind)} />
-              ))}
-              <span className="mx-1 hidden h-5 w-px bg-primary-border sm:block" />
-              {facets.certs.map((c) => (
-                <Filter key={c} label={c} subtle active={cert === c} onClick={() => setCert(cert === c ? null : c)} />
-              ))}
-              {advancedCount > 0 && (
+              <SelectFilter
+                label={cat.allOrigins}
+                value={activeOrigin}
+                options={facets.origins}
+                onChange={setOrigin}
+              />
+              <div className="flex gap-2">
+                <SelectFilter
+                  label={cat.allGroups}
+                  value={activeGroup}
+                  options={facets.functions}
+                  onChange={setGroup}
+                  className="flex-1"
+                />
                 <button
                   type="button"
-                  onClick={resetAdvanced}
-                  className="ml-auto text-[13px] font-medium text-primary hover:underline"
+                  onClick={openAdvanced}
+                  aria-label={cat.advancedSearch}
+                  title={cat.advancedSearch}
+                  className={cn(
+                    'relative grid h-12 w-12 shrink-0 place-items-center rounded-full border transition-colors duration-300',
+                    advancedCount > 0
+                      ? 'border-primary bg-primary text-white'
+                      : 'border-primary-border bg-white text-ink/50 hover:border-primary/40 hover:text-primary',
+                  )}
                 >
-                  {cat.clearAdvanced}
+                  <SlidersHorizontal className="h-4 w-4" />
+                  {advancedCount > 0 && (
+                    <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-accent px-1 text-[10px] font-bold text-white">
+                      {advancedCount}
+                    </span>
+                  )}
                 </button>
-              )}
+              </div>
             </div>
           </div>
 
@@ -319,6 +369,15 @@ export function Catalog({ items, imageSeed }: { items: Ingredient[]; imageSeed: 
                 </span>
               )}
             </div>
+            {advancedCount > 0 && (
+              <button
+                type="button"
+                onClick={resetAdvanced}
+                className="text-[13px] font-medium text-primary hover:underline"
+              >
+                {cat.clearAdvanced}
+              </button>
+            )}
           </div>
 
           <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -407,7 +466,97 @@ export function Catalog({ items, imageSeed }: { items: Ingredient[]; imageSeed: 
           onReset={() => setAdvancedDraft(EMPTY_ADVANCED)}
         />
       )}
+
+      {cloudOpen && (
+        <TagCloudModal items={items} applied={advancedApplied} onToggle={toggleCloud} onClose={() => setCloudOpen(false)} />
+      )}
     </>
+  )
+}
+
+/** Select gọn kiểu pill cho bộ lọc nhanh (xuất xứ, nhóm). value=null → hiện label mặc định. */
+function SelectFilter({
+  label,
+  value,
+  options,
+  onChange,
+  className,
+}: {
+  label: string
+  value: string | null
+  options: string[]
+  onChange: (v: string | null) => void
+  className?: string
+}) {
+  const active = value !== null
+  return (
+    <div className={cn('relative', className)}>
+      <select
+        value={value ?? ''}
+        onChange={(e) => onChange(e.target.value || null)}
+        className={cn(
+          'h-12 w-full min-w-[9rem] appearance-none rounded-full border bg-white py-2 pl-4 pr-9 text-[14px] outline-none transition-colors focus:border-primary/50',
+          active ? 'border-primary font-semibold text-primary-dark' : 'border-primary-border text-ink/65',
+        )}
+      >
+        <option value="">{label}</option>
+        {options.map((o) => (
+          <option key={o} value={o}>
+            {o}
+          </option>
+        ))}
+      </select>
+      <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink/40" />
+    </div>
+  )
+}
+
+/** Popup "Xem thêm": tag cloud cách điệu (nhiều nguyên liệu = to hơn), bấm để lọc. */
+function TagCloudModal({
+  items,
+  applied,
+  onToggle,
+  onClose,
+}: {
+  items: Ingredient[]
+  applied: AdvancedFilters
+  onToggle: (group: 'primaries' | 'functions', value: string) => void
+  onClose: () => void
+}) {
+  const { t } = useLocale()
+  const cat = t.ingredientsCatalog
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center">
+      <button type="button" aria-label={cat.close} className="absolute inset-0 bg-ink/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative flex max-h-[min(90vh,640px)] w-full max-w-2xl flex-col overflow-hidden rounded-[2rem] border border-primary-border/60 bg-white shadow-card">
+        <div className="flex items-center justify-between border-b border-primary-border/50 px-6 py-5">
+          <div>
+            <h2 className="text-[1.25rem] font-bold text-ink">{cat.cloudTitle}</h2>
+            <p className="mt-1 text-[13.5px] text-ink/55">{cat.cloudDesc}</p>
+          </div>
+          <button
+            type="button"
+            aria-label={cat.close}
+            onClick={onClose}
+            className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-primary-border text-ink/45 hover:text-primary"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        <div className="flex-1 overflow-y-auto px-6 py-6">
+          <TagCloud items={items} applied={applied} onToggle={onToggle} />
+        </div>
+        <div className="flex justify-end border-t border-primary-border/50 px-6 py-4">
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full bg-primary px-5 py-2.5 text-[14px] font-semibold text-white hover:bg-primary-dark"
+          >
+            {cat.applyFiltersFull}
+          </button>
+        </div>
+      </div>
+    </div>
   )
 }
 

@@ -195,11 +195,22 @@ const LIST_SELECT = [
   .map((f) => `select[${f}]=true`)
   .join('&')
 
+// Ở depth=1, Payload nhồi TOÀN BỘ facet object (keywords, description, ngày...)
+// khiến response phình >2MB — vượt ngưỡng cache của Next (không cache được →
+// mỗi lần tải lại phải fetch ~6s, và dễ dính bản cũ). Ta chỉ cần TÊN thẻ, nên
+// giới hạn trường populate: response tụt còn ~1.5MB, cache được, tươi trong 60s.
+const LIST_POPULATE = [
+  'populate[ingredient-facets][name]=true',
+  'populate[ingredient-facets][slug]=true',
+  'populate[ingredient-categories][title]=true',
+  'populate[ingredient-categories][name]=true',
+].join('&')
+
 export async function getIngredients(locale: Locale): Promise<Ingredient[] | null> {
   // TODO(scale): the catalog filters client-side, so we fetch the full set.
   // For very large catalogs, move filtering/pagination server-side instead.
   const res = await cmsFetch<Paginated<IngredientDoc>>(
-    `ingredients?limit=2000&sort=name&depth=1&${LIST_SELECT}`,
+    `ingredients?limit=2000&sort=name&depth=1&${LIST_SELECT}&${LIST_POPULATE}`,
     {
       locale,
       revalidate: 60,

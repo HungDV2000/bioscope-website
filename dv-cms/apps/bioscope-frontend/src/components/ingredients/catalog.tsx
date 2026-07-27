@@ -684,26 +684,40 @@ function TagCloud({
 
   const max = Math.max(...all.map((x) => x.n))
   const min = Math.min(...all.map((x) => x.n))
-  // Nội suy theo căn bậc hai để thẻ ít không quá nhỏ. Trong popup (centered)
-  // dải cỡ rộng hơn cho ra dáng "đám mây từ khoá" thật sự.
-  const scale = (n: number) => (max === min ? 0.5 : Math.sqrt((n - min) / (max - min)))
-  const base = centered ? 16 : 13
-  const range = centered ? 30 : 17
+  // Nội suy theo căn bậc hai để thẻ ít không quá nhỏ; dải cỡ rộng cho ra dáng
+  // "đám mây từ khoá" thật.
+  const scale = (n: number) => (max === min ? 0.6 : Math.sqrt((n - min) / (max - min)))
+  const base = centered ? 15 : 13
+  const range = centered ? 34 : 17
+
+  // Thẻ nhiều nguyên liệu nằm GIỮA, ít dần dạt ra hai đầu (giả lập word cloud):
+  // xếp giảm dần theo số lượng rồi xen kẽ đẩy vào giữa mảng.
+  const sorted = [...all].sort((a, b) => b.n - a.n)
+  const ordered: typeof sorted = []
+  sorted.forEach((item, i) => (i % 2 === 0 ? ordered.push(item) : ordered.unshift(item)))
+  const list = centered ? ordered : sorted
+
+  // Bảng màu đa dạng (đọc rõ trên nền trắng). Gán theo mã băm của tên thẻ nên
+  // ổn định qua mỗi lần render, không nhấp nháy đổi màu.
+  const PALETTE = [
+    '#7c3aed', '#2563eb', '#059669', '#ea580c', '#db2777', '#0d9488',
+    '#dc2626', '#4f46e5', '#d97706', '#0891b2', '#16a34a', '#9333ea',
+  ]
+  const colorOf = (s: string) =>
+    PALETTE[[...s].reduce((h, c) => h + c.charCodeAt(0), 0) % PALETTE.length]
 
   return (
     <div
       className={cn(
-        'flex flex-wrap items-center gap-x-5 gap-y-3',
-        centered ? 'justify-center' : 'mb-6 items-baseline gap-x-4',
+        'flex flex-wrap items-center gap-x-5 gap-y-2.5',
+        centered ? 'justify-center text-center leading-tight' : 'mb-6 items-baseline gap-x-4',
       )}
     >
-      {all.map(({ group, value, n }) => {
+      {list.map(({ group, value, n }) => {
         const k = scale(n)
         const active = applied[group].includes(value)
         const size = base + k * range
         const weight = k > 0.6 ? 800 : k > 0.35 ? 700 : k > 0.15 ? 600 : 500
-        // Danh mục chính tô cam, công dụng tô xanh; đậm dần theo mức phổ biến.
-        const opacity = 0.55 + k * 0.45
         return (
           <button
             key={`${group}:${value}`}
@@ -711,21 +725,12 @@ function TagCloud({
             onClick={() => onToggle(group, value)}
             title={`${value} · ${n} nguyên liệu`}
             className={cn(
-              'group/tag inline-flex items-baseline gap-1 leading-none transition-all duration-200 hover:-translate-y-0.5 hover:!opacity-100',
-              active && (group === 'primaries' ? 'text-accent' : 'text-primary'),
+              'leading-none transition-all duration-200 hover:-translate-y-0.5 hover:brightness-110',
+              active && 'underline decoration-2 underline-offset-4',
             )}
-            style={{
-              fontSize: `${size}px`,
-              fontWeight: weight,
-              color: active ? undefined : group === 'primaries'
-                ? `rgba(245,142,51,${opacity})`
-                : `rgba(0,142,77,${opacity})`,
-            }}
+            style={{ fontSize: `${size}px`, fontWeight: weight, color: colorOf(value) }}
           >
             {value}
-            <span className="text-[0.62em] font-semibold opacity-55 transition-opacity group-hover/tag:opacity-90">
-              {n}
-            </span>
           </button>
         )
       })}

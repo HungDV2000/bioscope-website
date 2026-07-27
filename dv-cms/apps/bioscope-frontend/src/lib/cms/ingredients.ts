@@ -207,9 +207,12 @@ function facetNames(list: FacetRef[] | null | undefined, pick: (v?: string) => s
 }
 
 /** All published ingredients from the CMS. Returns null on failure/empty (caller falls back to static). */
-// Only the fields the catalog list + filters actually use. Dropping the heavy
-// `description` richText keeps the full-catalog response under Next's 2MB data
-// cache limit (it was ~4.3MB with every field).
+// CHỈ lấy đúng trường mà DANH SÁCH + BỘ LỌC dùng. Trên 1.591 mục, mỗi trường
+// mảng chuỗi dài nhân lên rất nặng: đo thực tế, bỏ `benefits` (câu dài) và
+// `specs` (mảng cấu trúc) cắt response 1.86MB→0.9MB và query CMS 8.5s→3.4s.
+// Đánh đổi: tìm kiếm không còn khớp theo mô tả lợi ích, và bộ lọc "Dạng bào
+// chế" chỉ dựa vào thẻ facet (không suy từ specs cho mục chưa gắn thẻ). Trang
+// CHI TIẾT vẫn lấy đủ mọi trường nên không ảnh hưởng.
 const LIST_SELECT = [
   'slug',
   'name',
@@ -219,11 +222,9 @@ const LIST_SELECT = [
   'originCountry',
   'brandName',
   'moq',
-  'benefits',
   'applications',
   'badges',
   'featuredImage',
-  'specs',
   // Thẻ lọc — bắt buộc có trong select, nếu không bộ lọc trên web sẽ rỗng.
   'primaries',
   'functions',
@@ -254,7 +255,10 @@ export async function getIngredients(locale: Locale): Promise<Ingredient[] | nul
     `ingredients?limit=2000&sort=name&depth=1&where[hidden][not_equals]=true&${LIST_SELECT}&${LIST_POPULATE}`,
     {
       locale,
-      revalidate: 60,
+      // Danh mục đổi không thường xuyên; cache 5 phút để hầu hết lượt tải lấy
+      // bản đã cache (tức thì, stale-while-revalidate) thay vì chờ query CMS ~3s.
+      // Nút "Xoá cache" trong admin đẩy ngay khi cần cập nhật gấp.
+      revalidate: 300,
       // Fetching the whole catalog can exceed the default 4s timeout.
       timeoutMs: 20000,
     },

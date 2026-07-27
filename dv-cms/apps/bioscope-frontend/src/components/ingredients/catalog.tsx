@@ -536,7 +536,7 @@ function TagCloudModal({
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center">
       <button type="button" aria-label={cat.close} className="absolute inset-0 bg-ink/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative flex max-h-[min(90vh,640px)] w-full max-w-2xl flex-col overflow-hidden rounded-[2rem] border border-primary-border/60 bg-white shadow-card">
+      <div className="relative flex max-h-[min(90vh,640px)] w-full max-w-3xl flex-col overflow-hidden rounded-[2rem] border border-primary-border/60 bg-white shadow-card">
         <div className="flex items-center justify-between border-b border-primary-border/50 px-6 py-5">
           <div>
             <h2 className="text-[1.25rem] font-bold text-ink">{cat.cloudTitle}</h2>
@@ -695,8 +695,10 @@ function TagCloud({
   // Nội suy theo căn bậc hai để thẻ ít không quá nhỏ; dải cỡ rộng cho ra dáng
   // "đám mây từ khoá" thật.
   const scale = (n: number) => (max === min ? 0.6 : Math.sqrt((n - min) / (max - min)))
-  const base = centered ? 15 : 13
-  const range = centered ? 34 : 17
+  // Dải cỡ chữ nén lại (tương phản vừa phải) để thẻ dài+to không chiếm trọn
+  // một dòng — nhiều thẻ nằm chung dòng, nhìn hài hoà như word cloud thật.
+  const base = centered ? 16 : 13
+  const range = centered ? 18 : 17
 
   // Thẻ nhiều nguyên liệu nằm GIỮA, ít dần dạt ra hai đầu (giả lập word cloud):
   // xếp giảm dần theo số lượng rồi xen kẽ đẩy vào giữa mảng.

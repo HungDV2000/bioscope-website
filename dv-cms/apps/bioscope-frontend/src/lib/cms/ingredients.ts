@@ -53,6 +53,8 @@ function industryLabel(type: string | undefined, locale: Locale): string {
   return map[(type ?? 'supplement') as 'supplement' | 'cosmetic'] ?? map.supplement
 }
 
+// Bảng mã ISO-3166 alpha-2 → tên nước. Gom đủ mọi mã xuất hiện trong dữ liệu
+// (khảo sát danh mục thật) để bộ lọc không lẫn "Hàn Quốc" với "TW", "IE"...
 const COUNTRY: Record<string, { vi: string; en: string }> = {
   JP: { vi: 'Nhật Bản', en: 'Japan' },
   KR: { vi: 'Hàn Quốc', en: 'South Korea' },
@@ -68,11 +70,48 @@ const COUNTRY: Record<string, { vi: string; en: string }> = {
   NO: { vi: 'Na Uy', en: 'Norway' },
   ES: { vi: 'Tây Ban Nha', en: 'Spain' },
   TH: { vi: 'Thái Lan', en: 'Thailand' },
+  IE: { vi: 'Ireland', en: 'Ireland' },
+  DK: { vi: 'Đan Mạch', en: 'Denmark' },
+  CA: { vi: 'Canada', en: 'Canada' },
+  IL: { vi: 'Israel', en: 'Israel' },
+  NL: { vi: 'Hà Lan', en: 'Netherlands' },
+  TW: { vi: 'Đài Loan', en: 'Taiwan' },
+  BR: { vi: 'Brazil', en: 'Brazil' },
+  MY: { vi: 'Malaysia', en: 'Malaysia' },
+  ID: { vi: 'Indonesia', en: 'Indonesia' },
+  BE: { vi: 'Bỉ', en: 'Belgium' },
+  NZ: { vi: 'New Zealand', en: 'New Zealand' },
+  NP: { vi: 'Nepal', en: 'Nepal' },
+  GB: { vi: 'Anh', en: 'United Kingdom' },
+  UK: { vi: 'Anh', en: 'United Kingdom' },
+  AU: { vi: 'Úc', en: 'Australia' },
+  SG: { vi: 'Singapore', en: 'Singapore' },
+  SE: { vi: 'Thụy Điển', en: 'Sweden' },
+  FI: { vi: 'Phần Lan', en: 'Finland' },
+  PL: { vi: 'Ba Lan', en: 'Poland' },
+  AT: { vi: 'Áo', en: 'Austria' },
+  PT: { vi: 'Bồ Đào Nha', en: 'Portugal' },
+  RU: { vi: 'Nga', en: 'Russia' },
+  MX: { vi: 'Mexico', en: 'Mexico' },
+  PE: { vi: 'Peru', en: 'Peru' },
+  CL: { vi: 'Chile', en: 'Chile' },
+  ZA: { vi: 'Nam Phi', en: 'South Africa' },
+  EG: { vi: 'Ai Cập', en: 'Egypt' },
+  TR: { vi: 'Thổ Nhĩ Kỳ', en: 'Turkey' },
+  GR: { vi: 'Hy Lạp', en: 'Greece' },
+  HK: { vi: 'Hồng Kông', en: 'Hong Kong' },
 }
 
 function originLabel(code: string | undefined, locale: Locale): string {
   if (!code) return ''
-  return COUNTRY[code.toUpperCase()]?.[locale] ?? code
+  // Một số bản ghi ghép nhiều mã ("IN, NP", "CN/VN") — tách, map từng mã rồi
+  // ghép lại để không hiện mã thô lẫn lộn với tên nước.
+  return code
+    .split(/[,/;]+/)
+    .map((c) => c.trim())
+    .filter(Boolean)
+    .map((c) => COUNTRY[c.toUpperCase()]?.[locale] ?? c)
+    .join(', ')
 }
 
 /** Flatten a Lexical richText value into plain paragraphs. */

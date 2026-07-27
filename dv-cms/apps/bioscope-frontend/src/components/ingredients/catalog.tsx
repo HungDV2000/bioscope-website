@@ -543,17 +543,17 @@ function TagCloudModal({
             <X className="h-4 w-4" />
           </button>
         </div>
-        <div className="flex-1 overflow-y-auto px-6 py-6">
-          <TagCloud items={items} applied={applied} onToggle={onToggle} />
-        </div>
-        <div className="flex justify-end border-t border-primary-border/50 px-6 py-4">
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-full bg-primary px-5 py-2.5 text-[14px] font-semibold text-white hover:bg-primary-dark"
-          >
-            {cat.applyFiltersFull}
-          </button>
+        <div className="flex-1 overflow-y-auto px-6 py-8">
+          {/* Bấm một thẻ = áp dụng lọc và đóng popup luôn (không cần nút Áp dụng). */}
+          <TagCloud
+            items={items}
+            applied={applied}
+            onToggle={(g, v) => {
+              onToggle(g, v)
+              onClose()
+            }}
+            centered
+          />
         </div>
       </div>
     </div>
@@ -660,12 +660,13 @@ function TagCloud({
   items,
   applied,
   onToggle,
+  centered,
 }: {
   items: Ingredient[]
   applied: AdvancedFilters
   onToggle: (group: 'primaries' | 'functions', value: string) => void
+  centered?: boolean
 }) {
-  const { t } = useLocale()
   const clouds = useMemo(() => {
     const count = (key: 'primaries' | 'functions') => {
       const m = new Map<string, number>()
@@ -683,32 +684,35 @@ function TagCloud({
 
   const max = Math.max(...all.map((x) => x.n))
   const min = Math.min(...all.map((x) => x.n))
-  // Cỡ chữ 13→30px nội suy theo căn bậc hai (nén khoảng cách để thẻ ít không
-  // bị quá nhỏ). Đậm nhạt màu cũng theo mức phổ biến.
+  // Nội suy theo căn bậc hai để thẻ ít không quá nhỏ. Trong popup (centered)
+  // dải cỡ rộng hơn cho ra dáng "đám mây từ khoá" thật sự.
   const scale = (n: number) => (max === min ? 0.5 : Math.sqrt((n - min) / (max - min)))
+  const base = centered ? 16 : 13
+  const range = centered ? 30 : 17
 
   return (
-    <div className="mb-6 flex flex-wrap items-baseline gap-x-4 gap-y-2">
+    <div
+      className={cn(
+        'flex flex-wrap items-center gap-x-5 gap-y-3',
+        centered ? 'justify-center' : 'mb-6 items-baseline gap-x-4',
+      )}
+    >
       {all.map(({ group, value, n }) => {
         const k = scale(n)
         const active = applied[group].includes(value)
-        const size = 13 + k * 17
-        const weight = k > 0.6 ? 700 : k > 0.3 ? 600 : 500
-        // Danh mục chính tô màu nhấn, công dụng tô xanh chủ đạo; đậm dần theo k.
-        const opacity = 0.5 + k * 0.5
+        const size = base + k * range
+        const weight = k > 0.6 ? 800 : k > 0.35 ? 700 : k > 0.15 ? 600 : 500
+        // Danh mục chính tô cam, công dụng tô xanh; đậm dần theo mức phổ biến.
+        const opacity = 0.55 + k * 0.45
         return (
           <button
             key={`${group}:${value}`}
             type="button"
             onClick={() => onToggle(group, value)}
-            title={`${value} · ${n}`}
+            title={`${value} · ${n} nguyên liệu`}
             className={cn(
-              'inline-flex items-baseline gap-1 leading-none transition-all duration-200 hover:-translate-y-0.5',
-              active
-                ? group === 'primaries'
-                  ? 'text-accent'
-                  : 'text-primary'
-                : 'hover:opacity-100',
+              'group/tag inline-flex items-baseline gap-1 leading-none transition-all duration-200 hover:-translate-y-0.5 hover:!opacity-100',
+              active && (group === 'primaries' ? 'text-accent' : 'text-primary'),
             )}
             style={{
               fontSize: `${size}px`,
@@ -719,22 +723,12 @@ function TagCloud({
             }}
           >
             {value}
-            <span className="text-[11px] font-medium opacity-60">{n}</span>
+            <span className="text-[0.62em] font-semibold opacity-55 transition-opacity group-hover/tag:opacity-90">
+              {n}
+            </span>
           </button>
         )
       })}
-      {(applied.primaries.length > 0 || applied.functions.length > 0) && (
-        <button
-          type="button"
-          onClick={() => {
-            applied.primaries.forEach((v) => onToggle('primaries', v))
-            applied.functions.forEach((v) => onToggle('functions', v))
-          }}
-          className="text-[12.5px] font-medium text-ink/45 underline underline-offset-2 hover:text-primary"
-        >
-          {t.ingredientsCatalog.clearFilters ?? 'Bỏ lọc'}
-        </button>
-      )}
     </div>
   )
 }

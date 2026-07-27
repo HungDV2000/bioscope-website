@@ -1,4 +1,6 @@
 import type { Metadata, Viewport } from 'next'
+import { Suspense } from 'react'
+import { RouteProgress } from '@/components/route-progress'
 import { CmsThemeStyle } from '@/components/theme/cms-theme-style'
 import { getFaviconUrl, getFrontendThemeColor } from '@/lib/branding'
 import { getLocale } from '@/lib/i18n/server'
@@ -106,6 +108,9 @@ export default async function RootLayout({
     <html lang={locale} suppressHydrationWarning>
       <body suppressHydrationWarning>
         <GtmNoScript gtm={tracking.gtm} />
+        <Suspense fallback={null}>
+          <RouteProgress />
+        </Suspense>
         <CmsThemeStyle />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
         {children}

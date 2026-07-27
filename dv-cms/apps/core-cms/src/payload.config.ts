@@ -42,6 +42,7 @@ import {
 } from './endpoints/driveSync.js'
 import { csvImportEndpoint } from './endpoints/csvImport.js'
 import { ingredientExportEndpoint, ingredientImportEndpoint } from './endpoints/ingredientData.js'
+import { clearCacheEndpoint } from './endpoints/clearCache.js'
 import {
   aiGenerateTriggerEndpoint,
   aiGenerateBulkEndpoint,
@@ -110,6 +111,10 @@ export default buildConfig({
       // WordPress-style sidebar: consolidated groups, collapsed parents with a
       // hover flyout + click-to-expand. Replaces Payload's default flat nav.
       Nav: '@dv/cms-core/admin#WpNav',
+      // Thanh công cụ nhanh trên cùng (giống admin bar WordPress): nút Xoá cache.
+      actions: ['@dv/cms-core/admin#ClearCacheAction'],
+      // Bọc toàn admin để chèn thanh tiến trình chuyển trang.
+      providers: ['@dv/cms-core/admin#AdminRouteProgress'],
     },
   },
   serverURL,
@@ -159,7 +164,7 @@ export default buildConfig({
     collectionSpecific: true,
   },
   typescript: { outputFile: path.resolve(dirname, 'payload-types.ts') },
-  endpoints: [seedEndpoint, backupEndpoint, ingredientDuplicatesEndpoint, ...duplicateScanEndpoints, cmsSyncSourceEndpoint, cmsSyncEndpoint, cmsSyncRunsEndpoint, driveSyncTriggerEndpoint, driveSyncListEndpoint, driveSyncGetEndpoint, driveSyncCancelEndpoint, csvImportEndpoint, ingredientExportEndpoint, ingredientImportEndpoint, aiGenerateTriggerEndpoint, aiGenerateBulkEndpoint, aiGenerateImageEndpoint, aiGenerateListEndpoint, aiGenerateGetEndpoint, aiGenerateQueueStatusEndpoint],
+  endpoints: [seedEndpoint, backupEndpoint, ingredientDuplicatesEndpoint, ...duplicateScanEndpoints, cmsSyncSourceEndpoint, cmsSyncEndpoint, cmsSyncRunsEndpoint, driveSyncTriggerEndpoint, driveSyncListEndpoint, driveSyncGetEndpoint, driveSyncCancelEndpoint, csvImportEndpoint, ingredientExportEndpoint, ingredientImportEndpoint, aiGenerateTriggerEndpoint, aiGenerateBulkEndpoint, aiGenerateImageEndpoint, aiGenerateListEndpoint, aiGenerateGetEndpoint, aiGenerateQueueStatusEndpoint, clearCacheEndpoint],
   collections: [],
   plugins: [
     // Tier 1 — generic core (must come first: users + media).

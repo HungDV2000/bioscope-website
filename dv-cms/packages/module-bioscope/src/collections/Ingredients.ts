@@ -413,6 +413,20 @@ export const Ingredients: CollectionConfig = {
     // ── Các trường sidebar + đồng bộ (helper tự tách sidebar ra ngoài tabs) ───
     { label: { en: 'Sync', vi: 'Đồng bộ' }, fields: [
     { name: 'featured', type: 'checkbox', defaultValue: false, admin: { position: 'sidebar' } },
+    {
+      // Ẩn hoàn toàn khỏi website (khác với lưu nháp — nháp KHÔNG gỡ bản đã
+      // xuất bản đang live). Frontend lọc bỏ nguyên liệu có hidden=true ở cả
+      // trang danh sách lẫn trang chi tiết. Vì bật draft nên phải BẤM XUẤT BẢN
+      // sau khi tick thì bản live mới mang giá trị hidden mới.
+      name: 'hidden',
+      type: 'checkbox',
+      defaultValue: false,
+      label: { en: 'Hide from website', vi: 'Ẩn khỏi website' },
+      admin: {
+        position: 'sidebar',
+        description: 'Bật = gỡ khỏi trang nguyên liệu + trang chi tiết. Nhớ bấm "Xuất bản tài liệu" để áp dụng.',
+      },
+    },
 
     // ─── Google Drive Sync fields ─────────────────────────────────────────────
     // Legacy aliases (DB có sẵn cột sourceFileIds/lastIndexedAt từ schema cũ).

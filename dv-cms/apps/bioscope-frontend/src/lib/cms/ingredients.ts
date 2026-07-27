@@ -210,7 +210,9 @@ export async function getIngredients(locale: Locale): Promise<Ingredient[] | nul
   // TODO(scale): the catalog filters client-side, so we fetch the full set.
   // For very large catalogs, move filtering/pagination server-side instead.
   const res = await cmsFetch<Paginated<IngredientDoc>>(
-    `ingredients?limit=2000&sort=name&depth=1&${LIST_SELECT}&${LIST_POPULATE}`,
+    // `hidden` bật = ẩn hoàn toàn khỏi web. not_equals:true cũng nhận bản ghi
+    // chưa từng set (null) nên nguyên liệu cũ vẫn hiển thị bình thường.
+    `ingredients?limit=2000&sort=name&depth=1&where[hidden][not_equals]=true&${LIST_SELECT}&${LIST_POPULATE}`,
     {
       locale,
       revalidate: 60,
@@ -225,7 +227,8 @@ export async function getIngredients(locale: Locale): Promise<Ingredient[] | nul
 /** Single ingredient by slug. Returns null on failure/not found. */
 export async function getIngredient(slug: string, locale: Locale): Promise<Ingredient | null> {
   const res = await cmsFetch<Paginated<IngredientDoc>>(
-    `ingredients?where[slug][equals]=${encodeURIComponent(slug)}&depth=1&limit=1`,
+    // Ẩn = trang chi tiết cũng không truy cập được (trả null → 404).
+    `ingredients?where[slug][equals]=${encodeURIComponent(slug)}&where[hidden][not_equals]=true&depth=1&limit=1`,
     { locale, revalidate: 60 },
   )
   const doc = res?.docs?.[0]

@@ -166,6 +166,20 @@ export default buildConfig({
   typescript: { outputFile: path.resolve(dirname, 'payload-types.ts') },
   endpoints: [seedEndpoint, backupEndpoint, ingredientDuplicatesEndpoint, ...duplicateScanEndpoints, cmsSyncSourceEndpoint, cmsSyncEndpoint, cmsSyncRunsEndpoint, driveSyncTriggerEndpoint, driveSyncListEndpoint, driveSyncGetEndpoint, driveSyncCancelEndpoint, csvImportEndpoint, ingredientExportEndpoint, ingredientImportEndpoint, aiGenerateTriggerEndpoint, aiGenerateBulkEndpoint, aiGenerateImageEndpoint, aiGenerateListEndpoint, aiGenerateGetEndpoint, aiGenerateQueueStatusEndpoint, clearCacheEndpoint],
   collections: [],
+  // Sau khi container khởi động lại (deploy/rebuild), runner AI trong RAM chết
+  // theo tiến trình cũ — job đang chạy hoặc còn 'queued' sẽ nằm im vĩnh viễn
+  // tới khi có người bấm tạo mới. Kích lại hàng đợi ngay lúc onInit để tự nhặt
+  // các job còn tồn (drain đã lọc status='queued' + requeue job in-progress bị
+  // bỏ). Chạy nền, không chặn khởi động; bọc try/catch để lỗi không làm sập CMS.
+  onInit: async (payload) => {
+    try {
+      const { ensureQueueRunner } = await import('./ai-generate/queue.js')
+      ensureQueueRunner(payload)
+      payload.logger.info('[ai-queue] onInit: đã kích hàng đợi AI để nhặt lại job còn tồn.')
+    } catch (err) {
+      payload.logger.error(`[ai-queue] onInit kick hàng đợi lỗi: ${String(err)}`)
+    }
+  },
   plugins: [
     // Tier 1 — generic core (must come first: users + media).
     corePlugin({

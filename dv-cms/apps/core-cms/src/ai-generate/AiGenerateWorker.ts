@@ -176,6 +176,21 @@ function driveErrorMessage(err: unknown): string {
 // này — đúng triệu chứng "tải file được trong sync nhưng AI không đọc được".
 const DRIVE_SHARED = { supportsAllDrives: true }
 
+/** Trần thời gian cho MỘT file (tải + trích xuất). Một file treo (Drive stall,
+ * OCR kẹt) không được làm đơ cả job. */
+const FILE_TIMEOUT_MS = Number(process.env.AI_FILE_TIMEOUT_MS ?? 150_000)
+
+/** Chạy `p` nhưng bỏ cuộc sau `ms` để một bước treo không kẹt vô hạn. */
+function withTimeout<T>(p: Promise<T>, ms: number, label: string): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`${label} quá ${Math.round(ms / 1000)}s — bỏ qua`)), ms)
+    p.then(
+      (v) => { clearTimeout(t); resolve(v) },
+      (e) => { clearTimeout(t); reject(e) },
+    )
+  })
+}
+
 async function downloadDriveFile(
   driveClient: Awaited<ReturnType<typeof getDriveClient>>,
   file: DriveFileEntry,
@@ -197,7 +212,7 @@ async function downloadDriveFile(
     try {
       const response = await driveClient.files.export(
         { fileId: file.fileId, mimeType: exportMime, ...DRIVE_SHARED },
-        { responseType: 'arraybuffer' },
+        { responseType: 'arraybuffer', timeout: FILE_TIMEOUT_MS },
       )
       return { buffer: Buffer.from(response.data as ArrayBuffer), detectedType }
     } catch (err) {
@@ -209,7 +224,7 @@ async function downloadDriveFile(
   try {
     const response = await driveClient.files.get(
       { fileId: file.fileId, alt: 'media', ...DRIVE_SHARED },
-      { responseType: 'arraybuffer' },
+      { responseType: 'arraybuffer', timeout: FILE_TIMEOUT_MS },
     )
     return { buffer: Buffer.from(response.data as ArrayBuffer), detectedType }
   } catch (err) {
@@ -668,7 +683,21 @@ export async function runAiGenerate(input: WorkerInput): Promise<void> {
         logs,
       })
 
-      const downloaded = await downloadDriveFile(googleDrive, file)
+      let downloaded: Awaited<ReturnType<typeof downloadDriveFile>>
+      try {
+        downloaded = await withTimeout(
+          downloadDriveFile(googleDrive, file),
+          FILE_TIMEOUT_MS,
+          `Tải "${file.fileName}"`,
+        )
+      } catch (err) {
+        // Drive stall / mạng treo — bỏ file này, chạy tiếp thay vì đơ cả job.
+        addLog(logs, 'error', `Bỏ qua "${file.fileName}": ${err instanceof Error ? err.message : String(err)}`)
+        totals.errors++
+        totals.filesSkipped++
+        await updateJob(payload, jobId, { totals, logs })
+        continue
+      }
 
       if ('error' in downloaded) {
         // Nêu rõ lý do thật (HTTP 404, thiếu quyền, Shared Drive...) thay vì
@@ -692,7 +721,11 @@ export async function runAiGenerate(input: WorkerInput): Promise<void> {
 
       // Extract text
       try {
-        const text = await extractTextFromFile(file, downloaded, logs, usage, attachments)
+        const text = await withTimeout(
+          extractTextFromFile(file, downloaded, logs, usage, attachments),
+          FILE_TIMEOUT_MS,
+          `Trích xuất "${file.fileName}"`,
+        )
 
         if (text.trim().length > 20) {
           const preview = text.trim().slice(0, 100).replace(/\n/g, ' ')

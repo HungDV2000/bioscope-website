@@ -180,6 +180,12 @@ export default buildConfig({
     } catch (err) {
       payload.logger.error(`[ai-queue] onInit kick hàng đợi lỗi: ${String(err)}`)
     }
+    try {
+      const { startScheduledBackups } = await import('./lib/scheduledBackup.js')
+      startScheduledBackups(payload)
+    } catch (err) {
+      payload.logger.error(`[backup] onInit lỗi khởi động lịch sao lưu: ${String(err)}`)
+    }
   },
   plugins: [
     // Tier 1 — generic core (must come first: users + media).

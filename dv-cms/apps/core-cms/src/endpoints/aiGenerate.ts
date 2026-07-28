@@ -38,6 +38,7 @@
 
 import type { Endpoint, PayloadRequest } from 'payload'
 import type { GeneratedContent, Locale } from '../lib/openaiService.js'
+import { moduleGate } from '../lib/modules.js'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -105,6 +106,9 @@ const triggerGenerateEndpoint: Endpoint = {
     if (!isAdmin(req)) {
       return Response.json({ ok: false, error: 'Chỉ admin được phép.' }, { status: 403 })
     }
+
+    const gate = await moduleGate(req.payload, 'moduleAiGenerate')
+    if (gate) return gate
 
     let body: { ingredientId?: string; locale?: string }
     try {
@@ -201,6 +205,9 @@ const imageOnlyEndpoint: Endpoint = {
       return Response.json({ ok: false, error: 'Chỉ admin được phép.' }, { status: 403 })
     }
 
+    const gate = await moduleGate(req.payload, 'moduleAiGenerate')
+    if (gate) return gate
+
     let body: { ingredientId?: string; locale?: string }
     try {
       body = await (req as unknown as Request).json()
@@ -265,6 +272,9 @@ const bulkGenerateEndpoint: Endpoint = {
     if (!isAdmin(req)) {
       return Response.json({ ok: false, error: 'Chỉ admin được phép.' }, { status: 403 })
     }
+
+    const gate = await moduleGate(req.payload, 'moduleAiGenerate')
+    if (gate) return gate
 
     let body: { ids?: (string | number)[]; all?: boolean; locale?: string }
     try {

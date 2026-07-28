@@ -7,6 +7,7 @@
  * với secret dùng chung — secret nằm ở server, KHÔNG lộ ra trình duyệt.
  */
 import type { Endpoint, PayloadRequest } from 'payload'
+import { moduleGate } from '../lib/modules.js'
 
 function isStaff(req: PayloadRequest): boolean {
   const role = (req.user as { role?: string } | undefined)?.role
@@ -20,6 +21,8 @@ export const clearCacheEndpoint: Endpoint = {
     if (!isStaff(req)) {
       return Response.json({ ok: false, error: 'Không đủ quyền.' }, { status: 403 })
     }
+    const gate = await moduleGate(req.payload, 'moduleClearCache')
+    if (gate) return gate
 
     const frontendUrl = process.env.FRONTEND_URL
     const secret = process.env.REVALIDATE_SECRET

@@ -8,6 +8,7 @@
  */
 
 import type { Endpoint, PayloadRequest } from 'payload'
+import { moduleGate } from '../lib/modules.js'
 import { SCANNABLE, findScannable } from '../duplicate-scan/scannable.js'
 import { DEFAULT_SCAN_CONFIG, type ScanConfig } from '../duplicate-scan/DuplicateScanWorker.js'
 
@@ -42,6 +43,8 @@ const startEndpoint: Endpoint = {
   method: 'post',
   handler: async (req: PayloadRequest): Promise<Response> => {
     if (!isStaff(req)) return deny()
+    const gate = await moduleGate(req.payload, 'moduleDuplicateScan')
+    if (gate) return gate
 
     let body: Partial<ScanConfig> = {}
     try {

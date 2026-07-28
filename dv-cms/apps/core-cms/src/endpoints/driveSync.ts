@@ -8,6 +8,7 @@
  */
 
 import type { Endpoint, PayloadRequest } from 'payload'
+import { moduleGate } from '../lib/modules.js'
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -38,6 +39,8 @@ const triggerSyncEndpoint: Endpoint = {
     if (!isAdmin(req)) {
       return Response.json({ ok: false, error: 'Chỉ admin được phép.' }, { status: 403 })
     }
+    const gate = await moduleGate(req.payload, 'moduleDriveSync')
+    if (gate) return gate
 
     const rootFolderId =
       (req.query?.rootFolderId as string) ||

@@ -220,6 +220,50 @@ export const SiteSettings: GlobalConfig = {
             },
           ],
         },
+
+        // ── Quản lý Module ──────────────────────────────────────────────────
+        {
+          label: { en: 'Modules', vi: 'Quản lý Module' },
+          description:
+            'Bật/tắt các module vận hành + xem trạng thái kết nối dịch vụ ngoài. ' +
+            'Tắt một module = chặn thao tác của nó ngay (không cần build lại). ' +
+            'Cài module MỚI vẫn phải qua code + deploy (Payload là CMS code-first, khác WordPress).',
+          fields: [
+            {
+              name: 'moduleStatus',
+              type: 'ui',
+              admin: { components: { Field: '/components/ModuleStatus/ModuleStatus#ModuleStatus' } },
+            },
+            {
+              name: 'moduleAiGenerate',
+              type: 'checkbox',
+              defaultValue: true,
+              label: 'AI sinh nội dung',
+              admin: { description: 'Tắt = chặn tạo nội dung AI (endpoint trả "module đã tắt").' },
+            },
+            {
+              name: 'moduleDuplicateScan',
+              type: 'checkbox',
+              defaultValue: true,
+              label: 'Quét trùng lặp',
+              admin: { description: 'Tắt = chặn quét trùng lặp.' },
+            },
+            {
+              name: 'moduleDriveSync',
+              type: 'checkbox',
+              defaultValue: true,
+              label: 'Đồng bộ Google Drive',
+              admin: { description: 'Tắt = chặn đồng bộ file từ Drive.' },
+            },
+            {
+              name: 'moduleClearCache',
+              type: 'checkbox',
+              defaultValue: true,
+              label: 'Xoá cache website',
+              admin: { description: 'Tắt = chặn nút Xoá cache.' },
+            },
+          ],
+        },
       ],
     },
   ],

@@ -428,6 +428,18 @@ export const Ingredients: CollectionConfig = {
       },
     },
     {
+      // Lên lịch xuất bản: để bản nháp + đặt thời điểm; runner nền tự Publish
+      // khi tới giờ rồi xoá mốc này. Bỏ trống = không lên lịch.
+      name: 'publishAt',
+      type: 'date',
+      label: { en: 'Schedule publish', vi: 'Lên lịch xuất bản' },
+      admin: {
+        position: 'sidebar',
+        date: { pickerAppearance: 'dayAndTime' },
+        description: 'Lưu bản NHÁP + đặt giờ → hệ thống tự xuất bản khi tới giờ.',
+      },
+    },
+    {
       // Ẩn hoàn toàn khỏi website (khác với lưu nháp — nháp KHÔNG gỡ bản đã
       // xuất bản đang live). Frontend lọc bỏ nguyên liệu có hidden=true ở cả
       // trang danh sách lẫn trang chi tiết. Vì bật draft nên phải BẤM XUẤT BẢN

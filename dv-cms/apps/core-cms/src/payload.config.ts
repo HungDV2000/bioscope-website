@@ -112,8 +112,9 @@ export default buildConfig({
       // WordPress-style sidebar: consolidated groups, collapsed parents with a
       // hover flyout + click-to-expand. Replaces Payload's default flat nav.
       Nav: '@dv/cms-core/admin#WpNav',
-      // Thanh công cụ nhanh trên cùng (giống admin bar WordPress): nút Xoá cache.
-      actions: ['@dv/cms-core/admin#ClearCacheAction'],
+      // Thanh công cụ nhanh trên cùng (giống admin bar WordPress): tìm kiếm toàn
+      // admin (Ctrl/Cmd+K) + nút Xoá cache.
+      actions: ['/components/GlobalSearch/GlobalSearch#GlobalSearch', '@dv/cms-core/admin#ClearCacheAction'],
       // Bọc toàn admin để chèn thanh tiến trình chuyển trang.
       providers: ['@dv/cms-core/admin#AdminRouteProgress'],
     },
@@ -185,6 +186,12 @@ export default buildConfig({
       startScheduledBackups(payload)
     } catch (err) {
       payload.logger.error(`[backup] onInit lỗi khởi động lịch sao lưu: ${String(err)}`)
+    }
+    try {
+      const { startScheduledPublish } = await import('./lib/scheduledPublish.js')
+      startScheduledPublish(payload)
+    } catch (err) {
+      payload.logger.error(`[scheduled-publish] onInit lỗi: ${String(err)}`)
     }
   },
   plugins: [

@@ -46,6 +46,7 @@ import { WpNav as WpNav_00843a5f229f2e31dd95960baf9412a3 } from '@dv/cms-core/ad
 import { HiddenLogout as HiddenLogout_00843a5f229f2e31dd95960baf9412a3 } from '@dv/cms-core/admin'
 import { BrandIcon as BrandIcon_00843a5f229f2e31dd95960baf9412a3 } from '@dv/cms-core/admin'
 import { BrandLogo as BrandLogo_00843a5f229f2e31dd95960baf9412a3 } from '@dv/cms-core/admin'
+import { GlobalSearch as GlobalSearch_efd14c02129132fb928fdec00e07622b } from '../../../components/GlobalSearch/GlobalSearch'
 import { ClearCacheAction as ClearCacheAction_00843a5f229f2e31dd95960baf9412a3 } from '@dv/cms-core/admin'
 import { LoginFooter as LoginFooter_00843a5f229f2e31dd95960baf9412a3 } from '@dv/cms-core/admin'
 import { LoginShell as LoginShell_00843a5f229f2e31dd95960baf9412a3 } from '@dv/cms-core/admin'
@@ -120,6 +121,7 @@ export const importMap = {
   "@dv/cms-core/admin#HiddenLogout": HiddenLogout_00843a5f229f2e31dd95960baf9412a3,
   "@dv/cms-core/admin#BrandIcon": BrandIcon_00843a5f229f2e31dd95960baf9412a3,
   "@dv/cms-core/admin#BrandLogo": BrandLogo_00843a5f229f2e31dd95960baf9412a3,
+  "/components/GlobalSearch/GlobalSearch#GlobalSearch": GlobalSearch_efd14c02129132fb928fdec00e07622b,
   "@dv/cms-core/admin#ClearCacheAction": ClearCacheAction_00843a5f229f2e31dd95960baf9412a3,
   "@dv/cms-core/admin#LoginFooter": LoginFooter_00843a5f229f2e31dd95960baf9412a3,
   "@dv/cms-core/admin#LoginShell": LoginShell_00843a5f229f2e31dd95960baf9412a3,

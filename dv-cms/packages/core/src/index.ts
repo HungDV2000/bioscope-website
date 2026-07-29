@@ -13,6 +13,7 @@ export { contentTabs } from './fields/tabs.js'
 
 // Hooks
 export { buildRevalidateHooks, type RevalidateOptions } from './hooks/revalidate.js'
+export { auditPlugin } from './hooks/audit.js'
 
 // Utils
 export { slugify } from './utils/slugify.js'

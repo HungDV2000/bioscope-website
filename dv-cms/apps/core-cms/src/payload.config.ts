@@ -14,7 +14,7 @@ import { en } from 'payload/i18n/en'
 import { vi } from 'payload/i18n/vi'
 import sharp from 'sharp'
 
-import { corePlugin, brandingPlugin, dashboardPlugin, dvTranslations } from '@dv/cms-core'
+import { corePlugin, brandingPlugin, dashboardPlugin, dvTranslations, auditPlugin } from '@dv/cms-core'
 import { blocksPlugin } from '@dv/module-blocks'
 import { catalogPlugin } from '@dv/module-catalog'
 import { bioscopePlugin } from '@dv/module-bioscope'
@@ -236,6 +236,9 @@ export default buildConfig({
     securityPlugin(),
     // Complianz-style GDPR cookie consent (banner + proof-of-consent).
     consentPlugin(),
+    // Nhật ký thay đổi — gắn hook ghi log vào mọi collection nội dung. Trước
+    // permissions để audit-logs cũng nằm trong RBAC.
+    auditPlugin(),
     // RBAC — must be last so it wraps all collections/globals.
     permissionsPlugin(),
   ],

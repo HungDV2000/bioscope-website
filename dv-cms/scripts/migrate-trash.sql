@@ -46,6 +46,13 @@ CREATE INDEX IF NOT EXISTS faqs_deleted_at_idx             ON public.faqs (delet
 CREATE INDEX IF NOT EXISTS case_studies_deleted_at_idx     ON public.case_studies (deleted_at);
 CREATE INDEX IF NOT EXISTS ingredients_deleted_at_idx      ON public.ingredients (deleted_at);
 
+-- Index version_deleted_at trên bảng phiên bản (khớp đúng tên push sinh ra).
+CREATE INDEX IF NOT EXISTS _pages_v_version_version_deleted_at_idx        ON public._pages_v (version_deleted_at);
+CREATE INDEX IF NOT EXISTS _posts_v_version_version_deleted_at_idx        ON public._posts_v (version_deleted_at);
+CREATE INDEX IF NOT EXISTS _faqs_v_version_version_deleted_at_idx         ON public._faqs_v (version_deleted_at);
+CREATE INDEX IF NOT EXISTS _case_studies_v_version_version_deleted_at_idx ON public._case_studies_v (version_deleted_at);
+CREATE INDEX IF NOT EXISTS _ingredients_v_version_version_deleted_at_idx  ON public._ingredients_v (version_deleted_at);
+
 -- ── Editorial workflow: cờ "Chờ duyệt" trên Ingredients ─────────────────────
 -- Checkbox needsReview (boolean) — cùng pattern hidden: cột ở bảng chính +
 -- version_ ở bảng phiên bản.

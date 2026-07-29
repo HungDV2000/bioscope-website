@@ -5,6 +5,7 @@ import { ADMIN_GROUP_CONTENT } from '../i18n/admin-groups.js'
 /** Form builder — define arbitrary contact/lead forms in the admin. */
 export const Forms: CollectionConfig = {
   slug: 'forms',
+  trash: true,
   admin: { useAsTitle: 'title', group: ADMIN_GROUP_CONTENT },
   access: { read: anyone, create: isAdminOrEditor, update: isAdminOrEditor, delete: isAdminOrEditor },
   fields: [

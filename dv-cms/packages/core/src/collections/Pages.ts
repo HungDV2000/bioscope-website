@@ -20,6 +20,7 @@ function previewUrl(doc: { slug?: unknown }): string {
  */
 export const Pages: CollectionConfig = {
   slug: 'pages',
+  trash: true,
   admin: {
     useAsTitle: 'title',
     defaultColumns: ['title', 'slug', '_status', 'updatedAt'],

@@ -32,6 +32,7 @@ export type FacetGroup = (typeof FACET_GROUPS)[number]['value']
 
 export const IngredientFacets: CollectionConfig = {
   slug: 'ingredient-facets',
+  trash: true,
   labels: {
     singular: { en: 'Filter tag', vi: 'Thẻ lọc' },
     plural: { en: 'Filter tags', vi: 'Thẻ lọc nguyên liệu' },

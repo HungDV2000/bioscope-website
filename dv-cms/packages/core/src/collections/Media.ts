@@ -5,6 +5,7 @@ import { ADMIN_GROUP_SYSTEM } from '../i18n/admin-groups.js'
 /** Uploads: images (with responsive sizes + focal point), PDFs, video. */
 export const Media: CollectionConfig = {
   slug: 'media',
+  trash: true,
   labels: {
     singular: { en: 'Media file', vi: 'Tệp media' },
     plural: { en: 'Media library', vi: 'Thư viện ảnh' },

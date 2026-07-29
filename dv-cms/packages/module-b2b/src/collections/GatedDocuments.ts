@@ -10,6 +10,7 @@ export type GatedDocumentsOptions = {
 /** Access-gated downloadable documents (COA, spec sheets, quotes…). */
 export const createGatedDocuments = (opts: GatedDocumentsOptions = {}): CollectionConfig => ({
   slug: 'gated-documents',
+  trash: true,
   admin: { useAsTitle: 'title', group: 'B2B', defaultColumns: ['title', 'docType', 'visibility'] },
   access: {
     read: readGated,

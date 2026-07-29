@@ -5,6 +5,7 @@ import { ADMIN_GROUP_CONTENT } from '../i18n/admin-groups.js'
 
 export const Categories: CollectionConfig = {
   slug: 'categories',
+  trash: true,
   admin: { useAsTitle: 'name', group: ADMIN_GROUP_CONTENT },
   access: { read: anyone, create: isAdminOrEditor, update: isAdminOrEditor, delete: isAdminOrEditor },
   fields: [

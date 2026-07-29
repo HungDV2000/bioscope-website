@@ -7,6 +7,7 @@ import { ADMIN_GROUP_CONTENT } from '../i18n/admin-groups.js'
 /** Blog / news articles. */
 export const Posts: CollectionConfig = {
   slug: 'posts',
+  trash: true,
   admin: {
     useAsTitle: 'title',
     defaultColumns: ['title', 'author', '_status', 'publishedAt'],

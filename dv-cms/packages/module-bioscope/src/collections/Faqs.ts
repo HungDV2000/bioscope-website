@@ -4,6 +4,7 @@ import { isAdminOrEditor, readPublishedOrStaff } from '@dv/cms-core'
 /** Frequently asked questions, grouped by topic. */
 export const Faqs: CollectionConfig = {
   slug: 'faqs',
+  trash: true,
   labels: {
     singular: { en: 'FAQ', vi: 'Câu hỏi thường gặp' },
     plural: { en: 'FAQs', vi: 'Câu hỏi thường gặp' },

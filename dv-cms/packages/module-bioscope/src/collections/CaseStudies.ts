@@ -4,6 +4,7 @@ import { isAdminOrEditor, readPublishedOrStaff, contentTabs, slugField } from '@
 /** Success stories / co-creation case studies. */
 export const CaseStudies: CollectionConfig = {
   slug: 'case-studies',
+  trash: true,
   labels: {
     singular: { en: 'Case study', vi: 'Case study' },
     plural: { en: 'Case studies', vi: 'Case studies' },

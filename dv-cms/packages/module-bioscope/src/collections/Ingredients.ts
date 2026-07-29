@@ -5,10 +5,11 @@ import { specsField } from '@dv/module-catalog'
 /** Imported nutraceutical / cosmetic raw ingredients. */
 export const Ingredients: CollectionConfig = {
   slug: 'ingredients',
+  trash: true,
   admin: {
     useAsTitle: 'name',
     group: 'Bioscope',
-    defaultColumns: ['name', 'type', 'originCountry', 'featured', '_status'],
+    defaultColumns: ['name', 'type', 'originCountry', 'needsReview', 'featured', '_status'],
     components: {
       // Bulk "Tạo nội dung tự động" bar on the list view (selected / all).
       beforeListTable: ['/components/BulkAiGenerate/BulkAiGenerate#BulkAiGenerate'],
@@ -413,6 +414,19 @@ export const Ingredients: CollectionConfig = {
     // ── Các trường sidebar + đồng bộ (helper tự tách sidebar ra ngoài tabs) ───
     { label: { en: 'Sync', vi: 'Đồng bộ' }, fields: [
     { name: 'featured', type: 'checkbox', defaultValue: false, admin: { position: 'sidebar' } },
+    {
+      // Editorial workflow gọn nhẹ: biên tập viên bật "Chờ duyệt" khi muốn người
+      // có quyền kiểm tra trước khi Xuất bản. Người duyệt lọc danh sách theo cờ
+      // này, rà xong thì tắt cờ + Xuất bản. Là cờ điều phối, không chặn cứng.
+      name: 'needsReview',
+      type: 'checkbox',
+      defaultValue: false,
+      label: { en: 'Needs review', vi: 'Chờ duyệt' },
+      admin: {
+        position: 'sidebar',
+        description: 'Bật khi cần người có quyền duyệt kiểm tra trước khi xuất bản.',
+      },
+    },
     {
       // Ẩn hoàn toàn khỏi website (khác với lưu nháp — nháp KHÔNG gỡ bản đã
       // xuất bản đang live). Frontend lọc bỏ nguyên liệu có hidden=true ở cả

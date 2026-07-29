@@ -242,19 +242,26 @@ export function Catalog({
             </div>
           </div>
 
-          {/* Đếm + trang */}
-          <div className="mt-6 flex flex-wrap items-center gap-2.5 text-[13.5px]">
-            <span className="inline-flex items-baseline gap-1 rounded-full bg-primary-tint px-3 py-1 font-semibold text-primary-dark">
-              <span className="text-[15px] font-bold">{data.total.toLocaleString('vi-VN')}</span>
-              {cat.ingredientsUnit}
-            </span>
-            {totalPages > 1 && (
-              <span className="text-ink/45">
-                {cat.pageOf} <span className="font-semibold text-ink/70">{safePage}</span>/{totalPages}
+          {/* Đếm (trái) + chỉ số trang (phải) */}
+          <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <span className="inline-flex items-baseline gap-1 rounded-full bg-primary-tint px-3.5 py-1 text-[13.5px] font-semibold text-primary-dark">
+                <span className="text-[15px] font-bold">{data.total.toLocaleString('vi-VN')}</span>
+                {cat.ingredientsUnit}
               </span>
-            )}
-            {loading && (
-              <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-primary/30 border-t-primary" />
+              {loading && (
+                <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-primary/30 border-t-primary" />
+              )}
+            </div>
+            {totalPages > 1 && (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-primary-border/60 bg-white px-3.5 py-1.5 text-[12.5px] font-medium text-ink/50">
+                {cat.pageOf}
+                <span className="grid h-6 min-w-6 place-items-center rounded-full bg-primary px-1.5 text-[12px] font-bold text-white">
+                  {safePage}
+                </span>
+                <span className="text-ink/30">/</span>
+                <span className="font-semibold text-ink/70">{totalPages}</span>
+              </span>
             )}
           </div>
 

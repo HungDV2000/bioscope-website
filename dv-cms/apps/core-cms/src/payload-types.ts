@@ -100,6 +100,7 @@ export interface Config {
     'blocked-ips': BlockedIp;
     'security-events': SecurityEvent;
     'consent-log': ConsentLog;
+    'audit-logs': AuditLog;
     'payload-kv': PayloadKv;
     'payload-folders': FolderInterface;
     'payload-locked-documents': PayloadLockedDocument;
@@ -144,6 +145,7 @@ export interface Config {
     'blocked-ips': BlockedIpsSelect<false> | BlockedIpsSelect<true>;
     'security-events': SecurityEventsSelect<false> | SecurityEventsSelect<true>;
     'consent-log': ConsentLogSelect<false> | ConsentLogSelect<true>;
+    'audit-logs': AuditLogsSelect<false> | AuditLogsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-folders': PayloadFoldersSelect<false> | PayloadFoldersSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -345,6 +347,7 @@ export interface Media {
   folder?: (number | null) | FolderInterface;
   updatedAt: string;
   createdAt: string;
+  deletedAt?: string | null;
   url?: string | null;
   thumbnailURL?: string | null;
   filename?: string | null;
@@ -540,6 +543,7 @@ export interface Page {
   hero?: (number | null) | Media;
   updatedAt: string;
   createdAt: string;
+  deletedAt?: string | null;
   _status?: ('draft' | 'published') | null;
 }
 /**
@@ -1391,6 +1395,7 @@ export interface Post {
   publishedAt?: string | null;
   updatedAt: string;
   createdAt: string;
+  deletedAt?: string | null;
   _status?: ('draft' | 'published') | null;
 }
 /**
@@ -1406,6 +1411,7 @@ export interface Category {
   slug?: string | null;
   updatedAt: string;
   createdAt: string;
+  deletedAt?: string | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1474,6 +1480,7 @@ export interface Form {
     | null;
   updatedAt: string;
   createdAt: string;
+  deletedAt?: string | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1782,6 +1789,7 @@ export interface IngredientFacet {
   description?: string | null;
   updatedAt: string;
   createdAt: string;
+  deletedAt?: string | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2056,6 +2064,18 @@ export interface Ingredient {
   partner?: (number | null) | Partner;
   featured?: boolean | null;
   /**
+   * Bật khi cần người có quyền duyệt kiểm tra trước khi xuất bản.
+   */
+  needsReview?: boolean | null;
+  /**
+   * Lưu bản NHÁP + đặt giờ → hệ thống tự xuất bản khi tới giờ.
+   */
+  publishAt?: string | null;
+  /**
+   * Bật = gỡ khỏi trang nguyên liệu + trang chi tiết. Nhớ bấm "Xuất bản tài liệu" để áp dụng.
+   */
+  hidden?: boolean | null;
+  /**
    * Danh sách file ID (cũ) — tương thích ngược với DB.
    */
   sourceFileIds?:
@@ -2095,6 +2115,7 @@ export interface Ingredient {
   lastDriveSyncAt?: string | null;
   updatedAt: string;
   createdAt: string;
+  deletedAt?: string | null;
   _status?: ('draft' | 'published') | null;
 }
 /**
@@ -2689,6 +2710,7 @@ export interface CaseStudy {
   order?: number | null;
   updatedAt: string;
   createdAt: string;
+  deletedAt?: string | null;
   _status?: ('draft' | 'published') | null;
 }
 /**
@@ -2706,6 +2728,7 @@ export interface Faq {
   order?: number | null;
   updatedAt: string;
   createdAt: string;
+  deletedAt?: string | null;
   _status?: ('draft' | 'published') | null;
 }
 /**
@@ -2745,6 +2768,7 @@ export interface GatedDocument {
   relatesTo?: (number | Ingredient)[] | null;
   updatedAt: string;
   createdAt: string;
+  deletedAt?: string | null;
 }
 /**
  * Manage content locales. After changes, run sync (`pnpm lang:sync`) and restart the dev server.
@@ -2852,6 +2876,24 @@ export interface ConsentLog {
   url?: string | null;
   userAgent?: string | null;
   policyVersion?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Ai đã tạo/sửa/xoá nội dung nào. Chỉ đọc — hệ thống tự ghi.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "audit-logs".
+ */
+export interface AuditLog {
+  id: number;
+  summary?: string | null;
+  action?: ('create' | 'update' | 'delete') | null;
+  collectionSlug?: string | null;
+  documentId?: string | null;
+  documentTitle?: string | null;
+  userEmail?: string | null;
+  userName?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -3008,6 +3050,10 @@ export interface PayloadLockedDocument {
         value: number | ConsentLog;
       } | null)
     | ({
+        relationTo: 'audit-logs';
+        value: number | AuditLog;
+      } | null)
+    | ({
         relationTo: 'payload-folders';
         value: number | FolderInterface;
       } | null);
@@ -3126,6 +3172,7 @@ export interface MediaSelect<T extends boolean = true> {
   folder?: T;
   updatedAt?: T;
   createdAt?: T;
+  deletedAt?: T;
   url?: T;
   thumbnailURL?: T;
   filename?: T;
@@ -3273,6 +3320,7 @@ export interface PagesSelect<T extends boolean = true> {
   hero?: T;
   updatedAt?: T;
   createdAt?: T;
+  deletedAt?: T;
   _status?: T;
 }
 /**
@@ -3875,6 +3923,7 @@ export interface PostsSelect<T extends boolean = true> {
   publishedAt?: T;
   updatedAt?: T;
   createdAt?: T;
+  deletedAt?: T;
   _status?: T;
 }
 /**
@@ -3886,6 +3935,7 @@ export interface CategoriesSelect<T extends boolean = true> {
   slug?: T;
   updatedAt?: T;
   createdAt?: T;
+  deletedAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -3929,6 +3979,7 @@ export interface FormsSelect<T extends boolean = true> {
       };
   updatedAt?: T;
   createdAt?: T;
+  deletedAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -4121,6 +4172,7 @@ export interface IngredientFacetsSelect<T extends boolean = true> {
   description?: T;
   updatedAt?: T;
   createdAt?: T;
+  deletedAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -4246,6 +4298,9 @@ export interface IngredientsSelect<T extends boolean = true> {
   category?: T;
   partner?: T;
   featured?: T;
+  needsReview?: T;
+  publishAt?: T;
+  hidden?: T;
   sourceFileIds?: T;
   lastIndexedAt?: T;
   driveId?: T;
@@ -4255,6 +4310,7 @@ export interface IngredientsSelect<T extends boolean = true> {
   lastDriveSyncAt?: T;
   updatedAt?: T;
   createdAt?: T;
+  deletedAt?: T;
   _status?: T;
 }
 /**
@@ -4521,6 +4577,7 @@ export interface CaseStudiesSelect<T extends boolean = true> {
   order?: T;
   updatedAt?: T;
   createdAt?: T;
+  deletedAt?: T;
   _status?: T;
 }
 /**
@@ -4535,6 +4592,7 @@ export interface FaqsSelect<T extends boolean = true> {
   order?: T;
   updatedAt?: T;
   createdAt?: T;
+  deletedAt?: T;
   _status?: T;
 }
 /**
@@ -4570,6 +4628,7 @@ export interface GatedDocumentsSelect<T extends boolean = true> {
   relatesTo?: T;
   updatedAt?: T;
   createdAt?: T;
+  deletedAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -4632,6 +4691,21 @@ export interface ConsentLogSelect<T extends boolean = true> {
   url?: T;
   userAgent?: T;
   policyVersion?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "audit-logs_select".
+ */
+export interface AuditLogsSelect<T extends boolean = true> {
+  summary?: T;
+  action?: T;
+  collectionSlug?: T;
+  documentId?: T;
+  documentTitle?: T;
+  userEmail?: T;
+  userName?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -4762,6 +4836,22 @@ export interface SiteSetting {
     description?: string | null;
     image?: (number | null) | Media;
   };
+  /**
+   * Tắt = chặn tạo nội dung AI (endpoint trả "module đã tắt").
+   */
+  moduleAiGenerate?: boolean | null;
+  /**
+   * Tắt = chặn quét trùng lặp.
+   */
+  moduleDuplicateScan?: boolean | null;
+  /**
+   * Tắt = chặn đồng bộ file từ Drive.
+   */
+  moduleDriveSync?: boolean | null;
+  /**
+   * Tắt = chặn nút Xoá cache.
+   */
+  moduleClearCache?: boolean | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -5280,6 +5370,10 @@ export interface SiteSettingsSelect<T extends boolean = true> {
         description?: T;
         image?: T;
       };
+  moduleAiGenerate?: T;
+  moduleDuplicateScan?: T;
+  moduleDriveSync?: T;
+  moduleClearCache?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

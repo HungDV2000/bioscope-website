@@ -18,6 +18,17 @@ const readBody = async (req: PayloadRequest): Promise<Record<string, unknown>> =
   }
 }
 
+// ── GET /api/chat/config ─────────────────────────────────────────────────────
+// Widget hỏi trước khi hiện nút: bật không + tiêu đề. Công khai, không lộ token.
+const configEndpoint: Endpoint = {
+  path: '/chat/config',
+  method: 'get',
+  handler: async (req: PayloadRequest): Promise<Response> => {
+    const cfg = await getChatConfig(req.payload)
+    return json({ ok: true, enabled: cfg.enabled, widgetTitle: cfg.widgetTitle })
+  },
+}
+
 // ── POST /api/chat/start ─────────────────────────────────────────────────────
 const startEndpoint: Endpoint = {
   path: '/chat/start',
@@ -198,4 +209,4 @@ async function findByToken(req: PayloadRequest, token: string) {
   return r.docs[0] as { id: number | string; telegramTopicId?: number } | undefined
 }
 
-export const chatEndpoints: Endpoint[] = [startEndpoint, messageEndpoint, pollEndpoint, webhookEndpoint]
+export const chatEndpoints: Endpoint[] = [configEndpoint, startEndpoint, messageEndpoint, pollEndpoint, webhookEndpoint]

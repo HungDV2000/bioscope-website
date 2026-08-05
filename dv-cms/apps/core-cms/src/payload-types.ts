@@ -69,6 +69,8 @@ export interface Config {
   blocks: {};
   collections: {
     'staff-roles': StaffRole;
+    'chat-conversations': ChatConversation;
+    'chat-messages': ChatMessage;
     users: User;
     media: Media;
     pages: Page;
@@ -114,6 +116,8 @@ export interface Config {
   };
   collectionsSelect: {
     'staff-roles': StaffRolesSelect<false> | StaffRolesSelect<true>;
+    'chat-conversations': ChatConversationsSelect<false> | ChatConversationsSelect<true>;
+    'chat-messages': ChatMessagesSelect<false> | ChatMessagesSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
@@ -157,6 +161,7 @@ export interface Config {
   };
   fallbackLocale: ('false' | 'none' | 'null') | false | null | ('vi' | 'en') | ('vi' | 'en')[];
   globals: {
+    'chat-settings': ChatSetting;
     'site-settings': SiteSetting;
     navigation: Navigation;
     branding: Branding;
@@ -168,6 +173,7 @@ export interface Config {
     'consent-settings': ConsentSetting;
   };
   globalsSelect: {
+    'chat-settings': ChatSettingsSelect<false> | ChatSettingsSelect<true>;
     'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
     navigation: NavigationSelect<false> | NavigationSelect<true>;
     branding: BrandingSelect<false> | BrandingSelect<true>;
@@ -274,6 +280,42 @@ export interface StaffRole {
         id?: string | null;
       }[]
     | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Hội thoại khách gửi từ website. Chỉ đọc — hệ thống tự tạo.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "chat-conversations".
+ */
+export interface ChatConversation {
+  id: number;
+  title?: string | null;
+  sessionToken?: string | null;
+  status?: ('open' | 'closed') | null;
+  visitorName?: string | null;
+  visitorEmail?: string | null;
+  telegramTopicId?: number | null;
+  startPage?: string | null;
+  userAgent?: string | null;
+  lastMessageAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Tin nhắn trong các hội thoại chat.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "chat-messages".
+ */
+export interface ChatMessage {
+  id: number;
+  conversation: number | ChatConversation;
+  sender: 'visitor' | 'agent' | 'system';
+  text: string;
+  agentName?: string | null;
+  telegramMessageId?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -2926,6 +2968,14 @@ export interface PayloadLockedDocument {
         value: number | StaffRole;
       } | null)
     | ({
+        relationTo: 'chat-conversations';
+        value: number | ChatConversation;
+      } | null)
+    | ({
+        relationTo: 'chat-messages';
+        value: number | ChatMessage;
+      } | null)
+    | ({
         relationTo: 'users';
         value: number | User;
       } | null)
@@ -3126,6 +3176,36 @@ export interface StaffRolesSelect<T extends boolean = true> {
         actions?: T;
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "chat-conversations_select".
+ */
+export interface ChatConversationsSelect<T extends boolean = true> {
+  title?: T;
+  sessionToken?: T;
+  status?: T;
+  visitorName?: T;
+  visitorEmail?: T;
+  telegramTopicId?: T;
+  startPage?: T;
+  userAgent?: T;
+  lastMessageAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "chat-messages_select".
+ */
+export interface ChatMessagesSelect<T extends boolean = true> {
+  conversation?: T;
+  sender?: T;
+  text?: T;
+  agentName?: T;
+  telegramMessageId?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -4762,6 +4842,36 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   createdAt?: T;
 }
 /**
+ * Bật/tắt và cấu hình khung chat trên website + kết nối Telegram.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "chat-settings".
+ */
+export interface ChatSetting {
+  id: number;
+  /**
+   * Tắt = ẩn hẳn widget chat khỏi web.
+   */
+  enabled?: boolean | null;
+  /**
+   * Token từ @BotFather. Bí mật — chỉ admin xem/sửa. (fallback: TELEGRAM_BOT_TOKEN)
+   */
+  botToken?: string | null;
+  /**
+   * Dạng -100xxxxxxxxxx (nhóm bật Topics). (fallback: TELEGRAM_SALES_CHAT_ID)
+   */
+  salesChatId?: string | null;
+  /**
+   * Chuỗi bí mật xác thực webhook Telegram. (fallback: TELEGRAM_WEBHOOK_SECRET)
+   */
+  webhookSecret?: string | null;
+  widgetTitle?: string | null;
+  welcomeMessage?: string | null;
+  offlineMessage?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "site-settings".
  */
@@ -5317,6 +5427,22 @@ export interface ConsentSetting {
   logConsent?: boolean | null;
   updatedAt?: string | null;
   createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "chat-settings_select".
+ */
+export interface ChatSettingsSelect<T extends boolean = true> {
+  enabled?: T;
+  botToken?: T;
+  salesChatId?: T;
+  webhookSecret?: T;
+  widgetTitle?: T;
+  welcomeMessage?: T;
+  offlineMessage?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

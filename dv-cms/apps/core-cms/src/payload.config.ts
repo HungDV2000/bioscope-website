@@ -44,6 +44,10 @@ import { csvImportEndpoint } from './endpoints/csvImport.js'
 import { ingredientExportEndpoint, ingredientImportEndpoint } from './endpoints/ingredientData.js'
 import { clearCacheEndpoint } from './endpoints/clearCache.js'
 import { moduleStatusEndpoint } from './endpoints/moduleStatus.js'
+import { ChatSettings } from './globals/ChatSettings.js'
+import { ChatConversations } from './collections/ChatConversations.js'
+import { ChatMessages } from './collections/ChatMessages.js'
+import { chatEndpoints } from './endpoints/chat.js'
 import {
   aiGenerateTriggerEndpoint,
   aiGenerateBulkEndpoint,
@@ -166,8 +170,9 @@ export default buildConfig({
     collectionSpecific: true,
   },
   typescript: { outputFile: path.resolve(dirname, 'payload-types.ts') },
-  endpoints: [seedEndpoint, backupEndpoint, ingredientDuplicatesEndpoint, ...duplicateScanEndpoints, cmsSyncSourceEndpoint, cmsSyncEndpoint, cmsSyncRunsEndpoint, driveSyncTriggerEndpoint, driveSyncListEndpoint, driveSyncGetEndpoint, driveSyncCancelEndpoint, csvImportEndpoint, ingredientExportEndpoint, ingredientImportEndpoint, aiGenerateTriggerEndpoint, aiGenerateBulkEndpoint, aiGenerateImageEndpoint, aiGenerateListEndpoint, aiGenerateGetEndpoint, aiGenerateQueueStatusEndpoint, clearCacheEndpoint, moduleStatusEndpoint],
-  collections: [],
+  endpoints: [seedEndpoint, backupEndpoint, ingredientDuplicatesEndpoint, ...duplicateScanEndpoints, cmsSyncSourceEndpoint, cmsSyncEndpoint, cmsSyncRunsEndpoint, driveSyncTriggerEndpoint, driveSyncListEndpoint, driveSyncGetEndpoint, driveSyncCancelEndpoint, csvImportEndpoint, ingredientExportEndpoint, ingredientImportEndpoint, aiGenerateTriggerEndpoint, aiGenerateBulkEndpoint, aiGenerateImageEndpoint, aiGenerateListEndpoint, aiGenerateGetEndpoint, aiGenerateQueueStatusEndpoint, clearCacheEndpoint, moduleStatusEndpoint, ...chatEndpoints],
+  collections: [ChatConversations, ChatMessages],
+  globals: [ChatSettings],
   // Sau khi container khởi động lại (deploy/rebuild), runner AI trong RAM chết
   // theo tiến trình cũ — job đang chạy hoặc còn 'queued' sẽ nằm im vĩnh viễn
   // tới khi có người bấm tạo mới. Kích lại hàng đợi ngay lúc onInit để tự nhặt

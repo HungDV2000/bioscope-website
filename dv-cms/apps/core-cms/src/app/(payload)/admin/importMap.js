@@ -37,6 +37,7 @@ import { IngredientAiField as IngredientAiField_d58fb5a0d75374311f1eedb9e89183ac
 import { AiJobLogViewer as AiJobLogViewer_cbe5331e68a1b6faa2791bcfa661c147 } from '../../../components/AiJobLogViewer/AiJobLogViewer'
 import { DuplicateScanView as DuplicateScanView_2cc2f9d7b54cefb0e8ae2bcaf4c42cd8 } from '../../../components/DuplicateScanView/DuplicateScanView'
 import { FolderTypeField as FolderTypeField_2b8867833a34864a02ddf429b0728a40 } from '@payloadcms/next/client'
+import { TelegramSetup as TelegramSetup_da121418b14bda1eae82206f8a5620e8 } from '../../../components/TelegramSetup/TelegramSetup'
 import { ModuleStatus as ModuleStatus_4cc31746cad3059c2e4d5f6ffd506390 } from '../../../components/ModuleStatus/ModuleStatus'
 import { HexColorField as HexColorField_c3949c88f94613bf8ab39d0e00ee34b2 } from '@dv/cms-core/fields'
 import { ImageStats as ImageStats_7c6bea9edbf2db83a7c1f5e5a5b2459e } from '../../../components/ImageStats/ImageStats'
@@ -112,6 +113,7 @@ export const importMap = {
   "/components/AiJobLogViewer/AiJobLogViewer#AiJobLogViewer": AiJobLogViewer_cbe5331e68a1b6faa2791bcfa661c147,
   "/components/DuplicateScanView/DuplicateScanView#DuplicateScanView": DuplicateScanView_2cc2f9d7b54cefb0e8ae2bcaf4c42cd8,
   "@payloadcms/next/client#FolderTypeField": FolderTypeField_2b8867833a34864a02ddf429b0728a40,
+  "/components/TelegramSetup/TelegramSetup#TelegramSetup": TelegramSetup_da121418b14bda1eae82206f8a5620e8,
   "/components/ModuleStatus/ModuleStatus#ModuleStatus": ModuleStatus_4cc31746cad3059c2e4d5f6ffd506390,
   "@dv/cms-core/fields#HexColorField": HexColorField_c3949c88f94613bf8ab39d0e00ee34b2,
   "/components/ImageStats/ImageStats#ImageStats": ImageStats_7c6bea9edbf2db83a7c1f5e5a5b2459e,

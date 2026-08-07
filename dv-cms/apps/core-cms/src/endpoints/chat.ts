@@ -7,7 +7,8 @@
  */
 import type { Endpoint, PayloadRequest } from 'payload'
 import { randomUUID } from 'crypto'
-import { getChatConfig, isTelegramReady, createTopic, sendToTopic } from '../lib/chatTelegram.js'
+import { getChatConfig, isTelegramReady, createTopic, sendToTopic, getMe, getChat, setWebhook } from '../lib/chatTelegram.js'
+import { rateLimit, clientIp } from '../lib/rateLimit.js'
 
 const json = (data: unknown, status = 200) => Response.json(data as never, { status })
 const readBody = async (req: PayloadRequest): Promise<Record<string, unknown>> => {
@@ -36,6 +37,10 @@ const startEndpoint: Endpoint = {
   handler: async (req: PayloadRequest): Promise<Response> => {
     const cfg = await getChatConfig(req.payload)
     if (!cfg.enabled) return json({ ok: false, error: 'Chat đang tắt.' }, 403)
+    // Chống spam tạo hội thoại/topic: tối đa 5 hội thoại/10 phút mỗi IP.
+    if (!rateLimit(`start:${clientIp(req)}`, 5, 10 * 60 * 1000)) {
+      return json({ ok: false, error: 'Bạn mở chat quá nhiều lần, thử lại sau ít phút.' }, 429)
+    }
 
     const body = await readBody(req)
     const startPage = String(body.startPage ?? '').slice(0, 300)
@@ -85,6 +90,10 @@ const messageEndpoint: Endpoint = {
     const token = String(body.token ?? '')
     const text = String(body.text ?? '').trim().slice(0, 4000)
     if (!token || !text) return json({ ok: false, error: 'Thiếu token hoặc nội dung.' }, 400)
+    // Chống flood: tối đa 20 tin/phút mỗi IP.
+    if (!rateLimit(`msg:${clientIp(req)}`, 20, 60 * 1000)) {
+      return json({ ok: false, error: 'Gửi quá nhanh, chậm lại một chút nhé.' }, 429)
+    }
 
     const conv = await findByToken(req, token)
     if (!conv) return json({ ok: false, error: 'Phiên không hợp lệ.' }, 404)
@@ -198,6 +207,88 @@ const webhookEndpoint: Endpoint = {
   },
 }
 
+// ── POST /api/chat/contact ───────────────────────────────────────────────────
+// Khách để lại tên/email (thường khi ngoài giờ) → lưu + báo vào topic.
+const contactEndpoint: Endpoint = {
+  path: '/chat/contact',
+  method: 'post',
+  handler: async (req: PayloadRequest): Promise<Response> => {
+    const body = await readBody(req)
+    const token = String(body.token ?? '')
+    const email = String(body.email ?? '').trim().slice(0, 200)
+    const name = String(body.name ?? '').trim().slice(0, 120)
+    if (!token || !email) return json({ ok: false, error: 'Thiếu token hoặc email.' }, 400)
+    if (!/.+@.+\..+/.test(email)) return json({ ok: false, error: 'Email không hợp lệ.' }, 400)
+    if (!rateLimit(`contact:${clientIp(req)}`, 5, 10 * 60 * 1000)) return json({ ok: false, error: 'Thử lại sau.' }, 429)
+
+    const conv = await findByToken(req, token)
+    if (!conv) return json({ ok: false, error: 'Phiên không hợp lệ.' }, 404)
+
+    await req.payload.update({
+      collection: 'chat-conversations',
+      id: conv.id,
+      data: { visitorName: name || undefined, visitorEmail: email, lastMessageAt: new Date().toISOString() } as never,
+      overrideAccess: true,
+    })
+    const note = `📧 Khách để lại liên hệ — ${name ? name + ' · ' : ''}${email}`
+    await req.payload.create({
+      collection: 'chat-messages',
+      data: { conversation: conv.id, sender: 'system', text: 'Đã gửi thông tin liên hệ. Chúng tôi sẽ phản hồi sớm.' } as never,
+      overrideAccess: true,
+    })
+    const cfg = await getChatConfig(req.payload)
+    if (isTelegramReady(cfg) && typeof conv.telegramTopicId === 'number') {
+      try {
+        await sendToTopic(cfg, conv.telegramTopicId, note)
+      } catch {
+        /* im lặng */
+      }
+    }
+    return json({ ok: true })
+  },
+}
+
+// ── POST /api/chat/telegram-setup ────────────────────────────────────────────
+// Admin: kiểm tra token/chat/Topics + đăng ký webhook. Trả trạng thái từng bước.
+const setupEndpoint: Endpoint = {
+  path: '/chat/telegram-setup',
+  method: 'post',
+  handler: async (req: PayloadRequest): Promise<Response> => {
+    if ((req.user as { role?: string } | undefined)?.role !== 'admin') {
+      return json({ ok: false, error: 'Chỉ admin.' }, 403)
+    }
+    const cfg = await getChatConfig(req.payload)
+    if (!cfg.botToken) return json({ ok: false, error: 'Chưa có Bot Token (Cài đặt Chat hoặc TELEGRAM_BOT_TOKEN).' }, 400)
+    if (!cfg.salesChatId) return json({ ok: false, error: 'Chưa có Chat ID nhóm sales.' }, 400)
+
+    const steps: Record<string, string> = {}
+    try {
+      const me = await getMe(cfg)
+      steps.bot = `✓ Bot @${me.username ?? '?'}`
+    } catch (e) {
+      return json({ ok: false, error: `Token sai: ${e instanceof Error ? e.message : String(e)}`, steps }, 400)
+    }
+    try {
+      const chat = await getChat(cfg)
+      if (!chat.is_forum) {
+        return json({ ok: false, error: 'Nhóm CHƯA bật Topics. Vào cài đặt nhóm → bật "Topics" rồi thử lại.', steps }, 400)
+      }
+      steps.chat = `✓ Nhóm "${chat.title ?? ''}" đã bật Topics`
+    } catch (e) {
+      return json({ ok: false, error: `Không đọc được nhóm (bot đã vào nhóm + là admin?): ${e instanceof Error ? e.message : String(e)}`, steps }, 400)
+    }
+    try {
+      const base = (process.env.PAYLOAD_PUBLIC_SERVER_URL || '').replace(/\/$/, '')
+      if (!base) return json({ ok: false, error: 'Thiếu PAYLOAD_PUBLIC_SERVER_URL để đăng ký webhook.', steps }, 500)
+      await setWebhook(cfg, `${base}/api/telegram/webhook`)
+      steps.webhook = `✓ Đã đăng ký webhook → ${base}/api/telegram/webhook`
+    } catch (e) {
+      return json({ ok: false, error: `Đăng ký webhook lỗi: ${e instanceof Error ? e.message : String(e)}`, steps }, 400)
+    }
+    return json({ ok: true, message: 'Kết nối Telegram OK — sẵn sàng nhận/gửi tin.', steps })
+  },
+}
+
 async function findByToken(req: PayloadRequest, token: string) {
   const r = await req.payload.find({
     collection: 'chat-conversations',
@@ -209,4 +300,12 @@ async function findByToken(req: PayloadRequest, token: string) {
   return r.docs[0] as { id: number | string; telegramTopicId?: number } | undefined
 }
 
-export const chatEndpoints: Endpoint[] = [configEndpoint, startEndpoint, messageEndpoint, pollEndpoint, webhookEndpoint]
+export const chatEndpoints: Endpoint[] = [
+  configEndpoint,
+  startEndpoint,
+  messageEndpoint,
+  pollEndpoint,
+  contactEndpoint,
+  webhookEndpoint,
+  setupEndpoint,
+]

@@ -77,3 +77,13 @@ export async function setWebhook(c: ChatConfig, url: string): Promise<void> {
     allowed_updates: ['message'],
   })
 }
+
+/** Kiểm tra token hợp lệ → trả tên bot. */
+export async function getMe(c: ChatConfig): Promise<{ username?: string }> {
+  return tg<{ username?: string }>(c.botToken, 'getMe', {})
+}
+
+/** Kiểm tra nhóm: tồn tại + đã bật Topics chưa (is_forum). */
+export async function getChat(c: ChatConfig): Promise<{ title?: string; is_forum?: boolean; type?: string }> {
+  return tg<{ title?: string; is_forum?: boolean; type?: string }>(c.botToken, 'getChat', { chat_id: c.salesChatId })
+}

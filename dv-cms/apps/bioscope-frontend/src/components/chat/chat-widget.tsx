@@ -23,6 +23,9 @@ export function ChatWidget() {
   const [online, setOnline] = useState(true)
   const [offlineMsg, setOfflineMsg] = useState('')
   const [starting, setStarting] = useState(false)
+  const [consented, setConsented] = useState(false)
+  const [contact, setContact] = useState({ name: '', email: '' })
+  const [contactSent, setContactSent] = useState(false)
   const lastId = useRef(0)
   const listRef = useRef<HTMLDivElement>(null)
 
@@ -38,6 +41,7 @@ export function ChatWidget() {
       })
       .catch(() => {})
     setToken(localStorage.getItem(LS_TOKEN))
+    setConsented(localStorage.getItem('bsChatConsent') === '1')
   }, [])
 
   const scrollDown = useCallback(() => {
@@ -69,10 +73,30 @@ export function ChatWidget() {
     }
   }, [token, starting])
 
-  // Mở lần đầu → bắt đầu hội thoại.
+  // Mở lần đầu (đã đồng ý) → bắt đầu hội thoại.
   useEffect(() => {
-    if (open && !token) void start()
-  }, [open, token, start])
+    if (open && consented && !token) void start()
+  }, [open, consented, token, start])
+
+  const agree = () => {
+    localStorage.setItem('bsChatConsent', '1')
+    setConsented(true)
+  }
+
+  const sendContact = async () => {
+    if (!token || !/.+@.+\..+/.test(contact.email)) return
+    try {
+      await fetch('/api/chat/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, name: contact.name, email: contact.email }),
+      })
+      setContactSent(true)
+      setMessages((m) => [...m, { sender: 'system', text: 'Cảm ơn bạn — chúng tôi sẽ liên hệ qua email sớm nhất.' }])
+    } catch {
+      /* im lặng */
+    }
+  }
 
   // Poll tin trả lời khi có token.
   useEffect(() => {
@@ -140,6 +164,27 @@ export function ChatWidget() {
             </button>
           </div>
 
+          {!consented ? (
+            /* Màn hình đồng ý (GDPR) trước khi bắt đầu chat */
+            <div className="flex flex-1 flex-col justify-center gap-4 bg-mist/30 px-6 py-8 text-center">
+              <MessageCircle className="mx-auto h-9 w-9 text-primary/70" />
+              <p className="text-[13.5px] leading-relaxed text-ink/70">
+                Bằng việc bắt đầu trò chuyện, bạn đồng ý để Bioscope lưu nội dung tin nhắn nhằm hỗ trợ bạn, theo{' '}
+                <a href="/chinh-sach-bao-mat" className="font-semibold text-primary underline">
+                  Chính sách bảo mật
+                </a>
+                .
+              </p>
+              <button
+                type="button"
+                onClick={agree}
+                className="mx-auto rounded-full bg-primary px-6 py-2.5 text-[14px] font-semibold text-white hover:bg-primary-dark"
+              >
+                Đồng ý &amp; bắt đầu
+              </button>
+            </div>
+          ) : (
+            <>
           {/* Messages */}
           <div ref={listRef} className="flex-1 space-y-2.5 overflow-y-auto bg-mist/40 px-3.5 py-4">
             {messages.map((m, i) => (
@@ -164,6 +209,29 @@ export function ChatWidget() {
             {starting && <p className="text-center text-[12.5px] text-ink/40">Đang kết nối…</p>}
           </div>
 
+          {/* Form để lại email khi ngoài giờ */}
+          {!online && !contactSent && (
+            <div className="border-t border-primary-border/50 bg-accent-soft/60 px-3.5 py-3">
+              <p className="mb-2 text-[12.5px] font-medium text-ink/70">Để lại email, chúng tôi sẽ liên hệ lại:</p>
+              <div className="flex gap-2">
+                <input
+                  value={contact.email}
+                  onChange={(e) => setContact((c) => ({ ...c, email: e.target.value }))}
+                  placeholder="email@congty.com"
+                  className="min-w-0 flex-1 rounded-full border border-primary-border bg-white px-3.5 py-2 text-[13px] outline-none focus:border-primary/50"
+                />
+                <button
+                  type="button"
+                  onClick={() => void sendContact()}
+                  disabled={!/.+@.+\..+/.test(contact.email)}
+                  className="shrink-0 rounded-full bg-primary px-4 py-2 text-[13px] font-semibold text-white hover:bg-primary-dark disabled:opacity-40"
+                >
+                  Gửi
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Input */}
           <form
             onSubmit={(e) => {
@@ -187,6 +255,8 @@ export function ChatWidget() {
               <Send className="h-4 w-4" />
             </button>
           </form>
+            </>
+          )}
         </div>
       )}
 

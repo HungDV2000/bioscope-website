@@ -56,6 +56,11 @@ export const ChatSettings: GlobalConfig = {
               label: { en: 'Webhook secret', vi: 'Khoá webhook' },
               admin: { description: 'Chuỗi bí mật xác thực webhook Telegram. (fallback: TELEGRAM_WEBHOOK_SECRET)' },
             },
+            {
+              name: 'setup',
+              type: 'ui',
+              admin: { components: { Field: '/components/TelegramSetup/TelegramSetup#TelegramSetup' } },
+            },
           ],
         },
         {

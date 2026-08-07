@@ -3,8 +3,28 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { MessageCircle, X, Send } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useLocale } from '@/lib/i18n/context'
 
 type Msg = { id?: number; sender: 'visitor' | 'agent' | 'system'; text: string; agentName?: string | null }
+
+const STRINGS = {
+  vi: {
+    online: 'Đang trực tuyến', offline: 'Ngoài giờ', close: 'Đóng', connecting: 'Đang kết nối…',
+    consentBefore: 'Bằng việc bắt đầu trò chuyện, bạn đồng ý để Bioscope lưu nội dung tin nhắn nhằm hỗ trợ bạn, theo',
+    privacy: 'Chính sách bảo mật', agree: 'Đồng ý & bắt đầu',
+    leaveEmail: 'Để lại email, chúng tôi sẽ liên hệ lại:', emailPh: 'email@congty.com', send: 'Gửi',
+    thanks: 'Cảm ơn bạn — chúng tôi sẽ liên hệ qua email sớm nhất.', inputPh: 'Nhập tin nhắn…',
+    openChat: 'Mở chat hỗ trợ', closeChat: 'Đóng chat',
+  },
+  en: {
+    online: 'Online', offline: 'Away', close: 'Close', connecting: 'Connecting…',
+    consentBefore: 'By starting a chat, you agree that Bioscope stores your messages to assist you, per our',
+    privacy: 'Privacy Policy', agree: 'Agree & start',
+    leaveEmail: "Leave your email and we'll get back to you:", emailPh: 'email@company.com', send: 'Send',
+    thanks: "Thanks — we'll email you soon.", inputPh: 'Type a message…',
+    openChat: 'Open support chat', closeChat: 'Close chat',
+  },
+}
 
 const LS_TOKEN = 'bsChatToken'
 const LS_CONV = 'bsChatConvId'
@@ -14,6 +34,8 @@ const LS_CONV = 'bsChatConvId'
  * admin bật chat. Poll mỗi 4s để nhận trả lời của sales.
  */
 export function ChatWidget() {
+  const { locale } = useLocale()
+  const T = STRINGS[locale] ?? STRINGS.vi
   const [enabled, setEnabled] = useState(false)
   const [title, setTitle] = useState('Bioscope hỗ trợ')
   const [open, setOpen] = useState(false)
@@ -37,7 +59,7 @@ export function ChatWidget() {
 
   // Kiểm tra chat có bật không.
   useEffect(() => {
-    fetch('/api/chat/config')
+    fetch(`/api/chat/config?locale=${locale}`)
       .then((r) => r.json())
       .then((d) => {
         if (d?.enabled) {
@@ -48,7 +70,8 @@ export function ChatWidget() {
       .catch(() => {})
     setToken(localStorage.getItem(LS_TOKEN))
     setConsented(localStorage.getItem('bsChatConsent') === '1')
-  }, [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [locale])
 
   const scrollDown = useCallback(() => {
     requestAnimationFrame(() => listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: 'smooth' }))
@@ -58,7 +81,7 @@ export function ChatWidget() {
     if (token || starting) return
     setStarting(true)
     try {
-      const r = await fetch('/api/chat/start', {
+      const r = await fetch(`/api/chat/start?locale=${locale}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ startPage: location.pathname, userAgent: navigator.userAgent }),
@@ -77,7 +100,7 @@ export function ChatWidget() {
     } finally {
       setStarting(false)
     }
-  }, [token, starting])
+  }, [token, starting, locale])
 
   // Mở lần đầu (đã đồng ý) → bắt đầu hội thoại.
   useEffect(() => {
@@ -98,7 +121,7 @@ export function ChatWidget() {
         body: JSON.stringify({ token, name: contact.name, email: contact.email }),
       })
       setContactSent(true)
-      setMessages((m) => [...m, { sender: 'system', text: 'Cảm ơn bạn — chúng tôi sẽ liên hệ qua email sớm nhất.' }])
+      setMessages((m) => [...m, { sender: 'system', text: T.thanks }])
     } catch {
       /* im lặng */
     }
@@ -162,11 +185,11 @@ export function ChatWidget() {
                 <div className="text-[14.5px] font-bold">{title}</div>
                 <div className="flex items-center gap-1.5 text-[11.5px] text-white/80">
                   <span className={cn('h-2 w-2 rounded-full', online ? 'bg-green-300' : 'bg-white/50')} />
-                  {online ? 'Đang trực tuyến' : 'Ngoài giờ'}
+                  {online ? T.online : T.offline}
                 </div>
               </div>
             </div>
-            <button type="button" onClick={() => setOpen(false)} aria-label="Đóng" className="grid h-8 w-8 place-items-center rounded-full hover:bg-white/15">
+            <button type="button" onClick={() => setOpen(false)} aria-label={T.close} className="grid h-8 w-8 place-items-center rounded-full hover:bg-white/15">
               <X className="h-4 w-4" />
             </button>
           </div>
@@ -176,9 +199,9 @@ export function ChatWidget() {
             <div className="flex flex-1 flex-col justify-center gap-4 bg-mist/30 px-6 py-8 text-center">
               <MessageCircle className="mx-auto h-9 w-9 text-primary/70" />
               <p className="text-[13.5px] leading-relaxed text-ink/70">
-                Bằng việc bắt đầu trò chuyện, bạn đồng ý để Bioscope lưu nội dung tin nhắn nhằm hỗ trợ bạn, theo{' '}
+                {T.consentBefore}{' '}
                 <a href="/chinh-sach-bao-mat" className="font-semibold text-primary underline">
-                  Chính sách bảo mật
+                  {T.privacy}
                 </a>
                 .
               </p>
@@ -187,7 +210,7 @@ export function ChatWidget() {
                 onClick={agree}
                 className="mx-auto rounded-full bg-primary px-6 py-2.5 text-[14px] font-semibold text-white hover:bg-primary-dark"
               >
-                Đồng ý &amp; bắt đầu
+                {T.agree}
               </button>
             </div>
           ) : (
@@ -213,18 +236,18 @@ export function ChatWidget() {
                 </div>
               </div>
             ))}
-            {starting && <p className="text-center text-[12.5px] text-ink/40">Đang kết nối…</p>}
+            {starting && <p className="text-center text-[12.5px] text-ink/40">{T.connecting}</p>}
           </div>
 
           {/* Form để lại email khi ngoài giờ */}
           {!online && !contactSent && (
             <div className="border-t border-primary-border/50 bg-accent-soft/60 px-3.5 py-3">
-              <p className="mb-2 text-[12.5px] font-medium text-ink/70">Để lại email, chúng tôi sẽ liên hệ lại:</p>
+              <p className="mb-2 text-[12.5px] font-medium text-ink/70">{T.leaveEmail}</p>
               <div className="flex gap-2">
                 <input
                   value={contact.email}
                   onChange={(e) => setContact((c) => ({ ...c, email: e.target.value }))}
-                  placeholder="email@congty.com"
+                  placeholder={T.emailPh}
                   className="min-w-0 flex-1 rounded-full border border-primary-border bg-white px-3.5 py-2 text-[13px] outline-none focus:border-primary/50"
                 />
                 <button
@@ -233,7 +256,7 @@ export function ChatWidget() {
                   disabled={!/.+@.+\..+/.test(contact.email)}
                   className="shrink-0 rounded-full bg-primary px-4 py-2 text-[13px] font-semibold text-white hover:bg-primary-dark disabled:opacity-40"
                 >
-                  Gửi
+                  {T.send}
                 </button>
               </div>
             </div>
@@ -250,7 +273,7 @@ export function ChatWidget() {
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Nhập tin nhắn…"
+              placeholder={T.inputPh}
               className="min-w-0 flex-1 rounded-full border border-primary-border bg-mist/40 px-4 py-2.5 text-[14px] outline-none focus:border-primary/50"
             />
             <button
@@ -271,7 +294,7 @@ export function ChatWidget() {
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        aria-label={open ? 'Đóng chat' : 'Mở chat hỗ trợ'}
+        aria-label={open ? T.closeChat : T.openChat}
         className="relative grid h-14 w-14 place-items-center rounded-full bg-primary text-white shadow-card transition-transform hover:scale-105 active:scale-95"
       >
         {open ? <X className="h-6 w-6" /> : <MessageCircle className="h-6 w-6" />}

@@ -25,7 +25,7 @@ const configEndpoint: Endpoint = {
   path: '/chat/config',
   method: 'get',
   handler: async (req: PayloadRequest): Promise<Response> => {
-    const cfg = await getChatConfig(req.payload)
+    const cfg = await getChatConfig(req.payload, String(req.query?.locale ?? 'vi'))
     return json({ ok: true, enabled: cfg.enabled, widgetTitle: cfg.widgetTitle })
   },
 }
@@ -35,7 +35,7 @@ const startEndpoint: Endpoint = {
   path: '/chat/start',
   method: 'post',
   handler: async (req: PayloadRequest): Promise<Response> => {
-    const cfg = await getChatConfig(req.payload)
+    const cfg = await getChatConfig(req.payload, String(req.query?.locale ?? 'vi'))
     if (!cfg.enabled) return json({ ok: false, error: 'Chat đang tắt.' }, 403)
     // Chống spam tạo hội thoại/topic: tối đa 5 hội thoại/10 phút mỗi IP.
     if (!rateLimit(`start:${clientIp(req)}`, 5, 10 * 60 * 1000)) {

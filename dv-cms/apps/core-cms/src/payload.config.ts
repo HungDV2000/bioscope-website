@@ -198,6 +198,12 @@ export default buildConfig({
     } catch (err) {
       payload.logger.error(`[scheduled-publish] onInit lỗi: ${String(err)}`)
     }
+    try {
+      const { startChatRetention } = await import('./lib/chatRetention.js')
+      startChatRetention(payload)
+    } catch (err) {
+      payload.logger.error(`[chat-retention] onInit lỗi: ${String(err)}`)
+    }
   },
   plugins: [
     // Tier 1 — generic core (must come first: users + media).

@@ -26,8 +26,14 @@ export function ChatWidget() {
   const [consented, setConsented] = useState(false)
   const [contact, setContact] = useState({ name: '', email: '' })
   const [contactSent, setContactSent] = useState(false)
+  const [unread, setUnread] = useState(0)
   const lastId = useRef(0)
+  const openRef = useRef(false)
   const listRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    openRef.current = open
+    if (open) setUnread(0)
+  }, [open])
 
   // Kiểm tra chat có bật không.
   useEffect(() => {
@@ -108,6 +114,7 @@ export function ChatWidget() {
         if (!stop && r?.messages?.length) {
           for (const m of r.messages as Msg[]) if (m.id && m.id > lastId.current) lastId.current = m.id
           setMessages((prev) => [...prev, ...(r.messages as Msg[])])
+          if (!openRef.current) setUnread((n) => n + (r.messages as Msg[]).length)
           scrollDown()
         }
       } catch {
@@ -265,9 +272,14 @@ export function ChatWidget() {
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-label={open ? 'Đóng chat' : 'Mở chat hỗ trợ'}
-        className="grid h-14 w-14 place-items-center rounded-full bg-primary text-white shadow-card transition-transform hover:scale-105 active:scale-95"
+        className="relative grid h-14 w-14 place-items-center rounded-full bg-primary text-white shadow-card transition-transform hover:scale-105 active:scale-95"
       >
         {open ? <X className="h-6 w-6" /> : <MessageCircle className="h-6 w-6" />}
+        {!open && unread > 0 && (
+          <span className="absolute -right-0.5 -top-0.5 grid h-6 min-w-6 place-items-center rounded-full bg-accent px-1.5 text-[11px] font-bold text-white ring-2 ring-white">
+            {unread > 9 ? '9+' : unread}
+          </span>
+        )}
       </button>
     </div>
   )

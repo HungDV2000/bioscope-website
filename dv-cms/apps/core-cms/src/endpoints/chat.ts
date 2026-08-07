@@ -172,10 +172,24 @@ const webhookEndpoint: Endpoint = {
     }
     const update = await readBody(req)
     const msg = update.message as
-      | { message_thread_id?: number; text?: string; from?: { is_bot?: boolean; first_name?: string; username?: string } }
+      | {
+          message_thread_id?: number
+          text?: string
+          caption?: string
+          photo?: unknown[]
+          document?: unknown
+          voice?: unknown
+          sticker?: unknown
+          from?: { is_bot?: boolean; first_name?: string; username?: string }
+        }
       | undefined
-    // Chỉ xử lý tin có text, trong một topic, KHÔNG phải của bot.
-    if (!msg?.text || !msg.message_thread_id || msg.from?.is_bot) return json({ ok: true })
+    if (!msg || !msg.message_thread_id || msg.from?.is_bot) return json({ ok: true })
+    // Text, hoặc nhãn cho ảnh/tệp/thoại (nhóm 8).
+    const text =
+      msg.text ||
+      msg.caption ||
+      (msg.photo ? '📷 [Sales đã gửi ảnh]' : msg.document ? '📎 [Sales đã gửi tệp]' : msg.voice ? '🎤 [tin thoại]' : msg.sticker ? '[sticker]' : '')
+    if (!text) return json({ ok: true })
 
     const conv = await req.payload.find({
       collection: 'chat-conversations',
@@ -192,7 +206,7 @@ const webhookEndpoint: Endpoint = {
       data: {
         conversation: c.id,
         sender: 'agent',
-        text: msg.text.slice(0, 4000),
+        text: text.slice(0, 4000),
         agentName: msg.from?.first_name ?? msg.from?.username ?? 'Sales',
       } as never,
       overrideAccess: true,

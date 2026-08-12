@@ -59,14 +59,18 @@ export async function createTopic(c: ChatConfig, name: string): Promise<number> 
   return r.message_thread_id
 }
 
-/** Gửi tin vào đúng topic của hội thoại. */
-export async function sendToTopic(c: ChatConfig, threadId: number, text: string): Promise<void> {
-  await tg(c.botToken, 'sendMessage', {
+/**
+ * Gửi tin vào nhóm — trả về message_id (để map reply khi nhóm KHÔNG dùng Topics).
+ * threadId undefined = gửi vào nhóm chung (không topic).
+ */
+export async function sendMessage(c: ChatConfig, text: string, threadId?: number | null): Promise<number> {
+  const r = await tg<{ message_id: number }>(c.botToken, 'sendMessage', {
     chat_id: c.salesChatId,
-    message_thread_id: threadId,
+    ...(threadId ? { message_thread_id: threadId } : {}),
     text,
     disable_web_page_preview: true,
   })
+  return r.message_id
 }
 
 /** Đăng ký webhook Telegram → CMS. Gọi khi đổi token / lần đầu. */

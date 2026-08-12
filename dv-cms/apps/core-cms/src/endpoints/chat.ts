@@ -7,8 +7,9 @@
  */
 import type { Endpoint, PayloadRequest } from 'payload'
 import { randomUUID } from 'crypto'
-import { getChatConfig, isTelegramReady, createTopic, sendToTopic, getMe, getChat, setWebhook } from '../lib/chatTelegram.js'
+import { getChatConfig, isTelegramReady, createTopic, sendMessage, getMe, getChat, setWebhook } from '../lib/chatTelegram.js'
 import { rateLimit, clientIp } from '../lib/rateLimit.js'
+import { lookupGeo } from '../lib/geo.js'
 
 const json = (data: unknown, status = 200) => Response.json(data as never, { status })
 const readBody = async (req: PayloadRequest): Promise<Record<string, unknown>> => {
@@ -44,30 +45,75 @@ const startEndpoint: Endpoint = {
 
     const body = await readBody(req)
     const startPage = String(body.startPage ?? '').slice(0, 300)
+    const userAgent = String(body.userAgent ?? '').slice(0, 300)
     const token = randomUUID()
+
+    // Định danh: proxy frontend đính kèm thông tin thành viên nếu đã đăng nhập.
+    const loggedIn = body.loggedIn === true
+    const memberName = String(body.memberName ?? '').slice(0, 120)
+    const memberEmail = String(body.memberEmail ?? '').slice(0, 200)
+    const ip = clientIp(req)
+    const location = await lookupGeo(ip)
+
+    const who = loggedIn ? `Thành viên: ${memberName || memberEmail}` : 'Khách vãng lai (chưa đăng nhập)'
 
     let topicId: number | undefined
     if (isTelegramReady(cfg)) {
       try {
-        topicId = await createTopic(cfg, `Khách web · ${startPage || 'trang chủ'}`)
+        // Tên topic gắn danh tính để sales nhận ra ngay.
+        topicId = await createTopic(cfg, `${loggedIn ? '👤 ' + (memberName || memberEmail) : '👥 Khách'} · ${startPage || '/'}`)
       } catch (e) {
-        req.payload.logger.error(`[chat] tạo topic lỗi: ${String(e)}`)
+        // Nhóm chưa bật Topics → dùng chung nhóm (map reply-to). Không chặn chat.
+        req.payload.logger.warn(`[chat] không tạo được topic (nhóm chưa bật Topics?), dùng chung nhóm: ${String(e)}`)
       }
     }
 
     const conv = await req.payload.create({
       collection: 'chat-conversations',
       data: {
-        title: `Khách · ${startPage || '/'} · ${new Date().toLocaleString('vi-VN')}`,
+        title: `${loggedIn ? memberName || memberEmail : 'Khách'} · ${startPage || '/'} · ${new Date().toLocaleString('vi-VN')}`,
         sessionToken: token,
         status: 'open',
         telegramTopicId: topicId,
         startPage,
-        userAgent: String(body.userAgent ?? '').slice(0, 300),
+        userAgent,
+        loggedIn,
+        visitorName: memberName || undefined,
+        visitorEmail: memberEmail || undefined,
+        visitorIp: ip,
+        location: location || undefined,
         lastMessageAt: new Date().toISOString(),
       } as never,
       overrideAccess: true,
     })
+
+    // Gửi thẻ giới thiệu vào Telegram để sales biết AI ĐANG CHAT.
+    if (isTelegramReady(cfg)) {
+      const intro = [
+        `🆕 Khách mới bắt đầu chat`,
+        who,
+        location && `📍 ${location}`,
+        ip && `🌐 IP: ${ip}`,
+        userAgent && `🖥 ${userAgent.slice(0, 120)}`,
+        `🔗 Trang: ${startPage || '/'}`,
+        !topicId ? `\n#hs${conv.id} — Sales trả lời bằng cách REPLY vào tin này.` : '',
+      ]
+        .filter(Boolean)
+        .join('\n')
+      try {
+        const mid = await sendMessage(cfg, intro, topicId)
+        // Không topic: lưu message_id của thẻ intro để map reply về hội thoại.
+        if (!topicId) {
+          await req.payload.create({
+            collection: 'chat-messages',
+            data: { conversation: conv.id, sender: 'system', text: intro, telegramMessageId: mid } as never,
+            overrideAccess: true,
+          })
+        }
+      } catch (e) {
+        req.payload.logger.error(`[chat] gửi thẻ giới thiệu lỗi: ${String(e)}`)
+      }
+    }
 
     return json({
       ok: true,
@@ -111,11 +157,22 @@ const messageEndpoint: Endpoint = {
     })
 
     const cfg = await getChatConfig(req.payload)
-    if (isTelegramReady(cfg) && typeof conv.telegramTopicId === 'number') {
+    if (isTelegramReady(cfg)) {
       try {
-        await sendToTopic(cfg, conv.telegramTopicId, text)
+        const topicId = typeof conv.telegramTopicId === 'number' ? conv.telegramTopicId : undefined
+        // Không topic → gắn tag #hs<id> để sales biết của khách nào + reply map về.
+        const out = topicId ? text : `💬 #hs${conv.id}: ${text}`
+        const mid = await sendMessage(cfg, out, topicId)
+        if (!topicId) {
+          await req.payload.update({
+            collection: 'chat-messages',
+            id: msg.id,
+            data: { telegramMessageId: mid } as never,
+            overrideAccess: true,
+          })
+        }
       } catch (e) {
-        req.payload.logger.error(`[chat] gửi topic lỗi: ${String(e)}`)
+        req.payload.logger.error(`[chat] gửi Telegram lỗi: ${String(e)}`)
       }
     }
     return json({ ok: true, id: msg.id })
@@ -154,6 +211,7 @@ const pollEndpoint: Endpoint = {
         sender: (m as { sender: string }).sender,
         text: (m as { text: string }).text,
         agentName: (m as { agentName?: string }).agentName ?? null,
+        createdAt: (m as { createdAt?: string }).createdAt ?? null,
       })),
     })
   },
@@ -174,6 +232,7 @@ const webhookEndpoint: Endpoint = {
     const msg = update.message as
       | {
           message_thread_id?: number
+          reply_to_message?: { message_id?: number }
           text?: string
           caption?: string
           photo?: unknown[]
@@ -183,7 +242,7 @@ const webhookEndpoint: Endpoint = {
           from?: { is_bot?: boolean; first_name?: string; username?: string }
         }
       | undefined
-    if (!msg || !msg.message_thread_id || msg.from?.is_bot) return json({ ok: true })
+    if (!msg || msg.from?.is_bot) return json({ ok: true })
     // Text, hoặc nhãn cho ảnh/tệp/thoại (nhóm 8).
     const text =
       msg.text ||
@@ -191,15 +250,32 @@ const webhookEndpoint: Endpoint = {
       (msg.photo ? '📷 [Sales đã gửi ảnh]' : msg.document ? '📎 [Sales đã gửi tệp]' : msg.voice ? '🎤 [tin thoại]' : msg.sticker ? '[sticker]' : '')
     if (!text) return json({ ok: true })
 
-    const conv = await req.payload.find({
-      collection: 'chat-conversations',
-      where: { telegramTopicId: { equals: msg.message_thread_id } },
-      limit: 1,
-      depth: 0,
-      overrideAccess: true,
-    })
-    const c = conv.docs[0]
-    if (!c) return json({ ok: true }) // topic không map được → bỏ qua
+    // Map tin sales về hội thoại:
+    //  1) Nhóm dùng Topics → theo message_thread_id.
+    //  2) Nhóm thường (không Topics) → sales REPLY vào tin của bot → theo
+    //     reply_to_message.message_id đã lưu ở telegramMessageId.
+    let c: { id: number | string } | undefined
+    if (msg.message_thread_id) {
+      const conv = await req.payload.find({
+        collection: 'chat-conversations',
+        where: { telegramTopicId: { equals: msg.message_thread_id } },
+        limit: 1,
+        depth: 0,
+        overrideAccess: true,
+      })
+      c = conv.docs[0] as { id: number | string } | undefined
+    } else if (msg.reply_to_message?.message_id) {
+      const rel = await req.payload.find({
+        collection: 'chat-messages',
+        where: { telegramMessageId: { equals: msg.reply_to_message.message_id } },
+        limit: 1,
+        depth: 0,
+        overrideAccess: true,
+      })
+      const relMsg = rel.docs[0] as { conversation?: number | string } | undefined
+      if (relMsg?.conversation != null) c = { id: relMsg.conversation }
+    }
+    if (!c) return json({ ok: true }) // không map được → bỏ qua (vd sales chat linh tinh)
 
     await req.payload.create({
       collection: 'chat-messages',
@@ -244,16 +320,17 @@ const contactEndpoint: Endpoint = {
       data: { visitorName: name || undefined, visitorEmail: email, lastMessageAt: new Date().toISOString() } as never,
       overrideAccess: true,
     })
-    const note = `📧 Khách để lại liên hệ — ${name ? name + ' · ' : ''}${email}`
     await req.payload.create({
       collection: 'chat-messages',
       data: { conversation: conv.id, sender: 'system', text: 'Đã gửi thông tin liên hệ. Chúng tôi sẽ phản hồi sớm.' } as never,
       overrideAccess: true,
     })
     const cfg = await getChatConfig(req.payload)
-    if (isTelegramReady(cfg) && typeof conv.telegramTopicId === 'number') {
+    if (isTelegramReady(cfg)) {
       try {
-        await sendToTopic(cfg, conv.telegramTopicId, note)
+        const topicId = typeof conv.telegramTopicId === 'number' ? conv.telegramTopicId : undefined
+        const note = `📧 ${topicId ? '' : `#hs${conv.id} `}Khách để lại liên hệ — ${name ? name + ' · ' : ''}${email}`
+        await sendMessage(cfg, note, topicId)
       } catch {
         /* im lặng */
       }
@@ -284,10 +361,9 @@ const setupEndpoint: Endpoint = {
     }
     try {
       const chat = await getChat(cfg)
-      if (!chat.is_forum) {
-        return json({ ok: false, error: 'Nhóm CHƯA bật Topics. Vào cài đặt nhóm → bật "Topics" rồi thử lại.', steps }, 400)
-      }
-      steps.chat = `✓ Nhóm "${chat.title ?? ''}" đã bật Topics`
+      steps.chat = chat.is_forum
+        ? `✓ Nhóm "${chat.title ?? ''}" đã bật Topics — mỗi khách một topic riêng.`
+        : `✓ Nhóm "${chat.title ?? ''}" (không bật Topics) — sales trả lời bằng cách REPLY vào tin của bot.`
     } catch (e) {
       return json({ ok: false, error: `Không đọc được nhóm (bot đã vào nhóm + là admin?): ${e instanceof Error ? e.message : String(e)}`, steps }, 400)
     }

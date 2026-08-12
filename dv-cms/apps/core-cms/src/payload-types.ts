@@ -296,6 +296,9 @@ export interface ChatConversation {
   status?: ('open' | 'closed') | null;
   visitorName?: string | null;
   visitorEmail?: string | null;
+  loggedIn?: boolean | null;
+  visitorIp?: string | null;
+  location?: string | null;
   telegramTopicId?: number | null;
   startPage?: string | null;
   userAgent?: string | null;
@@ -3189,6 +3192,9 @@ export interface ChatConversationsSelect<T extends boolean = true> {
   status?: T;
   visitorName?: T;
   visitorEmail?: T;
+  loggedIn?: T;
+  visitorIp?: T;
+  location?: T;
   telegramTopicId?: T;
   startPage?: T;
   userAgent?: T;

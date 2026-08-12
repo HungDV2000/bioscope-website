@@ -31,6 +31,6 @@ export const ChatMessages: CollectionConfig = {
     },
     { name: 'text', type: 'textarea', required: true },
     { name: 'agentName', type: 'text', label: { en: 'Agent name', vi: 'Tên sales' } },
-    { name: 'telegramMessageId', type: 'number', admin: { hidden: true } },
+    { name: 'telegramMessageId', type: 'number', index: true, admin: { hidden: true } },
   ],
 }

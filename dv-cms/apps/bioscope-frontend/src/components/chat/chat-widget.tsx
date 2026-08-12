@@ -5,7 +5,13 @@ import { MessageCircle, X, Send } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useLocale } from '@/lib/i18n/context'
 
-type Msg = { id?: number; sender: 'visitor' | 'agent' | 'system'; text: string; agentName?: string | null }
+type Msg = { id?: number; sender: 'visitor' | 'agent' | 'system'; text: string; agentName?: string | null; createdAt?: string | null }
+
+/** Giờ:phút của tin nhắn (dùng giờ máy khách). */
+const fmtTime = (iso?: string | null) => {
+  const d = iso ? new Date(iso) : new Date()
+  return isNaN(d.getTime()) ? '' : d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+}
 
 const STRINGS = {
   vi: {
@@ -92,9 +98,9 @@ export function ChatWidget() {
         localStorage.setItem(LS_CONV, String(r.conversationId))
         setOnline(r.online !== false)
         setOfflineMsg(r.offlineMessage ?? '')
-        setMessages([{ sender: 'system', text: r.welcomeMessage ?? 'Chào bạn 👋' }])
+        setMessages([{ sender: 'system', text: r.welcomeMessage ?? 'Chào bạn 👋', createdAt: new Date().toISOString() }])
         if (r.online === false && r.offlineMessage) {
-          setMessages((m) => [...m, { sender: 'system', text: r.offlineMessage }])
+          setMessages((m) => [...m, { sender: 'system', text: r.offlineMessage, createdAt: new Date().toISOString() }])
         }
       }
     } finally {
@@ -121,7 +127,7 @@ export function ChatWidget() {
         body: JSON.stringify({ token, name: contact.name, email: contact.email }),
       })
       setContactSent(true)
-      setMessages((m) => [...m, { sender: 'system', text: T.thanks }])
+      setMessages((m) => [...m, { sender: 'system', text: T.thanks, createdAt: new Date().toISOString() }])
     } catch {
       /* im lặng */
     }
@@ -156,7 +162,7 @@ export function ChatWidget() {
     const text = input.trim()
     if (!text || !token) return
     setInput('')
-    setMessages((m) => [...m, { sender: 'visitor', text }])
+    setMessages((m) => [...m, { sender: 'visitor', text, createdAt: new Date().toISOString() }])
     scrollDown()
     try {
       await fetch('/api/chat/message', {
@@ -165,7 +171,7 @@ export function ChatWidget() {
         body: JSON.stringify({ token, text }),
       })
     } catch {
-      setMessages((m) => [...m, { sender: 'system', text: '⚠️ Gửi lỗi, thử lại giúp nhé.' }])
+      setMessages((m) => [...m, { sender: 'system', text: '⚠️ Gửi lỗi, thử lại giúp nhé.', createdAt: new Date().toISOString() }])
     }
   }
 
@@ -233,6 +239,14 @@ export function ChatWidget() {
                     <div className="mb-0.5 text-[11px] font-semibold text-primary-dark">{m.agentName}</div>
                   )}
                   {m.text}
+                  <div
+                    className={cn(
+                      'mt-1 text-[10.5px] tabular-nums',
+                      m.sender === 'visitor' ? 'text-right text-white/70' : 'text-ink/40',
+                    )}
+                  >
+                    {fmtTime(m.createdAt)}
+                  </div>
                 </div>
               </div>
             ))}

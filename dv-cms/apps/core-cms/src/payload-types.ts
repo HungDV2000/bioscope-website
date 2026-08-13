@@ -162,6 +162,7 @@ export interface Config {
   fallbackLocale: ('false' | 'none' | 'null') | false | null | ('vi' | 'en') | ('vi' | 'en')[];
   globals: {
     'chat-settings': ChatSetting;
+    'auth-settings': AuthSetting;
     'site-settings': SiteSetting;
     navigation: Navigation;
     branding: Branding;
@@ -174,6 +175,7 @@ export interface Config {
   };
   globalsSelect: {
     'chat-settings': ChatSettingsSelect<false> | ChatSettingsSelect<true>;
+    'auth-settings': AuthSettingsSelect<false> | AuthSettingsSelect<true>;
     'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
     navigation: NavigationSelect<false> | NavigationSelect<true>;
     branding: BrandingSelect<false> | BrandingSelect<true>;
@@ -297,14 +299,78 @@ export interface ChatConversation {
   visitorName?: string | null;
   visitorEmail?: string | null;
   loggedIn?: boolean | null;
+  /**
+   * Liên kết tới tài khoản B2B đã đăng nhập.
+   */
+  member?: (number | null) | Member;
+  company?: string | null;
   visitorIp?: string | null;
   location?: string | null;
-  telegramTopicId?: number | null;
-  startPage?: string | null;
+  country?: string | null;
+  region?: string | null;
+  city?: string | null;
+  postal?: string | null;
+  timezone?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  isp?: string | null;
+  browser?: string | null;
+  browserVersion?: string | null;
+  os?: string | null;
+  deviceType?: ('desktop' | 'mobile' | 'tablet' | 'bot') | null;
+  screen?: string | null;
+  language?: string | null;
+  /**
+   * Chuỗi User-Agent gốc.
+   */
   userAgent?: string | null;
+  startPage?: string | null;
+  referrer?: string | null;
+  landingPage?: string | null;
+  /**
+   * Số trang khách đã xem trước khi mở chat.
+   */
+  pageViews?: number | null;
+  utmSource?: string | null;
+  utmMedium?: string | null;
+  utmCampaign?: string | null;
+  telegramTopicId?: number | null;
   lastMessageAt?: string | null;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "members".
+ */
+export interface Member {
+  id: number;
+  company: string;
+  contactName: string;
+  phone?: string | null;
+  status?: ('pending' | 'approved' | 'rejected') | null;
+  approvedAt?: string | null;
+  /**
+   * Cách tài khoản được tạo.
+   */
+  authProvider?: ('password' | 'google') | null;
+  googleId?: string | null;
+  /**
+   * Email đã xác thực qua Google. KHÔNG tự mở quyền tài liệu B2B.
+   */
+  emailVerified?: boolean | null;
+  hasPassword?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+  email: string;
+  resetPasswordToken?: string | null;
+  resetPasswordExpiration?: string | null;
+  salt?: string | null;
+  hash?: string | null;
+  loginAttempts?: number | null;
+  lockUntil?: string | null;
+  password?: string | null;
+  collection: 'members';
 }
 /**
  * Tin nhắn trong các hội thoại chat.
@@ -2778,29 +2844,6 @@ export interface Faq {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "members".
- */
-export interface Member {
-  id: number;
-  company: string;
-  contactName: string;
-  phone?: string | null;
-  status?: ('pending' | 'approved' | 'rejected') | null;
-  approvedAt?: string | null;
-  updatedAt: string;
-  createdAt: string;
-  email: string;
-  resetPasswordToken?: string | null;
-  resetPasswordExpiration?: string | null;
-  salt?: string | null;
-  hash?: string | null;
-  loginAttempts?: number | null;
-  lockUntil?: string | null;
-  password?: string | null;
-  collection: 'members';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "gated-documents".
  */
 export interface GatedDocument {
@@ -3193,11 +3236,33 @@ export interface ChatConversationsSelect<T extends boolean = true> {
   visitorName?: T;
   visitorEmail?: T;
   loggedIn?: T;
+  member?: T;
+  company?: T;
   visitorIp?: T;
   location?: T;
-  telegramTopicId?: T;
-  startPage?: T;
+  country?: T;
+  region?: T;
+  city?: T;
+  postal?: T;
+  timezone?: T;
+  latitude?: T;
+  longitude?: T;
+  isp?: T;
+  browser?: T;
+  browserVersion?: T;
+  os?: T;
+  deviceType?: T;
+  screen?: T;
+  language?: T;
   userAgent?: T;
+  startPage?: T;
+  referrer?: T;
+  landingPage?: T;
+  pageViews?: T;
+  utmSource?: T;
+  utmMedium?: T;
+  utmCampaign?: T;
+  telegramTopicId?: T;
   lastMessageAt?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -4691,6 +4756,10 @@ export interface MembersSelect<T extends boolean = true> {
   phone?: T;
   status?: T;
   approvedAt?: T;
+  authProvider?: T;
+  googleId?: T;
+  emailVerified?: T;
+  hasPassword?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -4874,6 +4943,43 @@ export interface ChatSetting {
   widgetTitle?: string | null;
   welcomeMessage?: string | null;
   offlineMessage?: string | null;
+  bubbleEnabled?: boolean | null;
+  /**
+   * Ngắn gọn 1–2 câu. Quá dài sẽ che mất nội dung trang.
+   */
+  bubbleMessage?: string | null;
+  /**
+   * Chờ bao lâu rồi mới bật bóng chào. 0 = hiện ngay.
+   */
+  bubbleDelay?: number | null;
+  /**
+   * Khách đã tắt bóng chào thì không làm phiền lại trong lượt đó.
+   */
+  bubbleOncePerSession?: boolean | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * Cấu hình đăng nhập thành viên B2B: đăng ký, đăng nhập bằng Google.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "auth-settings".
+ */
+export interface AuthSetting {
+  id: number;
+  /**
+   * Tắt = chỉ admin tạo tài khoản thành viên.
+   */
+  allowRegistration?: boolean | null;
+  googleEnabled?: boolean | null;
+  /**
+   * Lấy ở Google Cloud Console → APIs & Services → Credentials → OAuth client ID (Web application). (fallback: GOOGLE_OAUTH_CLIENT_ID)
+   */
+  googleClientId?: string | null;
+  /**
+   * Bí mật — chỉ admin xem/sửa, KHÔNG bao giờ gửi xuống trình duyệt. (fallback: GOOGLE_OAUTH_CLIENT_SECRET)
+   */
+  googleClientSecret?: string | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -5446,6 +5552,23 @@ export interface ChatSettingsSelect<T extends boolean = true> {
   widgetTitle?: T;
   welcomeMessage?: T;
   offlineMessage?: T;
+  bubbleEnabled?: T;
+  bubbleMessage?: T;
+  bubbleDelay?: T;
+  bubbleOncePerSession?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "auth-settings_select".
+ */
+export interface AuthSettingsSelect<T extends boolean = true> {
+  allowRegistration?: T;
+  googleEnabled?: T;
+  googleClientId?: T;
+  googleClientSecret?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

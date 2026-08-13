@@ -6,18 +6,25 @@ import { getMemberSession } from '@/lib/member/auth'
 import { getLocale } from '@/lib/i18n/server'
 import { getMemberMessages } from '@/lib/i18n/member-messages'
 import { MemberLoginForm } from '@/components/member/login-form'
-import { isMockMemberAuth } from '@/lib/member/config'
+import { getPublicAuthConfig } from '@/lib/member/public-config'
+import { safeReturnTo } from '@/lib/member/google'
 
 export const metadata: Metadata = {
   title: 'Đăng nhập đối tác',
   robots: { index: false, follow: false },
 }
 
-export default async function MemberLoginPage() {
+export default async function MemberLoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string; returnTo?: string }>
+}) {
+  const sp = await searchParams
   const session = await getMemberSession()
-  if (session?.status === 'approved') redirect('/member')
+  const returnTo = safeReturnTo(sp.returnTo)
+  if (session) redirect(returnTo)
 
-  const locale = await getLocale()
+  const [locale, cfg] = await Promise.all([getLocale(), getPublicAuthConfig()])
   const m = getMemberMessages(locale)
 
   return (
@@ -33,16 +40,13 @@ export default async function MemberLoginPage() {
           </div>
 
           <div className="rounded-[1.75rem] border border-primary-border/60 bg-white p-8 shadow-card">
-            <MemberLoginForm m={m.login} />
+            <MemberLoginForm
+              m={m.login}
+              googleEnabled={cfg.googleEnabled}
+              returnTo={sp.returnTo ? returnTo : undefined}
+              initialError={sp.error ?? null}
+            />
           </div>
-
-          {isMockMemberAuth() && (
-            <div className="mt-6 rounded-[1.25rem] border border-dashed border-primary-border/70 bg-primary-tint/40 p-5 text-[13px] text-ink/70">
-              <p className="font-bold text-primary-dark">{m.login.demoTitle}</p>
-              <p className="mt-2">{m.login.demoApproved}</p>
-              <p className="mt-1">{m.login.demoPending}</p>
-            </div>
-          )}
         </div>
       </div>
     </div>

@@ -2,7 +2,7 @@ import { getMemberSession } from '@/lib/member/auth'
 import { getLocale } from '@/lib/i18n/server'
 import { getMemberMessages } from '@/lib/i18n/member-messages'
 import { MemberPortalShell } from '@/components/member/portal-shell'
-import { MOCK_GATED_DOCUMENTS } from '@/lib/member/mock-data'
+import { getMemberDocuments } from '@/lib/member/documents'
 import { MemberDocumentDownload } from '@/components/member/document-download'
 
 export default async function MemberDocumentsPage() {
@@ -11,6 +11,8 @@ export default async function MemberDocumentsPage() {
 
   const locale = await getLocale()
   const m = getMemberMessages(locale)
+  const approved = session.status === 'approved'
+  const docs = approved ? await getMemberDocuments() : []
 
   return (
     <MemberPortalShell session={session} m={m} portalName={m.portalName} demoBanner={m.demoBanner}>
@@ -33,7 +35,7 @@ export default async function MemberDocumentsPage() {
                 </tr>
               </thead>
               <tbody>
-                {MOCK_GATED_DOCUMENTS.map((doc) => (
+                {docs.map((doc) => (
                   <tr key={doc.id} className="border-b border-primary-border/30 last:border-0">
                     <td className="px-5 py-4 font-medium text-ink">{doc.title}</td>
                     <td className="px-5 py-4">
@@ -54,6 +56,11 @@ export default async function MemberDocumentsPage() {
                 ))}
               </tbody>
             </table>
+            {docs.length === 0 && (
+              <p className="px-5 py-10 text-center text-[14px] text-ink/50">
+                {approved ? m.documents.empty : m.documents.needApproval}
+              </p>
+            )}
           </div>
         </div>
       </div>

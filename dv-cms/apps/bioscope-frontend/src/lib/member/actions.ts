@@ -3,10 +3,16 @@
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
-import { B2B_API_URL, MEMBER_SESSION_COOKIE } from './config'
-import { serializeSession } from './auth'
-import { MOCK_MEMBER_ACCOUNTS } from './mock-data'
-import type { MemberSession } from './types'
+import {
+  B2B_API_URL,
+  MEMBER_SESSION_COOKIE,
+  MEMBER_SESSION_MAX_AGE,
+  MEMBER_TOKEN_COOKIE,
+  SESSION_SECRET,
+} from './config'
+import { serializeSession, getMemberSession } from './auth'
+import { b2bFetch } from './api'
+import type { MemberSession, MemberStatus } from './types'
 
 export type LoginState = {
   ok: boolean
@@ -14,40 +20,48 @@ export type LoginState = {
   pending?: boolean
 }
 
-async function mockLogin(email: string, password: string): Promise<LoginState> {
-  const account = MOCK_MEMBER_ACCOUNTS.find(
-    (a) => a.email.toLowerCase() === email.trim().toLowerCase(),
-  )
-  if (!account || account.password !== password) {
-    return { ok: false, error: 'invalid_credentials' }
-  }
-  if (account.status === 'pending') {
-    return { ok: false, pending: true, error: 'pending_approval' }
-  }
-  if (account.status === 'rejected') {
-    return { ok: false, error: 'rejected' }
-  }
-
-  const session: MemberSession = {
-    email: account.email,
-    company: account.company,
-    contactName: account.contactName,
-    phone: account.phone,
-    status: account.status,
-  }
-
-  const jar = await cookies()
-  jar.set(MEMBER_SESSION_COOKIE, serializeSession(session), {
-    path: '/',
-    maxAge: 60 * 60 * 24 * 7,
-    sameSite: 'lax',
-    httpOnly: true,
-  })
-
-  return { ok: true }
+/** Thành viên trả về từ API B2B (Payload doc). */
+type B2BUser = {
+  id: string | number
+  email: string
+  company?: string
+  contactName?: string
+  phone?: string
+  status?: MemberStatus
+  authProvider?: 'password' | 'google'
+  emailVerified?: boolean
 }
 
-async function apiLogin(email: string, password: string): Promise<LoginState> {
+const toSession = (u: B2BUser): MemberSession => ({
+  id: u.id,
+  email: u.email,
+  company: u.company ?? '',
+  contactName: u.contactName ?? '',
+  phone: u.phone,
+  status: u.status ?? 'pending',
+  authProvider: u.authProvider ?? 'password',
+  emailVerified: u.emailVerified ?? false,
+})
+
+const cookieOpts = {
+  path: '/',
+  maxAge: MEMBER_SESSION_MAX_AGE,
+  sameSite: 'lax' as const,
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+}
+
+/** Ghi cookie phiên (đã ký) + JWT để gọi API thay mặt thành viên. */
+export async function writeMemberSession(user: B2BUser, token?: string) {
+  const jar = await cookies()
+  jar.set(MEMBER_SESSION_COOKIE, serializeSession(toSession(user)), cookieOpts)
+  if (token) jar.set(MEMBER_TOKEN_COOKIE, token, cookieOpts)
+}
+
+export async function memberLogin(email: string, password: string): Promise<LoginState> {
+  if (!SESSION_SECRET) return { ok: false, error: 'server_misconfigured' }
+
+  let result: LoginState
   try {
     const res = await fetch(`${B2B_API_URL}/api/b2b/login`, {
       method: 'POST',
@@ -55,29 +69,21 @@ async function apiLogin(email: string, password: string): Promise<LoginState> {
       body: JSON.stringify({ email, password }),
       cache: 'no-store',
     })
-    const data = (await res.json()) as { user?: MemberSession; error?: string }
-    if (!res.ok) {
-      if (data.user?.status === 'pending') return { ok: false, pending: true, error: 'pending_approval' }
-      return { ok: false, error: 'invalid_credentials' }
+    const data = (await res.json()) as { user?: B2BUser; token?: string; error?: string }
+    if (!res.ok || !data.user) {
+      result = { ok: false, error: 'invalid_credentials' }
+    } else if (data.user.status === 'rejected') {
+      result = { ok: false, error: 'rejected' }
+    } else {
+      // Chờ duyệt VẪN đăng nhập được (chat/hồ sơ); khu tài liệu B2B chặn riêng
+      // theo status ở portal layout.
+      await writeMemberSession(data.user, data.token)
+      result = { ok: true, pending: data.user.status !== 'approved' }
     }
-    if (!data.user || data.user.status !== 'approved') {
-      return { ok: false, pending: data.user?.status === 'pending', error: 'pending_approval' }
-    }
-    const jar = await cookies()
-    jar.set(MEMBER_SESSION_COOKIE, serializeSession(data.user), {
-      path: '/',
-      maxAge: 60 * 60 * 24 * 7,
-      sameSite: 'lax',
-      httpOnly: true,
-    })
-    return { ok: true }
   } catch {
-    return { ok: false, error: 'network' }
+    result = { ok: false, error: 'network' }
   }
-}
 
-export async function memberLogin(email: string, password: string): Promise<LoginState> {
-  const result = B2B_API_URL ? await apiLogin(email, password) : await mockLogin(email, password)
   if (result.ok) {
     revalidatePath('/member', 'layout')
     redirect('/member')
@@ -85,9 +91,77 @@ export async function memberLogin(email: string, password: string): Promise<Logi
   return result
 }
 
+export type RegisterState = { ok: boolean; error?: string }
+
+export async function memberRegister(input: {
+  email: string
+  password: string
+  company: string
+  contactName: string
+  phone?: string
+}): Promise<RegisterState> {
+  try {
+    const res = await fetch(`${B2B_API_URL}/api/b2b/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(input),
+      cache: 'no-store',
+    })
+    if (!res.ok) {
+      const data = (await res.json().catch(() => ({}))) as { error?: string }
+      return { ok: false, error: res.status === 409 ? 'email_taken' : (data.error ?? 'invalid') }
+    }
+    return { ok: true }
+  } catch {
+    return { ok: false, error: 'network' }
+  }
+}
+
+const authedFetch = (path: string, body: unknown) => b2bFetch(path, { body })
+
+export type ProfileState = { ok: boolean; error?: string }
+
+export async function updateMemberProfile(input: {
+  company: string
+  contactName: string
+  phone?: string
+}): Promise<ProfileState> {
+  const session = await getMemberSession()
+  if (!session) return { ok: false, error: 'unauthenticated' }
+  try {
+    const res = await authedFetch('/api/b2b/profile', input)
+    const data = (await res.json().catch(() => ({}))) as { user?: B2BUser; error?: string }
+    if (!res.ok || !data.user) return { ok: false, error: data.error ?? 'failed' }
+    // Cấp lại cookie để thông tin mới hiện ngay (không phải đăng nhập lại).
+    await writeMemberSession(data.user)
+    revalidatePath('/member', 'layout')
+    return { ok: true }
+  } catch {
+    return { ok: false, error: 'network' }
+  }
+}
+
+export async function changeMemberPassword(input: {
+  currentPassword?: string
+  newPassword: string
+}): Promise<ProfileState> {
+  const session = await getMemberSession()
+  if (!session) return { ok: false, error: 'unauthenticated' }
+  if (input.newPassword.length < 8) return { ok: false, error: 'too_short' }
+  try {
+    const res = await authedFetch('/api/b2b/change-password', input)
+    const data = (await res.json().catch(() => ({}))) as { error?: string }
+    if (!res.ok) return { ok: false, error: data.error ?? 'failed' }
+    return { ok: true }
+  } catch {
+    return { ok: false, error: 'network' }
+  }
+}
+
 export async function memberLogout() {
   const jar = await cookies()
   jar.set(MEMBER_SESSION_COOKIE, '', { path: '/', maxAge: 0 })
+  jar.set(MEMBER_TOKEN_COOKIE, '', { path: '/', maxAge: 0 })
   revalidatePath('/member', 'layout')
   redirect('/member/login')
 }

@@ -4,7 +4,7 @@ import { getMemberSession } from '@/lib/member/auth'
 import { getLocale } from '@/lib/i18n/server'
 import { getMemberMessages } from '@/lib/i18n/member-messages'
 import { MemberPortalShell } from '@/components/member/portal-shell'
-import { MOCK_GATED_DOCUMENTS } from '@/lib/member/mock-data'
+import { getMemberDocuments } from '@/lib/member/documents'
 
 export default async function MemberDashboardPage() {
   const session = await getMemberSession()
@@ -12,7 +12,7 @@ export default async function MemberDashboardPage() {
 
   const locale = await getLocale()
   const m = getMemberMessages(locale)
-  const recent = MOCK_GATED_DOCUMENTS.slice(0, 3)
+  const recent = session.status === 'approved' ? (await getMemberDocuments()).slice(0, 3) : []
 
   return (
     <MemberPortalShell session={session} m={m} portalName={m.portalName} demoBanner={m.demoBanner}>

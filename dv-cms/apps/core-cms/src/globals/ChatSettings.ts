@@ -89,6 +89,43 @@ export const ChatSettings: GlobalConfig = {
             },
           ],
         },
+        {
+          label: { en: 'Greeting bubble', vi: 'Bóng câu chào' },
+          description:
+            'Bóng chào nhỏ hiện cạnh nút chat khi khách vào website — mời khách bấm vào. Khi mở khung chat, lời chào ở tab "Giao diện chat" sẽ chào tiếp.',
+          fields: [
+            {
+              name: 'bubbleEnabled',
+              type: 'checkbox',
+              defaultValue: true,
+              label: { en: 'Show greeting bubble', vi: 'Hiện bóng câu chào' },
+            },
+            {
+              name: 'bubbleMessage',
+              type: 'textarea',
+              localized: true,
+              label: { en: 'Bubble text', vi: 'Nội dung bóng chào' },
+              defaultValue: 'Chào bạn 👋 Cần tư vấn nguyên liệu hay báo giá? Nhắn cho Bioscope nhé!',
+              admin: { description: 'Ngắn gọn 1–2 câu. Quá dài sẽ che mất nội dung trang.' },
+            },
+            {
+              name: 'bubbleDelay',
+              type: 'number',
+              defaultValue: 5,
+              min: 0,
+              max: 120,
+              label: { en: 'Delay (seconds)', vi: 'Hiện sau (giây)' },
+              admin: { description: 'Chờ bao lâu rồi mới bật bóng chào. 0 = hiện ngay.' },
+            },
+            {
+              name: 'bubbleOncePerSession',
+              type: 'checkbox',
+              defaultValue: true,
+              label: { en: 'Show once per visit', vi: 'Chỉ hiện một lần mỗi lượt truy cập' },
+              admin: { description: 'Khách đã tắt bóng chào thì không làm phiền lại trong lượt đó.' },
+            },
+          ],
+        },
       ],
     },
   ],

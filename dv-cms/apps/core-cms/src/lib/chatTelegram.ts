@@ -14,6 +14,10 @@ export type ChatConfig = {
   widgetTitle: string
   welcomeMessage: string
   offlineMessage: string
+  bubbleEnabled: boolean
+  bubbleMessage: string
+  bubbleDelay: number
+  bubbleOncePerSession: boolean
 }
 
 export async function getChatConfig(payload: Payload, locale = 'vi'): Promise<ChatConfig> {
@@ -32,6 +36,10 @@ export async function getChatConfig(payload: Payload, locale = 'vi'): Promise<Ch
     widgetTitle: pick(g.widgetTitle) || 'Bioscope hỗ trợ',
     welcomeMessage: pick(g.welcomeMessage) || 'Chào bạn 👋 Bioscope có thể giúp gì cho bạn?',
     offlineMessage: pick(g.offlineMessage) || 'Hiện chưa có nhân viên trực. Để lại email, chúng tôi sẽ liên hệ lại.',
+    bubbleEnabled: g.bubbleEnabled !== false,
+    bubbleMessage: pick(g.bubbleMessage) || 'Chào bạn 👋 Cần tư vấn nguyên liệu hay báo giá? Nhắn cho Bioscope nhé!',
+    bubbleDelay: typeof g.bubbleDelay === 'number' ? g.bubbleDelay : 5,
+    bubbleOncePerSession: g.bubbleOncePerSession !== false,
   }
 }
 

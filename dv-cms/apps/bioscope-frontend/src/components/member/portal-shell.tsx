@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, FileText, LogOut, ExternalLink } from 'lucide-react'
+import { LayoutDashboard, FileText, UserCog, LogOut, ExternalLink } from 'lucide-react'
 import { memberLogout } from '@/lib/member/actions'
 import type { MemberMessages } from '@/lib/i18n/member-messages'
 import type { MemberSession } from '@/lib/member/types'
@@ -27,13 +27,16 @@ export function MemberPortalShell({
   const links = [
     { href: '/member', label: m.nav.dashboard, icon: LayoutDashboard, exact: true },
     { href: '/member/documents', label: m.nav.documents, icon: FileText, exact: false },
+    { href: '/member/tai-khoan', label: m.nav.account, icon: UserCog, exact: false },
   ]
 
   return (
     <div className="min-h-screen bg-mist/40">
-      <div className="border-b border-primary-border/50 bg-accent-soft/60 px-4 py-2 text-center text-[12.5px] font-medium text-ink/70">
-        {demoBanner}
-      </div>
+      {session.status !== 'approved' && (
+        <div className="border-b border-primary-border/50 bg-accent-soft/60 px-4 py-2 text-center text-[12.5px] font-medium text-ink/70">
+          {demoBanner}
+        </div>
+      )}
 
       <header className="border-b border-primary-border/50 bg-white">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">

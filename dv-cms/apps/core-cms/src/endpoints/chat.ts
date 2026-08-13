@@ -10,6 +10,7 @@ import { randomUUID } from 'crypto'
 import { getChatConfig, isTelegramReady, createTopic, sendMessage, getMe, getChat, setWebhook } from '../lib/chatTelegram.js'
 import { rateLimit, clientIp } from '../lib/rateLimit.js'
 import { lookupGeo } from '../lib/geo.js'
+import { parseUserAgent } from '../lib/userAgent.js'
 
 const json = (data: unknown, status = 200) => Response.json(data as never, { status })
 const readBody = async (req: PayloadRequest): Promise<Record<string, unknown>> => {
@@ -27,7 +28,15 @@ const configEndpoint: Endpoint = {
   method: 'get',
   handler: async (req: PayloadRequest): Promise<Response> => {
     const cfg = await getChatConfig(req.payload, String(req.query?.locale ?? 'vi'))
-    return json({ ok: true, enabled: cfg.enabled, widgetTitle: cfg.widgetTitle })
+    return json({
+      ok: true,
+      enabled: cfg.enabled,
+      widgetTitle: cfg.widgetTitle,
+      bubbleEnabled: cfg.bubbleEnabled,
+      bubbleMessage: cfg.bubbleMessage,
+      bubbleDelay: cfg.bubbleDelay,
+      bubbleOncePerSession: cfg.bubbleOncePerSession,
+    })
   },
 }
 
@@ -44,24 +53,34 @@ const startEndpoint: Endpoint = {
     }
 
     const body = await readBody(req)
-    const startPage = String(body.startPage ?? '').slice(0, 300)
-    const userAgent = String(body.userAgent ?? '').slice(0, 300)
+    const str = (v: unknown, max: number) => String(v ?? '').trim().slice(0, max) || undefined
+    const startPage = str(body.startPage, 300) ?? ''
+    const userAgent = String(body.userAgent ?? '').slice(0, 500)
     const token = randomUUID()
 
     // Định danh: proxy frontend đính kèm thông tin thành viên nếu đã đăng nhập.
+    // Bắt buộc đăng nhập mới được chat — proxy đã xác thực bằng cookie phiên
+    // CÓ KÝ nên client không tự khai loggedIn được.
     const loggedIn = body.loggedIn === true
-    const memberName = String(body.memberName ?? '').slice(0, 120)
-    const memberEmail = String(body.memberEmail ?? '').slice(0, 200)
-    const ip = clientIp(req)
-    const location = await lookupGeo(ip)
+    if (!loggedIn) return json({ ok: false, error: 'login_required' }, 401)
 
-    const who = loggedIn ? `Thành viên: ${memberName || memberEmail}` : 'Khách vãng lai (chưa đăng nhập)'
+    const memberName = str(body.memberName, 120)
+    const memberEmail = str(body.memberEmail, 200)
+    const memberId = body.memberId != null ? String(body.memberId) : undefined
+    const memberCompany = str(body.memberCompany, 200)
+
+    // ── Tracking tự động ──
+    const ip = clientIp(req)
+    const geo = await lookupGeo(ip)
+    const ua = parseUserAgent(userAgent)
+
+    const who = `Thành viên: ${memberName || memberEmail}${memberCompany ? ` (${memberCompany})` : ''}`
 
     let topicId: number | undefined
     if (isTelegramReady(cfg)) {
       try {
         // Tên topic gắn danh tính để sales nhận ra ngay.
-        topicId = await createTopic(cfg, `${loggedIn ? '👤 ' + (memberName || memberEmail) : '👥 Khách'} · ${startPage || '/'}`)
+        topicId = await createTopic(cfg, `👤 ${memberName || memberEmail} · ${memberCompany || startPage || '/'}`)
       } catch (e) {
         // Nhóm chưa bật Topics → dùng chung nhóm (map reply-to). Không chặn chat.
         req.payload.logger.warn(`[chat] không tạo được topic (nhóm chưa bật Topics?), dùng chung nhóm: ${String(e)}`)
@@ -71,17 +90,43 @@ const startEndpoint: Endpoint = {
     const conv = await req.payload.create({
       collection: 'chat-conversations',
       data: {
-        title: `${loggedIn ? memberName || memberEmail : 'Khách'} · ${startPage || '/'} · ${new Date().toLocaleString('vi-VN')}`,
+        title: `${memberName || memberEmail} · ${startPage || '/'} · ${new Date().toLocaleString('vi-VN')}`,
         sessionToken: token,
         status: 'open',
         telegramTopicId: topicId,
-        startPage,
-        userAgent,
+        // Khách
         loggedIn,
-        visitorName: memberName || undefined,
-        visitorEmail: memberEmail || undefined,
+        member: memberId,
+        company: memberCompany,
+        visitorName: memberName,
+        visitorEmail: memberEmail,
+        // Vị trí (ước lượng từ IP)
         visitorIp: ip,
-        location: location || undefined,
+        location: geo.label || undefined,
+        country: geo.country,
+        region: geo.region,
+        city: geo.city,
+        postal: geo.postal,
+        timezone: geo.timezone,
+        latitude: geo.latitude,
+        longitude: geo.longitude,
+        isp: geo.isp,
+        // Thiết bị
+        userAgent,
+        browser: ua.browser,
+        browserVersion: ua.browserVersion,
+        os: ua.os,
+        deviceType: ua.device,
+        screen: str(body.screen, 40),
+        language: str(body.language, 40),
+        // Nguồn truy cập
+        startPage,
+        referrer: str(body.referrer, 300),
+        landingPage: str(body.landingPage, 300),
+        pageViews: typeof body.pageViews === 'number' ? body.pageViews : undefined,
+        utmSource: str(body.utmSource, 120),
+        utmMedium: str(body.utmMedium, 120),
+        utmCampaign: str(body.utmCampaign, 120),
         lastMessageAt: new Date().toISOString(),
       } as never,
       overrideAccess: true,
@@ -89,13 +134,24 @@ const startEndpoint: Endpoint = {
 
     // Gửi thẻ giới thiệu vào Telegram để sales biết AI ĐANG CHAT.
     if (isTelegramReady(cfg)) {
+      const device = [ua.browser, ua.browserVersion, '·', ua.os].filter(Boolean).join(' ')
+      const source = [
+        str(body.utmSource, 120) && `utm: ${body.utmSource}/${body.utmMedium ?? ''}`,
+        str(body.referrer, 300) && `từ ${String(body.referrer).slice(0, 80)}`,
+      ]
+        .filter(Boolean)
+        .join(' · ')
       const intro = [
         `🆕 Khách mới bắt đầu chat`,
-        who,
-        location && `📍 ${location}`,
+        `👤 ${who}`,
+        memberEmail && `✉️ ${memberEmail}`,
+        geo.label && `📍 ${geo.label}`,
+        geo.isp && `📡 ${geo.isp}`,
         ip && `🌐 IP: ${ip}`,
-        userAgent && `🖥 ${userAgent.slice(0, 120)}`,
+        device && `🖥 ${device}${ua.device ? ` (${ua.device})` : ''}`,
         `🔗 Trang: ${startPage || '/'}`,
+        typeof body.pageViews === 'number' && body.pageViews > 0 && `👣 Đã xem ${body.pageViews} trang`,
+        source && `🧭 ${source}`,
         !topicId ? `\n#hs${conv.id} — Sales trả lời bằng cách REPLY vào tin này.` : '',
       ]
         .filter(Boolean)

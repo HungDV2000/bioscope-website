@@ -51,6 +51,44 @@ export const Members: CollectionConfig = {
       type: 'date',
       admin: { position: 'sidebar', readOnly: true },
     },
+    {
+      name: 'authProvider',
+      type: 'select',
+      defaultValue: 'password',
+      options: [
+        { label: 'Email + mật khẩu', value: 'password' },
+        { label: 'Google', value: 'google' },
+      ],
+      access: { update: isAdminFieldLevel },
+      admin: { position: 'sidebar', readOnly: true, description: 'Cách tài khoản được tạo.' },
+    },
+    {
+      name: 'googleId',
+      type: 'text',
+      index: true,
+      access: { update: isAdminFieldLevel },
+      admin: { hidden: true },
+    },
+    {
+      name: 'emailVerified',
+      type: 'checkbox',
+      defaultValue: false,
+      access: { update: isAdminFieldLevel },
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+        description: 'Email đã xác thực qua Google. KHÔNG tự mở quyền tài liệu B2B.',
+      },
+    },
+    {
+      // Tài khoản tạo bằng Google được cấp mật khẩu ngẫu nhiên (Payload bắt buộc),
+      // nhưng chủ tài khoản chưa biết → cho đặt lần đầu mà không hỏi mật khẩu cũ.
+      name: 'hasPassword',
+      type: 'checkbox',
+      defaultValue: true,
+      access: { update: isAdminFieldLevel },
+      admin: { hidden: true },
+    },
   ],
   hooks: {
     beforeChange: [

@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { randomBytes } from 'node:crypto'
 import { B2B_API_URL, SESSION_SECRET } from '@/lib/member/config'
-import { GOOGLE_STATE_COOKIE, googleRedirectUri, safeReturnTo, signState } from '@/lib/member/google'
+import { GOOGLE_STATE_COOKIE, googleRedirectUri, publicOrigin, safeReturnTo, signState } from '@/lib/member/google'
 
 /**
  * Bắt đầu đăng nhập Google: hỏi CMS xem có bật + clientId, dựng URL Google rồi
@@ -10,7 +10,7 @@ import { GOOGLE_STATE_COOKIE, googleRedirectUri, safeReturnTo, signState } from 
 export const dynamic = 'force-dynamic'
 
 export async function GET(req: NextRequest) {
-  const origin = req.nextUrl.origin
+  const origin = publicOrigin(req)
   if (!SESSION_SECRET) return NextResponse.redirect(new URL('/member/login?error=server', origin))
 
   let clientId = ''
@@ -41,7 +41,9 @@ export async function GET(req: NextRequest) {
     maxAge: 600,
     httpOnly: true,
     sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
+    // Secure chỉ khi khách thực sự đang ở HTTPS — nếu không trình duyệt sẽ
+    // TỪ CHỐI lưu cookie và luồng OAuth hỏng với lỗi google_state.
+    secure: origin.startsWith('https://'),
   })
   return res
 }

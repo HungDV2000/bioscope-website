@@ -124,3 +124,48 @@
     }
   }
 }
+
+/* Câu chào chat do admin soạn bằng rich text (bóng chào, lời chào trong khung
+   chat, lời chào ở màn đăng nhập). Giữ chữ nhỏ gọn, không để thẻ <p> đội
+   khoảng cách làm vỡ bố cục bong bóng. */
+@layer components {
+  .chat-greeting > :first-child {
+    margin-top: 0;
+  }
+  .chat-greeting > :last-child {
+    margin-bottom: 0;
+  }
+  .chat-greeting p {
+    margin: 0 0 0.4em;
+  }
+  .chat-greeting strong {
+    font-weight: 700;
+  }
+  .chat-greeting em {
+    font-style: italic;
+  }
+  .chat-greeting a {
+    color: var(--color-primary, #157347);
+    font-weight: 600;
+    text-decoration: underline;
+  }
+  .chat-greeting ul,
+  .chat-greeting ol {
+    margin: 0.25em 0 0.4em;
+    padding-left: 1.15em;
+  }
+  .chat-greeting ul {
+    list-style: disc;
+  }
+  .chat-greeting ol {
+    list-style: decimal;
+  }
+  .chat-greeting h1,
+  .chat-greeting h2,
+  .chat-greeting h3,
+  .chat-greeting h4 {
+    margin: 0 0 0.35em;
+    font-weight: 700;
+    font-size: 1.05em;
+  }
+}

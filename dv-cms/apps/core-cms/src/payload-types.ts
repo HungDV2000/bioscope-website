@@ -4941,13 +4941,62 @@ export interface ChatSetting {
    */
   webhookSecret?: string | null;
   widgetTitle?: string | null;
-  welcomeMessage?: string | null;
+  /**
+   * Tin nhắn đầu tiên hiện trong khung chat sau khi khách đăng nhập. Bôi đậm/nghiêng, xuống dòng, chèn link đều được.
+   */
+  welcomeMessage?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Hiện trong khung chat CÙNG với nút Đăng nhập / Đăng ký, dành cho khách chưa đăng nhập. Bỏ trống = dùng câu mặc định.
+   */
+  loginGreeting?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
   offlineMessage?: string | null;
   bubbleEnabled?: boolean | null;
   /**
-   * Ngắn gọn 1–2 câu. Quá dài sẽ che mất nội dung trang.
+   * Ngắn gọn 1–2 câu, có thể bôi đậm/nghiêng. Quá dài sẽ che mất nội dung trang.
    */
-  bubbleMessage?: string | null;
+  bubbleMessage?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
   /**
    * Chờ bao lâu rồi mới bật bóng chào. 0 = hiện ngay.
    */
@@ -5551,6 +5600,7 @@ export interface ChatSettingsSelect<T extends boolean = true> {
   webhookSecret?: T;
   widgetTitle?: T;
   welcomeMessage?: T;
+  loginGreeting?: T;
   offlineMessage?: T;
   bubbleEnabled?: T;
   bubbleMessage?: T;

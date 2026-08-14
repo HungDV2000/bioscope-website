@@ -2,15 +2,18 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { usePathname } from 'next/navigation'
-import { MessageCircle, X, Send, LogIn, UserPlus } from 'lucide-react'
+import { MessageCircle, X, Send } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useLocale } from '@/lib/i18n/context'
 import { collectTracking, trackPageView } from '@/lib/chat/tracking'
+import { ChatAuthPanel, type AuthStrings } from './chat-auth-panel'
 
 type Msg = {
   id?: number
   sender: 'visitor' | 'agent' | 'system'
   text: string
+  /** Tin do admin soạn bằng rich text → render HTML thay vì văn bản thuần. */
+  html?: string
   agentName?: string | null
   createdAt?: string | null
 }
@@ -33,6 +36,14 @@ const STRINGS = {
     loginDesc: 'Để đội ngũ Bioscope hỗ trợ chính xác và lưu lại lịch sử trao đổi, bạn vui lòng đăng nhập hoặc tạo tài khoản đối tác.',
     loginBtn: 'Đăng nhập', registerBtn: 'Đăng ký tài khoản',
     loginRequired: 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.',
+    google: 'Đăng nhập bằng Google', or: 'hoặc', back: 'Quay lại',
+    fEmail: 'Email công việc', fPassword: 'Mật khẩu', fCompany: 'Tên công ty',
+    fContact: 'Người liên hệ', fPhone: 'Số điện thoại',
+    passwordHint: 'Tối thiểu 8 ký tự.',
+    submitLogin: 'Đăng nhập', submitRegister: 'Đăng ký & bắt đầu chat',
+    errInvalid: 'Sai email hoặc mật khẩu.', errTaken: 'Email này đã được đăng ký.',
+    errNetwork: 'Không kết nối được máy chủ. Thử lại sau.',
+    errShort: 'Mật khẩu phải từ 8 ký tự.',
   },
   en: {
     online: 'Online', offline: 'Away', close: 'Close', connecting: 'Connecting…',
@@ -45,6 +56,14 @@ const STRINGS = {
     loginDesc: 'So the Bioscope team can help you accurately and keep your conversation history, please sign in or create a partner account.',
     loginBtn: 'Sign in', registerBtn: 'Create account',
     loginRequired: 'Your session expired. Please sign in again.',
+    google: 'Continue with Google', or: 'or', back: 'Back',
+    fEmail: 'Work email', fPassword: 'Password', fCompany: 'Company name',
+    fContact: 'Contact person', fPhone: 'Phone number',
+    passwordHint: 'At least 8 characters.',
+    submitLogin: 'Sign in', submitRegister: 'Sign up & start chat',
+    errInvalid: 'Invalid email or password.', errTaken: 'This email is already registered.',
+    errNetwork: 'Could not reach server. Try again later.',
+    errShort: 'Password must be at least 8 characters.',
   },
 }
 
@@ -55,6 +74,7 @@ const SS_BUBBLE = 'bsChatBubbleSeen'
 type Config = {
   enabled: boolean
   widgetTitle?: string
+  loginGreeting?: string
   bubbleEnabled?: boolean
   bubbleMessage?: string
   bubbleDelay?: number
@@ -73,6 +93,7 @@ export function ChatWidget() {
 
   const [cfg, setCfg] = useState<Config | null>(null)
   const [loggedIn, setLoggedIn] = useState<boolean | null>(null)
+  const [googleEnabled, setGoogleEnabled] = useState(false)
   const [open, setOpen] = useState(false)
   const [bubble, setBubble] = useState(false)
   const [token, setToken] = useState<string | null>(null)
@@ -116,7 +137,9 @@ export function ChatWidget() {
         ])
         if (stop) return
         setCfg(c as Config)
-        setLoggedIn(Boolean((s as { loggedIn?: boolean }).loggedIn))
+        const ses = s as { loggedIn?: boolean; googleEnabled?: boolean }
+        setLoggedIn(Boolean(ses.loggedIn))
+        setGoogleEnabled(Boolean(ses.googleEnabled))
       } catch {
         /* im lặng — không hiện widget */
       }
@@ -155,6 +178,29 @@ export function ChatWidget() {
     }
   }
 
+  // Gom chuỗi cho panel đăng nhập/đăng ký trong khung chat.
+  const authStrings: AuthStrings = {
+    loginTitle: T.loginTitle,
+    loginDesc: T.loginDesc,
+    loginBtn: T.loginBtn,
+    registerBtn: T.registerBtn,
+    google: T.google,
+    or: T.or,
+    back: T.back,
+    email: T.fEmail,
+    password: T.fPassword,
+    company: T.fCompany,
+    contactName: T.fContact,
+    phone: T.fPhone,
+    passwordHint: T.passwordHint,
+    submitLogin: T.submitLogin,
+    submitRegister: T.submitRegister,
+    errInvalid: T.errInvalid,
+    errTaken: T.errTaken,
+    errNetwork: T.errNetwork,
+    errShort: T.errShort,
+  }
+
   const scrollDown = useCallback(() => {
     requestAnimationFrame(() => listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: 'smooth' }))
   }, [])
@@ -183,7 +229,7 @@ export function ChatWidget() {
         }
         setOnline(r.online !== false)
         // Mở khung chat thì chào tiếp (bóng chào chỉ là lời mời ngoài nút).
-        setMessages([{ sender: 'system', text: r.welcomeMessage ?? 'Chào bạn 👋', createdAt: now() }])
+        setMessages([{ sender: 'system', text: '', html: r.welcomeMessage ?? '<p>Chào bạn 👋</p>', createdAt: now() }])
         if (r.online === false && r.offlineMessage) {
           setMessages((m) => [...m, { sender: 'system', text: r.offlineMessage, createdAt: now() }])
         }
@@ -285,10 +331,9 @@ export function ChatWidget() {
               dismissBubble()
               setOpen(true)
             }}
-            className="block rounded-2xl rounded-br-md border border-primary-border/60 bg-white px-4 py-3 pr-8 text-left text-[13.5px] leading-relaxed text-ink shadow-card transition-transform hover:scale-[1.02]"
-          >
-            {cfg.bubbleMessage}
-          </button>
+            className="chat-greeting block rounded-2xl rounded-br-md border border-primary-border/60 bg-white px-4 py-3 pr-8 text-left text-[13.5px] leading-relaxed text-ink shadow-card transition-transform hover:scale-[1.02]"
+            dangerouslySetInnerHTML={{ __html: cfg.bubbleMessage }}
+          />
           <button
             type="button"
             onClick={dismissBubble}
@@ -327,30 +372,17 @@ export function ChatWidget() {
           </div>
 
           {loggedIn === false ? (
-            /* Bắt buộc đăng nhập mới được chat */
-            <div className="flex flex-1 flex-col justify-center gap-4 bg-mist/30 px-6 py-8 text-center">
-              <LogIn className="mx-auto h-9 w-9 text-primary/70" />
-              <div>
-                <p className="text-[15.5px] font-bold text-ink">{T.loginTitle}</p>
-                <p className="mt-2 text-[13.5px] leading-relaxed text-ink/65">{T.loginDesc}</p>
-              </div>
-              <div className="space-y-2.5">
-                <a
-                  href={loginHref('/member/login')}
-                  className="flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-2.5 text-[14px] font-semibold text-white hover:bg-primary-dark"
-                >
-                  <LogIn className="h-4 w-4" />
-                  {T.loginBtn}
-                </a>
-                <a
-                  href={loginHref('/member/dang-ky')}
-                  className="flex w-full items-center justify-center gap-2 rounded-full border border-primary-border bg-white px-6 py-2.5 text-[14px] font-semibold text-primary hover:bg-primary-tint"
-                >
-                  <UserPlus className="h-4 w-4" />
-                  {T.registerBtn}
-                </a>
-              </div>
-            </div>
+            /* Bắt buộc đăng nhập mới được chat — làm NGAY trong khung chat */
+            <ChatAuthPanel
+              t={authStrings}
+              greetingHtml={cfg.loginGreeting}
+              googleEnabled={googleEnabled}
+              returnTo={pathname}
+              onAuthed={() => {
+                setLoggedIn(true)
+                setMessages([])
+              }}
+            />
           ) : !consented ? (
             /* Màn hình đồng ý (GDPR) trước khi bắt đầu chat */
             <div className="flex flex-1 flex-col justify-center gap-4 bg-mist/30 px-6 py-8 text-center">
@@ -392,7 +424,11 @@ export function ChatWidget() {
                       {m.sender === 'agent' && m.agentName && (
                         <div className="mb-0.5 text-[11px] font-semibold text-primary-dark">{m.agentName}</div>
                       )}
-                      {m.text}
+                      {m.html ? (
+                        <div className="chat-greeting" dangerouslySetInnerHTML={{ __html: m.html }} />
+                      ) : (
+                        m.text
+                      )}
                       <div
                         className={cn(
                           'mt-1 text-[10.5px] tabular-nums',

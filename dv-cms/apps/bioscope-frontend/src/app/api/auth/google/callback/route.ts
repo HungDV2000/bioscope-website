@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { B2B_API_URL } from '@/lib/member/config'
-import { GOOGLE_STATE_COOKIE, googleRedirectUri, verifyState } from '@/lib/member/google'
+import { GOOGLE_STATE_COOKIE, googleRedirectUri, publicOrigin, verifyState } from '@/lib/member/google'
 import { writeMemberSession } from '@/lib/member/actions'
 
 /**
@@ -13,7 +13,7 @@ const fail = (origin: string, reason: string) =>
   NextResponse.redirect(new URL(`/member/login?error=${reason}`, origin))
 
 export async function GET(req: NextRequest) {
-  const origin = req.nextUrl.origin
+  const origin = publicOrigin(req)
   const params = req.nextUrl.searchParams
 
   if (params.get('error')) return fail(origin, 'google_cancelled')

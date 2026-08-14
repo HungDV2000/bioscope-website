@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getMemberSession } from '@/lib/member/auth'
+import { getPublicAuthConfig } from '@/lib/member/public-config'
 
 /**
  * Widget hỏi: khách đã đăng nhập chưa (để hiện popup mời đăng nhập hay khung
@@ -8,10 +9,15 @@ import { getMemberSession } from '@/lib/member/auth'
 export const dynamic = 'force-dynamic'
 
 export async function GET() {
-  const session = await getMemberSession()
+  const [session, cfg] = await Promise.all([getMemberSession(), getPublicAuthConfig()])
   const ok = Boolean(session) && session?.status !== 'rejected'
   return NextResponse.json(
-    { loggedIn: ok, name: ok ? (session?.contactName ?? session?.email ?? '') : '' },
+    {
+      loggedIn: ok,
+      name: ok ? (session?.contactName ?? session?.email ?? '') : '',
+      // Widget cần biết có hiện nút Google trong khung đăng nhập không.
+      googleEnabled: cfg.googleEnabled,
+    },
     { headers: { 'Cache-Control': 'no-store' } },
   )
 }

@@ -4,10 +4,30 @@ import { SESSION_SECRET } from './config'
 /** Cookie giữ nonce của luồng OAuth (chống CSRF). */
 export const GOOGLE_STATE_COOKIE = 'bs_goauth_state'
 
+/**
+ * Origin công khai mà KHÁCH đang truy cập.
+ *
+ * Bên trong container, req.nextUrl.origin là http://localhost:26300 — dùng nó
+ * để redirect thì khách bị đá về localhost (không vào được). Phải đọc header
+ * do nginx/aaPanel chuyển tiếp. Cũng KHÔNG dùng NEXT_PUBLIC_SITE_URL làm ưu
+ * tiên: nếu biến đó là web.bioscope.vn mà khách đang ở bioscope.vn thì cookie
+ * state đặt ở tên miền này, Google lại trả về tên miền kia → mất cookie →
+ * lỗi google_state.
+ */
+export function publicOrigin(req: { headers: Headers; nextUrl: URL }): string {
+  const host = req.headers.get('x-forwarded-host') || req.headers.get('host')
+  if (host) {
+    const proto =
+      req.headers.get('x-forwarded-proto')?.split(',')[0]?.trim() ||
+      (host.startsWith('localhost') || host.startsWith('127.0.0.1') ? 'http' : 'https')
+    return `${proto}://${host}`
+  }
+  return (process.env.NEXT_PUBLIC_SITE_URL || req.nextUrl.origin).replace(/\/$/, '')
+}
+
 /** Redirect URI phải khớp TUYỆT ĐỐI với khai báo ở Google Cloud Console. */
 export function googleRedirectUri(origin: string): string {
-  const base = (process.env.NEXT_PUBLIC_SITE_URL || origin).replace(/\/$/, '')
-  return `${base}/api/auth/google/callback`
+  return `${origin.replace(/\/$/, '')}/api/auth/google/callback`
 }
 
 /** Chỉ nhận đường dẫn nội bộ — chặn open redirect. */

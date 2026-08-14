@@ -1,6 +1,6 @@
 'use server'
 
-import { cookies } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import {
@@ -43,19 +43,32 @@ const toSession = (u: B2BUser): MemberSession => ({
   emailVerified: u.emailVerified ?? false,
 })
 
-const cookieOpts = {
-  path: '/',
-  maxAge: MEMBER_SESSION_MAX_AGE,
-  sameSite: 'lax' as const,
-  httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
+/**
+ * Cờ Secure đặt theo giao thức THẬT của khách, không theo NODE_ENV: container
+ * chạy NODE_ENV=production nhưng khi truy cập thẳng qua HTTP (localhost:26300,
+ * bỏ qua nginx) trình duyệt sẽ từ chối lưu cookie Secure → đăng nhập im lặng
+ * không vào. Truy cập qua tên miền HTTPS thật vẫn được đánh Secure như thường.
+ */
+async function cookieOptions() {
+  let secure = process.env.NODE_ENV === 'production'
+  try {
+    const h = await headers()
+    const proto = h.get('x-forwarded-proto')?.split(',')[0]?.trim()
+    const host = h.get('x-forwarded-host') || h.get('host') || ''
+    if (proto) secure = proto === 'https'
+    else if (host.startsWith('localhost') || host.startsWith('127.0.0.1')) secure = false
+  } catch {
+    /* ngoài ngữ cảnh request — giữ mặc định */
+  }
+  return { path: '/', maxAge: MEMBER_SESSION_MAX_AGE, sameSite: 'lax' as const, httpOnly: true, secure }
 }
 
 /** Ghi cookie phiên (đã ký) + JWT để gọi API thay mặt thành viên. */
 export async function writeMemberSession(user: B2BUser, token?: string) {
   const jar = await cookies()
-  jar.set(MEMBER_SESSION_COOKIE, serializeSession(toSession(user)), cookieOpts)
-  if (token) jar.set(MEMBER_TOKEN_COOKIE, token, cookieOpts)
+  const opts = await cookieOptions()
+  jar.set(MEMBER_SESSION_COOKIE, serializeSession(toSession(user)), opts)
+  if (token) jar.set(MEMBER_TOKEN_COOKIE, token, opts)
 }
 
 export async function memberLogin(email: string, password: string): Promise<LoginState> {

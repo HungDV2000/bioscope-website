@@ -5,6 +5,39 @@
  * biến môi trường khi ô trong admin bỏ trống.
  */
 import type { Payload } from 'payload'
+import { convertLexicalToHTML } from '@payloadcms/richtext-lexical/html'
+import type { SerializedEditorState } from '@payloadcms/richtext-lexical/lexical'
+
+/**
+ * Rich text (Lexical) → HTML để gửi xuống widget. Admin là người soạn nên nội
+ * dung tin cậy; widget render bằng dangerouslySetInnerHTML.
+ * Rỗng/không phải rich text → trả '' để nơi gọi lùi về câu mặc định.
+ */
+function richToHtml(v: unknown): string {
+  if (!v || typeof v !== 'object' || !('root' in (v as object))) return ''
+  try {
+    // disableContainer: bỏ <div class="payload-richtext"> bọc ngoài — widget tự lo
+    // khung, thêm div nữa sẽ phá bố cục bong bóng chat.
+    const html = convertLexicalToHTML({ data: v as SerializedEditorState, disableContainer: true })
+    // Lexical sinh <p></p> rỗng khi ô chưa nhập gì.
+    return html.replace(/<p[^>]*>(\s|&nbsp;|<br\s*\/?>)*<\/p>/g, '').trim()
+  } catch {
+    return ''
+  }
+}
+
+/** Bỏ thẻ HTML để lấy văn bản thuần (dùng cho Telegram, tiêu đề…). */
+export const htmlToText = (html: string) =>
+  html
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/(p|div|h[1-6]|li)>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
 
 export type ChatConfig = {
   enabled: boolean
@@ -12,9 +45,12 @@ export type ChatConfig = {
   salesChatId: string
   webhookSecret: string
   widgetTitle: string
+  /** HTML — đã chuyển từ rich text. */
   welcomeMessage: string
+  loginGreeting: string
   offlineMessage: string
   bubbleEnabled: boolean
+  /** HTML — đã chuyển từ rich text. */
   bubbleMessage: string
   bubbleDelay: number
   bubbleOncePerSession: boolean
@@ -34,10 +70,13 @@ export async function getChatConfig(payload: Payload, locale = 'vi'): Promise<Ch
     salesChatId: pick(g.salesChatId, process.env.TELEGRAM_SALES_CHAT_ID),
     webhookSecret: pick(g.webhookSecret, process.env.TELEGRAM_WEBHOOK_SECRET),
     widgetTitle: pick(g.widgetTitle) || 'Bioscope hỗ trợ',
-    welcomeMessage: pick(g.welcomeMessage) || 'Chào bạn 👋 Bioscope có thể giúp gì cho bạn?',
+    welcomeMessage: richToHtml(g.welcomeMessage) || '<p>Chào bạn 👋 Bioscope có thể giúp gì cho bạn?</p>',
+    loginGreeting: richToHtml(g.loginGreeting),
     offlineMessage: pick(g.offlineMessage) || 'Hiện chưa có nhân viên trực. Để lại email, chúng tôi sẽ liên hệ lại.',
     bubbleEnabled: g.bubbleEnabled !== false,
-    bubbleMessage: pick(g.bubbleMessage) || 'Chào bạn 👋 Cần tư vấn nguyên liệu hay báo giá? Nhắn cho Bioscope nhé!',
+    bubbleMessage:
+      richToHtml(g.bubbleMessage) ||
+      '<p>Chào bạn 👋 Cần tư vấn nguyên liệu hay báo giá? Nhắn cho Bioscope nhé!</p>',
     bubbleDelay: typeof g.bubbleDelay === 'number' ? g.bubbleDelay : 5,
     bubbleOncePerSession: g.bubbleOncePerSession !== false,
   }

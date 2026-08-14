@@ -75,10 +75,23 @@ export const ChatSettings: GlobalConfig = {
             },
             {
               name: 'welcomeMessage',
-              type: 'textarea',
+              type: 'richText',
               localized: true,
-              label: { en: 'Welcome message', vi: 'Lời chào đầu tiên' },
-              defaultValue: 'Chào bạn 👋 Bioscope có thể giúp gì cho bạn về nguyên liệu / báo giá?',
+              label: { en: 'Welcome message', vi: 'Lời chào khi đã vào khung chat' },
+              admin: {
+                description:
+                  'Tin nhắn đầu tiên hiện trong khung chat sau khi khách đăng nhập. Bôi đậm/nghiêng, xuống dòng, chèn link đều được.',
+              },
+            },
+            {
+              name: 'loginGreeting',
+              type: 'richText',
+              localized: true,
+              label: { en: 'Greeting on sign-in screen', vi: 'Lời chào ở màn hình mời đăng nhập' },
+              admin: {
+                description:
+                  'Hiện trong khung chat CÙNG với nút Đăng nhập / Đăng ký, dành cho khách chưa đăng nhập. Bỏ trống = dùng câu mặc định.',
+              },
             },
             {
               name: 'offlineMessage',
@@ -102,11 +115,13 @@ export const ChatSettings: GlobalConfig = {
             },
             {
               name: 'bubbleMessage',
-              type: 'textarea',
+              type: 'richText',
               localized: true,
               label: { en: 'Bubble text', vi: 'Nội dung bóng chào' },
-              defaultValue: 'Chào bạn 👋 Cần tư vấn nguyên liệu hay báo giá? Nhắn cho Bioscope nhé!',
-              admin: { description: 'Ngắn gọn 1–2 câu. Quá dài sẽ che mất nội dung trang.' },
+              admin: {
+                description:
+                  'Ngắn gọn 1–2 câu, có thể bôi đậm/nghiêng. Quá dài sẽ che mất nội dung trang.',
+              },
             },
             {
               name: 'bubbleDelay',

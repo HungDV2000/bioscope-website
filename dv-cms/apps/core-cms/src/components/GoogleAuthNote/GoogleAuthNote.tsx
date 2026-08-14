@@ -3,7 +3,17 @@
  * sai chỗ này là lỗi redirect_uri_mismatch, rất hay gặp.
  */
 export function GoogleAuthNote() {
-  const frontend = (process.env.FRONTEND_URL || 'https://bioscope.vn').replace(/\/$/, '')
+  // Liệt kê MỌI tên miền website đang chạy: redirect URI phải khớp đúng tên
+  // miền khách bấm đăng nhập, sai một ký tự là lỗi redirect_uri_mismatch /
+  // google_state.
+  const domains = Array.from(
+    new Set(
+      [process.env.FRONTEND_URL, process.env.NEXT_PUBLIC_SITE_URL, 'https://bioscope.vn']
+        .filter(Boolean)
+        .map((d) => (d as string).replace(/\/$/, '')),
+    ),
+  )
+  const frontend = domains[0]
   return (
     <div
       style={{
@@ -21,23 +31,32 @@ export function GoogleAuthNote() {
           Tạo <em>OAuth client ID</em> loại <em>Web application</em>.
         </li>
         <li>
-          Mục <em>Authorized redirect URIs</em> dán đúng chuỗi này:
-          <br />
-          <code
-            style={{
-              display: 'inline-block',
-              marginTop: 4,
-              padding: '3px 7px',
-              background: 'var(--theme-elevation-100)',
-              borderRadius: 4,
-              userSelect: 'all',
-            }}
-          >
-            {frontend}/api/auth/google/callback
-          </code>
+          Mục <em>Authorized redirect URIs</em> — thêm <strong>tất cả</strong> dòng dưới đây (mỗi tên
+          miền website một dòng; thiếu dòng nào thì đăng nhập từ tên miền đó sẽ lỗi):
+          {domains.map((d) => (
+            <div key={d}>
+              <code
+                style={{
+                  display: 'inline-block',
+                  marginTop: 4,
+                  padding: '3px 7px',
+                  background: 'var(--theme-elevation-100)',
+                  borderRadius: 4,
+                  userSelect: 'all',
+                }}
+              >
+                {d}/api/auth/google/callback
+              </code>
+            </div>
+          ))}
         </li>
         <li>
-          Mục <em>Authorized JavaScript origins</em> dán: <code>{frontend}</code>
+          Mục <em>Authorized JavaScript origins</em> dán tương ứng:{' '}
+          {domains.map((d) => (
+            <code key={d} style={{ marginRight: 6, userSelect: 'all' }}>
+              {d}
+            </code>
+          ))}
         </li>
         <li>Copy Client ID + Client Secret dán vào 2 ô phía trên rồi Lưu.</li>
       </ol>

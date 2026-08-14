@@ -32,6 +32,7 @@ const configEndpoint: Endpoint = {
       ok: true,
       enabled: cfg.enabled,
       widgetTitle: cfg.widgetTitle,
+      loginGreeting: cfg.loginGreeting,
       bubbleEnabled: cfg.bubbleEnabled,
       bubbleMessage: cfg.bubbleMessage,
       bubbleDelay: cfg.bubbleDelay,

@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils'
 import { useLocale } from '@/lib/i18n/context'
 import { collectTracking, trackPageView } from '@/lib/chat/tracking'
 import { ChatAuthPanel, type AuthStrings } from './chat-auth-panel'
+import { SESSION_CHANGED } from '@/lib/member/session-events'
 
 type Msg = {
   id?: number
@@ -133,7 +134,7 @@ export function ChatWidget() {
       try {
         const [c, s] = await Promise.all([
           fetch(`/api/chat/config?locale=${locale}`).then((r) => r.json()),
-          fetch('/api/chat/session').then((r) => r.json()),
+          fetch('/api/member/session').then((r) => r.json()),
         ])
         if (stop) return
         setCfg(c as Config)
@@ -381,6 +382,9 @@ export function ChatWidget() {
               onAuthed={() => {
                 setLoggedIn(true)
                 setMessages([])
+                // Báo nút tài khoản ở header đọc lại phiên — đăng nhập ở widget
+                // xong là header đổi ngay, không phải tải lại trang.
+                window.dispatchEvent(new Event(SESSION_CHANGED))
               }}
             />
           ) : !consented ? (

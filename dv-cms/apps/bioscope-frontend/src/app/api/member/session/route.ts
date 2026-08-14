@@ -3,8 +3,9 @@ import { getMemberSession } from '@/lib/member/auth'
 import { getPublicAuthConfig } from '@/lib/member/public-config'
 
 /**
- * Widget hỏi: khách đã đăng nhập chưa (để hiện popup mời đăng nhập hay khung
- * chat). Chỉ trả tên hiển thị — không lộ thêm dữ liệu tài khoản.
+ * Trạng thái đăng nhập cho các thành phần chạy ở trình duyệt (nút tài khoản ở
+ * header, widget chat). Chỉ trả tên hiển thị + trạng thái duyệt — không lộ
+ * thêm dữ liệu tài khoản.
  */
 export const dynamic = 'force-dynamic'
 
@@ -15,6 +16,9 @@ export async function GET() {
     {
       loggedIn: ok,
       name: ok ? (session?.contactName ?? session?.email ?? '') : '',
+      email: ok ? (session?.email ?? '') : '',
+      // Khu tài liệu B2B chỉ mở khi đã được admin duyệt.
+      approved: ok && session?.status === 'approved',
       // Widget cần biết có hiện nút Google trong khung đăng nhập không.
       googleEnabled: cfg.googleEnabled,
     },

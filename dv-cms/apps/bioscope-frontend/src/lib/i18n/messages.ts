@@ -15,6 +15,11 @@ export type Messages = {
   header: {
     requestSamples: string
     menu: string
+    signIn: string
+    account: string
+    myAccount: string
+    myDocuments: string
+    signOut: string
   }
   footer: {
     tagline: string
@@ -169,6 +174,11 @@ const vi: Messages = {
   header: {
     requestSamples: 'Yêu cầu mẫu thử',
     menu: 'Menu',
+    signIn: 'Đăng nhập',
+    account: 'Tài khoản',
+    myAccount: 'Tài khoản của tôi',
+    myDocuments: 'Tài liệu B2B',
+    signOut: 'Đăng xuất',
   },
   footer: {
     tagline:
@@ -402,6 +412,11 @@ const en: Messages = {
   header: {
     requestSamples: 'Request samples',
     menu: 'Menu',
+    signIn: 'Sign in',
+    account: 'Account',
+    myAccount: 'My account',
+    myDocuments: 'B2B documents',
+    signOut: 'Sign out',
   },
   footer: {
     tagline:

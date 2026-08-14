@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { Menu, X, FlaskConical } from 'lucide-react'
 import { LanguageSwitcher } from '@/components/language-switcher'
+import { HeaderAccount } from '@/components/member/header-account'
 import { useLocale } from '@/lib/i18n/context'
 import { cn } from '@/lib/utils'
 
@@ -47,6 +48,7 @@ export function SiteHeader({ items }: { items?: { label: string; href: string }[
 
           <div className="flex shrink-0 items-center gap-2.5">
             <LanguageSwitcher className="hidden sm:inline-flex" />
+            <HeaderAccount />
             <Link
               href="/lien-he"
               className="hidden items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-[14px] font-semibold text-white shadow-soft transition-colors duration-300 hover:bg-primary-dark sm:inline-flex"
@@ -72,8 +74,9 @@ export function SiteHeader({ items }: { items?: { label: string; href: string }[
           open ? 'opacity-100' : 'pointer-events-none opacity-0',
         )}
       >
-        <div className="mb-6">
+        <div className="mb-6 flex items-center justify-between gap-3">
           <LanguageSwitcher />
+          <HeaderAccount />
         </div>
         <ul className="flex flex-col gap-1">
           {NAV.map((item, i) => (

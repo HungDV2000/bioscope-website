@@ -7,8 +7,14 @@ import { getMemberSession } from '@/lib/member/auth'
  */
 const CMS = process.env.CMS_INTERNAL_URL || process.env.NEXT_PUBLIC_CMS_URL || 'http://localhost:3001'
 
-/** Các thao tác ghi — đều đòi đăng nhập. */
-const GUARDED = new Set(['start', 'message', 'contact'])
+/**
+ * Mọi thứ TRỪ `config` đều đòi đăng nhập.
+ *
+ * Kể cả `poll` và `file` (chỉ đọc): token chat nằm trong localStorage và không
+ * mất khi đăng xuất, nên nếu chỉ cần token là đọc được thì trên máy dùng chung
+ * người sau sẽ xem được hội thoại của người trước.
+ */
+const PUBLIC_PATHS = new Set(['config'])
 
 /** IP thật của khách để CMS lưu tracking (proxy nằm giữa nên phải chuyển tiếp). */
 function visitorIp(req: NextRequest): string {
@@ -23,41 +29,53 @@ async function forward(req: NextRequest, path: string[]): Promise<Response> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' }
   if (ip) headers['x-forwarded-for'] = ip
 
+  let session: Awaited<ReturnType<typeof getMemberSession>> = null
+  if (!PUBLIC_PATHS.has(p)) {
+    session = await getMemberSession()
+    if (!session || session.status === 'rejected') {
+      return Response.json({ ok: false, error: 'login_required' }, { status: 401 })
+    }
+    // CMS đối chiếu id này với chủ hội thoại trước khi cho đọc/ghi.
+    headers['x-chat-member'] = String(session.id)
+  }
+
   const init: RequestInit = { method: req.method, headers, signal: AbortSignal.timeout(15000) }
 
   if (req.method !== 'GET' && req.method !== 'HEAD') {
     let body = await req.text()
-
-    if (GUARDED.has(p)) {
-      // Bắt buộc đăng nhập mới được chat. Xác thực ở SERVER bằng cookie phiên
-      // CÓ KÝ nên khách không tự khai loggedIn được; token cũ trong localStorage
-      // cũng không dùng tiếp được sau khi đăng xuất. Mọi tài khoản đã đăng nhập
-      // đều chat được (kể cả chờ duyệt) — chỉ khu tài liệu mới cần duyệt.
-      const session = await getMemberSession()
-      if (!session || session.status === 'rejected') {
-        return Response.json({ ok: false, error: 'login_required' }, { status: 401 })
-      }
-      // Riêng /chat/start mới cần đính danh tính + để CMS lưu tracking.
-      if (p === 'start') {
-        try {
-          const parsed = body ? (JSON.parse(body) as Record<string, unknown>) : {}
-          parsed.loggedIn = true
-          parsed.memberId = session.id
-          parsed.memberName = session.contactName
-          parsed.memberEmail = session.email
-          parsed.memberCompany = session.company
-          body = JSON.stringify(parsed)
-        } catch {
-          /* body không phải JSON — giữ nguyên */
-        }
+    // Riêng /chat/start mới cần đính danh tính + để CMS lưu tracking.
+    if (p === 'start' && session) {
+      try {
+        const parsed = body ? (JSON.parse(body) as Record<string, unknown>) : {}
+        parsed.loggedIn = true
+        parsed.memberId = session.id
+        parsed.memberName = session.contactName
+        parsed.memberEmail = session.email
+        parsed.memberCompany = session.company
+        body = JSON.stringify(parsed)
+      } catch {
+        /* body không phải JSON — giữ nguyên */
       }
     }
-
     init.body = body
   }
 
   try {
     const res = await fetch(url, init)
+    // Tệp đính kèm là nhị phân — trả thẳng, không ép về JSON.
+    const type = res.headers.get('content-type') ?? ''
+    if (!type.includes('application/json')) {
+      return new Response(res.body, {
+        status: res.status,
+        headers: {
+          'Content-Type': type || 'application/octet-stream',
+          ...(res.headers.get('content-disposition')
+            ? { 'Content-Disposition': res.headers.get('content-disposition') as string }
+            : {}),
+          'Cache-Control': 'private, no-store',
+        },
+      })
+    }
     return new Response(await res.text(), {
       status: res.status,
       headers: { 'Content-Type': 'application/json' },

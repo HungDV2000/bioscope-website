@@ -219,6 +219,8 @@ const startEndpoint: Endpoint = {
       ok: true,
       conversationId: conv.id,
       token,
+      // Widget lưu lại để biết token này của tài khoản nào (máy dùng chung).
+      memberId,
       online: isTelegramReady(cfg),
       widgetTitle: cfg.widgetTitle,
       welcomeMessage: cfg.welcomeMessage,
@@ -558,6 +560,18 @@ const setupEndpoint: Endpoint = {
   },
 }
 
+/**
+ * Tìm hội thoại theo token VÀ kiểm tra đúng chủ sở hữu.
+ *
+ * Chỉ dựa vào token là không đủ: token nằm trong localStorage của trình duyệt
+ * và không mất khi đăng xuất. Trên máy dùng chung (văn phòng, quán net), người
+ * đăng nhập sau sẽ đọc được nguyên hội thoại của người trước. Vì vậy mọi thao
+ * tác đều phải khớp thêm id thành viên do proxy frontend đính kèm (proxy đã
+ * xác thực bằng cookie phiên CÓ KÝ nên client không tự khai được).
+ *
+ * Hội thoại cũ chưa gắn thành viên coi như KHÔNG thuộc về ai → widget sẽ mở
+ * hội thoại mới; bản ghi cũ vẫn còn nguyên trong admin.
+ */
 async function findByToken(req: PayloadRequest, token: string) {
   const r = await req.payload.find({
     collection: 'chat-conversations',
@@ -566,7 +580,17 @@ async function findByToken(req: PayloadRequest, token: string) {
     depth: 0,
     overrideAccess: true,
   })
-  return r.docs[0] as { id: number | string; telegramTopicId?: number } | undefined
+  const conv = r.docs[0] as
+    | { id: number | string; telegramTopicId?: number; member?: number | string | null }
+    | undefined
+  if (!conv) return undefined
+
+  const memberId = (req.headers as unknown as Headers)?.get?.('x-chat-member') ?? ''
+  if (!memberId || conv.member == null || String(conv.member) !== String(memberId)) {
+    req.payload.logger.warn(`[chat] từ chối truy cập hội thoại ${conv.id}: không đúng chủ sở hữu.`)
+    return undefined
+  }
+  return conv
 }
 
 export const chatEndpoints: Endpoint[] = [

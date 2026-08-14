@@ -40,7 +40,7 @@ export function ChatAuthPanel({
       <div className="space-y-2.5">
         <button
           type="button"
-          onClick={() => openAuthModal('login')}
+          onClick={() => openAuthModal('login', 'chat')}
           className="flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-2.5 text-[14px] font-semibold text-white hover:bg-primary-dark"
         >
           <LogIn className="h-4 w-4" />
@@ -48,7 +48,7 @@ export function ChatAuthPanel({
         </button>
         <button
           type="button"
-          onClick={() => openAuthModal('register')}
+          onClick={() => openAuthModal('register', 'chat')}
           className="flex w-full items-center justify-center gap-2 rounded-full border border-primary-border bg-white px-6 py-2.5 text-[14px] font-semibold text-primary hover:bg-primary-tint"
         >
           <UserPlus className="h-4 w-4" />

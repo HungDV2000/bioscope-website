@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { usePathname } from 'next/navigation'
-import { MessageCircle, X, Send } from 'lucide-react'
+import { MessageCircle, X, Send, Trash2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useLocale } from '@/lib/i18n/context'
 import { collectTracking, trackPageView } from '@/lib/chat/tracking'
@@ -38,6 +38,9 @@ const STRINGS = {
     thanks: 'Cảm ơn bạn — chúng tôi sẽ liên hệ qua email sớm nhất.', inputPh: 'Nhập tin nhắn…',
     openChat: 'Mở chat hỗ trợ', closeChat: 'Đóng chat', dismiss: 'Đóng lời chào',
     download: 'Tải tệp', imageAlt: 'Ảnh sales gửi',
+    clearHistory: 'Xoá lịch sử trò chuyện',
+    clearConfirm: 'Ẩn toàn bộ tin nhắn khỏi máy bạn và bắt đầu cuộc trò chuyện mới?',
+    cleared: 'Đã ẩn lịch sử khỏi thiết bị của bạn.',
     loginTitle: 'Đăng nhập để trò chuyện',
     loginDesc: 'Để đội ngũ Bioscope hỗ trợ chính xác và lưu lại lịch sử trao đổi, bạn vui lòng đăng nhập hoặc tạo tài khoản đối tác.',
     loginBtn: 'Đăng nhập', registerBtn: 'Đăng ký tài khoản',
@@ -59,6 +62,9 @@ const STRINGS = {
     thanks: "Thanks — we'll email you soon.", inputPh: 'Type a message…',
     openChat: 'Open support chat', closeChat: 'Close chat', dismiss: 'Dismiss greeting',
     download: 'Download file', imageAlt: 'Image from sales',
+    clearHistory: 'Clear chat history',
+    clearConfirm: 'Hide all messages from this device and start a new conversation?',
+    cleared: 'History hidden from your device.',
     loginTitle: 'Sign in to chat',
     loginDesc: 'So the Bioscope team can help you accurately and keep your conversation history, please sign in or create a partner account.',
     loginBtn: 'Sign in', registerBtn: 'Create account',
@@ -77,6 +83,8 @@ const STRINGS = {
 const LS_TOKEN = 'bsChatToken'
 const LS_CONV = 'bsChatConvId'
 const SS_BUBBLE = 'bsChatBubbleSeen'
+/** Token chat đang lưu thuộc về tài khoản nào — đổi người là phải xoá. */
+const LS_MEMBER = 'bsChatMember'
 
 type Config = {
   enabled: boolean
@@ -143,7 +151,23 @@ export function ChatWidget() {
         ])
         if (stop) return
         setCfg(c as Config)
-        setLoggedIn(Boolean((s as { loggedIn?: boolean }).loggedIn))
+        const ses = s as { loggedIn?: boolean; id?: string }
+        setLoggedIn(Boolean(ses.loggedIn))
+        // Token chat còn sót của tài khoản KHÁC (máy dùng chung, vừa đổi người
+        // đăng nhập) → bỏ đi, không để người sau đọc hội thoại của người trước.
+        try {
+          const owner = localStorage.getItem(LS_MEMBER)
+          if (!ses.loggedIn || (owner && owner !== String(ses.id ?? ''))) {
+            localStorage.removeItem(LS_TOKEN)
+            localStorage.removeItem(LS_CONV)
+            localStorage.removeItem(LS_MEMBER)
+            setToken(null)
+            setMessages([])
+            lastId.current = 0
+          }
+        } catch {
+          /* bỏ qua */
+        }
       } catch {
         /* im lặng — không hiện widget */
       }
@@ -190,6 +214,30 @@ export function ChatWidget() {
     return () => clearTimeout(t)
   }, [cfg, open])
 
+  /**
+   * Bỏ phiên chat đang lưu TRÊN MÁY KHÁCH. Dữ liệu trên máy chủ giữ nguyên để
+   * admin còn theo dõi — đây chỉ là ẩn khỏi thiết bị của khách.
+   */
+  const forgetLocalSession = useCallback(() => {
+    try {
+      localStorage.removeItem(LS_TOKEN)
+      localStorage.removeItem(LS_CONV)
+      localStorage.removeItem(LS_MEMBER)
+    } catch {
+      /* bỏ qua */
+    }
+    lastId.current = 0
+    setToken(null)
+    setMessages([])
+    setContactSent(false)
+  }, [])
+
+  const clearHistory = () => {
+    if (!window.confirm(T.clearConfirm)) return
+    forgetLocalSession()
+    setMessages([{ sender: 'system', text: T.cleared, createdAt: new Date().toISOString() }])
+  }
+
   const dismissBubble = () => {
     setBubble(false)
     try {
@@ -223,6 +271,7 @@ export function ChatWidget() {
 
       if (r?.error === 'login_required') {
         setLoggedIn(false)
+        forgetLocalSession()
         return
       }
       if (r?.token) {
@@ -230,6 +279,7 @@ export function ChatWidget() {
         try {
           localStorage.setItem(LS_TOKEN, r.token)
           localStorage.setItem(LS_CONV, String(r.conversationId))
+          if (r.memberId) localStorage.setItem(LS_MEMBER, String(r.memberId))
         } catch {
           /* bỏ qua */
         }
@@ -367,14 +417,27 @@ export function ChatWidget() {
                 </div>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              aria-label={T.close}
-              className="grid h-8 w-8 place-items-center rounded-full hover:bg-white/15"
-            >
-              <X className="h-4 w-4" />
-            </button>
+            <div className="flex items-center gap-1">
+              {token && (
+                <button
+                  type="button"
+                  onClick={clearHistory}
+                  aria-label={T.clearHistory}
+                  title={T.clearHistory}
+                  className="grid h-8 w-8 place-items-center rounded-full hover:bg-white/15"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                aria-label={T.close}
+                className="grid h-8 w-8 place-items-center rounded-full hover:bg-white/15"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
           </div>
 
           {loggedIn === false ? (

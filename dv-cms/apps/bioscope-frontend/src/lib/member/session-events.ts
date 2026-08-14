@@ -9,9 +9,16 @@ export const SESSION_CHANGED = 'bs:session-changed'
 /** Mở popup đăng nhập/đăng ký. detail.mode chọn sẵn tab, detail.returnTo cho Google. */
 export const OPEN_AUTH = 'bs:open-auth'
 
-export type OpenAuthDetail = { mode?: 'login' | 'register' }
+export type OpenAuthDetail = {
+  mode?: 'login' | 'register'
+  /**
+   * Mở từ đâu. 'chat' mới lấy lời chào ② admin soạn cho chatbot; mở từ header
+   * là việc đăng nhập bình thường của website, không dính nội dung chatbot.
+   */
+  from?: 'header' | 'chat'
+}
 
-export const openAuthModal = (mode?: OpenAuthDetail['mode']) =>
-  window.dispatchEvent(new CustomEvent<OpenAuthDetail>(OPEN_AUTH, { detail: { mode } }))
+export const openAuthModal = (mode?: OpenAuthDetail['mode'], from: OpenAuthDetail['from'] = 'header') =>
+  window.dispatchEvent(new CustomEvent<OpenAuthDetail>(OPEN_AUTH, { detail: { mode, from } }))
 
 export const notifySessionChanged = () => window.dispatchEvent(new Event(SESSION_CHANGED))

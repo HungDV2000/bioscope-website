@@ -15,6 +15,8 @@ export async function GET() {
   return NextResponse.json(
     {
       loggedIn: ok,
+      // Widget dùng để biết token chat đang lưu là của tài khoản nào.
+      id: ok ? String(session?.id ?? '') : '',
       name: ok ? (session?.contactName ?? session?.email ?? '') : '',
       email: ok ? (session?.email ?? '') : '',
       // Khu tài liệu B2B chỉ mở khi đã được admin duyệt.

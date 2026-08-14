@@ -55,18 +55,19 @@ export function MemberAuthForm({
   t,
   mode,
   setMode,
-  greetingHtml,
   googleEnabled,
   returnTo,
   onDone,
+  hideHeading = false,
 }: {
   t: AuthFormStrings
   mode: 'choose' | 'login' | 'register'
   setMode: (m: 'choose' | 'login' | 'register') => void
-  greetingHtml?: string
   googleEnabled: boolean
   returnTo: string
   onDone: () => void
+  /** Modal đã hiện tiêu đề ở dải đầu → form không lặp lại. */
+  hideHeading?: boolean
 }) {
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -147,18 +148,7 @@ export function MemberAuthForm({
 
   if (mode === 'choose') {
     return (
-      <div className="space-y-5">
-        <div className="text-center">
-          <p className="text-[17px] font-bold text-ink">{t.titleChoose}</p>
-          {greetingHtml ? (
-            <div
-              className="chat-greeting mt-2 text-[14px] leading-relaxed text-ink/65"
-              dangerouslySetInnerHTML={{ __html: greetingHtml }}
-            />
-          ) : (
-            <p className="mt-2 text-[14px] leading-relaxed text-ink/65">{t.desc}</p>
-          )}
-        </div>
+      <div className="space-y-2.5">
         <div className="space-y-2.5">
           {googleEnabled && <GoogleBtn />}
           <button
@@ -185,8 +175,8 @@ export function MemberAuthForm({
   if (mode === 'login') {
     return (
       <form onSubmit={(e) => void submit(e, 'login')} className="space-y-4">
-        <Back />
-        <p className="text-[17px] font-bold text-ink">{t.titleLogin}</p>
+        {!hideHeading && <Back />}
+        {!hideHeading && <p className="text-[17px] font-bold text-ink">{t.titleLogin}</p>}
         <Err />
         <div>
           <label htmlFor="ma-email" className={label}>
@@ -223,8 +213,8 @@ export function MemberAuthForm({
 
   return (
     <form onSubmit={(e) => void submit(e, 'register')} className="space-y-3.5">
-      <Back />
-      <p className="text-[17px] font-bold text-ink">{t.titleRegister}</p>
+      {!hideHeading && <Back />}
+      {!hideHeading && <p className="text-[17px] font-bold text-ink">{t.titleRegister}</p>}
       <Err />
       <div>
         <label htmlFor="ma-company" className={label}>

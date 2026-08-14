@@ -125,7 +125,9 @@ const startEndpoint: Endpoint = {
           ? Number(rawMemberId.trim())
           : undefined
     const memberCompany = str(body.memberCompany, 200)
-    const isBusiness = body.memberType !== 'individual'
+    // Chỉ coi là doanh nghiệp khi khách ĐÃ khai rõ; chưa khai (tài khoản
+    // Google) thì hiện cá nhân, tránh để sales chào sai ngữ cảnh.
+    const isBusiness = body.memberType === 'business'
 
     // ── Tracking tự động ──
     const ip = clientIp(req)

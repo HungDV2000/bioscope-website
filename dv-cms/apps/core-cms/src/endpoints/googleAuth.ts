@@ -148,7 +148,11 @@ const exchangeEndpoint: Endpoint = {
             // mà không hỏi mật khẩu cũ.
             password: randomBytes(24).toString('base64url'),
             hasPassword: false,
-            // Google không cung cấp tên công ty — để trống, khách điền ở trang Tài khoản.
+            // Google không cho biết khách là cá nhân hay doanh nghiệp, cũng
+            // không có tên công ty. Mặc định CÁ NHÂN — đây là phương án ít sai
+            // nhất: gán nhầm thành doanh nghiệp sẽ khiến sales chào hỏi sai
+            // ngữ cảnh. Khách tự đổi lại ở trang Tài khoản.
+            customerType: 'individual',
             contactName: profile.name || email.split('@')[0],
             // Duyệt ở mức cơ bản: chat + sửa hồ sơ dùng ngay. Khu tài liệu B2B
             // vẫn chờ admin đổi status sang 'approved'.

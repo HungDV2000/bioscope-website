@@ -32,8 +32,8 @@ export function AccountForms({ m, session }: { m: MemberMessages['account']; ses
   // ── Hồ sơ ──
   const [pMsg, setPMsg] = useState<{ tone: 'ok' | 'err'; text: string } | null>(null)
   const [savingProfile, startProfile] = useTransition()
-  // Tài khoản Google chưa chọn loại → mặc định doanh nghiệp cho khách chọn lại.
-  const [customerType, setCustomerType] = useState<CustomerType>(session.customerType ?? 'business')
+  // Tài khoản Google chưa khai loại → cá nhân, khách đổi sang doanh nghiệp được.
+  const [customerType, setCustomerType] = useState<CustomerType>(session.customerType ?? 'individual')
   const isBusiness = customerType === 'business'
 
   const submitProfile = (e: React.FormEvent<HTMLFormElement>) => {

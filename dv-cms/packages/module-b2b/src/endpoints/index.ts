@@ -169,12 +169,13 @@ export const createB2BEndpoints = (opts: B2BEndpointOptions = {}): Endpoint[] =>
           (req.data ?? {}) as Record<string, string>
         // Chưa chọn loại thì giữ nguyên loại đang lưu (vd tài khoản Google).
         const stored = (me as { customerType?: string }).customerType
+        // Chưa từng khai (tài khoản Google) → cá nhân, khớp với mặc định lúc tạo.
         const type: 'business' | 'individual' =
           customerType === 'individual' || customerType === 'business'
             ? customerType
-            : stored === 'individual'
-              ? 'individual'
-              : 'business'
+            : stored === 'business'
+              ? 'business'
+              : 'individual'
         if (!contactName?.trim()) {
           return json({ error: 'Thiếu tên người liên hệ.' }, { status: 400 })
         }

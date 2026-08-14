@@ -385,6 +385,9 @@ export interface ChatMessage {
   text: string;
   agentName?: string | null;
   telegramMessageId?: number | null;
+  telegramFileId?: string | null;
+  attachmentKind?: ('photo' | 'document' | 'voice' | 'video') | null;
+  attachmentName?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -3277,6 +3280,9 @@ export interface ChatMessagesSelect<T extends boolean = true> {
   text?: T;
   agentName?: T;
   telegramMessageId?: T;
+  telegramFileId?: T;
+  attachmentKind?: T;
+  attachmentName?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -4941,42 +4947,6 @@ export interface ChatSetting {
    */
   webhookSecret?: string | null;
   widgetTitle?: string | null;
-  /**
-   * Tin nhắn đầu tiên hiện trong khung chat sau khi khách đăng nhập. Bôi đậm/nghiêng, xuống dòng, chèn link đều được.
-   */
-  welcomeMessage?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  /**
-   * Hiện trong khung chat CÙNG với nút Đăng nhập / Đăng ký, dành cho khách chưa đăng nhập. Bỏ trống = dùng câu mặc định.
-   */
-  loginGreeting?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
   offlineMessage?: string | null;
   bubbleEnabled?: boolean | null;
   /**
@@ -5005,6 +4975,42 @@ export interface ChatSetting {
    * Khách đã tắt bóng chào thì không làm phiền lại trong lượt đó.
    */
   bubbleOncePerSession?: boolean | null;
+  /**
+   * Hiện trong khung chat cùng với nút Đăng nhập / Đăng ký. Bỏ trống = dùng câu mặc định.
+   */
+  loginGreeting?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Tin nhắn đầu tiên trong khung chat sau khi khách đăng nhập, ngay trước khi khách gõ câu hỏi.
+   */
+  welcomeMessage?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -5599,13 +5605,13 @@ export interface ChatSettingsSelect<T extends boolean = true> {
   salesChatId?: T;
   webhookSecret?: T;
   widgetTitle?: T;
-  welcomeMessage?: T;
-  loginGreeting?: T;
   offlineMessage?: T;
   bubbleEnabled?: T;
   bubbleMessage?: T;
   bubbleDelay?: T;
   bubbleOncePerSession?: T;
+  loginGreeting?: T;
+  welcomeMessage?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

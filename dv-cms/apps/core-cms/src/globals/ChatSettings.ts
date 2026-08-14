@@ -74,26 +74,6 @@ export const ChatSettings: GlobalConfig = {
               defaultValue: 'Bioscope hỗ trợ',
             },
             {
-              name: 'welcomeMessage',
-              type: 'richText',
-              localized: true,
-              label: { en: 'Welcome message', vi: 'Lời chào khi đã vào khung chat' },
-              admin: {
-                description:
-                  'Tin nhắn đầu tiên hiện trong khung chat sau khi khách đăng nhập. Bôi đậm/nghiêng, xuống dòng, chèn link đều được.',
-              },
-            },
-            {
-              name: 'loginGreeting',
-              type: 'richText',
-              localized: true,
-              label: { en: 'Greeting on sign-in screen', vi: 'Lời chào ở màn hình mời đăng nhập' },
-              admin: {
-                description:
-                  'Hiện trong khung chat CÙNG với nút Đăng nhập / Đăng ký, dành cho khách chưa đăng nhập. Bỏ trống = dùng câu mặc định.',
-              },
-            },
-            {
               name: 'offlineMessage',
               type: 'textarea',
               localized: true,
@@ -103,9 +83,9 @@ export const ChatSettings: GlobalConfig = {
           ],
         },
         {
-          label: { en: 'Greeting bubble', vi: 'Bóng câu chào' },
+          label: { en: 'Greetings', vi: 'Câu chào' },
           description:
-            'Bóng chào nhỏ hiện cạnh nút chat khi khách vào website — mời khách bấm vào. Khi mở khung chat, lời chào ở tab "Giao diện chat" sẽ chào tiếp.',
+            'Ba câu chào theo đúng thứ tự khách gặp: (1) bóng chào cạnh nút khi vừa vào web → (2) khách mở khung chat nhưng chưa đăng nhập → (3) khách đã đăng nhập, vào được khung chat.',
           fields: [
             {
               name: 'bubbleEnabled',
@@ -117,7 +97,7 @@ export const ChatSettings: GlobalConfig = {
               name: 'bubbleMessage',
               type: 'richText',
               localized: true,
-              label: { en: 'Bubble text', vi: 'Nội dung bóng chào' },
+              label: { en: '① Bubble text', vi: '① Nội dung bóng chào (cạnh nút chat)' },
               admin: {
                 description:
                   'Ngắn gọn 1–2 câu, có thể bôi đậm/nghiêng. Quá dài sẽ che mất nội dung trang.',
@@ -138,6 +118,32 @@ export const ChatSettings: GlobalConfig = {
               defaultValue: true,
               label: { en: 'Show once per visit', vi: 'Chỉ hiện một lần mỗi lượt truy cập' },
               admin: { description: 'Khách đã tắt bóng chào thì không làm phiền lại trong lượt đó.' },
+            },
+            {
+              name: 'loginGreeting',
+              type: 'richText',
+              localized: true,
+              label: {
+                en: '② In chat window — visitor NOT signed in',
+                vi: '② Nội dung chào trong khung chat — khách CHƯA đăng nhập',
+              },
+              admin: {
+                description:
+                  'Hiện trong khung chat cùng với nút Đăng nhập / Đăng ký. Bỏ trống = dùng câu mặc định.',
+              },
+            },
+            {
+              name: 'welcomeMessage',
+              type: 'richText',
+              localized: true,
+              label: {
+                en: '③ In chat window — after sign-in',
+                vi: '③ Nội dung chào trong khung chat — sau khi đăng nhập',
+              },
+              admin: {
+                description:
+                  'Tin nhắn đầu tiên trong khung chat sau khi khách đăng nhập, ngay trước khi khách gõ câu hỏi.',
+              },
             },
           ],
         },

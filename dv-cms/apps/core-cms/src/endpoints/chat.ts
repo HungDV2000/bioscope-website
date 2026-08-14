@@ -7,12 +7,55 @@
  */
 import type { Endpoint, PayloadRequest } from 'payload'
 import { randomUUID } from 'crypto'
-import { getChatConfig, isTelegramReady, createTopic, sendMessage, getMe, getChat, setWebhook } from '../lib/chatTelegram.js'
+import { getChatConfig, isTelegramReady, createTopic, sendMessage, getFileUrl, getMe, getChat, setWebhook } from '../lib/chatTelegram.js'
+import type { ChatConfig } from '../lib/chatTelegram.js'
 import { rateLimit, clientIp } from '../lib/rateLimit.js'
 import { lookupGeo } from '../lib/geo.js'
 import { parseUserAgent } from '../lib/userAgent.js'
 
 const json = (data: unknown, status = 200) => Response.json(data as never, { status })
+
+/**
+ * Gửi tin của khách sang Telegram, TỰ PHỤC HỒI khi topic đã bị xoá.
+ *
+ * Sales lỡ xoá một topic là mọi tin sau đó của khách đó gửi vào thread không
+ * còn tồn tại → Telegram báo lỗi. Trước đây chỉ ghi log, tin nhắn khách nằm im
+ * trong CMS và KHÔNG AI BIẾT để trả lời. Nay gửi lại vào nhóm chung kèm tag
+ * #hs<id> (sales reply vào là map về đúng hội thoại) rồi xoá luôn topic hỏng
+ * để những tin sau đi thẳng đường dự phòng.
+ *
+ * Trả message_id nếu tin đã đi theo đường KHÔNG topic (cần lưu để map reply).
+ */
+async function sendToConversation(
+  req: PayloadRequest,
+  cfg: ChatConfig,
+  conv: { id: number | string; telegramTopicId?: number },
+  body: string,
+): Promise<{ fallbackMessageId?: number }> {
+  const topicId = typeof conv.telegramTopicId === 'number' ? conv.telegramTopicId : undefined
+  const tagged = `💬 #hs${conv.id}: ${body}`
+
+  if (!topicId) return { fallbackMessageId: await sendMessage(cfg, tagged, undefined) }
+
+  try {
+    await sendMessage(cfg, body, topicId)
+    return {}
+  } catch (e) {
+    req.payload.logger.warn(
+      `[chat] topic ${topicId} không gửi được (bị xoá?), chuyển sang nhóm chung: ${String(e)}`,
+    )
+    const mid = await sendMessage(cfg, `⚠️ (topic cũ đã mất)\n${tagged}`, undefined)
+    await req.payload
+      .update({
+        collection: 'chat-conversations',
+        id: conv.id,
+        data: { telegramTopicId: null } as never,
+        overrideAccess: true,
+      })
+      .catch(() => {})
+    return { fallbackMessageId: mid }
+  }
+}
 const readBody = async (req: PayloadRequest): Promise<Record<string, unknown>> => {
   try {
     return (await (req as unknown as Request).json()) as Record<string, unknown>
@@ -216,15 +259,13 @@ const messageEndpoint: Endpoint = {
     const cfg = await getChatConfig(req.payload)
     if (isTelegramReady(cfg)) {
       try {
-        const topicId = typeof conv.telegramTopicId === 'number' ? conv.telegramTopicId : undefined
-        // Không topic → gắn tag #hs<id> để sales biết của khách nào + reply map về.
-        const out = topicId ? text : `💬 #hs${conv.id}: ${text}`
-        const mid = await sendMessage(cfg, out, topicId)
-        if (!topicId) {
+        const { fallbackMessageId } = await sendToConversation(req, cfg, conv, text)
+        // Tin đi đường không-topic → lưu message_id để map reply của sales về.
+        if (fallbackMessageId) {
           await req.payload.update({
             collection: 'chat-messages',
             id: msg.id,
-            data: { telegramMessageId: mid } as never,
+            data: { telegramMessageId: fallbackMessageId } as never,
             overrideAccess: true,
           })
         }
@@ -269,8 +310,58 @@ const pollEndpoint: Endpoint = {
         text: (m as { text: string }).text,
         agentName: (m as { agentName?: string }).agentName ?? null,
         createdAt: (m as { createdAt?: string }).createdAt ?? null,
+        // Có đính kèm thì widget tự gọi /chat/file để lấy nội dung thật.
+        attachmentKind: (m as { attachmentKind?: string }).attachmentKind ?? null,
+        attachmentName: (m as { attachmentName?: string }).attachmentName ?? null,
       })),
     })
+  },
+}
+
+// ── GET /api/chat/file ───────────────────────────────────────────────────────
+// Tải ảnh/tệp sales gửi. Kiểm phiên: tin nhắn phải THUỘC ĐÚNG hội thoại của
+// token đưa lên, nếu không khách này xem được đính kèm của khách khác.
+const fileEndpoint: Endpoint = {
+  path: '/chat/file',
+  method: 'get',
+  handler: async (req: PayloadRequest): Promise<Response> => {
+    const token = String(req.query?.token ?? '')
+    const id = String(req.query?.id ?? '')
+    if (!token || !id) return json({ ok: false, error: 'Thiếu tham số.' }, 400)
+    if (!rateLimit(`file:${clientIp(req)}`, 60, 60 * 1000)) return json({ ok: false }, 429)
+
+    const conv = await findByToken(req, token)
+    if (!conv) return json({ ok: false, error: 'Phiên không hợp lệ.' }, 404)
+
+    const found = await req.payload.find({
+      collection: 'chat-messages',
+      where: { and: [{ id: { equals: id } }, { conversation: { equals: conv.id } }] },
+      limit: 1,
+      depth: 0,
+      overrideAccess: true,
+    })
+    const m = found.docs[0] as { telegramFileId?: string; attachmentName?: string } | undefined
+    if (!m?.telegramFileId) return json({ ok: false, error: 'Không có tệp.' }, 404)
+
+    const cfg = await getChatConfig(req.payload)
+    if (!isTelegramReady(cfg)) return json({ ok: false }, 503)
+
+    try {
+      const url = await getFileUrl(cfg, m.telegramFileId)
+      const up = await fetch(url, { signal: AbortSignal.timeout(20000) })
+      if (!up.ok || !up.body) return json({ ok: false, error: 'Không tải được tệp.' }, 502)
+      return new Response(up.body, {
+        headers: {
+          'Content-Type': up.headers.get('content-type') ?? 'application/octet-stream',
+          'Content-Disposition': `inline; filename="${(m.attachmentName ?? 'file').replace(/[^\w.\-]/g, '_')}"`,
+          // Riêng tư: không cho proxy/CDN nào đệm lại tệp của khách.
+          'Cache-Control': 'private, max-age=300',
+        },
+      })
+    } catch (e) {
+      req.payload.logger.error(`[chat] tải tệp lỗi: ${String(e)}`)
+      return json({ ok: false, error: 'Không tải được tệp.' }, 502)
+    }
   },
 }
 
@@ -292,19 +383,49 @@ const webhookEndpoint: Endpoint = {
           reply_to_message?: { message_id?: number }
           text?: string
           caption?: string
-          photo?: unknown[]
-          document?: unknown
-          voice?: unknown
+          photo?: { file_id: string; file_size?: number }[]
+          document?: { file_id: string; file_name?: string }
+          voice?: { file_id: string }
+          video?: { file_id: string; file_name?: string }
           sticker?: unknown
           from?: { is_bot?: boolean; first_name?: string; username?: string }
         }
       | undefined
     if (!msg || msg.from?.is_bot) return json({ ok: true })
-    // Text, hoặc nhãn cho ảnh/tệp/thoại (nhóm 8).
+
+    // Đính kèm: giữ file_id để khách tải được nội dung THẬT (ảnh/tệp/thoại),
+    // không chỉ hiện một dòng chữ mô tả. Ảnh có nhiều cỡ → lấy cỡ lớn nhất.
+    const att: { kind?: 'photo' | 'document' | 'voice' | 'video'; fileId?: string; name?: string } = {}
+    if (msg.photo?.length) {
+      att.kind = 'photo'
+      att.fileId = msg.photo[msg.photo.length - 1]?.file_id
+    } else if (msg.document) {
+      att.kind = 'document'
+      att.fileId = msg.document.file_id
+      att.name = msg.document.file_name
+    } else if (msg.video) {
+      att.kind = 'video'
+      att.fileId = msg.video.file_id
+      att.name = msg.video.file_name
+    } else if (msg.voice) {
+      att.kind = 'voice'
+      att.fileId = msg.voice.file_id
+    }
+
     const text =
       msg.text ||
       msg.caption ||
-      (msg.photo ? '📷 [Sales đã gửi ảnh]' : msg.document ? '📎 [Sales đã gửi tệp]' : msg.voice ? '🎤 [tin thoại]' : msg.sticker ? '[sticker]' : '')
+      (att.kind === 'photo'
+        ? '📷 Ảnh'
+        : att.kind === 'document'
+          ? `📎 ${att.name ?? 'Tệp đính kèm'}`
+          : att.kind === 'video'
+            ? '🎬 Video'
+            : att.kind === 'voice'
+              ? '🎤 Tin thoại'
+              : msg.sticker
+                ? '[sticker]'
+                : '')
     if (!text) return json({ ok: true })
 
     // Map tin sales về hội thoại:
@@ -341,6 +462,9 @@ const webhookEndpoint: Endpoint = {
         sender: 'agent',
         text: text.slice(0, 4000),
         agentName: msg.from?.first_name ?? msg.from?.username ?? 'Sales',
+        telegramFileId: att.fileId,
+        attachmentKind: att.kind,
+        attachmentName: att.name,
       } as never,
       overrideAccess: true,
     })
@@ -385,9 +509,7 @@ const contactEndpoint: Endpoint = {
     const cfg = await getChatConfig(req.payload)
     if (isTelegramReady(cfg)) {
       try {
-        const topicId = typeof conv.telegramTopicId === 'number' ? conv.telegramTopicId : undefined
-        const note = `📧 ${topicId ? '' : `#hs${conv.id} `}Khách để lại liên hệ — ${name ? name + ' · ' : ''}${email}`
-        await sendMessage(cfg, note, topicId)
+        await sendToConversation(req, cfg, conv, `📧 Khách để lại liên hệ — ${name ? name + ' · ' : ''}${email}`)
       } catch {
         /* im lặng */
       }
@@ -452,6 +574,7 @@ export const chatEndpoints: Endpoint[] = [
   startEndpoint,
   messageEndpoint,
   pollEndpoint,
+  fileEndpoint,
   contactEndpoint,
   webhookEndpoint,
   setupEndpoint,

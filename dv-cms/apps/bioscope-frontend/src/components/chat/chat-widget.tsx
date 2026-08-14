@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils'
 import { useLocale } from '@/lib/i18n/context'
 import { collectTracking, trackPageView } from '@/lib/chat/tracking'
 import { ChatAuthPanel, type AuthStrings } from './chat-auth-panel'
+import { Attachment } from './chat-attachment'
 import { SESSION_CHANGED } from '@/lib/member/session-events'
 
 type Msg = {
@@ -17,6 +18,9 @@ type Msg = {
   html?: string
   agentName?: string | null
   createdAt?: string | null
+  /** Ảnh/tệp sales gửi từ Telegram — tải qua /api/chat/file (kiểm phiên). */
+  attachmentKind?: 'photo' | 'document' | 'voice' | 'video' | null
+  attachmentName?: string | null
 }
 
 /** Giờ:phút của tin nhắn (dùng giờ máy khách). */
@@ -33,6 +37,7 @@ const STRINGS = {
     leaveEmail: 'Để lại email, chúng tôi sẽ liên hệ lại:', emailPh: 'email@congty.com', send: 'Gửi',
     thanks: 'Cảm ơn bạn — chúng tôi sẽ liên hệ qua email sớm nhất.', inputPh: 'Nhập tin nhắn…',
     openChat: 'Mở chat hỗ trợ', closeChat: 'Đóng chat', dismiss: 'Đóng lời chào',
+    download: 'Tải tệp', imageAlt: 'Ảnh sales gửi',
     loginTitle: 'Đăng nhập để trò chuyện',
     loginDesc: 'Để đội ngũ Bioscope hỗ trợ chính xác và lưu lại lịch sử trao đổi, bạn vui lòng đăng nhập hoặc tạo tài khoản đối tác.',
     loginBtn: 'Đăng nhập', registerBtn: 'Đăng ký tài khoản',
@@ -53,6 +58,7 @@ const STRINGS = {
     leaveEmail: "Leave your email and we'll get back to you:", emailPh: 'email@company.com', send: 'Send',
     thanks: "Thanks — we'll email you soon.", inputPh: 'Type a message…',
     openChat: 'Open support chat', closeChat: 'Close chat', dismiss: 'Dismiss greeting',
+    download: 'Download file', imageAlt: 'Image from sales',
     loginTitle: 'Sign in to chat',
     loginDesc: 'So the Bioscope team can help you accurately and keep your conversation history, please sign in or create a partner account.',
     loginBtn: 'Sign in', registerBtn: 'Create account',
@@ -432,6 +438,14 @@ export function ChatWidget() {
                         <div className="chat-greeting" dangerouslySetInnerHTML={{ __html: m.html }} />
                       ) : (
                         m.text
+                      )}
+                      {m.attachmentKind && m.id && token && (
+                        <Attachment
+                          kind={m.attachmentKind}
+                          name={m.attachmentName}
+                          href={`/api/chat/file?token=${encodeURIComponent(token)}&id=${m.id}`}
+                          t={{ download: T.download, imageAlt: T.imageAlt }}
+                        />
                       )}
                       <div
                         className={cn(

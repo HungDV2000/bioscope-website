@@ -32,5 +32,21 @@ export const ChatMessages: CollectionConfig = {
     { name: 'text', type: 'textarea', required: true },
     { name: 'agentName', type: 'text', label: { en: 'Agent name', vi: 'Tên sales' } },
     { name: 'telegramMessageId', type: 'number', index: true, admin: { hidden: true } },
+    // Ảnh/tệp sales gửi từ Telegram: chỉ lưu ID để tải lại khi cần, KHÔNG lưu
+    // file vào thư viện Media (tệp có thể là báo giá riêng của một khách).
+    { name: 'telegramFileId', type: 'text', admin: { hidden: true } },
+    {
+      name: 'attachmentKind',
+      type: 'select',
+      options: [
+        { label: { en: 'Photo', vi: 'Ảnh' }, value: 'photo' },
+        { label: { en: 'File', vi: 'Tệp' }, value: 'document' },
+        { label: { en: 'Voice', vi: 'Tin thoại' }, value: 'voice' },
+        { label: { en: 'Video', vi: 'Video' }, value: 'video' },
+      ],
+      admin: { readOnly: true },
+      label: { en: 'Attachment', vi: 'Đính kèm' },
+    },
+    { name: 'attachmentName', type: 'text', admin: { readOnly: true }, label: { en: 'File name', vi: 'Tên tệp' } },
   ],
 }

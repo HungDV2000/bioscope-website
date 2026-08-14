@@ -129,6 +129,19 @@ export async function setWebhook(c: ChatConfig, url: string): Promise<void> {
   })
 }
 
+/**
+ * Lấy đường dẫn tải file của Telegram từ file_id.
+ *
+ * KHÔNG lưu file vào thư viện Media: tệp sales gửi có thể là báo giá/hợp đồng
+ * riêng của một khách, mà Media thì đọc công khai và ai vào admin cũng thấy.
+ * Thay vào đó tải theo yêu cầu qua endpoint có kiểm phiên của chính khách đó.
+ */
+export async function getFileUrl(c: ChatConfig, fileId: string): Promise<string> {
+  const r = await tg<{ file_path?: string }>(c.botToken, 'getFile', { file_id: fileId })
+  if (!r.file_path) throw new Error('Telegram không trả file_path')
+  return `https://api.telegram.org/file/bot${c.botToken}/${r.file_path}`
+}
+
 /** Kiểm tra token hợp lệ → trả tên bot. */
 export async function getMe(c: ChatConfig): Promise<{ username?: string }> {
   return tg<{ username?: string }>(c.botToken, 'getMe', {})

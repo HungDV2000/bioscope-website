@@ -4,7 +4,8 @@ import { useState, useTransition } from 'react'
 import { Save, KeyRound, AlertCircle, CheckCircle2, Info } from 'lucide-react'
 import { updateMemberProfile, changeMemberPassword } from '@/lib/member/actions'
 import type { MemberMessages } from '@/lib/i18n/member-messages'
-import type { MemberSession } from '@/lib/member/types'
+import type { CustomerType, MemberSession } from '@/lib/member/types'
+import { CustomerTypePicker } from './customer-type-picker'
 
 const field =
   'mt-1.5 w-full rounded-xl border border-primary-border bg-white px-4 py-3 text-[15px] outline-none transition-colors focus:border-primary/50 disabled:bg-mist/50 disabled:text-ink/50'
@@ -31,6 +32,9 @@ export function AccountForms({ m, session }: { m: MemberMessages['account']; ses
   // ── Hồ sơ ──
   const [pMsg, setPMsg] = useState<{ tone: 'ok' | 'err'; text: string } | null>(null)
   const [savingProfile, startProfile] = useTransition()
+  // Tài khoản Google chưa chọn loại → mặc định doanh nghiệp cho khách chọn lại.
+  const [customerType, setCustomerType] = useState<CustomerType>(session.customerType ?? 'business')
+  const isBusiness = customerType === 'business'
 
   const submitProfile = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -38,7 +42,10 @@ export function AccountForms({ m, session }: { m: MemberMessages['account']; ses
     const fd = new FormData(e.currentTarget)
     startProfile(async () => {
       const r = await updateMemberProfile({
-        company: String(fd.get('company') ?? '').trim(),
+        customerType,
+        company: isBusiness ? String(fd.get('company') ?? '').trim() : undefined,
+        taxCode: isBusiness ? String(fd.get('taxCode') ?? '').trim() || undefined : undefined,
+        position: isBusiness ? String(fd.get('position') ?? '').trim() || undefined : undefined,
         contactName: String(fd.get('contactName') ?? '').trim(),
         phone: String(fd.get('phone') ?? '').trim() || undefined,
       })
@@ -90,22 +97,64 @@ export function AccountForms({ m, session }: { m: MemberMessages['account']; ses
             <input id="ac-email" value={session.email} disabled className={field} />
             <p className="mt-1.5 text-[12.5px] text-ink/45">{m.emailNote}</p>
           </div>
-          <div>
-            <label htmlFor="ac-company" className={label}>
-              {m.company}
-            </label>
-            <input
-              id="ac-company"
-              name="company"
-              required
-              maxLength={200}
-              defaultValue={session.company}
-              className={field}
-            />
-          </div>
+          <CustomerTypePicker
+            t={{
+              legend: m.typeLegend,
+              business: m.typeBusiness,
+              businessHint: m.typeBusinessHint,
+              individual: m.typeIndividual,
+              individualHint: m.typeIndividualHint,
+            }}
+            value={customerType}
+            onChange={setCustomerType}
+          />
+          {isBusiness && (
+            <>
+              <div>
+                <label htmlFor="ac-company" className={label}>
+                  {m.company}
+                </label>
+                <input
+                  id="ac-company"
+                  name="company"
+                  required
+                  maxLength={200}
+                  defaultValue={session.company}
+                  className={field}
+                />
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label htmlFor="ac-tax" className={label}>
+                    {m.taxCode}
+                  </label>
+                  <input
+                    id="ac-tax"
+                    name="taxCode"
+                    maxLength={40}
+                    inputMode="numeric"
+                    defaultValue={session.taxCode ?? ''}
+                    className={field}
+                  />
+                </div>
+                <div>
+                  <label htmlFor="ac-pos" className={label}>
+                    {m.position}
+                  </label>
+                  <input
+                    id="ac-pos"
+                    name="position"
+                    maxLength={120}
+                    defaultValue={session.position ?? ''}
+                    className={field}
+                  />
+                </div>
+              </div>
+            </>
+          )}
           <div>
             <label htmlFor="ac-contact" className={label}>
-              {m.contactName}
+              {isBusiness ? m.contactName : m.contactNameIndividual}
             </label>
             <input
               id="ac-contact"

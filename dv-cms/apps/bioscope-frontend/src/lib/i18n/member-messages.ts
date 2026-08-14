@@ -27,6 +27,14 @@ export type MemberMessages = {
   register: {
     title: string
     subtitle: string
+    typeLegend: string
+    typeBusiness: string
+    typeBusinessHint: string
+    typeIndividual: string
+    typeIndividualHint: string
+    taxCode: string
+    position: string
+    contactNameIndividual: string
     company: string
     contactName: string
     phone: string
@@ -44,6 +52,14 @@ export type MemberMessages = {
     title: string
     desc: string
     profileTitle: string
+    typeLegend: string
+    typeBusiness: string
+    typeBusinessHint: string
+    typeIndividual: string
+    typeIndividualHint: string
+    taxCode: string
+    position: string
+    contactNameIndividual: string
     company: string
     contactName: string
     phone: string
@@ -123,6 +139,14 @@ const vi: MemberMessages = {
   register: {
     title: 'Đăng ký tài khoản đối tác',
     subtitle: 'Tạo tài khoản để nhắn tin với đội ngũ Bioscope và theo dõi tài liệu kỹ thuật.',
+    typeLegend: 'Bạn đăng ký với tư cách',
+    typeBusiness: 'Doanh nghiệp',
+    typeBusinessHint: 'Công ty, nhà máy, đơn vị phân phối',
+    typeIndividual: 'Cá nhân',
+    typeIndividualHint: 'Nghiên cứu viên, dược sĩ, khách lẻ',
+    taxCode: 'Mã số thuế',
+    position: 'Chức vụ',
+    contactNameIndividual: 'Họ và tên',
     company: 'Tên công ty',
     contactName: 'Người liên hệ',
     phone: 'Số điện thoại',
@@ -145,6 +169,14 @@ const vi: MemberMessages = {
     title: 'Tài khoản của tôi',
     desc: 'Cập nhật thông tin liên hệ và mật khẩu đăng nhập.',
     profileTitle: 'Thông tin liên hệ',
+    typeLegend: 'Loại khách hàng',
+    typeBusiness: 'Doanh nghiệp',
+    typeBusinessHint: 'Công ty, nhà máy, đơn vị phân phối',
+    typeIndividual: 'Cá nhân',
+    typeIndividualHint: 'Nghiên cứu viên, dược sĩ, khách lẻ',
+    taxCode: 'Mã số thuế',
+    position: 'Chức vụ',
+    contactNameIndividual: 'Họ và tên',
     company: 'Tên công ty',
     contactName: 'Người liên hệ',
     phone: 'Số điện thoại',
@@ -229,6 +261,14 @@ const en: MemberMessages = {
   register: {
     title: 'Create a partner account',
     subtitle: 'Sign up to message the Bioscope team and follow technical documents.',
+    typeLegend: 'You are registering as',
+    typeBusiness: 'Business',
+    typeBusinessHint: 'Company, factory, distributor',
+    typeIndividual: 'Individual',
+    typeIndividualHint: 'Researcher, pharmacist, retail buyer',
+    taxCode: 'Tax code',
+    position: 'Job title',
+    contactNameIndividual: 'Full name',
     company: 'Company name',
     contactName: 'Contact person',
     phone: 'Phone number',
@@ -251,6 +291,14 @@ const en: MemberMessages = {
     title: 'My account',
     desc: 'Update your contact details and sign-in password.',
     profileTitle: 'Contact details',
+    typeLegend: 'Customer type',
+    typeBusiness: 'Business',
+    typeBusinessHint: 'Company, factory, distributor',
+    typeIndividual: 'Individual',
+    typeIndividualHint: 'Researcher, pharmacist, retail buyer',
+    taxCode: 'Tax code',
+    position: 'Job title',
+    contactNameIndividual: 'Full name',
     company: 'Company name',
     contactName: 'Contact person',
     phone: 'Phone number',

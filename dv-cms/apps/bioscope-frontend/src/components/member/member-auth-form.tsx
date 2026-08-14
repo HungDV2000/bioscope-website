@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { LogIn, UserPlus, ArrowLeft, AlertCircle } from 'lucide-react'
 import { notifySessionChanged } from '@/lib/member/session-events'
+import { CustomerTypePicker, type CustomerTypeStrings } from './customer-type-picker'
+import type { CustomerType } from '@/lib/member/types'
 
 /**
  * Form đăng nhập / đăng ký dùng chung cho popup (mở từ header và từ widget
@@ -25,9 +27,13 @@ export type AuthFormStrings = {
   email: string
   password: string
   company: string
+  taxCode: string
+  position: string
   contactName: string
+  contactNameIndividual: string
   phone: string
   passwordHint: string
+  customerType: CustomerTypeStrings
   submitLogin: string
   submitRegister: string
   errInvalid: string
@@ -71,6 +77,9 @@ export function MemberAuthForm({
 }) {
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  // Mặc định doanh nghiệp: đây là cổng đối tác B2B, phần lớn khách là công ty.
+  const [customerType, setCustomerType] = useState<CustomerType>('business')
+  const isBusiness = customerType === 'business'
 
   const submit = async (e: React.FormEvent<HTMLFormElement>, action: 'login' | 'register') => {
     e.preventDefault()
@@ -90,7 +99,11 @@ export function MemberAuthForm({
           password,
           ...(action === 'register'
             ? {
-                company: String(fd.get('company') ?? ''),
+                customerType,
+                // Khách cá nhân không gửi thông tin doanh nghiệp.
+                company: isBusiness ? String(fd.get('company') ?? '') : '',
+                taxCode: isBusiness ? String(fd.get('taxCode') ?? '') : '',
+                position: isBusiness ? String(fd.get('position') ?? '') : '',
                 contactName: String(fd.get('contactName') ?? ''),
                 phone: String(fd.get('phone') ?? ''),
               }
@@ -216,15 +229,34 @@ export function MemberAuthForm({
       {!hideHeading && <Back />}
       {!hideHeading && <p className="text-[17px] font-bold text-ink">{t.titleRegister}</p>}
       <Err />
-      <div>
-        <label htmlFor="ma-company" className={label}>
-          {t.company}
-        </label>
-        <input id="ma-company" name="company" required maxLength={200} className={field} />
-      </div>
+      <CustomerTypePicker t={t.customerType} value={customerType} onChange={setCustomerType} compact />
+      {isBusiness && (
+        <>
+          <div>
+            <label htmlFor="ma-company" className={label}>
+              {t.company}
+            </label>
+            <input id="ma-company" name="company" required maxLength={200} className={field} />
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <label htmlFor="ma-tax" className={label}>
+                {t.taxCode}
+              </label>
+              <input id="ma-tax" name="taxCode" maxLength={40} inputMode="numeric" className={field} />
+            </div>
+            <div>
+              <label htmlFor="ma-pos" className={label}>
+                {t.position}
+              </label>
+              <input id="ma-pos" name="position" maxLength={120} className={field} />
+            </div>
+          </div>
+        </>
+      )}
       <div>
         <label htmlFor="ma-name" className={label}>
-          {t.contactName}
+          {isBusiness ? t.contactName : t.contactNameIndividual}
         </label>
         <input id="ma-name" name="contactName" required maxLength={120} className={field} />
       </div>

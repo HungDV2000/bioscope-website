@@ -77,9 +77,15 @@ export const createB2BEndpoints = (opts: B2BEndpointOptions = {}): Endpoint[] =>
       method: 'post',
       handler: async (req: PayloadRequest) => {
         await addDataAndFileToRequest(req)
-        const { email, password, company, contactName, phone } = (req.data ?? {}) as Record<string, string>
-        if (!email || !password || !company || !contactName) {
+        const { email, password, company, contactName, phone, customerType, taxCode, position } =
+          (req.data ?? {}) as Record<string, string>
+        const type = customerType === 'individual' ? 'individual' : 'business'
+        if (!email || !password || !contactName) {
           return json({ error: 'Thiếu thông tin bắt buộc.' }, { status: 400 })
+        }
+        // Khách cá nhân không có công ty; khách doanh nghiệp thì bắt buộc.
+        if (type === 'business' && !company?.trim()) {
+          return json({ error: 'Vui lòng nhập tên công ty.' }, { status: 400 })
         }
         try {
           await req.payload.create({
@@ -87,7 +93,10 @@ export const createB2BEndpoints = (opts: B2BEndpointOptions = {}): Endpoint[] =>
             data: {
               email,
               password,
-              company,
+              customerType: type,
+              company: type === 'business' ? company.trim() : undefined,
+              taxCode: type === 'business' ? taxCode?.trim() : undefined,
+              position: type === 'business' ? position?.trim() : undefined,
               contactName,
               phone,
               status: 'pending',
@@ -156,16 +165,33 @@ export const createB2BEndpoints = (opts: B2BEndpointOptions = {}): Endpoint[] =>
         await addDataAndFileToRequest(req)
         const me = await resolveMember(req)
         if (!me) return json({ error: 'Chưa đăng nhập.' }, { status: 401 })
-        const { company, contactName, phone } = (req.data ?? {}) as Record<string, string>
-        if (!company?.trim() || !contactName?.trim()) {
-          return json({ error: 'Thiếu tên công ty hoặc người liên hệ.' }, { status: 400 })
+        const { company, contactName, phone, customerType, taxCode, position } =
+          (req.data ?? {}) as Record<string, string>
+        // Chưa chọn loại thì giữ nguyên loại đang lưu (vd tài khoản Google).
+        const stored = (me as { customerType?: string }).customerType
+        const type: 'business' | 'individual' =
+          customerType === 'individual' || customerType === 'business'
+            ? customerType
+            : stored === 'individual'
+              ? 'individual'
+              : 'business'
+        if (!contactName?.trim()) {
+          return json({ error: 'Thiếu tên người liên hệ.' }, { status: 400 })
+        }
+        if (type === 'business' && !company?.trim()) {
+          return json({ error: 'Vui lòng nhập tên công ty.' }, { status: 400 })
         }
         try {
           const user = await req.payload.update({
             collection: 'members',
             id: me.id,
             data: {
-              company: company.trim().slice(0, 200),
+              customerType: type,
+              // Chuyển sang cá nhân thì dọn luôn dữ liệu doanh nghiệp, tránh
+              // hồ sơ còn sót thông tin công ty cũ gây hiểu nhầm.
+              company: type === 'business' ? company.trim().slice(0, 200) : null,
+              taxCode: type === 'business' ? (taxCode?.trim().slice(0, 40) || null) : null,
+              position: type === 'business' ? (position?.trim().slice(0, 120) || null) : null,
               contactName: contactName.trim().slice(0, 120),
               phone: phone?.trim().slice(0, 40) || undefined,
             },

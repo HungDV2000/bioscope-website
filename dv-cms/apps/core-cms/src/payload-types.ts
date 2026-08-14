@@ -345,7 +345,19 @@ export interface ChatConversation {
  */
 export interface Member {
   id: number;
-  company: string;
+  /**
+   * Quyết định những trường nào bắt buộc. Tài khoản Google chưa chọn thì để trống.
+   */
+  customerType?: ('business' | 'individual') | null;
+  /**
+   * Bắt buộc với khách doanh nghiệp. Tài khoản Google bổ sung sau.
+   */
+  company?: string | null;
+  /**
+   * Dùng khi xuất hoá đơn. Không bắt buộc.
+   */
+  taxCode?: string | null;
+  position?: string | null;
   contactName: string;
   phone?: string | null;
   status?: ('pending' | 'approved' | 'rejected') | null;
@@ -4757,7 +4769,10 @@ export interface FaqsSelect<T extends boolean = true> {
  * via the `definition` "members_select".
  */
 export interface MembersSelect<T extends boolean = true> {
+  customerType?: T;
   company?: T;
+  taxCode?: T;
+  position?: T;
   contactName?: T;
   phone?: T;
   status?: T;

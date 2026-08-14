@@ -12,7 +12,7 @@ import {
 } from './config'
 import { serializeSession, getMemberSession } from './auth'
 import { b2bFetch } from './api'
-import type { MemberSession, MemberStatus } from './types'
+import type { CustomerType, MemberSession, MemberStatus } from './types'
 
 export type LoginState = {
   ok: boolean
@@ -24,7 +24,10 @@ export type LoginState = {
 type B2BUser = {
   id: string | number
   email: string
+  customerType?: CustomerType
   company?: string
+  taxCode?: string
+  position?: string
   contactName?: string
   phone?: string
   status?: MemberStatus
@@ -35,7 +38,10 @@ type B2BUser = {
 const toSession = (u: B2BUser): MemberSession => ({
   id: u.id,
   email: u.email,
+  customerType: u.customerType,
   company: u.company ?? '',
+  taxCode: u.taxCode,
+  position: u.position,
   contactName: u.contactName ?? '',
   phone: u.phone,
   status: u.status ?? 'pending',
@@ -109,7 +115,10 @@ export type RegisterState = { ok: boolean; error?: string }
 export async function memberRegister(input: {
   email: string
   password: string
-  company: string
+  customerType: CustomerType
+  company?: string
+  taxCode?: string
+  position?: string
   contactName: string
   phone?: string
 }): Promise<RegisterState> {
@@ -135,7 +144,10 @@ const authedFetch = (path: string, body: unknown) => b2bFetch(path, { body })
 export type ProfileState = { ok: boolean; error?: string }
 
 export async function updateMemberProfile(input: {
-  company: string
+  customerType: CustomerType
+  company?: string
+  taxCode?: string
+  position?: string
   contactName: string
   phone?: string
 }): Promise<ProfileState> {

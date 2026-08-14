@@ -112,19 +112,26 @@ const startEndpoint: Endpoint = {
     const memberEmail = str(body.memberEmail, 200)
     const memberId = body.memberId != null ? String(body.memberId) : undefined
     const memberCompany = str(body.memberCompany, 200)
+    const isBusiness = body.memberType !== 'individual'
 
     // ── Tracking tự động ──
     const ip = clientIp(req)
     const geo = await lookupGeo(ip)
     const ua = parseUserAgent(userAgent)
 
-    const who = `Thành viên: ${memberName || memberEmail}${memberCompany ? ` (${memberCompany})` : ''}`
+    // Sales cần biết ngay đang nói chuyện với doanh nghiệp hay khách cá nhân.
+    const who = `${isBusiness ? '🏢 Doanh nghiệp' : '🙋 Cá nhân'}: ${memberName || memberEmail}${
+      memberCompany ? ` (${memberCompany})` : ''
+    }`
 
     let topicId: number | undefined
     if (isTelegramReady(cfg)) {
       try {
         // Tên topic gắn danh tính để sales nhận ra ngay.
-        topicId = await createTopic(cfg, `👤 ${memberName || memberEmail} · ${memberCompany || startPage || '/'}`)
+        topicId = await createTopic(
+          cfg,
+          `${isBusiness ? '🏢' : '🙋'} ${memberName || memberEmail} · ${memberCompany || startPage || '/'}`,
+        )
       } catch (e) {
         // Nhóm chưa bật Topics → dùng chung nhóm (map reply-to). Không chặn chat.
         req.payload.logger.warn(`[chat] không tạo được topic (nhóm chưa bật Topics?), dùng chung nhóm: ${String(e)}`)
@@ -187,7 +194,7 @@ const startEndpoint: Endpoint = {
         .join(' · ')
       const intro = [
         `🆕 Khách mới bắt đầu chat`,
-        `👤 ${who}`,
+        who,
         memberEmail && `✉️ ${memberEmail}`,
         geo.label && `📍 ${geo.label}`,
         geo.isp && `📡 ${geo.isp}`,

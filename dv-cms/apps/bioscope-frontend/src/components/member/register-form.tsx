@@ -6,6 +6,8 @@ import Link from 'next/link'
 import { memberRegister } from '@/lib/member/actions'
 import type { MemberMessages } from '@/lib/i18n/member-messages'
 import { GoogleButton } from './google-button'
+import { CustomerTypePicker } from './customer-type-picker'
+import type { CustomerType } from '@/lib/member/types'
 
 const field =
   'mt-1.5 w-full rounded-xl border border-primary-border bg-white px-4 py-3 text-[15px] outline-none transition-colors focus:border-primary/50'
@@ -24,6 +26,9 @@ export function MemberRegisterForm({
 }) {
   const [error, setError] = useState<string | null>(null)
   const [done, setDone] = useState(false)
+  // Mặc định doanh nghiệp: đây là cổng đối tác B2B.
+  const [customerType, setCustomerType] = useState<CustomerType>('business')
+  const isBusiness = customerType === 'business'
   const [isPending, startTransition] = useTransition()
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -39,7 +44,11 @@ export function MemberRegisterForm({
       const r = await memberRegister({
         email: String(fd.get('email') ?? '').trim(),
         password,
-        company: String(fd.get('company') ?? '').trim(),
+        customerType,
+        // Khách cá nhân không gửi thông tin doanh nghiệp.
+        company: isBusiness ? String(fd.get('company') ?? '').trim() : undefined,
+        taxCode: isBusiness ? String(fd.get('taxCode') ?? '').trim() || undefined : undefined,
+        position: isBusiness ? String(fd.get('position') ?? '').trim() || undefined : undefined,
         contactName: String(fd.get('contactName') ?? '').trim(),
         phone: String(fd.get('phone') ?? '').trim() || undefined,
       })
@@ -92,15 +101,44 @@ export function MemberRegisterForm({
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label htmlFor="reg-company" className={label}>
-            {m.company}
-          </label>
-          <input id="reg-company" name="company" required maxLength={200} className={field} />
-        </div>
+        <CustomerTypePicker
+          t={{
+            legend: m.typeLegend,
+            business: m.typeBusiness,
+            businessHint: m.typeBusinessHint,
+            individual: m.typeIndividual,
+            individualHint: m.typeIndividualHint,
+          }}
+          value={customerType}
+          onChange={setCustomerType}
+        />
+        {isBusiness && (
+          <>
+            <div>
+              <label htmlFor="reg-company" className={label}>
+                {m.company}
+              </label>
+              <input id="reg-company" name="company" required maxLength={200} className={field} />
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label htmlFor="reg-tax" className={label}>
+                  {m.taxCode}
+                </label>
+                <input id="reg-tax" name="taxCode" maxLength={40} inputMode="numeric" className={field} />
+              </div>
+              <div>
+                <label htmlFor="reg-pos" className={label}>
+                  {m.position}
+                </label>
+                <input id="reg-pos" name="position" maxLength={120} className={field} />
+              </div>
+            </div>
+          </>
+        )}
         <div>
           <label htmlFor="reg-contact" className={label}>
-            {m.contactName}
+            {isBusiness ? m.contactName : m.contactNameIndividual}
           </label>
           <input id="reg-contact" name="contactName" required maxLength={120} className={field} />
         </div>

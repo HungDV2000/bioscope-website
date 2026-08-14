@@ -52,6 +52,7 @@ async function forward(req: NextRequest, path: string[]): Promise<Response> {
         parsed.memberName = session.contactName
         parsed.memberEmail = session.email
         parsed.memberCompany = session.company
+        parsed.memberType = session.customerType
         body = JSON.stringify(parsed)
       } catch {
         /* body không phải JSON — giữ nguyên */

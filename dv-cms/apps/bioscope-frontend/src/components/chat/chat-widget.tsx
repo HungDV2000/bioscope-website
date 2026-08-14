@@ -90,6 +90,7 @@ type Config = {
   enabled: boolean
   widgetTitle?: string
   loginGreeting?: string
+  welcomeMessage?: string
   bubbleEnabled?: boolean
   bubbleMessage?: string
   bubbleDelay?: number
@@ -121,6 +122,7 @@ export function ChatWidget() {
   const [unread, setUnread] = useState(0)
   const lastId = useRef(0)
   const openRef = useRef(false)
+  const historyLoaded = useRef(false)
   const listRef = useRef<HTMLDivElement>(null)
 
   const now = () => new Date().toISOString()
@@ -227,6 +229,7 @@ export function ChatWidget() {
       /* bỏ qua */
     }
     lastId.current = 0
+    historyLoaded.current = false
     setToken(null)
     setMessages([])
     setContactSent(false)
@@ -294,6 +297,33 @@ export function ChatWidget() {
       setStarting(false)
     }
   }, [token, starting, locale])
+
+  /**
+   * Mở lại khung chat với token cũ (khách tải lại trang) → nạp lại toàn bộ hội
+   * thoại. `poll` chỉ trả tin của sales nên nếu chỉ dựa vào nó thì khách không
+   * còn thấy chính những gì mình đã gửi.
+   */
+  useEffect(() => {
+    if (!open || !token || historyLoaded.current) return
+    historyLoaded.current = true
+    void fetch(`/api/chat/history?token=${encodeURIComponent(token)}`)
+      .then((r) => r.json())
+      .then((r: { ok?: boolean; messages?: Msg[] }) => {
+        if (!r.ok || !r.messages?.length) return
+        for (const m of r.messages) if (m.id && m.id > lastId.current) lastId.current = m.id
+        setMessages((prev) =>
+          // Vừa bắt đầu hội thoại xong thì giữ nguyên, tránh lặp lời chào.
+          prev.length
+            ? prev
+            : [
+                { sender: 'system', text: '', html: cfg?.welcomeMessage, createdAt: r.messages![0]?.createdAt },
+                ...r.messages!,
+              ],
+        )
+        scrollDown()
+      })
+      .catch(() => {})
+  }, [open, token, cfg?.welcomeMessage, scrollDown])
 
   // Mở lần đầu (đã đăng nhập + đã đồng ý) → bắt đầu hội thoại.
   useEffect(() => {

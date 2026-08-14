@@ -76,6 +76,8 @@ const configEndpoint: Endpoint = {
       enabled: cfg.enabled,
       widgetTitle: cfg.widgetTitle,
       loginGreeting: cfg.loginGreeting,
+      // Widget cần để hiện lại lời chào khi khách tải lại trang giữa chừng.
+      welcomeMessage: cfg.welcomeMessage,
       bubbleEnabled: cfg.bubbleEnabled,
       bubbleMessage: cfg.bubbleMessage,
       bubbleDelay: cfg.bubbleDelay,
@@ -302,8 +304,14 @@ const messageEndpoint: Endpoint = {
 
     const cfg = await getChatConfig(req.payload)
     if (isTelegramReady(cfg)) {
+      // Đo thời gian đẩy sang Telegram. Việc bóc tách PDF của hàng đợi AI chạy
+      // CHUNG tiến trình, mà Node đơn luồng nên nó chặn mọi request khác —
+      // triệu chứng là tin khách gửi dồn một lúc mới sang nhóm. Có mốc thời
+      // gian ở đây thì lần sau nhìn log là biết ngay tắc ở đâu.
+      const t0 = Date.now()
       try {
         const { fallbackMessageId } = await sendToConversation(req, cfg, conv, text)
+        req.payload.logger.info(`[chat] tin #${msg.id} → Telegram mất ${Date.now() - t0}ms`)
         // Tin đi đường không-topic → lưu message_id để map reply của sales về.
         if (fallbackMessageId) {
           await req.payload.update({
@@ -355,6 +363,42 @@ const pollEndpoint: Endpoint = {
         agentName: (m as { agentName?: string }).agentName ?? null,
         createdAt: (m as { createdAt?: string }).createdAt ?? null,
         // Có đính kèm thì widget tự gọi /chat/file để lấy nội dung thật.
+        attachmentKind: (m as { attachmentKind?: string }).attachmentKind ?? null,
+        attachmentName: (m as { attachmentName?: string }).attachmentName ?? null,
+      })),
+    })
+  },
+}
+
+// ── GET /api/chat/history ────────────────────────────────────────────────────
+// Toàn bộ tin nhắn của hội thoại (cả tin khách gửi). Widget gọi khi mở lại để
+// khách thấy đúng những gì đã trao đổi — `poll` chỉ trả tin của sales nên nếu
+// chỉ dựa vào nó thì tải lại trang là khung chat trống trơn.
+const historyEndpoint: Endpoint = {
+  path: '/chat/history',
+  method: 'get',
+  handler: async (req: PayloadRequest): Promise<Response> => {
+    const token = String(req.query?.token ?? '')
+    if (!token) return json({ ok: false, error: 'Thiếu token.' }, 400)
+    const conv = await findByToken(req, token)
+    if (!conv) return json({ ok: false, error: 'Phiên không hợp lệ.' }, 404)
+
+    const res = await req.payload.find({
+      collection: 'chat-messages',
+      where: { conversation: { equals: conv.id } },
+      sort: 'id',
+      limit: 200,
+      depth: 0,
+      overrideAccess: true,
+    })
+    return json({
+      ok: true,
+      messages: res.docs.map((m) => ({
+        id: m.id,
+        sender: (m as { sender: string }).sender,
+        text: (m as { text: string }).text,
+        agentName: (m as { agentName?: string }).agentName ?? null,
+        createdAt: (m as { createdAt?: string }).createdAt ?? null,
         attachmentKind: (m as { attachmentKind?: string }).attachmentKind ?? null,
         attachmentName: (m as { attachmentName?: string }).attachmentName ?? null,
       })),
@@ -640,6 +684,7 @@ export const chatEndpoints: Endpoint[] = [
   startEndpoint,
   messageEndpoint,
   pollEndpoint,
+  historyEndpoint,
   fileEndpoint,
   contactEndpoint,
   webhookEndpoint,

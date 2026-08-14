@@ -6,11 +6,20 @@ export function GoogleAuthNote() {
   // Liệt kê MỌI tên miền website đang chạy: redirect URI phải khớp đúng tên
   // miền khách bấm đăng nhập, sai một ký tự là lỗi redirect_uri_mismatch /
   // google_state.
+  const base = [process.env.FRONTEND_URL, process.env.NEXT_PUBLIC_SITE_URL, 'https://bioscope.vn']
+    .filter(Boolean)
+    .map((d) => (d as string).replace(/\/$/, ''))
+
+  // Với Google, "bioscope.vn" và "www.bioscope.vn" là HAI tên miền khác nhau.
+  // Khách gõ kiểu nào cũng vào được website, nên phải khai đủ cả hai biến thể —
+  // thiếu một là lỗi redirect_uri_mismatch khi khách vào bằng biến thể đó.
   const domains = Array.from(
     new Set(
-      [process.env.FRONTEND_URL, process.env.NEXT_PUBLIC_SITE_URL, 'https://bioscope.vn']
-        .filter(Boolean)
-        .map((d) => (d as string).replace(/\/$/, '')),
+      base.flatMap((d) => {
+        const u = d.replace(/^https?:\/\//, '')
+        const bare = u.replace(/^www\./, '')
+        return [`https://${bare}`, `https://www.${bare}`]
+      }),
     ),
   )
   const frontend = domains[0]

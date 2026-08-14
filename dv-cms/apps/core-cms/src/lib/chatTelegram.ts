@@ -19,8 +19,12 @@ function richToHtml(v: unknown): string {
     // disableContainer: bỏ <div class="payload-richtext"> bọc ngoài — widget tự lo
     // khung, thêm div nữa sẽ phá bố cục bong bóng chat.
     const html = convertLexicalToHTML({ data: v as SerializedEditorState, disableContainer: true })
-    // Lexical sinh <p></p> rỗng khi ô chưa nhập gì.
-    return html.replace(/<p[^>]*>(\s|&nbsp;|<br\s*\/?>)*<\/p>/g, '').trim()
+    // Ô chưa nhập gì thì Lexical vẫn sinh <p></p> rỗng → coi như trống để nơi
+    // gọi lùi về câu mặc định. Nhưng CHỈ dùng bản đã bỏ thẻ rỗng để KIỂM TRA,
+    // rồi trả về HTML GỐC: đoạn trống nằm giữa bài là do admin cố ý xuống dòng
+    // ngăn cách, xoá đi là mất đúng bố cục họ đã soạn.
+    const probe = html.replace(/<p[^>]*>(\s|&nbsp;|<br\s*\/?>)*<\/p>/g, '').trim()
+    return probe ? html.trim() : ''
   } catch {
     return ''
   }

@@ -126,9 +126,16 @@
 }
 
 /* Câu chào chat do admin soạn bằng rich text (bóng chào, lời chào trong khung
-   chat, lời chào ở màn đăng nhập). Giữ chữ nhỏ gọn, không để thẻ <p> đội
-   khoảng cách làm vỡ bố cục bong bóng. */
+   chat, lời chào ở màn đăng nhập). Nguyên tắc: hiển thị ĐÚNG như admin soạn —
+   giữ dòng trống ngăn khổ, giữ căn lề, giữ định dạng chữ. */
 @layer components {
+  .chat-greeting {
+    /* Trình soạn thảo mặc định căn trái, nên mặc định ở đây cũng căn trái —
+       nếu để thừa hưởng text-center của khung bao thì admin soạn một đằng,
+       khách thấy một nẻo. Admin căn giữa/phải trong editor thì Lexical xuất ra
+       style nội tuyến trên từng đoạn và tự đè lên dòng này. */
+    text-align: left;
+  }
   .chat-greeting > :first-child {
     margin-top: 0;
   }
@@ -138,11 +145,37 @@
   .chat-greeting p {
     margin: 0 0 0.4em;
   }
+  /* Đoạn trống admin cố ý chèn để ngăn khổ — Lexical xuất ra <p><br></p>.
+     Phải có chiều cao thật, nếu không hai khổ dính liền nhau. */
+  .chat-greeting p:empty,
+  .chat-greeting p > br:only-child {
+    min-height: 1em;
+  }
   .chat-greeting strong {
     font-weight: 700;
   }
   .chat-greeting em {
     font-style: italic;
+  }
+  .chat-greeting u {
+    text-decoration: underline;
+  }
+  .chat-greeting s {
+    text-decoration: line-through;
+  }
+  .chat-greeting sub {
+    vertical-align: sub;
+    font-size: 0.8em;
+  }
+  .chat-greeting sup {
+    vertical-align: super;
+    font-size: 0.8em;
+  }
+  .chat-greeting code {
+    padding: 0.1em 0.35em;
+    border-radius: 4px;
+    background: rgb(0 0 0 / 0.06);
+    font-size: 0.92em;
   }
   .chat-greeting a {
     color: var(--color-primary, #157347);
@@ -153,6 +186,7 @@
   .chat-greeting ol {
     margin: 0.25em 0 0.4em;
     padding-left: 1.15em;
+    text-align: left;
   }
   .chat-greeting ul {
     list-style: disc;

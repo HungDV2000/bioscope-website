@@ -120,27 +120,34 @@ const exchangeEndpoint: Endpoint = {
 
     if (!member) {
       if (!cfg.allowRegistration) return json({ error: 'Hệ thống đang tắt đăng ký mới.' }, 403)
-      member = (await req.payload.create({
-        collection: 'members',
-        data: {
-          email,
-          // Payload bắt buộc có mật khẩu — đặt ngẫu nhiên, chủ tài khoản không
-          // biết. hasPassword=false để trang tài khoản cho đặt mật khẩu lần đầu
-          // mà không hỏi mật khẩu cũ.
-          password: randomBytes(24).toString('base64url'),
-          hasPassword: false,
-          company: '',
-          contactName: profile.name || email.split('@')[0],
-          // Duyệt ở mức cơ bản: chat + sửa hồ sơ dùng ngay. Khu tài liệu B2B
-          // vẫn chờ admin đổi status sang 'approved'.
-          status: 'pending',
-          authProvider: 'google',
-          googleId: profile.sub,
-          emailVerified: true,
-        } as never,
-        overrideAccess: true,
-        req,
-      })) as never
+      try {
+        member = (await req.payload.create({
+          collection: 'members',
+          data: {
+            email,
+            // Payload bắt buộc có mật khẩu — đặt ngẫu nhiên, chủ tài khoản không
+            // biết. hasPassword=false để trang tài khoản cho đặt mật khẩu lần đầu
+            // mà không hỏi mật khẩu cũ.
+            password: randomBytes(24).toString('base64url'),
+            hasPassword: false,
+            // Google không cung cấp tên công ty — để trống, khách điền ở trang Tài khoản.
+            contactName: profile.name || email.split('@')[0],
+            // Duyệt ở mức cơ bản: chat + sửa hồ sơ dùng ngay. Khu tài liệu B2B
+            // vẫn chờ admin đổi status sang 'approved'.
+            status: 'pending',
+            authProvider: 'google',
+            googleId: profile.sub,
+            emailVerified: true,
+          } as never,
+          overrideAccess: true,
+          req,
+        })) as never
+      } catch (e) {
+        // Ghi rõ nguyên nhân: trước đây lỗi tạo tài khoản chỉ hiện "đăng nhập
+        // Google thất bại", phải mở log CMS mới biết trường nào không hợp lệ.
+        req.payload.logger.error(`[google-auth] tạo tài khoản thất bại cho ${email}: ${String(e)}`)
+        return json({ error: 'Không tạo được tài khoản từ hồ sơ Google.', detail: String(e) }, 400)
+      }
     } else {
       await req.payload.update({
         collection: 'members',

@@ -31,7 +31,25 @@ export const Members: CollectionConfig = {
     delete: isAdmin,
   },
   fields: [
-    { name: 'company', type: 'text', required: true },
+    {
+      name: 'company',
+      type: 'text',
+      /**
+       * Bắt buộc với người tự đăng ký, NHƯNG tài khoản tạo qua Google thì
+       * Google không cung cấp tên công ty — bắt buộc ở đây sẽ làm hỏng luôn
+       * bước đăng nhập. Cho phép để trống với tài khoản Google; người dùng
+       * điền sau ở trang Tài khoản (form bên đó vẫn bắt buộc).
+       *
+       * Hai đường ghi dữ liệu (/b2b/register và /b2b/profile) đều đã tự kiểm
+       * trường này nên vẫn không lọt bản ghi thiếu thông tin.
+       */
+      validate: (value: unknown, { data }: { data?: { authProvider?: string } }) => {
+        if (typeof value === 'string' && value.trim()) return true
+        if (data?.authProvider === 'google') return true
+        return 'This field is required.'
+      },
+      admin: { description: 'Tài khoản đăng nhập bằng Google có thể chưa có — sẽ tự bổ sung sau.' },
+    },
     { name: 'contactName', type: 'text', required: true },
     { name: 'phone', type: 'text' },
     {

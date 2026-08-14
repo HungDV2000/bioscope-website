@@ -14,6 +14,24 @@ import { rateLimit, clientIp } from '../lib/rateLimit.js'
 
 const json = (data: unknown, status = 200) => Response.json(data as never, { status })
 
+/**
+ * Lấy nguyên nhân GỐC của lỗi. Lỗi truy vấn của Payload/Drizzle chỉ nói "Failed
+ * query: insert into ..." còn lý do thật (vd: vi phạm ràng buộc NOT NULL) nằm ở
+ * `cause` — không bóc ra thì đọc log vẫn không biết hỏng vì đâu.
+ */
+function rootCause(e: unknown): string {
+  const parts: string[] = []
+  let cur: unknown = e
+  for (let i = 0; i < 4 && cur; i++) {
+    const err = cur as { message?: string; detail?: string; constraint?: string; cause?: unknown }
+    if (err.message) parts.push(err.message)
+    if (err.detail) parts.push(`detail=${err.detail}`)
+    if (err.constraint) parts.push(`constraint=${err.constraint}`)
+    cur = err.cause
+  }
+  return parts.join(' | ') || String(e)
+}
+
 type AuthConfig = { enabled: boolean; clientId: string; clientSecret: string; allowRegistration: boolean }
 
 export async function getAuthConfig(payload: PayloadRequest['payload']): Promise<AuthConfig> {
@@ -145,8 +163,8 @@ const exchangeEndpoint: Endpoint = {
       } catch (e) {
         // Ghi rõ nguyên nhân: trước đây lỗi tạo tài khoản chỉ hiện "đăng nhập
         // Google thất bại", phải mở log CMS mới biết trường nào không hợp lệ.
-        req.payload.logger.error(`[google-auth] tạo tài khoản thất bại cho ${email}: ${String(e)}`)
-        return json({ error: 'Không tạo được tài khoản từ hồ sơ Google.', detail: String(e) }, 400)
+        req.payload.logger.error(`[google-auth] tạo tài khoản thất bại cho ${email}: ${rootCause(e)}`)
+        return json({ error: 'Không tạo được tài khoản từ hồ sơ Google.', detail: rootCause(e) }, 400)
       }
     } else {
       await req.payload.update({

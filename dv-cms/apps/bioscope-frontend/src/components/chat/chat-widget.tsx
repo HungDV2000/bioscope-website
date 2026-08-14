@@ -100,7 +100,6 @@ export function ChatWidget() {
 
   const [cfg, setCfg] = useState<Config | null>(null)
   const [loggedIn, setLoggedIn] = useState<boolean | null>(null)
-  const [googleEnabled, setGoogleEnabled] = useState(false)
   const [open, setOpen] = useState(false)
   const [bubble, setBubble] = useState(false)
   const [token, setToken] = useState<string | null>(null)
@@ -144,9 +143,7 @@ export function ChatWidget() {
         ])
         if (stop) return
         setCfg(c as Config)
-        const ses = s as { loggedIn?: boolean; googleEnabled?: boolean }
-        setLoggedIn(Boolean(ses.loggedIn))
-        setGoogleEnabled(Boolean(ses.googleEnabled))
+        setLoggedIn(Boolean((s as { loggedIn?: boolean }).loggedIn))
       } catch {
         /* im lặng — không hiện widget */
       }
@@ -161,6 +158,23 @@ export function ChatWidget() {
       stop = true
     }
   }, [locale])
+
+  // Đăng nhập xong ở popup → widget tự chuyển sang khung chat, không cần tải lại.
+  useEffect(() => {
+    const onChanged = () => {
+      void fetch('/api/member/session')
+        .then((r) => r.json())
+        .then((s: { loggedIn?: boolean }) => {
+          if (s.loggedIn) {
+            setLoggedIn(true)
+            setMessages([])
+          }
+        })
+        .catch(() => {})
+    }
+    window.addEventListener(SESSION_CHANGED, onChanged)
+    return () => window.removeEventListener(SESSION_CHANGED, onChanged)
+  }, [])
 
   // Bóng câu chào: hiện sau N giây, tôn trọng "chỉ một lần mỗi lượt".
   useEffect(() => {
@@ -185,27 +199,12 @@ export function ChatWidget() {
     }
   }
 
-  // Gom chuỗi cho panel đăng nhập/đăng ký trong khung chat.
+  // Panel trong khung chat giờ chỉ cần lời chào + 2 nút (form nằm ở popup).
   const authStrings: AuthStrings = {
     loginTitle: T.loginTitle,
     loginDesc: T.loginDesc,
     loginBtn: T.loginBtn,
     registerBtn: T.registerBtn,
-    google: T.google,
-    or: T.or,
-    back: T.back,
-    email: T.fEmail,
-    password: T.fPassword,
-    company: T.fCompany,
-    contactName: T.fContact,
-    phone: T.fPhone,
-    passwordHint: T.passwordHint,
-    submitLogin: T.submitLogin,
-    submitRegister: T.submitRegister,
-    errInvalid: T.errInvalid,
-    errTaken: T.errTaken,
-    errNetwork: T.errNetwork,
-    errShort: T.errShort,
   }
 
   const scrollDown = useCallback(() => {
@@ -380,19 +379,7 @@ export function ChatWidget() {
 
           {loggedIn === false ? (
             /* Bắt buộc đăng nhập mới được chat — làm NGAY trong khung chat */
-            <ChatAuthPanel
-              t={authStrings}
-              greetingHtml={cfg.loginGreeting}
-              googleEnabled={googleEnabled}
-              returnTo={pathname}
-              onAuthed={() => {
-                setLoggedIn(true)
-                setMessages([])
-                // Báo nút tài khoản ở header đọc lại phiên — đăng nhập ở widget
-                // xong là header đổi ngay, không phải tải lại trang.
-                window.dispatchEvent(new Event(SESSION_CHANGED))
-              }}
-            />
+            <ChatAuthPanel t={authStrings} greetingHtml={cfg.loginGreeting} />
           ) : !consented ? (
             /* Màn hình đồng ý (GDPR) trước khi bắt đầu chat */
             <div className="flex flex-1 flex-col justify-center gap-4 bg-mist/30 px-6 py-8 text-center">

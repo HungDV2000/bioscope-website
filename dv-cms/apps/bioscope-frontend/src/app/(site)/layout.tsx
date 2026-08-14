@@ -7,6 +7,7 @@ import { getLocale } from '@/lib/i18n/server'
 import { getNavigation } from '@/lib/cms/navigation'
 import { RefreshOnSave } from '@/components/live-preview/refresh-on-save'
 import { ChatWidget } from '@/components/chat/chat-widget'
+import { AuthModal } from '@/components/member/auth-modal'
 import { ClickToFocus } from '@/components/live-preview/click-to-focus'
 import { CMS_URL } from '@/lib/payload'
 
@@ -38,6 +39,7 @@ export default async function SiteLayout({
       </main>
       <SiteFooter columns={nav?.footerColumns} footer={footer} />
       <ChatWidget />
+      <AuthModal />
     </LocaleProvider>
   )
 }

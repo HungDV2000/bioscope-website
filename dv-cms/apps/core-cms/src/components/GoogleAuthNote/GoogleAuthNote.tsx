@@ -60,6 +60,18 @@ export function GoogleAuthNote() {
         </li>
         <li>Copy Client ID + Client Secret dán vào 2 ô phía trên rồi Lưu.</li>
       </ol>
+      <p
+        style={{
+          margin: '10px 0 0',
+          padding: '8px 10px',
+          background: 'var(--theme-elevation-100)',
+          borderRadius: 4,
+        }}
+      >
+        <strong>Bị lỗi “redirect_uri_mismatch”?</strong> Mở địa chỉ sau bằng CHÍNH tên miền khách hay
+        dùng, nó in ra đúng chuỗi cần dán:{' '}
+        <code style={{ userSelect: 'all' }}>{frontend}/api/auth/google/check</code>
+      </p>
       <p style={{ margin: '10px 0 0', opacity: 0.75 }}>
         Tài khoản đăng nhập bằng Google dùng được ngay (chat, sửa hồ sơ) nhưng khu tài liệu B2B vẫn
         cần admin duyệt trạng thái sang <em>Approved</em>.

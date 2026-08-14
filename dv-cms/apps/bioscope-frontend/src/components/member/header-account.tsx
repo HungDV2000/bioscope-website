@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation'
 import { UserRound, LogIn, FileText, UserCog, LogOut } from 'lucide-react'
 import { useLocale } from '@/lib/i18n/context'
 import { cn } from '@/lib/utils'
-import { SESSION_CHANGED } from '@/lib/member/session-events'
+import { SESSION_CHANGED, openAuthModal } from '@/lib/member/session-events'
 
 type Session = { loggedIn: boolean; name: string; approved: boolean }
 
@@ -62,9 +62,11 @@ export function HeaderAccount({ className }: { className?: string }) {
   if (!session) return <span className={cn('h-10 w-10', className)} aria-hidden />
 
   if (!session.loggedIn) {
+    // Mở popup ngay tại trang đang xem, không điều hướng sang /member/login.
     return (
-      <Link
-        href={`/member/login?returnTo=${encodeURIComponent(pathname)}`}
+      <button
+        type="button"
+        onClick={() => openAuthModal()}
         aria-label={t.header.signIn}
         title={t.header.signIn}
         className={cn(
@@ -73,7 +75,7 @@ export function HeaderAccount({ className }: { className?: string }) {
         )}
       >
         <LogIn className="h-[18px] w-[18px]" strokeWidth={1.8} />
-      </Link>
+      </button>
     )
   }
 

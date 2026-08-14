@@ -24,12 +24,22 @@ export async function GET(req: NextRequest) {
   }
   if (!clientId) return NextResponse.redirect(new URL('/member/login?error=google_off', origin))
 
+  const redirectUri = googleRedirectUri(origin)
+  // In ra log để đối chiếu với Google Console khi gặp redirect_uri_mismatch:
+  //   docker logs dvcms-frontend --tail 50 | grep google-oauth
+  console.info(
+    `[google-oauth] redirect_uri="${redirectUri}" | origin="${origin}" | ` +
+      `x-forwarded-host="${req.headers.get('x-forwarded-host') ?? ''}" ` +
+      `host="${req.headers.get('host') ?? ''}" ` +
+      `x-forwarded-proto="${req.headers.get('x-forwarded-proto') ?? ''}"`,
+  )
+
   const returnTo = safeReturnTo(req.nextUrl.searchParams.get('returnTo'))
   const nonce = randomBytes(16).toString('base64url')
 
   const url = new URL('https://accounts.google.com/o/oauth2/v2/auth')
   url.searchParams.set('client_id', clientId)
-  url.searchParams.set('redirect_uri', googleRedirectUri(origin))
+  url.searchParams.set('redirect_uri', redirectUri)
   url.searchParams.set('response_type', 'code')
   url.searchParams.set('scope', 'openid email profile')
   url.searchParams.set('state', signState(nonce, returnTo))

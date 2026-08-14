@@ -109,6 +109,10 @@ services:
       MEMBER_SESSION_SECRET: ${MEMBER_SESSION_SECRET:-}
       # Phải khớp với INTERNAL_API_SECRET của service cms.
       INTERNAL_API_SECRET: ${INTERNAL_API_SECRET:-}
+      # Chỉ đặt khi Google báo redirect_uri_mismatch mà tên miền suy ra tự động
+      # vẫn không khớp: điền ĐÚNG chuỗi đã khai ở Google Console, hệ thống dùng
+      # nguyên văn. VD: https://bioscope.vn/api/auth/google/callback
+      GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI:-}
     ports:
       # Bind 127.0.0.1:26080 → container:26300 (chỉ aaPanel proxy mới truy cập được)
       - "127.0.0.1:${DVCMS_FRONTEND_HOST_PORT:-26080}:26300"

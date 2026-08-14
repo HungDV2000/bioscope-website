@@ -110,7 +110,20 @@ const startEndpoint: Endpoint = {
 
     const memberName = str(body.memberName, 120)
     const memberEmail = str(body.memberEmail, 200)
-    const memberId = body.memberId != null ? String(body.memberId) : undefined
+    /**
+     * Id thành viên phải giữ ĐÚNG KIỂU SỐ.
+     *
+     * Postgres đánh id kiểu số, mà `isValidID` của Payload đòi `typeof === 'number'`
+     * — ép về chuỗi "5" là trường quan hệ bị từ chối, kéo theo hỏng luôn cả việc
+     * tạo hội thoại nên khách không chat được.
+     */
+    const rawMemberId = body.memberId
+    const memberId =
+      typeof rawMemberId === 'number'
+        ? rawMemberId
+        : typeof rawMemberId === 'string' && /^\d+$/.test(rawMemberId.trim())
+          ? Number(rawMemberId.trim())
+          : undefined
     const memberCompany = str(body.memberCompany, 200)
     const isBusiness = body.memberType !== 'individual'
 
@@ -138,50 +151,70 @@ const startEndpoint: Endpoint = {
       }
     }
 
-    const conv = await req.payload.create({
-      collection: 'chat-conversations',
-      data: {
-        title: `${memberName || memberEmail} · ${startPage || '/'} · ${new Date().toLocaleString('vi-VN')}`,
-        sessionToken: token,
-        status: 'open',
-        telegramTopicId: topicId,
-        // Khách
-        loggedIn,
-        member: memberId,
-        company: memberCompany,
-        visitorName: memberName,
-        visitorEmail: memberEmail,
-        // Vị trí (ước lượng từ IP)
-        visitorIp: ip,
-        location: geo.label || undefined,
-        country: geo.country,
-        region: geo.region,
-        city: geo.city,
-        postal: geo.postal,
-        timezone: geo.timezone,
-        latitude: geo.latitude,
-        longitude: geo.longitude,
-        isp: geo.isp,
-        // Thiết bị
-        userAgent,
-        browser: ua.browser,
-        browserVersion: ua.browserVersion,
-        os: ua.os,
-        deviceType: ua.device,
-        screen: str(body.screen, 40),
-        language: str(body.language, 40),
-        // Nguồn truy cập
-        startPage,
-        referrer: str(body.referrer, 300),
-        landingPage: str(body.landingPage, 300),
-        pageViews: typeof body.pageViews === 'number' ? body.pageViews : undefined,
-        utmSource: str(body.utmSource, 120),
-        utmMedium: str(body.utmMedium, 120),
-        utmCampaign: str(body.utmCampaign, 120),
-        lastMessageAt: new Date().toISOString(),
-      } as never,
-      overrideAccess: true,
-    })
+    const convData = {
+      title: `${memberName || memberEmail} · ${startPage || '/'} · ${new Date().toLocaleString('vi-VN')}`,
+      sessionToken: token,
+      status: 'open',
+      telegramTopicId: topicId,
+      // Khách
+      loggedIn,
+      member: memberId,
+      company: memberCompany,
+      visitorName: memberName,
+      visitorEmail: memberEmail,
+      // Vị trí (ước lượng từ IP)
+      visitorIp: ip,
+      location: geo.label || undefined,
+      country: geo.country,
+      region: geo.region,
+      city: geo.city,
+      postal: geo.postal,
+      timezone: geo.timezone,
+      latitude: geo.latitude,
+      longitude: geo.longitude,
+      isp: geo.isp,
+      // Thiết bị
+      userAgent,
+      browser: ua.browser,
+      browserVersion: ua.browserVersion,
+      os: ua.os,
+      deviceType: ua.device,
+      screen: str(body.screen, 40),
+      language: str(body.language, 40),
+      // Nguồn truy cập
+      startPage,
+      referrer: str(body.referrer, 300),
+      landingPage: str(body.landingPage, 300),
+      pageViews: typeof body.pageViews === 'number' ? body.pageViews : undefined,
+      utmSource: str(body.utmSource, 120),
+      utmMedium: str(body.utmMedium, 120),
+      utmCampaign: str(body.utmCampaign, 120),
+      lastMessageAt: new Date().toISOString(),
+    }
+
+    /**
+     * Tạo hội thoại. Nếu hỏng vì phần dữ liệu PHỤ (liên kết thành viên, thông
+     * tin tracking…) thì thử lại lần nữa mà bỏ liên kết đi: khách hàng phải
+     * nhắn được cho sales trong mọi tình huống, không thể vì một trường phụ mà
+     * chặn cả cuộc trò chuyện.
+     */
+    let conv: { id: number | string }
+    try {
+      conv = (await req.payload.create({
+        collection: 'chat-conversations',
+        data: convData as never,
+        overrideAccess: true,
+      })) as never
+    } catch (e) {
+      req.payload.logger.error(
+        `[chat] tạo hội thoại lỗi (memberId=${JSON.stringify(rawMemberId)}), thử lại không gắn thành viên: ${String(e)}`,
+      )
+      conv = (await req.payload.create({
+        collection: 'chat-conversations',
+        data: { ...convData, member: undefined } as never,
+        overrideAccess: true,
+      })) as never
+    }
 
     // Gửi thẻ giới thiệu vào Telegram để sales biết AI ĐANG CHAT.
     if (isTelegramReady(cfg)) {

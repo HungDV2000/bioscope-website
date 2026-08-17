@@ -311,14 +311,14 @@ export function ChatWidget() {
       .then((r: { ok?: boolean; messages?: Msg[] }) => {
         if (!r.ok || !r.messages?.length) return
         for (const m of r.messages) if (m.id && m.id > lastId.current) lastId.current = m.id
+        // Chỉ chèn lời chào khi thật sự có nội dung — nếu không sẽ hiện một
+        // bong bóng trống trơn chỉ có mỗi giờ.
+        const greeting: Msg[] = cfg?.welcomeMessage
+          ? [{ sender: 'system', text: '', html: cfg.welcomeMessage, createdAt: r.messages![0]?.createdAt }]
+          : []
         setMessages((prev) =>
           // Vừa bắt đầu hội thoại xong thì giữ nguyên, tránh lặp lời chào.
-          prev.length
-            ? prev
-            : [
-                { sender: 'system', text: '', html: cfg?.welcomeMessage, createdAt: r.messages![0]?.createdAt },
-                ...r.messages!,
-              ],
+          prev.length ? prev : [...greeting, ...r.messages!],
         )
         scrollDown()
       })

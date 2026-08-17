@@ -18,7 +18,18 @@ type Session = { loggedIn: boolean; name: string; approved: boolean }
  * Trạng thái lấy ở trình duyệt (không phải lúc dựng trang) để header vẫn nằm
  * trong bộ nhớ đệm tĩnh, tránh phải render động toàn site.
  */
-export function HeaderAccount({ className }: { className?: string }) {
+export function HeaderAccount({
+  className,
+  /**
+   * Luôn hiện chữ, kể cả màn hẹp. Dùng cho bảng menu mobile — ở đó nút nằm
+   * riêng một hàng nên thừa chỗ, còn trên thanh header thì phải nhường chỗ cho
+   * logo và nút menu.
+   */
+  labelAlways = false,
+}: {
+  className?: string
+  labelAlways?: boolean
+}) {
   const { t } = useLocale()
   const pathname = usePathname()
   const [session, setSession] = useState<Session | null>(null)
@@ -63,18 +74,45 @@ export function HeaderAccount({ className }: { className?: string }) {
 
   if (!session.loggedIn) {
     // Mở popup ngay tại trang đang xem, không điều hướng sang /member/login.
+    //
+    // Có CHỮ "Đăng nhập" chứ không để mỗi icon: mũi tên vào-cửa là quy ước của
+    // dân kỹ thuật, khách doanh nghiệp nhìn không đoán ra. Dưới 640px thì ẩn
+    // chữ vì header còn nút ngôn ngữ và nút menu — nhưng ở đó popup vẫn mở
+    // được từ menu, nơi chữ hiện đầy đủ.
+    //
+    // Hình dáng cố ý GIỐNG HỆT nút khi đã đăng nhập (cùng chiều cao, cùng viên
+    // thuốc, cùng vòng tròn icon) để header không nhảy layout lúc đăng nhập xong.
     return (
       <button
         type="button"
         onClick={() => openAuthModal()}
+        // Giữ aria-label cho màn hẹp, lúc đó chữ bị ẩn nên nút không còn tên.
         aria-label={t.header.signIn}
         title={t.header.signIn}
         className={cn(
-          'grid h-10 w-10 place-items-center rounded-full border border-primary-border text-primary-dark transition-colors hover:bg-primary-tint',
+          'flex h-10 shrink-0 items-center gap-2 rounded-full border border-primary-border bg-white pl-1.5 pr-1.5 text-primary-dark transition-colors hover:bg-primary-tint',
+          labelAlways ? 'pr-3.5' : 'sm:pr-3.5',
           className,
         )}
       >
-        <LogIn className="h-[18px] w-[18px]" strokeWidth={1.8} />
+        {/* Khi chữ bị ẩn, bỏ nền tròn bên trong — nếu không nút thành hai vòng
+            tròn lồng nhau, nhìn rối và không rõ là nút gì. */}
+        <span
+          className={cn(
+            'grid h-7 w-7 shrink-0 place-items-center rounded-full',
+            labelAlways ? 'bg-primary-tint' : 'sm:bg-primary-tint',
+          )}
+        >
+          <LogIn className="h-[15px] w-[15px]" strokeWidth={1.9} />
+        </span>
+        <span
+          className={cn(
+            'whitespace-nowrap text-[13.5px] font-semibold',
+            labelAlways ? 'inline' : 'hidden sm:inline',
+          )}
+        >
+          {t.header.signIn}
+        </span>
       </button>
     )
   }
@@ -88,12 +126,20 @@ export function HeaderAccount({ className }: { className?: string }) {
         onClick={() => setOpen((v) => !v)}
         aria-label={t.header.account}
         aria-expanded={open}
-        className="flex h-10 items-center gap-2 rounded-full border border-primary-border bg-white pl-1.5 pr-1 text-primary-dark transition-colors hover:bg-primary-tint sm:pr-3"
+        className={cn(
+          'flex h-10 items-center gap-2 rounded-full border border-primary-border bg-white pl-1.5 pr-1 text-primary-dark transition-colors hover:bg-primary-tint',
+          labelAlways ? 'pr-3' : 'sm:pr-3',
+        )}
       >
         <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-primary-tint">
           <UserRound className="h-[15px] w-[15px]" strokeWidth={1.9} />
         </span>
-        <span className="hidden max-w-[110px] truncate text-[13.5px] font-semibold sm:inline">
+        <span
+          className={cn(
+            'max-w-[110px] truncate text-[13.5px] font-semibold',
+            labelAlways ? 'inline' : 'hidden sm:inline',
+          )}
+        >
           {firstName}
         </span>
       </button>

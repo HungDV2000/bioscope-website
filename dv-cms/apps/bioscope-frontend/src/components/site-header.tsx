@@ -29,17 +29,17 @@ export function SiteHeader({ items }: { items?: { label: string; href: string }[
   return (
     <>
       <header className="fixed inset-x-0 top-0 z-40 border-b border-primary-border/40 bg-white/90 backdrop-blur-md">
-        <div className="container-bs flex h-[72px] items-center justify-between gap-3 xl:gap-5">
+        <div className="mx-auto flex h-[72px] w-full max-w-[1440px] items-center justify-between gap-3 px-6 sm:px-8">
           <Link href="/" className="flex shrink-0 items-center">
             <Image src="/logo.avif" alt="Bioscope" width={180} height={50} priority className="h-11 w-auto sm:h-12 xl:h-[52px]" />
           </Link>
 
-          <nav className="hidden shrink-0 items-center gap-0.5 lg:flex">
+          <nav className="hidden shrink-0 items-center gap-0.5 xl:flex">
             {NAV.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="whitespace-nowrap rounded-full px-2.5 py-2 text-[13.5px] font-medium text-ink/75 transition-colors duration-300 hover:bg-primary-tint hover:text-primary-dark xl:px-3.5 xl:text-[14px]"
+                className="whitespace-nowrap rounded-full px-2 py-2 text-[13.5px] font-medium text-ink/75 transition-colors duration-300 hover:bg-primary-tint hover:text-primary-dark"
               >
                 {item.label}
               </Link>
@@ -51,7 +51,7 @@ export function SiteHeader({ items }: { items?: { label: string; href: string }[
             <HeaderAccount />
             <Link
               href="/lien-he"
-              className="hidden items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-[14px] font-semibold text-white shadow-soft transition-colors duration-300 hover:bg-primary-dark sm:inline-flex"
+              className="hidden items-center gap-2 whitespace-nowrap rounded-full bg-primary px-4 py-2.5 text-[14px] font-semibold text-white shadow-soft transition-colors duration-300 hover:bg-primary-dark sm:inline-flex"
             >
               {t.header.requestSamples}
               <FlaskConical className="h-4 w-4" strokeWidth={1.8} />
@@ -60,7 +60,7 @@ export function SiteHeader({ items }: { items?: { label: string; href: string }[
               type="button"
               aria-label={t.header.menu}
               onClick={() => setOpen((v) => !v)}
-              className="grid h-10 w-10 place-items-center rounded-full bg-primary-tint text-primary-dark lg:hidden"
+              className="grid h-10 w-10 place-items-center rounded-full bg-primary-tint text-primary-dark xl:hidden"
             >
               {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
@@ -70,13 +70,13 @@ export function SiteHeader({ items }: { items?: { label: string; href: string }[
 
       <div
         className={cn(
-          'fixed inset-0 top-[72px] z-30 flex flex-col overflow-y-auto bg-white px-6 pb-10 pt-6 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] lg:hidden',
+          'fixed inset-0 top-[72px] z-30 flex flex-col overflow-y-auto bg-white px-6 pb-10 pt-6 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] xl:hidden',
           open ? 'opacity-100' : 'pointer-events-none opacity-0',
         )}
       >
         <div className="mb-6 flex items-center justify-between gap-3">
           <LanguageSwitcher />
-          <HeaderAccount />
+          <HeaderAccount labelAlways />
         </div>
         <ul className="flex flex-col gap-1">
           {NAV.map((item, i) => (

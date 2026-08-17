@@ -38,18 +38,126 @@ const OPENAI_TIMEOUT_MS = Number(process.env.OPENAI_TIMEOUT_MS ?? 180_000)
 /** Retries per call. Worst case queue occupancy = TIMEOUT × (1 + retries). */
 const OPENAI_MAX_RETRIES = Number(process.env.OPENAI_MAX_RETRIES ?? 2)
 
+/**
+ * ── NHÀ CUNG CẤP AI ───────────────────────────────────────────────────────────
+ *
+ * Sinh nội dung / đọc ảnh đi qua giao thức "chat completions" của OpenAI, mà
+ * OpenRouter tương thích hoàn toàn — nên chỉ cần đổi `baseURL` + khoá là chạy
+ * được mọi model (Claude, GPT, Gemini, Llama…) không phải sửa logic.
+ *
+ * NHƯNG SINH ẢNH THÌ KHÔNG: OpenRouter không có `/v1/images/generations`. Vì
+ * vậy ảnh LUÔN đi thẳng OpenAI bằng client riêng. Bỏ qua điểm này là tính năng
+ * "Tạo lại ảnh đại diện" sẽ hỏng ngay khi chuyển nhà cung cấp.
+ */
+export type AiProvider = 'openrouter' | 'openai'
+
+type AiConfig = {
+  provider: AiProvider
+  apiKey: string
+  /** Khoá OpenAI riêng cho sinh ảnh (OpenRouter không làm được việc này). */
+  imageApiKey: string
+  siteUrl: string
+  appName: string
+  contentModel: string
+  visionModel: string
+  imagePromptModel: string
+  imageModel: string
+}
+
+const envCfg = (): AiConfig => {
+  const provider: AiProvider = (process.env.AI_PROVIDER as AiProvider) || 'openai'
+  const orKey = process.env.OPENROUTER_API_KEY || ''
+  const oaKey = process.env.OPENAI_API_KEY || ''
+  return {
+    provider,
+    apiKey: provider === 'openrouter' ? orKey : oaKey,
+    imageApiKey: oaKey,
+    siteUrl: process.env.OPENROUTER_SITE || process.env.FRONTEND_URL || '',
+    appName: process.env.OPENROUTER_APP || 'Bioscope CMS',
+    contentModel: process.env.OPENAI_CONTENT_MODEL || 'gpt-5.6-terra',
+    visionModel: process.env.OPENAI_VISION_MODEL || 'gpt-5.6-terra',
+    imagePromptModel: process.env.OPENAI_IMAGE_PROMPT_MODEL || process.env.OPENAI_CONTENT_MODEL || 'gpt-5.6-terra',
+    imageModel: process.env.OPENAI_IMAGE_MODEL || 'gpt-image-2',
+  }
+}
+
+let _cfg: AiConfig = envCfg()
+let _imageClient: OpenAI | null = null
+
+/**
+ * Nạp cấu hình từ admin. Ô nào bỏ trống thì giữ giá trị từ biến môi trường —
+ * nhờ vậy đội vận hành đổi model/nhà cung cấp mà không cần deploy lại.
+ */
+export function setAiConfig(partial: Partial<AiConfig>): void {
+  const base = envCfg()
+  const merged = { ...base }
+  for (const [k, v] of Object.entries(partial)) {
+    if (v !== undefined && v !== null && String(v).trim() !== '') {
+      ;(merged as Record<string, unknown>)[k] = v
+    }
+  }
+  // Khoá theo đúng nhà cung cấp đang chọn.
+  if (!partial.apiKey) {
+    merged.apiKey = merged.provider === 'openrouter' ? base.apiKey || '' : base.apiKey || ''
+  }
+  _cfg = merged
+  _client = null // buộc dựng lại client với cấu hình mới
+  _imageClient = null
+}
+
+export const getAiConfig = (): Readonly<AiConfig> => _cfg
+export const contentModel = () => _cfg.contentModel
+export const visionModel = () => _cfg.visionModel
+
+/** Client cho sinh nội dung / đọc ảnh — theo nhà cung cấp đang chọn. */
 export function getOpenAIClient(): OpenAI {
   if (_client) return _client
 
-  const apiKey = process.env.OPENAI_API_KEY
-  if (!apiKey) throw new Error('OPENAI_API_KEY env var is not set')
+  const isOR = _cfg.provider === 'openrouter'
+  const apiKey = _cfg.apiKey
+  if (!apiKey) {
+    throw new Error(
+      isOR
+        ? 'Chưa có khoá OpenRouter (đặt trong Cài đặt AI hoặc OPENROUTER_API_KEY).'
+        : 'Chưa có khoá OpenAI (đặt trong Cài đặt AI hoặc OPENAI_API_KEY).',
+    )
+  }
 
   _client = new OpenAI({
     apiKey,
+    ...(isOR
+      ? {
+          baseURL: 'https://openrouter.ai/api/v1',
+          // OpenRouter khuyến nghị 2 header này để nhận diện ứng dụng trong bảng
+          // điều khiển và thống kê chi phí.
+          defaultHeaders: {
+            ...(_cfg.siteUrl ? { 'HTTP-Referer': _cfg.siteUrl } : {}),
+            'X-Title': _cfg.appName,
+          },
+        }
+      : {}),
     timeout: OPENAI_TIMEOUT_MS,
     maxRetries: OPENAI_MAX_RETRIES,
   })
   return _client
+}
+
+/**
+ * Client RIÊNG cho sinh ảnh — luôn là OpenAI.
+ * OpenRouter không có endpoint tạo ảnh, nên dù đang chọn OpenRouter thì phần
+ * ảnh vẫn cần khoá OpenAI.
+ */
+export function getImageClient(): OpenAI {
+  if (_imageClient) return _imageClient
+  const apiKey = _cfg.imageApiKey
+  if (!apiKey) {
+    throw new Error(
+      'Sinh ảnh cần khoá OpenAI riêng (OpenRouter không hỗ trợ tạo ảnh). ' +
+        'Đặt OPENAI_API_KEY hoặc ô "Khoá OpenAI cho sinh ảnh" trong Cài đặt AI.',
+    )
+  }
+  _imageClient = new OpenAI({ apiKey, timeout: OPENAI_TIMEOUT_MS, maxRetries: OPENAI_MAX_RETRIES })
+  return _imageClient
 }
 
 // ---------------------------------------------------------------------------
@@ -254,14 +362,14 @@ export type CostEstimate = {
 }
 
 /**
- * Ước tính chi phí một job. Luôn trả về con số — tra bảng giá theo CONTENT_MODEL
+ * Ước tính chi phí một job. Luôn trả về con số — tra bảng giá theo CONTENT_MODEL_FN()
  * đang cấu hình, nên đổi model là log tự tính theo giá đúng của model đó.
  */
 export function estimateCost(usage: AiUsage): CostEstimate {
   const usingDefaults =
     process.env.OPENAI_PRICE_INPUT_PER_1M == null && process.env.OPENAI_PRICE_OUTPUT_PER_1M == null
 
-  const model = CONTENT_MODEL
+  const model = CONTENT_MODEL_FN()
   const table = MODEL_PRICES[model] ?? FALLBACK_PRICE
 
   const inputPer1M = numOr(process.env.OPENAI_PRICE_INPUT_PER_1M, table.input)
@@ -296,8 +404,10 @@ export function estimateCost(usage: AiUsage): CostEstimate {
 //     Organization Verification in the OpenAI developer console.
 // ---------------------------------------------------------------------------
 
-const CONTENT_MODEL = process.env.OPENAI_CONTENT_MODEL || 'gpt-5.6-terra'
-const VISION_MODEL = process.env.OPENAI_VISION_MODEL || 'gpt-5.6-terra'
+// Đọc từ cấu hình động (admin) — KHÔNG chốt cứng lúc nạp module, nếu không đổi
+// model trong admin sẽ phải khởi động lại tiến trình mới ăn.
+const CONTENT_MODEL_FN = () => getAiConfig().contentModel
+const VISION_MODEL_FN = () => getAiConfig().visionModel
 
 /**
  * Chat-completion token/temperature params that differ across model families.
@@ -585,13 +695,13 @@ export async function generateIngredientContent(
       { type: 'text', text: userPrompt },
     ]
     const completion = await client.chat.completions.create({
-      model: CONTENT_MODEL,
+      model: CONTENT_MODEL_FN(),
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: withAttachments && attachments.length ? userContent : userPrompt },
       ],
       response_format: { type: 'json_object' },
-      ...completionParams(CONTENT_MODEL, 8192, 0.3),
+      ...completionParams(CONTENT_MODEL_FN(), 8192, 0.3),
     })
     recordUsage(usage, 'content', completion.usage)
     const raw = completion.choices[0]?.message?.content
@@ -630,7 +740,7 @@ export async function generateIngredientContent(
     const detail = openaiErrorDetail(err)
     // Kèm model + số file để phân biệt lỗi do request (sai param/model không hỗ
     // trợ input) với lỗi máy chủ thực sự.
-    const ctx = `model=${CONTENT_MODEL} attachments=${attachments.length}`
+    const ctx = `model=${CONTENT_MODEL_FN()} attachments=${attachments.length}`
     if (detail.includes('context_length_exceeded')) {
       return { ok: false, error: 'Nội dung Drive quá dài. Hãy cắt bớt file PDF trước khi thử lại.' }
     }
@@ -648,11 +758,11 @@ export async function generateIngredientContent(
 // 2. Image generation — DALL·E 3 (two-stage)
 // ---------------------------------------------------------------------------
 
-const IMAGE_PROMPT_MODEL = process.env.OPENAI_IMAGE_PROMPT_MODEL || CONTENT_MODEL
-const IMAGE_GENERATION_MODEL = process.env.OPENAI_IMAGE_MODEL || 'gpt-image-2'
+const IMAGE_PROMPT_MODEL_FN = () => getAiConfig().imagePromptModel
+const IMAGE_GENERATION_MODEL_FN = () => getAiConfig().imageModel
 const IMAGE_SIZE = (process.env.OPENAI_IMAGE_SIZE || '1024x1024') as '1024x1024'
 /** dall-e-3 is the only image model that needs no Organization Verification. */
-const IS_DALLE = IMAGE_GENERATION_MODEL.startsWith('dall-e')
+const IS_DALLE = IMAGE_GENERATION_MODEL_FN().startsWith('dall-e')
 /**
  * Quality vocabularies differ per family: dall-e-3 takes standard|hd, gpt-image
  * takes low|medium|high|auto. Normalize so switching OPENAI_IMAGE_MODEL alone
@@ -710,10 +820,10 @@ Trả về JSON: {"prompt": "<image prompt bằng tiếng Anh, tối đa 400 ký
   let refinedPrompt: string
   try {
     const refinement = await client.chat.completions.create({
-      model: IMAGE_PROMPT_MODEL,
+      model: IMAGE_PROMPT_MODEL_FN(),
       messages: [{ role: 'user', content: refinementPrompt }],
       response_format: { type: 'json_object' },
-      ...completionParams(IMAGE_PROMPT_MODEL, 500, 0.3),
+      ...completionParams(IMAGE_PROMPT_MODEL_FN(), 500, 0.3),
     })
     recordUsage(usage, 'imagePrompt', refinement.usage)
     const refined = JSON.parse(refinement.choices[0]?.message?.content ?? '{}') as { prompt?: string }
@@ -727,8 +837,9 @@ Trả về JSON: {"prompt": "<image prompt bằng tiếng Anh, tối đa 400 ký
   try {
     // gpt-image-1 returns b64_json (no `style`/`response_format` params); dall-e-3
     // used `style`/`quality: standard`. Keep the call minimal + model-agnostic.
-    const imageResponse = await client.images.generate({
-      model: IMAGE_GENERATION_MODEL,
+    // Ảnh LUÔN đi OpenAI — OpenRouter không có endpoint tạo ảnh.
+    const imageResponse = await getImageClient().images.generate({
+      model: IMAGE_GENERATION_MODEL_FN(),
       prompt: refinedPrompt,
       size: IMAGE_SIZE,
       quality: IMAGE_QUALITY,
@@ -1168,7 +1279,7 @@ export async function extractTextFromPdfUsingVision(
   const dataUrl = `data:application/pdf;base64,${pdfBuffer.toString('base64')}`
 
   const response = await client.chat.completions.create({
-    model: VISION_MODEL,
+    model: VISION_MODEL_FN(),
     messages: [
       { role: 'system', content: OCR_SYSTEM_PROMPT },
       {
@@ -1179,7 +1290,7 @@ export async function extractTextFromPdfUsingVision(
         ],
       },
     ],
-    ...completionParams(VISION_MODEL, 8192, 0.1),
+    ...completionParams(VISION_MODEL_FN(), 8192, 0.1),
   })
   recordUsage(usage, 'vision', response.usage)
   const text = (response.choices[0]?.message?.content ?? '').trim()
@@ -1227,7 +1338,7 @@ export async function extractTextFromImageUsingVision(
 
   try {
     const response = await client.chat.completions.create({
-      model: VISION_MODEL,
+      model: VISION_MODEL_FN(),
       messages: [
         { role: 'system', content: systemPrompt },
         {
@@ -1244,7 +1355,7 @@ export async function extractTextFromImageUsingVision(
           ],
         },
       ],
-      ...completionParams(VISION_MODEL, 4096, 0.1),
+      ...completionParams(VISION_MODEL_FN(), 4096, 0.1),
     })
 
     recordUsage(usage, 'vision', response.usage)

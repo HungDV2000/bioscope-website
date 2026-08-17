@@ -53,7 +53,15 @@ services:
       B2B_COOKIE: ${B2B_COOKIE:-bio-token}
       GOOGLE_DRIVE_ROOT_FOLDER_ID: ${GOOGLE_DRIVE_ROOT_FOLDER_ID:-}
       GOOGLE_APPLICATION_CREDENTIALS: ${GOOGLE_APPLICATION_CREDENTIALS:-/app/apps/core-cms/credentials/service-account.json}
-      # AI auto-content generation (Tạo nội dung tự động) — required for that feature.
+      # ── AI ──
+      # Nhà cung cấp cho sinh nội dung / đọc ảnh: openrouter | openai.
+      # Đổi được ngay trong Admin → Hệ thống → Cài đặt AI; các biến này chỉ là
+      # giá trị dự phòng khi ô trong admin bỏ trống.
+      AI_PROVIDER: ${AI_PROVIDER:-openrouter}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      OPENROUTER_APP: ${OPENROUTER_APP:-Bioscope CMS}
+      OPENROUTER_SITE: ${OPENROUTER_SITE:-}
+      # ⚠️ SINH ẢNH LUÔN QUA OPENAI — OpenRouter không có endpoint tạo ảnh.
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       # Mistral OCR — chỉ dùng cho PDF scan. Bỏ trống = lùi về OCR bằng OpenAI.
       MISTRAL_API_KEY: ${MISTRAL_API_KEY:-}

@@ -46,6 +46,8 @@ import { clearCacheEndpoint } from './endpoints/clearCache.js'
 import { moduleStatusEndpoint } from './endpoints/moduleStatus.js'
 import { ChatSettings } from './globals/ChatSettings.js'
 import { AuthSettings } from './globals/AuthSettings.js'
+import { AiSettings } from './globals/AiSettings.js'
+import { applyAiSettings } from './lib/aiSettings.js'
 import { ChatConversations } from './collections/ChatConversations.js'
 import { ChatMessages } from './collections/ChatMessages.js'
 import { chatEndpoints } from './endpoints/chat.js'
@@ -177,13 +179,16 @@ export default buildConfig({
   typescript: { outputFile: path.resolve(dirname, 'payload-types.ts') },
   endpoints: [seedEndpoint, backupEndpoint, ingredientDuplicatesEndpoint, ...duplicateScanEndpoints, cmsSyncSourceEndpoint, cmsSyncEndpoint, cmsSyncRunsEndpoint, driveSyncTriggerEndpoint, driveSyncListEndpoint, driveSyncGetEndpoint, driveSyncCancelEndpoint, csvImportEndpoint, ingredientExportEndpoint, ingredientImportEndpoint, aiGenerateTriggerEndpoint, aiGenerateBulkEndpoint, aiGenerateImageEndpoint, aiGenerateListEndpoint, aiGenerateGetEndpoint, aiGenerateQueueStatusEndpoint, clearCacheEndpoint, moduleStatusEndpoint, ...chatEndpoints, ...googleAuthEndpoints, ...catalogEndpoints, ...catalogKeyEndpoints],
   collections: [ChatConversations, ChatMessages, ApiKeys],
-  globals: [ChatSettings, AuthSettings],
+  globals: [ChatSettings, AuthSettings, AiSettings],
   // Sau khi container khởi động lại (deploy/rebuild), runner AI trong RAM chết
   // theo tiến trình cũ — job đang chạy hoặc còn 'queued' sẽ nằm im vĩnh viễn
   // tới khi có người bấm tạo mới. Kích lại hàng đợi ngay lúc onInit để tự nhặt
   // các job còn tồn (drain đã lọc status='queued' + requeue job in-progress bị
   // bỏ). Chạy nền, không chặn khởi động; bọc try/catch để lỗi không làm sập CMS.
   onInit: async (payload) => {
+    // Nạp cấu hình AI TRƯỚC khi kích hàng đợi: job chạy ngay lúc khởi động phải
+    // dùng đúng nhà cung cấp/model admin đã chọn, không phải giá trị mặc định.
+    await applyAiSettings(payload)
     try {
       const { ensureQueueRunner } = await import('./ai-generate/queue.js')
       ensureQueueRunner(payload)

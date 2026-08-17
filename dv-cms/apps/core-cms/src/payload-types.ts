@@ -165,6 +165,7 @@ export interface Config {
   globals: {
     'chat-settings': ChatSetting;
     'auth-settings': AuthSetting;
+    'ai-settings': AiSetting;
     'site-settings': SiteSetting;
     navigation: Navigation;
     branding: Branding;
@@ -178,6 +179,7 @@ export interface Config {
   globalsSelect: {
     'chat-settings': ChatSettingsSelect<false> | ChatSettingsSelect<true>;
     'auth-settings': AuthSettingsSelect<false> | AuthSettingsSelect<true>;
+    'ai-settings': AiSettingsSelect<false> | AiSettingsSelect<true>;
     'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
     navigation: NavigationSelect<false> | NavigationSelect<true>;
     branding: BrandingSelect<false> | BrandingSelect<true>;
@@ -426,6 +428,10 @@ export interface ApiKey {
    */
   keyPrefix?: string | null;
   keyHash?: string | null;
+  /**
+   * ⚠️ Mặc định TẮT. Bật = bên giữ khoá đọc được bảng giá và điều khoản báo giá. Chỉ bật khi đã thống nhất với ban kinh doanh.
+   */
+  allowPricing?: boolean | null;
   /**
    * Chặn quét sạch dữ liệu và chặn lỗi vòng lặp bên gọi.
    */
@@ -3347,6 +3353,7 @@ export interface ApiKeysSelect<T extends boolean = true> {
   enabled?: T;
   keyPrefix?: T;
   keyHash?: T;
+  allowPricing?: T;
   rateLimitPerMin?: T;
   lastUsedAt?: T;
   callCount?: T;
@@ -5110,6 +5117,53 @@ export interface AuthSetting {
   createdAt?: string | null;
 }
 /**
+ * Chọn nhà cung cấp AI và model cho tính năng tạo nội dung tự động.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ai-settings".
+ */
+export interface AiSetting {
+  id: number;
+  /**
+   * Áp dụng cho sinh nội dung và đọc ảnh/PDF. Sinh ảnh luôn dùng OpenAI — xem tab Ảnh.
+   */
+  provider: 'openrouter' | 'openai';
+  /**
+   * Lấy ở openrouter.ai → Keys. Bí mật, chỉ admin xem/sửa. Nên đặt hạn mức chi tiêu trong bảng điều khiển OpenRouter. (fallback: OPENROUTER_API_KEY)
+   */
+  openRouterApiKey?: string | null;
+  /**
+   * Dùng khi chọn nhà cung cấp OpenAI. (fallback: OPENAI_API_KEY)
+   */
+  openAiApiKey?: string | null;
+  /**
+   * Hiện trong bảng điều khiển OpenRouter để đối chiếu chi phí. (X-Title)
+   */
+  appName?: string | null;
+  /**
+   * Dùng cho mô tả, lợi ích, ứng dụng… (fallback: OPENAI_CONTENT_MODEL)
+   */
+  contentModel?: string | null;
+  /**
+   * Phải là model có khả năng đọc ảnh. (fallback: OPENAI_VISION_MODEL)
+   */
+  visionModel?: string | null;
+  /**
+   * Bỏ trống thì dùng OPENAI_API_KEY. Không có khoá này thì nút "Tạo lại ảnh đại diện" sẽ báo lỗi.
+   */
+  imageApiKey?: string | null;
+  /**
+   * Chạy qua nhà cung cấp đã chọn ở trên (chỉ sinh chữ). Bỏ trống = dùng model nội dung.
+   */
+  imagePromptModel?: string | null;
+  /**
+   * Ví dụ gpt-image-2. (fallback: OPENAI_IMAGE_MODEL)
+   */
+  imageModel?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "site-settings".
  */
@@ -5696,6 +5750,24 @@ export interface AuthSettingsSelect<T extends boolean = true> {
   googleEnabled?: T;
   googleClientId?: T;
   googleClientSecret?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ai-settings_select".
+ */
+export interface AiSettingsSelect<T extends boolean = true> {
+  provider?: T;
+  openRouterApiKey?: T;
+  openAiApiKey?: T;
+  appName?: T;
+  contentModel?: T;
+  visionModel?: T;
+  imageApiKey?: T;
+  imagePromptModel?: T;
+  imageModel?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

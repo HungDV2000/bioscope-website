@@ -20,6 +20,8 @@ export type ApiKeyDoc = {
   name?: string
   enabled?: boolean
   rateLimitPerMin?: number
+  /** Bật riêng cho từng khoá — mặc định tắt. */
+  allowPricing?: boolean
 }
 
 export const hashApiKey = (raw: string) => createHash('sha256').update(raw.trim()).digest('hex')

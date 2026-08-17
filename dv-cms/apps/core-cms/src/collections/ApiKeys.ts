@@ -67,6 +67,24 @@ export const ApiKeys: CollectionConfig = {
       admin: { hidden: true },
     },
     {
+      /**
+       * BẢNG GIÁ — mặc định TẮT.
+       *
+       * Payload đã đánh dấu `pricing` là chỉ-nhân-viên. Bật ô này là quyết định
+       * KINH DOANH có chủ đích, không phải mặc định kỹ thuật: giá sẽ đi ra khỏi
+       * hệ thống tới bên thứ ba giữ khoá. Bật/tắt được ngay, không cần deploy.
+       */
+      name: 'allowPricing',
+      type: 'checkbox',
+      defaultValue: false,
+      label: { en: 'Allow price data', vi: 'Cho phép lấy bảng giá' },
+      admin: {
+        position: 'sidebar',
+        description:
+          '⚠️ Mặc định TẮT. Bật = bên giữ khoá đọc được bảng giá và điều khoản báo giá. Chỉ bật khi đã thống nhất với ban kinh doanh.',
+      },
+    },
+    {
       name: 'rateLimitPerMin',
       type: 'number',
       defaultValue: 60,

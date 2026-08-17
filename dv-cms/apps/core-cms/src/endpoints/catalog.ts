@@ -17,7 +17,8 @@
  * Ba lớp này độc lập: sai sót ở một lớp vẫn còn hai lớp chặn.
  */
 import type { Endpoint, PayloadRequest, Where } from 'payload'
-import { authenticateApiKey } from '../lib/catalogAuth.js'
+import { authenticateApiKey, type ApiKeyDoc } from '../lib/catalogAuth.js'
+import { lexicalToPlainText } from '../lib/richText.js'
 
 const json = (data: unknown, status = 200) =>
   Response.json(data as never, {
@@ -34,6 +35,10 @@ const SELECT = {
   name: true,
   subtitle: true,
   inci: true,
+  description: true,
+  specs: true,
+  technologies: true,
+  gallery: true,
   suggestedDosage: true,
   category: true,
   originCountry: true,
@@ -76,6 +81,8 @@ function shape(doc: Record<string, unknown>) {
     name: doc.name as string,
     subtitle: (doc.subtitle as string) || undefined,
     inci: (doc.inci as string) || undefined,
+    // Mô tả là nội dung chính để tư vấn — chuyển sang văn bản thuần cho AI đọc.
+    description: lexicalToPlainText(doc.description) || undefined,
     category: relName(doc.category as Rel),
     primaryCategories: relNames(doc.primaries),
     functions: relNames(doc.functions),
@@ -89,6 +96,17 @@ function shape(doc: Record<string, unknown>) {
     brandName: (doc.brandName as string) || undefined,
     moq: (doc.moq as string) || undefined,
     badges: Array.isArray(doc.badges) ? (doc.badges as string[]) : [],
+    technologies: relNames(doc.technologies),
+    // Thông số dạng bảng (nhãn – giá trị – đơn vị).
+    specs: Array.isArray(doc.specs)
+      ? (doc.specs as Record<string, unknown>[])
+          .map((r) => ({
+            label: (r.label as string) || undefined,
+            value: (r.value as string) || undefined,
+            unit: (r.unit as string) || undefined,
+          }))
+          .filter((r) => r.value)
+      : [],
     technical: {
       casNumber: techStr(t, 'casNumber'),
       hsCode: techStr(t, 'hsCode'),
@@ -103,18 +121,37 @@ function shape(doc: Record<string, unknown>) {
       packaging: techStr(t, 'packaging'),
     },
     image: img && typeof img === 'object' ? img.url : undefined,
+    gallery: Array.isArray(doc.gallery)
+      ? (doc.gallery as Rel[]).map((g) => (g && typeof g === 'object' ? g.url : undefined)).filter(Boolean)
+      : [],
     url: `${SITE}/nguyen-lieu/${doc.slug as string}`,
     updatedAt: doc.updatedAt as string,
   }
 }
 
-type Shaped = ReturnType<typeof shape>
+type Shaped = ReturnType<typeof shape> & { pricing?: unknown }
 
 /**
  * Bản văn bản gọn để nhồi thẳng vào ngữ cảnh AI. Đưa JSON lồng nhau cho mô hình
  * vừa tốn token vừa khó đọc; dạng này ngắn hơn khoảng một nửa.
  */
 function toText(items: Shaped[]): string {
+  // Chỉ có khi khoá được bật quyền xem giá.
+  const priceLine = (i: Shaped) => {
+    const p = i.pricing as
+      | { currency?: string; quoteDate?: string; terms?: string; tiers?: { moq?: string; price?: number; unit?: string }[] }
+      | undefined
+    if (!p) return ''
+    const tiers = (p.tiers ?? [])
+      .map((t) => [t.moq, t.price != null ? `${t.price}${p.currency ? ' ' + p.currency : ''}` : '', t.unit && `/${t.unit}`].filter(Boolean).join(' '))
+      .filter(Boolean)
+      .join(' · ')
+    return (
+      (tiers ? `Giá: ${tiers}\n` : '') +
+      (p.quoteDate ? `Ngày báo giá: ${String(p.quoteDate).slice(0, 10)}\n` : '') +
+      (p.terms ? `Điều khoản: ${p.terms}\n` : '')
+    )
+  }
   const line = (label: string, v?: string | string[]) => {
     const s = Array.isArray(v) ? v.filter(Boolean).join(', ') : v
     return s ? `${label}: ${s}\n` : ''
@@ -149,10 +186,80 @@ function toText(items: Shaped[]): string {
         line('Thương hiệu', i.brandName) +
         line('MOQ', i.moq) +
         line('Chứng nhận', i.badges) +
+        line('Công nghệ', i.technologies) +
+        line(
+          'Thông số',
+          i.specs.map((sp) => [sp.label, sp.value, sp.unit].filter(Boolean).join(' ')),
+        ) +
+        (i.description ? `Mô tả: ${i.description}\n` : '') +
+        priceLine(i) +
         `Link: ${i.url}\n`
       )
     })
     .join('\n')
+}
+
+/**
+ * Bảng giá — CHỈ khi khoá được bật ô "Cho phép lấy bảng giá".
+ *
+ * Cố ý tách thành truy vấn RIÊNG với `overrideAccess: true` thay vì nới lỏng
+ * truy vấn chính: đường lấy dữ liệu thường vẫn giữ nguyên ba lớp chặn, còn giá
+ * đi theo một nhánh hẹp, dễ soát và dễ tắt.
+ */
+async function fetchPricing(
+  req: PayloadRequest,
+  slugs: string[],
+  locale: string,
+): Promise<Map<string, unknown>> {
+  const out = new Map<string, unknown>()
+  if (!slugs.length) return out
+  try {
+    const res = await req.payload.find({
+      collection: 'ingredients',
+      where: { slug: { in: slugs } },
+      limit: slugs.length,
+      depth: 0,
+      locale: locale as 'vi',
+      overrideAccess: true, // bắt buộc: `pricing` gắn quyền chỉ-nhân-viên
+      select: { slug: true, pricing: true } as never,
+    })
+    for (const d of res.docs) {
+      const doc = d as Record<string, unknown>
+      const p = doc.pricing as Record<string, unknown> | undefined
+      if (!p) continue
+      const tiers = Array.isArray(p.tiers)
+        ? (p.tiers as Record<string, unknown>[]).map((t) => ({
+            moq: (t.moq as string) || undefined,
+            price: typeof t.price === 'number' ? t.price : undefined,
+            unit: (t.unit as string) || undefined,
+            note: (t.note as string) || undefined,
+          }))
+        : []
+      if (!tiers.length && !p.terms && !p.quoteDate) continue
+      out.set(String(doc.slug), {
+        quoteDate: (p.quoteDate as string) || undefined,
+        currency: (p.currency as string) || undefined,
+        terms: lexicalToPlainText(p.terms, 1000) || undefined,
+        tiers,
+      })
+    }
+  } catch (e) {
+    // Giá hỏng thì bỏ qua — không được làm chết cả lời gọi danh mục.
+    req.payload.logger.warn(`[catalog] không lấy được bảng giá: ${String(e)}`)
+  }
+  return out
+}
+
+/** Gắn giá vào kết quả nếu khoá được phép. */
+async function withPricing(
+  req: PayloadRequest,
+  key: ApiKeyDoc,
+  items: Shaped[],
+  locale: string,
+): Promise<Shaped[]> {
+  if (!key.allowPricing) return items
+  const map = await fetchPricing(req, items.map((i) => i.slug), locale)
+  return items.map((i) => ({ ...i, pricing: map.get(i.slug) }))
 }
 
 const okLocale = (v: unknown) => (String(v ?? '') === 'en' ? 'en' : 'vi')
@@ -178,12 +285,12 @@ async function findPublic(req: PayloadRequest, where: Where, limit: number, page
 
 /** Bọc xác thực cho mọi endpoint danh mục. */
 const guarded =
-  (handler: (req: PayloadRequest) => Promise<Response>) =>
+  (handler: (req: PayloadRequest, key: ApiKeyDoc) => Promise<Response>) =>
   async (req: PayloadRequest): Promise<Response> => {
     const auth = await authenticateApiKey(req)
     if (!auth.ok) return json({ ok: false, error: auth.error }, auth.status)
     try {
-      return await handler(req)
+      return await handler(req, auth.key)
     } catch (e) {
       req.payload.logger.error(`[catalog] lỗi: ${String(e)}`)
       // Không trả chi tiết lỗi ra ngoài — tránh lộ cấu trúc hệ thống.
@@ -213,7 +320,7 @@ const manifestEndpoint: Endpoint = {
 const searchEndpoint: Endpoint = {
   path: '/catalog/search',
   method: 'get',
-  handler: guarded(async (req) => {
+  handler: guarded(async (req, key) => {
     const q = String(req.query?.q ?? '').trim().slice(0, 200)
     if (!q) return json({ ok: false, error: 'Thiếu tham số q.' }, 400)
     const locale = okLocale(req.query?.locale)
@@ -249,7 +356,7 @@ const searchEndpoint: Endpoint = {
     }
 
     const res = await findPublic(req, { or }, limit, 1, locale)
-    const items = res.docs.map((d) => shape(d as Record<string, unknown>))
+    const items = await withPricing(req, key, res.docs.map((d) => shape(d as Record<string, unknown>)), locale)
     if (String(req.query?.format ?? '') === 'text') {
       return json({ ok: true, total: res.totalDocs, count: items.length, text: toText(items) })
     }
@@ -261,7 +368,7 @@ const searchEndpoint: Endpoint = {
 const listEndpoint: Endpoint = {
   path: '/catalog/ingredients',
   method: 'get',
-  handler: guarded(async (req) => {
+  handler: guarded(async (req, key) => {
     const locale = okLocale(req.query?.locale)
     // Trần 100/lượt: bên gọi muốn lấy hết vẫn phải phân trang, nhờ đó giới hạn
     // tần suất mới có tác dụng chống quét sạch dữ liệu.
@@ -276,7 +383,7 @@ const listEndpoint: Endpoint = {
     }
 
     const res = await findPublic(req, where, limit, page, locale)
-    const items = res.docs.map((d) => shape(d as Record<string, unknown>))
+    const items = await withPricing(req, key, res.docs.map((d) => shape(d as Record<string, unknown>)), locale)
     const meta = { total: res.totalDocs, page: res.page, totalPages: res.totalPages, hasNextPage: res.hasNextPage }
     if (String(req.query?.format ?? '') === 'text') {
       return json({ ok: true, ...meta, text: toText(items) })
@@ -289,7 +396,7 @@ const listEndpoint: Endpoint = {
 const detailEndpoint: Endpoint = {
   path: '/catalog/ingredients/:slug',
   method: 'get',
-  handler: guarded(async (req) => {
+  handler: guarded(async (req, key) => {
     const slug = String(req.routeParams?.slug ?? '').trim()
     if (!slug) return json({ ok: false, error: 'Thiếu slug.' }, 400)
     const locale = okLocale(req.query?.locale)
@@ -298,7 +405,7 @@ const detailEndpoint: Endpoint = {
     const doc = res.docs[0]
     if (!doc) return json({ ok: false, error: 'Không tìm thấy.' }, 404)
 
-    const item = shape(doc as Record<string, unknown>)
+    const [item] = await withPricing(req, key, [shape(doc as Record<string, unknown>)], locale)
     if (String(req.query?.format ?? '') === 'text') {
       return json({ ok: true, text: toText([item]) })
     }

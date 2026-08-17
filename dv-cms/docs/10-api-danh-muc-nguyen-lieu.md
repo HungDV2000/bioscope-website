@@ -62,10 +62,10 @@ câu hỏi thay vì cả kho.
 | `q` | Câu hỏi hoặc từ khoá (bắt buộc, ≤ 200 ký tự) |
 | `limit` | Số kết quả, tối đa 25 (mặc định 8) |
 
-Tìm đồng thời trong: tên, phụ đề, INCI, thương hiệu, lợi ích, ứng dụng **và tên
-thẻ phân loại** (công dụng, dạng bào chế, đặc tính…) — nên câu hỏi kiểu
-*"kháng viêm"*, *"tan trong dầu"* vẫn ra kết quả dù chữ đó không nằm trong tên
-nguyên liệu.
+Tìm đồng thời trong: tên, phụ đề, INCI, thương hiệu **và tên thẻ phân loại**
+(công dụng, danh mục chính, bản chất, dạng bào chế, đặc tính kỹ thuật) — nên câu
+hỏi kiểu *"kháng viêm"*, *"tan trong dầu"* vẫn ra kết quả dù chữ đó không nằm
+trong tên nguyên liệu.
 
 ```
 GET /catalog/search?q=kháng viêm&limit=5&format=text
@@ -101,6 +101,7 @@ GET /catalog/search?q=kháng viêm&limit=5&format=text
   "natures": ["Chiết xuất thực vật"],
   "forms": ["Bột"],
   "properties": ["Tan trong dầu"],
+  "description": "Curcumin là hoạt chất chính trong nghệ vàng… (mô tả đầy đủ, dạng văn bản thuần)",
   "benefits": ["Chống oxy hoá", "Hỗ trợ tiêu hoá"],
   "applications": ["Viên nang", "Thực phẩm chức năng"],
   "suggestedDosage": "500 mg/ngày",
@@ -108,6 +109,8 @@ GET /catalog/search?q=kháng viêm&limit=5&format=text
   "brandName": "…",
   "moq": "25 kg",
   "badges": ["Halal", "Non-GMO"],
+  "technologies": ["Vi bao"],
+  "specs": [{ "label": "Độ ẩm", "value": "≤ 5", "unit": "%" }],
   "technical": {
     "casNumber": "458-37-7", "hsCode": "…", "eNumber": null,
     "assay": "95% curcuminoids", "standardization": "HPLC",
@@ -115,7 +118,8 @@ GET /catalog/search?q=kháng viêm&limit=5&format=text
     "particleSize": "80 mesh", "shelfLife": "24 tháng",
     "storage": "2–8°C, tránh ánh sáng", "packaging": "25 kg/thùng"
   },
-  "image": "https://…", "url": "https://bioscope.vn/nguyen-lieu/curcumin-95",
+  "image": "https://…", "gallery": ["https://…"],
+  "url": "https://bioscope.vn/nguyen-lieu/curcumin-95",
   "updatedAt": "2026-08-14T09:12:33.120Z"
 }
 ```
@@ -124,7 +128,7 @@ GET /catalog/search?q=kháng viêm&limit=5&format=text
 
 | Dữ liệu | Lý do |
 |---|---|
-| **Bảng giá, điều khoản báo giá** | Thông tin thương mại — chỉ nhân viên Bioscope xem |
+| **Bảng giá, điều khoản báo giá** | Thông tin thương mại. **Mặc định TẮT.** Quản trị viên Bioscope bật riêng cho từng khoá (ô "Cho phép lấy bảng giá") nếu ban kinh doanh đồng ý. Khi bật, mỗi nguyên liệu có thêm trường `pricing` gồm `tiers` (MOQ – giá – đơn vị), `currency`, `quoteDate`, `terms` |
 | **Tài liệu B2B (COA/SDS/TDS)** | Chỉ mở cho đối tác đã được duyệt, qua cổng đối tác |
 | **Nội dung bản nháp** | API chỉ trả nội dung đã xuất bản |
 

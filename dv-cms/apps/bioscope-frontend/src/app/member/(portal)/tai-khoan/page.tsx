@@ -24,7 +24,7 @@ export default async function MemberAccountPage() {
           <h1 className="text-[1.75rem] font-bold tracking-tight text-ink">{m.account.title}</h1>
           <p className="mt-2 max-w-2xl text-[14.5px] text-ink/60">{m.account.desc}</p>
         </div>
-        <AccountForms m={m.account} session={session} />
+        <AccountForms m={m.account} session={session} locale={locale} />
       </div>
     </MemberPortalShell>
   )

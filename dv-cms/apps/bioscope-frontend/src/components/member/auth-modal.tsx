@@ -46,6 +46,7 @@ const STRINGS: Record<'vi' | 'en', AuthFormStrings & { close: string; tabLogin: 
     errTaken: 'Email này đã được đăng ký.',
     errNetwork: 'Không kết nối được máy chủ. Thử lại sau.',
     errShort: 'Mật khẩu phải từ 8 ký tự.',
+    errMismatch: 'Mật khẩu nhập lại chưa khớp.',
   },
   en: {
     close: 'Close',
@@ -83,6 +84,7 @@ const STRINGS: Record<'vi' | 'en', AuthFormStrings & { close: string; tabLogin: 
     errTaken: 'This email is already registered.',
     errNetwork: 'Could not reach server. Try again later.',
     errShort: 'Password must be at least 8 characters.',
+    errMismatch: 'Passwords do not match.',
   },
 }
 
@@ -231,6 +233,7 @@ export function AuthModal() {
             returnTo={pathname}
             onDone={close}
             hideHeading
+            locale={locale}
           />
 
           {mode === 'choose' && (

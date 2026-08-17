@@ -317,6 +317,23 @@ const REGISTRY: Record<string, Entry> = {
     text: (i) => `### ${i.name}\n`,
   },
 
+  'ingredient-facets': {
+    collection: 'ingredient-facets',
+    label: 'Thẻ phân loại nguyên liệu',
+    hint: 'Toàn bộ giá trị lọc (công dụng, bản chất, dạng bào chế, đặc tính). Cho chatbot biết Bioscope phân loại theo những tiêu chí nào để gợi ý khách duyệt.',
+    select: { name: true, slug: true, group: true, order: true, updatedAt: true },
+    searchFields: ['name'],
+    sort: 'group',
+    shape: (d) => ({
+      id: d.id,
+      slug: str(d.slug),
+      name: str(d.name),
+      group: str(d.group),
+      updatedAt: d.updatedAt,
+    }),
+    text: (i) => `- ${i.name}${i.group ? ` (${i.group})` : ''}\n`,
+  },
+
   partners: {
     collection: 'partners',
     label: 'Đối tác',

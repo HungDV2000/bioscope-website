@@ -24,7 +24,7 @@ API gồm **ba nhóm**:
 | Gọi thử một lệnh cho chắc | §2 |
 | Chọn 1 trong 2 kiểu tích hợp | §3 |
 | Nguyên liệu: 4 endpoint + sơ đồ dữ liệu | §4–5 |
-| Nội dung website: 9 loại nội dung | §6 |
+| Nội dung website: 10 loại nội dung | §6 |
 | Thông tin công ty | §7 |
 | Copy code chạy được | §9 |
 | Ràng buộc BẮT BUỘC khi cho AI trả lời khách | §10 |
@@ -244,7 +244,7 @@ Trả `{ ok, type, total, page, totalPages, hasNextPage, count, items[] }`.
 **Gọi `/catalog/content` trước** thay vì hardcode danh sách loại — Bioscope có
 thể mở thêm loại mới mà không báo trước, và code đọc từ đây sẽ tự có.
 
-### 6.2 Chín loại nội dung
+### 6.2 Mười loại nội dung
 
 | `type` | Nội dung | Trường chính |
 |---|---|---|
@@ -256,6 +256,7 @@ thể mở thêm loại mới mà không báo trước, và code đọc từ đ�
 | `posts` | Bài viết / blog | `title`, `slug`, `excerpt`, `content`, `categories[]`, `tags[]`, `publishedAt` |
 | `pages` | Trang nội dung | `title`, `slug`, `body` |
 | `ingredient-categories` | Danh mục nguyên liệu | `name`, `slug` |
+| `ingredient-facets` | Thẻ phân loại (công dụng, bản chất, dạng, đặc tính) | `name`, `slug`, `group` |
 | `partners` | Đối tác | `name`, `country`, `website` |
 
 Mọi bản ghi đều có `id`, `updatedAt`, và `url` (nếu loại đó có trang riêng trên
@@ -295,7 +296,7 @@ Link: https://bioscope.vn/dich-vu/phat-trien-cong-thuc
 
 ### 6.4 ❌ Những gì API KHÔNG BAO GIỜ trả về
 
-CMS Bioscope có khoảng 35 nhóm dữ liệu; API chỉ mở **9 nhóm nội dung đã xuất
+CMS Bioscope có khoảng 35 nhóm dữ liệu; API chỉ mở **10 nhóm nội dung đã xuất
 bản** ở trên. Các nhóm sau **không có đường nào ra API**, kể cả khi khoá được cấp
 đủ mọi quyền:
 

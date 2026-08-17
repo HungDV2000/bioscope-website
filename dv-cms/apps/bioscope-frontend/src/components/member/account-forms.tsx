@@ -6,6 +6,7 @@ import { updateMemberProfile, changeMemberPassword } from '@/lib/member/actions'
 import type { MemberMessages } from '@/lib/i18n/member-messages'
 import type { CustomerType, MemberSession } from '@/lib/member/types'
 import { CustomerTypePicker } from './customer-type-picker'
+import { PasswordField, passwordStringsVi, passwordStringsEn } from './password-field'
 
 const field =
   'mt-1.5 w-full rounded-xl border border-primary-border bg-white px-4 py-3 text-[15px] outline-none transition-colors focus:border-primary/50 disabled:bg-mist/50 disabled:text-ink/50'
@@ -28,7 +29,16 @@ function Note({ tone, children }: { tone: 'ok' | 'err' | 'info'; children: React
   )
 }
 
-export function AccountForms({ m, session }: { m: MemberMessages['account']; session: MemberSession }) {
+export function AccountForms({
+  m,
+  session,
+  locale = 'vi',
+}: {
+  m: MemberMessages['account']
+  session: MemberSession
+  locale?: 'vi' | 'en'
+}) {
+  const pw = locale === 'en' ? passwordStringsEn : passwordStringsVi
   // ── Hồ sơ ──
   const [pMsg, setPMsg] = useState<{ tone: 'ok' | 'err'; text: string } | null>(null)
   const [savingProfile, startProfile] = useTransition()
@@ -197,48 +207,29 @@ export function AccountForms({ m, session }: { m: MemberMessages['account']; ses
           {isGoogleOnly && <Note tone="info">{m.googleNote}</Note>}
           {wMsg && <Note tone={wMsg.tone}>{wMsg.text}</Note>}
           {!isGoogleOnly && (
-            <div>
-              <label htmlFor="ac-current" className={label}>
-                {m.currentPassword}
-              </label>
-              <input
-                id="ac-current"
-                name="currentPassword"
-                type="password"
-                required
-                autoComplete="current-password"
-                className={field}
-              />
-            </div>
+            <PasswordField
+              t={pw}
+              id="ac-current"
+              name="currentPassword"
+              label={m.currentPassword}
+              inputClass={field}
+              labelClass={label}
+              autoComplete="current-password"
+            />
           )}
-          <div>
-            <label htmlFor="ac-new" className={label}>
-              {m.newPassword}
-            </label>
-            <input
-              id="ac-new"
-              name="newPassword"
-              type="password"
-              required
-              minLength={8}
-              autoComplete="new-password"
-              className={field}
-            />
-          </div>
-          <div>
-            <label htmlFor="ac-confirm" className={label}>
-              {m.confirmPassword}
-            </label>
-            <input
-              id="ac-confirm"
-              name="confirmPassword"
-              type="password"
-              required
-              minLength={8}
-              autoComplete="new-password"
-              className={field}
-            />
-          </div>
+          <PasswordField
+            t={pw}
+            id="ac-new"
+            name="newPassword"
+            label={m.newPassword}
+            inputClass={field}
+            labelClass={label}
+            minLength={8}
+            strength
+            confirm
+            confirmName="confirmPassword"
+            confirmLabel={m.confirmPassword}
+          />
           <button
             type="submit"
             disabled={savingPw}

@@ -7,6 +7,7 @@ import { memberRegister } from '@/lib/member/actions'
 import type { MemberMessages } from '@/lib/i18n/member-messages'
 import { GoogleButton } from './google-button'
 import { CustomerTypePicker } from './customer-type-picker'
+import { PasswordField, passwordStringsVi, passwordStringsEn } from './password-field'
 import type { CustomerType } from '@/lib/member/types'
 
 const field =
@@ -18,12 +19,15 @@ export function MemberRegisterForm({
   loginM,
   googleEnabled,
   returnTo,
+  locale = 'vi',
 }: {
   m: MemberMessages['register']
   loginM: MemberMessages['login']
   googleEnabled: boolean
   returnTo?: string
+  locale?: 'vi' | 'en'
 }) {
+  const pw = locale === 'en' ? passwordStringsEn : passwordStringsVi
   const [error, setError] = useState<string | null>(null)
   const [done, setDone] = useState(false)
   // Mặc định doanh nghiệp: đây là cổng đối tác B2B.
@@ -38,6 +42,11 @@ export function MemberRegisterForm({
     const password = String(fd.get('password') ?? '')
     if (password.length < 8) {
       setError(m.passwordHint)
+      return
+    }
+    // Chốt chặn cuối: cảnh báo dưới ô nhập chỉ là gợi ý lúc gõ.
+    if (String(fd.get('passwordConfirm') ?? '') !== password) {
+      setError(pw.mismatch)
       return
     }
     startTransition(async () => {
@@ -154,21 +163,17 @@ export function MemberRegisterForm({
           </label>
           <input id="reg-email" name="email" type="email" required autoComplete="email" className={field} />
         </div>
-        <div>
-          <label htmlFor="reg-password" className={label}>
-            {m.password}
-          </label>
-          <input
-            id="reg-password"
-            name="password"
-            type="password"
-            required
-            minLength={8}
-            autoComplete="new-password"
-            className={field}
-          />
-          <p className="mt-1.5 text-[12.5px] text-ink/45">{m.passwordHint}</p>
-        </div>
+        <PasswordField
+          t={pw}
+          id="reg-password"
+          label={m.password}
+          hint={m.passwordHint}
+          inputClass={field}
+          labelClass={label}
+          minLength={8}
+          strength
+          confirm
+        />
 
         <button
           type="submit"

@@ -6,17 +6,20 @@ import { LogIn, AlertCircle } from 'lucide-react'
 import { memberLogin } from '@/lib/member/actions'
 import type { MemberMessages } from '@/lib/i18n/member-messages'
 import { GoogleButton } from './google-button'
+import { PasswordField, passwordStringsVi, passwordStringsEn } from './password-field'
 
 export function MemberLoginForm({
   m,
   googleEnabled,
   returnTo,
   initialError,
+  locale = 'vi',
 }: {
   m: MemberMessages['login']
   googleEnabled: boolean
   returnTo?: string
   initialError?: string | null
+  locale?: 'vi' | 'en'
 }) {
   const mapError = (code?: string | null) => {
     switch (code) {
@@ -97,19 +100,14 @@ export function MemberLoginForm({
           />
         </div>
 
-        <div>
-          <label htmlFor="member-password" className="text-[13px] font-semibold text-ink/60">
-            {m.password}
-          </label>
-          <input
-            id="member-password"
-            name="password"
-            type="password"
-            required
-            autoComplete="current-password"
-            className="mt-1.5 w-full rounded-xl border border-primary-border bg-white px-4 py-3 text-[15px] outline-none transition-colors focus:border-primary/50"
-          />
-        </div>
+        <PasswordField
+          t={locale === 'en' ? passwordStringsEn : passwordStringsVi}
+          id="member-password"
+          label={m.password}
+          inputClass="mt-1.5 w-full rounded-xl border border-primary-border bg-white px-4 py-3 text-[15px] outline-none transition-colors focus:border-primary/50"
+          labelClass="text-[13px] font-semibold text-ink/60"
+          autoComplete="current-password"
+        />
 
         <button
           type="submit"

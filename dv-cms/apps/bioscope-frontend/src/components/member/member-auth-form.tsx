@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { LogIn, UserPlus, ArrowLeft, AlertCircle } from 'lucide-react'
 import { notifySessionChanged } from '@/lib/member/session-events'
 import { CustomerTypePicker, type CustomerTypeStrings } from './customer-type-picker'
+import { PasswordField, passwordStringsVi, passwordStringsEn } from './password-field'
 import type { CustomerType } from '@/lib/member/types'
 
 /**
@@ -40,6 +41,7 @@ export type AuthFormStrings = {
   errTaken: string
   errNetwork: string
   errShort: string
+  errMismatch: string
 }
 
 const field =
@@ -65,6 +67,7 @@ export function MemberAuthForm({
   returnTo,
   onDone,
   hideHeading = false,
+  locale = 'vi',
 }: {
   t: AuthFormStrings
   mode: 'choose' | 'login' | 'register'
@@ -74,7 +77,9 @@ export function MemberAuthForm({
   onDone: () => void
   /** Modal đã hiện tiêu đề ở dải đầu → form không lặp lại. */
   hideHeading?: boolean
+  locale?: 'vi' | 'en'
 }) {
+  const pw = locale === 'en' ? passwordStringsEn : passwordStringsVi
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   // Mặc định doanh nghiệp: đây là cổng đối tác B2B, phần lớn khách là công ty.
@@ -86,7 +91,12 @@ export function MemberAuthForm({
     setError(null)
     const fd = new FormData(e.currentTarget)
     const password = String(fd.get('password') ?? '')
-    if (action === 'register' && password.length < 8) return setError(t.errShort)
+    if (action === 'register') {
+      if (password.length < 8) return setError(t.errShort)
+      // Kiểm ở đây chứ không chỉ dựa vào cảnh báo dưới ô nhập: cảnh báo kia là
+      // gợi ý lúc gõ, còn đây mới là chốt chặn không cho gửi đi.
+      if (String(fd.get('passwordConfirm') ?? '') !== password) return setError(t.errMismatch)
+    }
 
     setBusy(true)
     try {
@@ -197,12 +207,14 @@ export function MemberAuthForm({
           </label>
           <input id="ma-email" name="email" type="email" required autoComplete="username" className={field} />
         </div>
-        <div>
-          <label htmlFor="ma-pass" className={label}>
-            {t.password}
-          </label>
-          <input id="ma-pass" name="password" type="password" required autoComplete="current-password" className={field} />
-        </div>
+        <PasswordField
+          t={pw}
+          id="ma-pass"
+          label={t.password}
+          inputClass={field}
+          labelClass={label}
+          autoComplete="current-password"
+        />
         <button
           type="submit"
           disabled={busy}
@@ -272,21 +284,17 @@ export function MemberAuthForm({
         </label>
         <input id="ma-remail" name="email" type="email" required autoComplete="email" className={field} />
       </div>
-      <div>
-        <label htmlFor="ma-rpass" className={label}>
-          {t.password}
-        </label>
-        <input
-          id="ma-rpass"
-          name="password"
-          type="password"
-          required
-          minLength={8}
-          autoComplete="new-password"
-          className={field}
-        />
-        <p className="mt-1 text-[11.5px] text-ink/40">{t.passwordHint}</p>
-      </div>
+      <PasswordField
+        t={pw}
+        id="ma-rpass"
+        label={t.password}
+        hint={t.passwordHint}
+        inputClass={field}
+        labelClass={label}
+        minLength={8}
+        strength
+        confirm
+      />
       <button
         type="submit"
         disabled={busy}
@@ -294,6 +302,19 @@ export function MemberAuthForm({
       >
         {busy ? '…' : t.submitRegister}
       </button>
+      {googleEnabled && (
+        <>
+          <div className="flex items-center gap-3 text-[12px] uppercase tracking-wide text-ink/35">
+            <span className="h-px flex-1 bg-primary-border/60" />
+            {t.or}
+            <span className="h-px flex-1 bg-primary-border/60" />
+          </div>
+          {/* Chưa có tài khoản mà bấm Google thì hệ thống tự tạo tài khoản —
+              xem googleAuth.ts. Nên nút này ở tab Đăng ký là đăng ký thật, không
+              phải chỉ đăng nhập. */}
+          <GoogleBtn />
+        </>
+      )}
     </form>
   )
 }

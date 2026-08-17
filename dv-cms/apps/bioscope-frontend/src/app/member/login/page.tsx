@@ -45,6 +45,7 @@ export default async function MemberLoginPage({
               googleEnabled={cfg.googleEnabled}
               returnTo={sp.returnTo ? returnTo : undefined}
               initialError={sp.error ?? null}
+              locale={locale}
             />
           </div>
         </div>

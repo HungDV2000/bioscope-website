@@ -45,6 +45,7 @@ export default async function MemberRegisterPage({
                 loginM={m.login}
                 googleEnabled={cfg.googleEnabled}
                 returnTo={returnTo}
+                locale={locale}
               />
             ) : (
               <p className="text-center text-[14.5px] text-ink/70">{m.register.errors.off}</p>

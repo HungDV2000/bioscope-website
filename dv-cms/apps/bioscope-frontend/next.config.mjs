@@ -33,6 +33,16 @@ const securityHeaders = [
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  /**
+   * Thời gian tối đa dựng MỖI trang tĩnh (giây). Mặc định của Next là 60.
+   *
+   * Trang tĩnh phải gọi API sang CMS để lấy nội dung. Trên VPS, nếu build chạy
+   * cùng lúc với việc khác (build CMS song song, hàng đợi AI đang xử lý PDF…)
+   * thì CPU bị tranh và một trang có thể vượt 60 giây → cả bản build hỏng dù
+   * code không có lỗi gì. Nới lên 5 phút: máy khoẻ vẫn nhanh như cũ, máy yếu
+   * thì chậm chứ không đứt.
+   */
+  staticPageGenerationTimeout: 300,
   transpilePackages: ['@dv/cms-core', '@dv/module-security'],
   turbopack: {
     root: fileURLToPath(new URL('../..', import.meta.url)),

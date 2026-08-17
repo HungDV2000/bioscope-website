@@ -20,14 +20,14 @@ import type { Endpoint, PayloadRequest, Where } from 'payload'
 import { authenticateApiKey, hasScope, type ApiKeyDoc, type CatalogScope } from '../lib/catalogAuth.js'
 import { lexicalToPlainText } from '../lib/richText.js'
 
-const json = (data: unknown, status = 200) =>
+export const json = (data: unknown, status = 200) =>
   Response.json(data as never, {
     status,
     // Dữ liệu theo khoá riêng → không cho proxy/CDN nào đệm lại.
     headers: { 'Cache-Control': 'private, no-store' },
   })
 
-const SITE = (process.env.FRONTEND_URL || 'https://bioscope.vn').replace(/\/$/, '')
+export const SITE = (process.env.FRONTEND_URL || 'https://bioscope.vn').replace(/\/$/, '')
 
 /** Trường được phép rời khỏi CSDL. Giá và tài liệu B2B KHÔNG có ở đây. */
 const SELECT = {
@@ -262,8 +262,8 @@ async function withPricing(
   return items.map((i) => ({ ...i, pricing: map.get(i.slug) }))
 }
 
-const okLocale = (v: unknown) => (String(v ?? '') === 'en' ? 'en' : 'vi')
-const clampLimit = (v: unknown, def: number, max: number) => {
+export const okLocale = (v: unknown) => (String(v ?? '') === 'en' ? 'en' : 'vi')
+export const clampLimit = (v: unknown, def: number, max: number) => {
   const n = Number(v)
   return Number.isFinite(n) && n > 0 ? Math.min(Math.floor(n), max) : def
 }
@@ -288,7 +288,7 @@ async function findPublic(req: PayloadRequest, where: Where, limit: number, page
  * `scope` bỏ trống = ai có khoá hợp lệ đều gọi được (dùng cho /manifest, vốn chỉ
  * trả số lượng chứ không có dữ liệu nguyên liệu).
  */
-const guarded =
+export const guarded =
   (handler: (req: PayloadRequest, key: ApiKeyDoc) => Promise<Response>, scope?: CatalogScope) =>
   async (req: PayloadRequest): Promise<Response> => {
     const auth = await authenticateApiKey(req)

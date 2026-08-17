@@ -101,10 +101,12 @@ export const ApiKeys: CollectionConfig = {
         { label: { en: 'Search', vi: 'Tìm kiếm — /catalog/search' }, value: 'search' },
         { label: { en: 'List / sync', vi: 'Danh sách & đồng bộ — /catalog/ingredients' }, value: 'list' },
         { label: { en: 'Detail', vi: 'Chi tiết — /catalog/ingredients/{slug}' }, value: 'detail' },
+        { label: { en: 'Site content', vi: 'Nội dung website — /catalog/content/*' }, value: 'content' },
+        { label: { en: 'Company info', vi: 'Thông tin công ty — /catalog/site' }, value: 'site' },
       ],
       admin: {
         description:
-          'Bỏ chọn hết = khoá không gọi được endpoint nào. Bên chỉ cần hỏi–đáp thì chỉ cần "Tìm kiếm"; muốn kéo cả kho về mới cần "Danh sách & đồng bộ". (/catalog/manifest luôn cho phép — chỉ trả số lượng, không có dữ liệu.)',
+          'Bỏ chọn hết = khoá không gọi được endpoint nào. Bên chỉ cần hỏi–đáp thì chỉ cần "Tìm kiếm"; muốn kéo cả kho về mới cần "Danh sách & đồng bộ". "Nội dung website" mở FAQ, dịch vụ, dự án, công nghệ, chứng nhận, bài viết, trang — rất hữu ích cho chatbot tư vấn. (/catalog/manifest luôn cho phép — chỉ trả số lượng, không có dữ liệu.)',
       },
     },
     {

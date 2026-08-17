@@ -15,7 +15,7 @@ import type { PayloadRequest } from 'payload'
 import { createHash } from 'crypto'
 import { rateLimit } from './rateLimit.js'
 
-export type CatalogScope = 'search' | 'list' | 'detail'
+export type CatalogScope = 'search' | 'list' | 'detail' | 'content' | 'site'
 
 export type ApiKeyDoc = {
   id: number | string

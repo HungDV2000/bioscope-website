@@ -433,9 +433,9 @@ export interface ApiKey {
    */
   allowPricing?: boolean | null;
   /**
-   * Bỏ chọn hết = khoá không gọi được endpoint nào. Bên chỉ cần hỏi–đáp thì chỉ cần "Tìm kiếm"; muốn kéo cả kho về mới cần "Danh sách & đồng bộ". (/catalog/manifest luôn cho phép — chỉ trả số lượng, không có dữ liệu.)
+   * Bỏ chọn hết = khoá không gọi được endpoint nào. Bên chỉ cần hỏi–đáp thì chỉ cần "Tìm kiếm"; muốn kéo cả kho về mới cần "Danh sách & đồng bộ". "Nội dung website" mở FAQ, dịch vụ, dự án, công nghệ, chứng nhận, bài viết, trang — rất hữu ích cho chatbot tư vấn. (/catalog/manifest luôn cho phép — chỉ trả số lượng, không có dữ liệu.)
    */
-  scopes?: ('search' | 'list' | 'detail')[] | null;
+  scopes?: ('search' | 'list' | 'detail' | 'content' | 'site')[] | null;
   /**
    * Bỏ trống = không hết hạn. Nên đặt hạn với đối tác ngoài để khoá tự vô hiệu nếu quên thu hồi.
    */

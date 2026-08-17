@@ -71,6 +71,7 @@ export interface Config {
     'staff-roles': StaffRole;
     'chat-conversations': ChatConversation;
     'chat-messages': ChatMessage;
+    'api-keys': ApiKey;
     users: User;
     media: Media;
     pages: Page;
@@ -118,6 +119,7 @@ export interface Config {
     'staff-roles': StaffRolesSelect<false> | StaffRolesSelect<true>;
     'chat-conversations': ChatConversationsSelect<false> | ChatConversationsSelect<true>;
     'chat-messages': ChatMessagesSelect<false> | ChatMessagesSelect<true>;
+    'api-keys': ApiKeysSelect<false> | ApiKeysSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
@@ -400,6 +402,40 @@ export interface ChatMessage {
   telegramFileId?: string | null;
   attachmentKind?: ('photo' | 'document' | 'voice' | 'video') | null;
   attachmentName?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Cấp khoá cho hệ thống bên ngoài đọc danh mục nguyên liệu. Mỗi bên một khoá riêng để thu hồi độc lập.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "api-keys".
+ */
+export interface ApiKey {
+  id: number;
+  /**
+   * Ví dụ: "Chatbot Telegram nội bộ". Đặt tên rõ để biết thu hồi khoá nào.
+   */
+  name: string;
+  /**
+   * Bỏ tick = KHOÁ NGỪNG HOẠT ĐỘNG NGAY, không cần deploy lại.
+   */
+  enabled?: boolean | null;
+  /**
+   * Vài ký tự đầu để đối chiếu — không dùng để gọi API được.
+   */
+  keyPrefix?: string | null;
+  keyHash?: string | null;
+  /**
+   * Chặn quét sạch dữ liệu và chặn lỗi vòng lặp bên gọi.
+   */
+  rateLimitPerMin?: number | null;
+  lastUsedAt?: string | null;
+  callCount?: number | null;
+  /**
+   * Ai giữ khoá, liên hệ với ai khi cần thu hồi.
+   */
+  note?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -3037,6 +3073,10 @@ export interface PayloadLockedDocument {
         value: number | ChatMessage;
       } | null)
     | ({
+        relationTo: 'api-keys';
+        value: number | ApiKey;
+      } | null)
+    | ({
         relationTo: 'users';
         value: number | User;
       } | null)
@@ -3295,6 +3335,22 @@ export interface ChatMessagesSelect<T extends boolean = true> {
   telegramFileId?: T;
   attachmentKind?: T;
   attachmentName?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "api-keys_select".
+ */
+export interface ApiKeysSelect<T extends boolean = true> {
+  name?: T;
+  enabled?: T;
+  keyPrefix?: T;
+  keyHash?: T;
+  rateLimitPerMin?: T;
+  lastUsedAt?: T;
+  callCount?: T;
+  note?: T;
   updatedAt?: T;
   createdAt?: T;
 }

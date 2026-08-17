@@ -50,6 +50,9 @@ import { ChatConversations } from './collections/ChatConversations.js'
 import { ChatMessages } from './collections/ChatMessages.js'
 import { chatEndpoints } from './endpoints/chat.js'
 import { googleAuthEndpoints } from './endpoints/googleAuth.js'
+import { catalogEndpoints } from './endpoints/catalog.js'
+import { catalogKeyEndpoints } from './endpoints/catalogKeys.js'
+import { ApiKeys } from './collections/ApiKeys.js'
 import {
   aiGenerateTriggerEndpoint,
   aiGenerateBulkEndpoint,
@@ -172,8 +175,8 @@ export default buildConfig({
     collectionSpecific: true,
   },
   typescript: { outputFile: path.resolve(dirname, 'payload-types.ts') },
-  endpoints: [seedEndpoint, backupEndpoint, ingredientDuplicatesEndpoint, ...duplicateScanEndpoints, cmsSyncSourceEndpoint, cmsSyncEndpoint, cmsSyncRunsEndpoint, driveSyncTriggerEndpoint, driveSyncListEndpoint, driveSyncGetEndpoint, driveSyncCancelEndpoint, csvImportEndpoint, ingredientExportEndpoint, ingredientImportEndpoint, aiGenerateTriggerEndpoint, aiGenerateBulkEndpoint, aiGenerateImageEndpoint, aiGenerateListEndpoint, aiGenerateGetEndpoint, aiGenerateQueueStatusEndpoint, clearCacheEndpoint, moduleStatusEndpoint, ...chatEndpoints, ...googleAuthEndpoints],
-  collections: [ChatConversations, ChatMessages],
+  endpoints: [seedEndpoint, backupEndpoint, ingredientDuplicatesEndpoint, ...duplicateScanEndpoints, cmsSyncSourceEndpoint, cmsSyncEndpoint, cmsSyncRunsEndpoint, driveSyncTriggerEndpoint, driveSyncListEndpoint, driveSyncGetEndpoint, driveSyncCancelEndpoint, csvImportEndpoint, ingredientExportEndpoint, ingredientImportEndpoint, aiGenerateTriggerEndpoint, aiGenerateBulkEndpoint, aiGenerateImageEndpoint, aiGenerateListEndpoint, aiGenerateGetEndpoint, aiGenerateQueueStatusEndpoint, clearCacheEndpoint, moduleStatusEndpoint, ...chatEndpoints, ...googleAuthEndpoints, ...catalogEndpoints, ...catalogKeyEndpoints],
+  collections: [ChatConversations, ChatMessages, ApiKeys],
   globals: [ChatSettings, AuthSettings],
   // Sau khi container khởi động lại (deploy/rebuild), runner AI trong RAM chết
   // theo tiến trình cũ — job đang chạy hoặc còn 'queued' sẽ nằm im vĩnh viễn

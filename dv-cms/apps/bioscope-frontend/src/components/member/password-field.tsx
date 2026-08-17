@@ -117,6 +117,7 @@ export function PasswordField({
   confirm = false,
   confirmName = 'passwordConfirm',
   confirmLabel,
+  twoCol = false,
   value,
   onValueChange,
 }: {
@@ -135,6 +136,8 @@ export function PasswordField({
   confirmName?: string
   /** Ghi đè nhãn ô nhập lại khi form đã có chuỗi dịch riêng. */
   confirmLabel?: string
+  /** Xếp ô mật khẩu và ô nhập lại cạnh nhau từ md trở lên (form 2 cột). */
+  twoCol?: boolean
   value?: string
   onValueChange?: (v: string) => void
 }) {
@@ -154,7 +157,7 @@ export function PasswordField({
   const mismatch = confirm && confirmValue.length > 0 && confirmValue !== pw
 
   return (
-    <div className="space-y-3">
+    <div className={twoCol ? 'grid gap-x-5 gap-y-3 md:grid-cols-2 md:items-start' : 'space-y-3'}>
       <div>
         <label htmlFor={id} className={labelClass}>
           {label}

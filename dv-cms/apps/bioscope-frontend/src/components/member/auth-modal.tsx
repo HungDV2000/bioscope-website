@@ -178,10 +178,19 @@ export function AuthModal() {
         role="dialog"
         aria-modal="true"
         aria-label={t.titleChoose}
-        className="relative my-auto w-full max-w-[440px] overflow-hidden rounded-[1.75rem] border border-primary-border/50 bg-white shadow-card outline-none"
+        className={cn(
+          // max-h + flex-col: popup KHÔNG bao giờ cao quá màn hình. Trước đây
+          // chỉ có lớp nền cuộn, nên trên laptop màn thấp form đăng ký tràn ra
+          // ngoài và logo lẫn tiêu đề bị cuộn mất.
+          'relative my-auto flex max-h-[calc(100dvh-2rem)] w-full flex-col overflow-hidden rounded-[1.75rem] border border-primary-border/50 bg-white shadow-card outline-none',
+          // Chỉ tab đăng ký mới cần rộng — đăng nhập có 2 ô, kéo rộng ra chỉ
+          // khiến form trông trống trải.
+          mode === 'register' ? 'max-w-[440px] md:max-w-[720px]' : 'max-w-[440px]',
+        )}
       >
-        {/* Dải đầu: logo + tiêu đề, tạo cảm giác một trang đăng nhập thực thụ */}
-        <div className="relative bg-gradient-to-b from-primary-tint/70 to-white px-7 pb-5 pt-7 text-center sm:px-8">
+        {/* Dải đầu: logo + tiêu đề, tạo cảm giác một trang đăng nhập thực thụ.
+            shrink-0 để phần này luôn thấy được, chỉ thân form mới cuộn. */}
+        <div className="relative shrink-0 bg-gradient-to-b from-primary-tint/70 to-white px-7 pb-5 pt-7 text-center sm:px-8">
           <button
             type="button"
             onClick={close}
@@ -216,7 +225,7 @@ export function AuthModal() {
             ))}
         </div>
 
-        <div className="px-7 pb-7 sm:px-8 sm:pb-8">
+        <div className="scroll-slim min-h-0 flex-1 overflow-y-auto px-7 pb-7 sm:px-8 sm:pb-8">
           {/* Chuyển nhanh giữa đăng nhập / đăng ký */}
           {mode !== 'choose' && (
             <div className="mb-5 flex gap-1 rounded-full bg-mist/70 p-1">

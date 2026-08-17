@@ -61,6 +61,32 @@
     }
   }
 
+  /* Thanh cuộn mảnh cho vùng cuộn BÊN TRONG (popup, panel).
+     Thanh cuộn mặc định của Windows/Linux dày và xám, cắt ngang bo góc của
+     popup nhìn rất thô; macOS thì ẩn nên không thấy vấn đề — dễ bỏ sót nếu
+     chỉ ngó trên máy Mac. */
+  .scroll-slim {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-primary-border) transparent;
+  }
+  .scroll-slim::-webkit-scrollbar {
+    width: 10px;
+  }
+  .scroll-slim::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scroll-slim::-webkit-scrollbar-thumb {
+    background-color: var(--color-primary-border);
+    border-radius: 9999px;
+    /* Viền trong suốt + background-clip: con trượt trông mảnh nhưng vùng bấm
+       vẫn đủ rộng để kéo bằng chuột. */
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+  .scroll-slim::-webkit-scrollbar-thumb:hover {
+    background-color: color-mix(in oklab, var(--color-primary) 45%, white);
+  }
+
   @keyframes bs-float {
     0%,
     100% {

@@ -242,15 +242,24 @@ export function MemberAuthForm({
       {!hideHeading && <p className="text-[17px] font-bold text-ink">{t.titleRegister}</p>}
       <Err />
       <CustomerTypePicker t={t.customerType} value={customerType} onChange={setCustomerType} compact />
-      {isBusiness && (
-        <>
-          <div>
-            <label htmlFor="ma-company" className={label}>
-              {t.company}
-            </label>
-            <input id="ma-company" name="company" required maxLength={200} className={field} />
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2">
+
+      {/*
+        Hai cột từ md trở lên — form đăng ký doanh nghiệp có 8 ô, xếp một cột
+        thì popup dài quá màn hình laptop. Dưới md giữ một cột: popup lúc đó
+        chỉ rộng 440px, nhồi hai cột thì mỗi ô còn ~190px, gõ tên công ty
+        không đọc nổi.
+
+        `items-start` để ô có thanh đo độ mạnh không kéo giãn ô bên cạnh.
+      */}
+      <div className="grid gap-x-5 gap-y-3.5 md:grid-cols-2 md:items-start">
+        {isBusiness && (
+          <>
+            <div className="md:col-span-2">
+              <label htmlFor="ma-company" className={label}>
+                {t.company}
+              </label>
+              <input id="ma-company" name="company" required maxLength={200} className={field} />
+            </div>
             <div>
               <label htmlFor="ma-tax" className={label}>
                 {t.taxCode}
@@ -263,38 +272,41 @@ export function MemberAuthForm({
               </label>
               <input id="ma-pos" name="position" maxLength={120} className={field} />
             </div>
-          </div>
-        </>
-      )}
-      <div>
-        <label htmlFor="ma-name" className={label}>
-          {isBusiness ? t.contactName : t.contactNameIndividual}
-        </label>
-        <input id="ma-name" name="contactName" required maxLength={120} className={field} />
+          </>
+        )}
+        <div>
+          <label htmlFor="ma-name" className={label}>
+            {isBusiness ? t.contactName : t.contactNameIndividual}
+          </label>
+          <input id="ma-name" name="contactName" required maxLength={120} className={field} />
+        </div>
+        <div>
+          <label htmlFor="ma-phone" className={label}>
+            {t.phone}
+          </label>
+          <input id="ma-phone" name="phone" type="tel" maxLength={40} autoComplete="tel" className={field} />
+        </div>
+        <div className="md:col-span-2">
+          <label htmlFor="ma-remail" className={label}>
+            {t.email}
+          </label>
+          <input id="ma-remail" name="email" type="email" required autoComplete="email" className={field} />
+        </div>
+        <div className="md:col-span-2">
+          <PasswordField
+            t={pw}
+            id="ma-rpass"
+            label={t.password}
+            hint={t.passwordHint}
+            inputClass={field}
+            labelClass={label}
+            minLength={8}
+            strength
+            confirm
+            twoCol
+          />
+        </div>
       </div>
-      <div>
-        <label htmlFor="ma-phone" className={label}>
-          {t.phone}
-        </label>
-        <input id="ma-phone" name="phone" type="tel" maxLength={40} autoComplete="tel" className={field} />
-      </div>
-      <div>
-        <label htmlFor="ma-remail" className={label}>
-          {t.email}
-        </label>
-        <input id="ma-remail" name="email" type="email" required autoComplete="email" className={field} />
-      </div>
-      <PasswordField
-        t={pw}
-        id="ma-rpass"
-        label={t.password}
-        hint={t.passwordHint}
-        inputClass={field}
-        labelClass={label}
-        minLength={8}
-        strength
-        confirm
-      />
       <button
         type="submit"
         disabled={busy}

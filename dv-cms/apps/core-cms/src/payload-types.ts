@@ -433,6 +433,14 @@ export interface ApiKey {
    */
   allowPricing?: boolean | null;
   /**
+   * Bỏ chọn hết = khoá không gọi được endpoint nào. Bên chỉ cần hỏi–đáp thì chỉ cần "Tìm kiếm"; muốn kéo cả kho về mới cần "Danh sách & đồng bộ". (/catalog/manifest luôn cho phép — chỉ trả số lượng, không có dữ liệu.)
+   */
+  scopes?: ('search' | 'list' | 'detail')[] | null;
+  /**
+   * Bỏ trống = không hết hạn. Nên đặt hạn với đối tác ngoài để khoá tự vô hiệu nếu quên thu hồi.
+   */
+  expiresAt?: string | null;
+  /**
    * Chặn quét sạch dữ liệu và chặn lỗi vòng lặp bên gọi.
    */
   rateLimitPerMin?: number | null;
@@ -3354,6 +3362,8 @@ export interface ApiKeysSelect<T extends boolean = true> {
   keyPrefix?: T;
   keyHash?: T;
   allowPricing?: T;
+  scopes?: T;
+  expiresAt?: T;
   rateLimitPerMin?: T;
   lastUsedAt?: T;
   callCount?: T;
@@ -5141,11 +5151,11 @@ export interface AiSetting {
    */
   appName?: string | null;
   /**
-   * Dùng cho mô tả, lợi ích, ứng dụng… (fallback: OPENAI_CONTENT_MODEL)
+   * Bỏ trống = openrouter/auto (OpenRouter tự chọn). Dùng cho mô tả, lợi ích, ứng dụng… (fallback: OPENAI_CONTENT_MODEL)
    */
   contentModel?: string | null;
   /**
-   * Phải là model có khả năng đọc ảnh. (fallback: OPENAI_VISION_MODEL)
+   * ⚠️ ĐỪNG để "openrouter/auto" ở đây — bộ định tuyến có thể chọn model chỉ xử lý chữ và bước đọc ảnh sẽ hỏng. Hãy ghi rõ một model nhìn được, ví dụ google/gemini-2.5-flash. (fallback: OPENAI_VISION_MODEL)
    */
   visionModel?: string | null;
   /**

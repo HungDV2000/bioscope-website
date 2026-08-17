@@ -85,6 +85,40 @@ export const ApiKeys: CollectionConfig = {
       },
     },
     {
+      /**
+       * Phạm vi — khoá gọi được những endpoint nào.
+       *
+       * KHÔNG chọn mục nào = khoá không gọi được gì (chặn mặc định). Cố ý chọn
+       * hướng chặt: cấp thừa quyền rồi quên là rủi ro lớn hơn nhiều so với việc
+       * phải quay lại tick thêm một ô.
+       */
+      name: 'scopes',
+      type: 'select',
+      hasMany: true,
+      defaultValue: ['search', 'list', 'detail'],
+      label: { en: 'Allowed endpoints', vi: 'Endpoint được phép gọi' },
+      options: [
+        { label: { en: 'Search', vi: 'Tìm kiếm — /catalog/search' }, value: 'search' },
+        { label: { en: 'List / sync', vi: 'Danh sách & đồng bộ — /catalog/ingredients' }, value: 'list' },
+        { label: { en: 'Detail', vi: 'Chi tiết — /catalog/ingredients/{slug}' }, value: 'detail' },
+      ],
+      admin: {
+        description:
+          'Bỏ chọn hết = khoá không gọi được endpoint nào. Bên chỉ cần hỏi–đáp thì chỉ cần "Tìm kiếm"; muốn kéo cả kho về mới cần "Danh sách & đồng bộ". (/catalog/manifest luôn cho phép — chỉ trả số lượng, không có dữ liệu.)',
+      },
+    },
+    {
+      name: 'expiresAt',
+      type: 'date',
+      label: { en: 'Expires at', vi: 'Hết hạn' },
+      admin: {
+        position: 'sidebar',
+        date: { pickerAppearance: 'dayAndTime' },
+        description:
+          'Bỏ trống = không hết hạn. Nên đặt hạn với đối tác ngoài để khoá tự vô hiệu nếu quên thu hồi.',
+      },
+    },
+    {
       name: 'rateLimitPerMin',
       type: 'number',
       defaultValue: 60,

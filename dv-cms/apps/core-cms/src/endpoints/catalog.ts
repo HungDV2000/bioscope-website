@@ -17,7 +17,7 @@
  * Ba lớp này độc lập: sai sót ở một lớp vẫn còn hai lớp chặn.
  */
 import type { Endpoint, PayloadRequest, Where } from 'payload'
-import { authenticateApiKey, type ApiKeyDoc } from '../lib/catalogAuth.js'
+import { authenticateApiKey, hasScope, type ApiKeyDoc, type CatalogScope } from '../lib/catalogAuth.js'
 import { lexicalToPlainText } from '../lib/richText.js'
 
 const json = (data: unknown, status = 200) =>
@@ -283,12 +283,19 @@ async function findPublic(req: PayloadRequest, where: Where, limit: number, page
   })
 }
 
-/** Bọc xác thực cho mọi endpoint danh mục. */
+/**
+ * Bọc xác thực + kiểm phạm vi cho endpoint danh mục.
+ * `scope` bỏ trống = ai có khoá hợp lệ đều gọi được (dùng cho /manifest, vốn chỉ
+ * trả số lượng chứ không có dữ liệu nguyên liệu).
+ */
 const guarded =
-  (handler: (req: PayloadRequest, key: ApiKeyDoc) => Promise<Response>) =>
+  (handler: (req: PayloadRequest, key: ApiKeyDoc) => Promise<Response>, scope?: CatalogScope) =>
   async (req: PayloadRequest): Promise<Response> => {
     const auth = await authenticateApiKey(req)
     if (!auth.ok) return json({ ok: false, error: auth.error }, auth.status)
+    if (scope && !hasScope(auth.key, scope)) {
+      return json({ ok: false, error: `Khoá không được cấp quyền cho endpoint này (${scope}).` }, 403)
+    }
     try {
       return await handler(req, auth.key)
     } catch (e) {
@@ -361,7 +368,7 @@ const searchEndpoint: Endpoint = {
       return json({ ok: true, total: res.totalDocs, count: items.length, text: toText(items) })
     }
     return json({ ok: true, total: res.totalDocs, count: items.length, items })
-  }),
+  }, 'search'),
 }
 
 // ── GET /api/catalog/ingredients ─────────────────────────────────────────────
@@ -389,7 +396,7 @@ const listEndpoint: Endpoint = {
       return json({ ok: true, ...meta, text: toText(items) })
     }
     return json({ ok: true, ...meta, items })
-  }),
+  }, 'list'),
 }
 
 // ── GET /api/catalog/ingredients/:slug ───────────────────────────────────────
@@ -410,7 +417,7 @@ const detailEndpoint: Endpoint = {
       return json({ ok: true, text: toText([item]) })
     }
     return json({ ok: true, item })
-  }),
+  }, 'detail'),
 }
 
 export const catalogEndpoints: Endpoint[] = [

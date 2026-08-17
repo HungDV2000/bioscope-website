@@ -8,10 +8,27 @@
 ## 1. Lấy khoá
 
 Khoá do quản trị viên Bioscope cấp trong **Admin → Hệ thống → Khoá API tích hợp**:
-tạo bản ghi mới → đặt tên bên sử dụng → **Lưu** → bấm **🔑 Phát khoá mới**.
+tạo bản ghi mới → đặt tên bên sử dụng → chọn **quyền** → **Lưu** → bấm
+**🔑 Phát khoá mới**.
 
 Khoá hiện **đúng một lần**. Hệ thống chỉ lưu bản băm nên **không xem lại được** —
 mất thì phát khoá mới (khoá cũ mất hiệu lực ngay lập tức).
+
+### Quyền cấp cho mỗi khoá
+
+Quản trị viên Bioscope đặt riêng cho từng khoá, đổi được bất kỳ lúc nào mà không
+cần triển khai lại:
+
+| Mục | Ý nghĩa |
+|---|---|
+| **Đang hiệu lực** | Bỏ tick = khoá ngừng hoạt động ngay lập tức |
+| **Endpoint được phép** | Chọn trong: Tìm kiếm · Danh sách & đồng bộ · Chi tiết. Không chọn mục nào = khoá không gọi được gì |
+| **Hết hạn** | Bỏ trống = không hết hạn. Quá hạn thì mọi lượt gọi trả `401` |
+| **Giới hạn lượt gọi mỗi phút** | Mặc định 60 |
+| **Cho phép lấy bảng giá** | Mặc định TẮT — xem mục 4 |
+
+> Nếu chatbot chỉ cần hỏi–đáp thì **chỉ xin quyền "Tìm kiếm"** là đủ. Xin ít
+> quyền hơn thì rủi ro khi lộ khoá cũng nhỏ hơn.
 
 **Bảo quản khoá**
 - Đặt trong Script Properties / biến môi trường — **không** hardcode vào code, không dán vào tài liệu dùng chung.
@@ -140,7 +157,8 @@ GET /catalog/search?q=kháng viêm&limit=5&format=text
 
 | Mã | Nghĩa | Xử lý |
 |---|---|---|
-| `401` | Thiếu hoặc sai khoá / khoá đã bị thu hồi | Liên hệ Bioscope cấp lại |
+| `401` | Thiếu / sai khoá, khoá bị thu hồi, hoặc khoá đã hết hạn | Liên hệ Bioscope cấp lại |
+| `403` | Khoá không được cấp quyền cho endpoint đang gọi | Xin Bioscope bật thêm quyền tương ứng |
 | `429` | Vượt giới hạn lượt gọi mỗi phút | Chờ rồi thử lại; nên có cache phía bên gọi |
 | `500` | Lỗi máy chủ | Thử lại sau |
 

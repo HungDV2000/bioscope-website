@@ -15,6 +15,8 @@ import type { PayloadRequest } from 'payload'
 import { createHash } from 'crypto'
 import { rateLimit } from './rateLimit.js'
 
+export type CatalogScope = 'search' | 'list' | 'detail'
+
 export type ApiKeyDoc = {
   id: number | string
   name?: string
@@ -22,7 +24,15 @@ export type ApiKeyDoc = {
   rateLimitPerMin?: number
   /** Bật riêng cho từng khoá — mặc định tắt. */
   allowPricing?: boolean
+  /** Endpoint được phép gọi. Rỗng = không gọi được gì (chặn mặc định). */
+  scopes?: CatalogScope[]
+  /** Rỗng = không hết hạn. */
+  expiresAt?: string | null
 }
+
+/** Khoá có quyền gọi endpoint này không. */
+export const hasScope = (key: ApiKeyDoc, scope: CatalogScope): boolean =>
+  Array.isArray(key.scopes) && key.scopes.includes(scope)
 
 export const hashApiKey = (raw: string) => createHash('sha256').update(raw.trim()).digest('hex')
 
@@ -79,6 +89,11 @@ export async function authenticateApiKey(req: PayloadRequest): Promise<AuthResul
   // Cùng một thông điệp cho "sai khoá" và "khoá bị tắt" — không hé lộ khoá nào
   // đang tồn tại trong hệ thống.
   if (!key) return { ok: false, status: 401, error: 'Khoá API không hợp lệ.' }
+
+  // Hết hạn → chặn. Kiểm ở đây, trước cả giới hạn tần suất.
+  if (key.expiresAt && Date.parse(key.expiresAt) < Date.now()) {
+    return { ok: false, status: 401, error: 'Khoá API đã hết hạn.' }
+  }
 
   if (!rateLimit(`catalog:${key.id}`, Math.max(1, key.rateLimitPerMin ?? 60), 60_000)) {
     return { ok: false, status: 429, error: 'Gọi quá nhanh, thử lại sau ít giây.' }

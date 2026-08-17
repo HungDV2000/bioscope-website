@@ -74,9 +74,17 @@ const envCfg = (): AiConfig => {
     imageApiKey: oaKey,
     siteUrl: process.env.OPENROUTER_SITE || process.env.FRONTEND_URL || '',
     appName: process.env.OPENROUTER_APP || 'Bioscope CMS',
-    contentModel: process.env.OPENAI_CONTENT_MODEL || 'gpt-5.6-terra',
-    visionModel: process.env.OPENAI_VISION_MODEL || 'gpt-5.6-terra',
-    imagePromptModel: process.env.OPENAI_IMAGE_PROMPT_MODEL || process.env.OPENAI_CONTENT_MODEL || 'gpt-5.6-terra',
+    // Mặc định theo nhà cung cấp: OpenRouter thì để chính nó tự chọn model phù
+    // hợp từng yêu cầu (rẻ/tốt tuỳ độ khó) — đó là lý do chuyển sang OpenRouter.
+    contentModel: process.env.OPENAI_CONTENT_MODEL || (provider === 'openrouter' ? 'openrouter/auto' : 'gpt-5.6-terra'),
+    // Đọc ảnh/PDF scan KHÔNG để auto: bộ định tuyến có thể chọn model chỉ xử lý
+    // chữ, khi đó bước đọc ảnh hỏng mà lỗi lại khó đoán.
+    visionModel:
+      process.env.OPENAI_VISION_MODEL || (provider === 'openrouter' ? 'google/gemini-2.5-flash' : 'gpt-5.6-terra'),
+    imagePromptModel:
+      process.env.OPENAI_IMAGE_PROMPT_MODEL ||
+      process.env.OPENAI_CONTENT_MODEL ||
+      (provider === 'openrouter' ? 'openrouter/auto' : 'gpt-5.6-terra'),
     imageModel: process.env.OPENAI_IMAGE_MODEL || 'gpt-image-2',
   }
 }

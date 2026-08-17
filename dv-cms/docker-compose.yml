@@ -67,7 +67,9 @@ services:
       MISTRAL_API_KEY: ${MISTRAL_API_KEY:-}
       MISTRAL_OCR_MODEL: ${MISTRAL_OCR_MODEL:-}
       # Model overrides (optional — sensible defaults baked in). See openaiService.ts.
+      # openrouter/auto = để OpenRouter tự chọn model theo từng yêu cầu.
       OPENAI_CONTENT_MODEL: ${OPENAI_CONTENT_MODEL:-}
+      # Đọc ảnh: chỉ định rõ model nhìn được, KHÔNG dùng auto.
       OPENAI_VISION_MODEL: ${OPENAI_VISION_MODEL:-}
       OPENAI_IMAGE_MODEL: ${OPENAI_IMAGE_MODEL:-}
       OPENAI_IMAGE_QUALITY: ${OPENAI_IMAGE_QUALITY:-}

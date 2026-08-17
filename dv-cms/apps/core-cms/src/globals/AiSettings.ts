@@ -40,7 +40,7 @@ export const AiSettings: GlobalConfig = {
       required: true,
       label: { en: 'Provider', vi: 'Nhà cung cấp' },
       options: [
-        { label: 'OpenRouter (nhiều model: Claude, GPT, Gemini, Llama…)', value: 'openrouter' },
+        { label: 'OpenRouter — tự điều phối model tốt/rẻ theo từng yêu cầu', value: 'openrouter' },
         { label: 'OpenAI (trực tiếp)', value: 'openai' },
       ],
       admin: { description: 'Áp dụng cho sinh nội dung và đọc ảnh/PDF. Sinh ảnh luôn dùng OpenAI — xem tab Ảnh.' },
@@ -86,19 +86,25 @@ export const AiSettings: GlobalConfig = {
         {
           label: { en: 'Models', vi: 'Model' },
           description:
-            'Với OpenRouter, tên model có tiền tố nhà cung cấp — ví dụ anthropic/claude-sonnet-4.5, openai/gpt-4o, google/gemini-2.0-flash-001. Danh sách và giá xem ở openrouter.ai/models.',
+            'Để trống = dùng mặc định. Với OpenRouter, "openrouter/auto" nghĩa là ĐỂ OPENROUTER TỰ CHỌN model phù hợp từng yêu cầu — câu dễ thì dùng model rẻ, câu khó mới dùng model mạnh, nhờ đó tiết kiệm token. Muốn chỉ định thẳng thì ghi tên có tiền tố nhà cung cấp (anthropic/claude-sonnet-4.5, openai/gpt-4o…) và có thể thêm hậu tố ":floor" để ép chọn nhà cung cấp RẺ NHẤT, ":nitro" để ép NHANH NHẤT. Danh sách và giá: openrouter.ai/models',
           fields: [
             {
               name: 'contentModel',
               type: 'text',
               label: { en: 'Content model', vi: 'Model sinh nội dung' },
-              admin: { description: 'Dùng cho mô tả, lợi ích, ứng dụng… (fallback: OPENAI_CONTENT_MODEL)' },
+              admin: {
+                description:
+                  'Bỏ trống = openrouter/auto (OpenRouter tự chọn). Dùng cho mô tả, lợi ích, ứng dụng… (fallback: OPENAI_CONTENT_MODEL)',
+              },
             },
             {
               name: 'visionModel',
               type: 'text',
               label: { en: 'Vision model', vi: 'Model đọc ảnh / PDF scan' },
-              admin: { description: 'Phải là model có khả năng đọc ảnh. (fallback: OPENAI_VISION_MODEL)' },
+              admin: {
+                description:
+                  '⚠️ ĐỪNG để "openrouter/auto" ở đây — bộ định tuyến có thể chọn model chỉ xử lý chữ và bước đọc ảnh sẽ hỏng. Hãy ghi rõ một model nhìn được, ví dụ google/gemini-2.5-flash. (fallback: OPENAI_VISION_MODEL)',
+              },
             },
           ],
         },

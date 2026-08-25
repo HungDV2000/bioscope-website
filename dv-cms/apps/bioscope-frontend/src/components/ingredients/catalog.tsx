@@ -152,22 +152,31 @@ export function Catalog({
 
   return (
     <>
-      <section className="bg-white pb-24 pt-16">
+      {/* pt nhỏ: banner phía trên đã rút gọn, để bộ lọc lên sát màn hình đầu. */}
+      <section className="bg-white pb-24 pt-7">
         <div className="container-bs">
           {/* Toolbar */}
           <div className="flex flex-col gap-4 rounded-[2rem] border border-primary-border/60 bg-mist/50 p-5 sm:p-6">
             {/* Hàng 1: tab danh mục chính + Xoá bộ lọc + Xem thêm */}
-            <div className="flex flex-wrap items-center gap-2">
-              <Filter label={cat.allPrimaries} active={activePrimary === null} onClick={() => setSingle('primaries', null)} />
-              {orderedPrimaries.map((p) => (
-                <Filter
-                  key={p.slug}
-                  label={p.name}
-                  active={activePrimary === p.slug}
-                  onClick={() => setSingle('primaries', activePrimary === p.slug ? null : p.slug)}
-                />
-              ))}
-              <div className="ml-auto flex items-center gap-2">
+            <div className="flex flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:items-center">
+              {/*
+                Trên mobile các chip xuống 4 hàng, đẩy thanh lọc cao 394px và
+                danh sách rơi khỏi màn hình đầu. Cho cuộn ngang một hàng thay vì
+                xuống dòng; từ sm trở lên đủ chỗ nên vẫn xuống dòng như cũ.
+                Lề âm + padding để chip đầu/cuối không bị viền cắt lúc cuộn.
+              */}
+              <div className="scroll-slim -mx-1 flex gap-2 overflow-x-auto px-1 pb-1.5 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0">
+                <Filter label={cat.allPrimaries} active={activePrimary === null} onClick={() => setSingle('primaries', null)} />
+                {orderedPrimaries.map((p) => (
+                  <Filter
+                    key={p.slug}
+                    label={p.name}
+                    active={activePrimary === p.slug}
+                    onClick={() => setSingle('primaries', activePrimary === p.slug ? null : p.slug)}
+                  />
+                ))}
+              </div>
+              <div className="flex items-center gap-2 sm:ml-auto">
                 {hasAnyFilter && (
                   <button
                     type="button"
@@ -542,7 +551,7 @@ function Filter({ label, active, onClick }: { label: string; active: boolean; on
       type="button"
       onClick={onClick}
       className={cn(
-        'rounded-full px-4 py-2 text-[13px] font-medium transition-colors duration-300',
+        'shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-[13px] font-medium transition-colors duration-300',
         active ? 'bg-primary text-white' : 'bg-white text-ink/65 hover:text-primary',
       )}
     >

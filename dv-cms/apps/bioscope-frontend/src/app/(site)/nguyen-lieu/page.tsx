@@ -1,7 +1,5 @@
 import { PageHero } from '@/components/ui/page-hero'
 import { Catalog } from '@/components/ingredients/catalog'
-import { Reveal } from '@/components/ui/reveal'
-import { getContent } from '@/lib/get-content'
 import { getLocale } from '@/lib/i18n/server'
 import { getPageContent } from '@/lib/cms/page'
 import { getCatalogSummary, getCatalogPage, type CatalogSummary, type CatalogPage } from '@/lib/cms/catalog'
@@ -18,9 +16,7 @@ export async function generateMetadata() {
 
 export default async function IngredientsPage() {
   const locale = await getLocale()
-  const content = getContent(locale)
-  const { hero, heroImage } = await getPageContent('nguyen-lieu', locale)
-  const intro = content.INGREDIENT_PAGE_INTRO
+  const { hero } = await getPageContent('nguyen-lieu', locale)
   // Phân trang server-side: đếm/tuỳ chọn bộ lọc (summary, cache dài) + trang đầu
   // (12 mục). Không còn nhồi cả 1.591 mục vào HTML.
   const [summary, initial] = await Promise.all([getCatalogSummary(locale), getCatalogPage(locale, {}, 1)])
@@ -32,16 +28,12 @@ export default async function IngredientsPage() {
 
   return (
     <>
-      <PageHero {...hero} coverImage={heroImage} image="powder" />
-      <section className="border-b border-primary-border/40 bg-mist/30 py-10">
-        <div className="container-bs">
-          <Reveal>
-            <h2 className="text-[1.5rem] font-bold text-ink sm:text-[1.75rem]">{intro.title}</h2>
-            <p className="mt-4 max-w-3xl text-[14.5px] leading-relaxed text-ink/65">{intro.description}</p>
-
-          </Reveal>
-        </div>
-      </section>
+      {/*
+        Trang này khách vào để TÌM NGUYÊN LIỆU, không phải để đọc giới thiệu.
+        Banner rút gọn (bỏ ảnh + mô tả) và bỏ hẳn khối giới thiệu ở giữa, để bộ
+        lọc và danh sách nằm ngay màn hình đầu.
+      */}
+      <PageHero {...hero} compact />
       <Catalog summary={summary ?? EMPTY_SUMMARY} initial={initial ?? EMPTY_PAGE} imageSeed={imageSeed} />
     </>
   )

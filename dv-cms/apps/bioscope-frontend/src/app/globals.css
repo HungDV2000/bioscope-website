@@ -71,6 +71,8 @@
   }
   .scroll-slim::-webkit-scrollbar {
     width: 10px;
+    /* height: cho cả dải cuộn NGANG (vd hàng chip lọc trên mobile). */
+    height: 10px;
   }
   .scroll-slim::-webkit-scrollbar-track {
     background: transparent;

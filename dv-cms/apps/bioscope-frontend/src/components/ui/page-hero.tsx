@@ -19,6 +19,7 @@ export function PageHero({
   image,
   coverImage,
   className,
+  compact = false,
 }: {
   eyebrow?: string
   title: string
@@ -27,20 +28,46 @@ export function PageHero({
   image?: ImgKey
   coverImage?: string
   className?: string
+  /**
+   * Banner rút gọn: bỏ ảnh và mô tả, siết khoảng cách để nội dung chính của
+   * trang nổi lên ngay màn hình đầu. Dùng cho trang mà thứ khách cần là DANH
+   * SÁCH chứ không phải lời giới thiệu (vd trang Nguyên liệu).
+   */
+  compact?: boolean
 }) {
   const { t } = useLocale()
 
   return (
-    <section className={cn('relative overflow-hidden bg-mist pt-32 lg:pt-40', className)}>
+    <section
+      className={cn(
+        'relative overflow-hidden bg-mist',
+        // Header cố định cao 72px nên phần đệm trên không thể nhỏ hơn nhiều.
+        compact ? 'pt-[104px] lg:pt-28' : 'pt-32 lg:pt-40',
+        className,
+      )}
+    >
       <div
         aria-hidden
-        className="pointer-events-none absolute -right-32 -top-20 h-[420px] w-[420px] rounded-full opacity-50 blur-3xl"
+        className={cn(
+          'pointer-events-none absolute -right-32 -top-20 rounded-full opacity-50 blur-3xl',
+          compact ? 'h-[280px] w-[280px]' : 'h-[420px] w-[420px]',
+        )}
         style={{ background: 'radial-gradient(circle, rgba(0,142,77,0.14), transparent 70%)' }}
       />
-      <div className="container-bs relative grid items-center gap-10 pb-16 lg:grid-cols-[1.1fr_0.9fr]">
+      <div
+        className={cn(
+          'container-bs relative grid items-center gap-10',
+          compact ? 'pb-7' : 'pb-16 lg:grid-cols-[1.1fr_0.9fr]',
+        )}
+      >
         <Reveal immediate>
           {crumbs.length > 0 && (
-            <nav className="mb-6 flex flex-wrap items-center gap-1.5 text-[13px] text-ink/45">
+            <nav
+              className={cn(
+                'flex flex-wrap items-center gap-1.5 text-[13px] text-ink/45',
+                compact ? 'mb-3' : 'mb-6',
+              )}
+            >
               <Link href="/" className="transition-colors hover:text-primary">
                 {t.nav.home}
               </Link>
@@ -59,17 +86,24 @@ export function PageHero({
             </nav>
           )}
           {eyebrow && <Eyebrow>{eyebrow}</Eyebrow>}
-          <h1 className="mt-4 max-w-2xl text-balance text-[1.9rem] font-bold leading-[1.12] tracking-tight text-ink sm:text-[2.3rem] lg:text-[2.45rem]">
+          <h1
+            className={cn(
+              'max-w-2xl text-balance font-bold leading-[1.12] tracking-tight text-ink',
+              compact
+                ? 'mt-2 text-[1.65rem] sm:text-[1.95rem]'
+                : 'mt-4 text-[1.9rem] sm:text-[2.3rem] lg:text-[2.45rem]',
+            )}
+          >
             {title}
           </h1>
-          {description && (
+          {description && !compact && (
             <p className="mt-5 max-w-2xl text-pretty text-[16.5px] leading-relaxed text-ink/65">
               {description}
             </p>
           )}
         </Reveal>
 
-        {(coverImage || image) && (
+        {(coverImage || image) && !compact && (
           <Reveal immediate delay={0.15} className="w-full">
             <div className="relative mx-auto aspect-[4/3] w-full max-w-[480px] overflow-hidden rounded-[2.5rem] border-[6px] border-white shadow-card">
               <Image

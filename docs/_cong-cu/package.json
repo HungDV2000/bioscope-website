@@ -1,0 +1,7 @@
+{
+  "name": "bioscope-docs-builder",
+  "private": true,
+  "description": "Dựng bản .docx cho hồ sơ Bioscope từ các file .md",
+  "scripts": { "build": "node run.js" },
+  "dependencies": { "docx": "^9.0.0" }
+}

@@ -24,11 +24,11 @@ import type { NavIconName } from './nav-icons/types.js'
 import { NavBrand } from './NavBrand.js'
 
 type Lang = 'en' | 'vi'
-type Entity = { slug: string; type: 'collection' | 'global'; label: string; icon: NavIconName }
+type Entity = { slug: string; type: 'collection' | 'global'; label: string; icon: NavIconName; kids?: Entity[] }
 type Group = { key: string; icon: NavIconName; label: Record<Lang, string>; items: Entity[] }
 
 const GROUP_DEFS: { key: string; icon: NavIconName; label: Record<Lang, string>; slugs: string[] }[] = [
-  { key: 'content', icon: 'file', label: { en: 'Content', vi: 'Nội dung' }, slugs: ['pages', 'posts', 'categories', 'tags', 'forms', 'form-submissions'] },
+  { key: 'content', icon: 'file', label: { en: 'Content', vi: 'Nội dung' }, slugs: ['pages', 'posts', 'categories', 'industries', 'tags', 'forms', 'form-submissions'] },
   { key: 'bioscope', icon: 'flask', label: { en: 'Bioscope', vi: 'Bioscope' }, slugs: ['ingredients', 'ingredient-categories', 'ingredient-facets', 'technologies', 'services', 'certifications', 'case-studies', 'faqs', 'partners', 'product-categories', 'products'] },
   { key: 'b2b', icon: 'user-circle', label: { en: 'B2B portal', vi: 'Cổng B2B' }, slugs: ['members', 'gated-documents'] },
   { key: 'seo', icon: 'newspaper', label: { en: 'SEO & Marketing', vi: 'SEO & Marketing' }, slugs: ['seo-settings', 'redirects', 'image-settings', 'bioscope-ai'] },
@@ -37,6 +37,16 @@ const GROUP_DEFS: { key: string; icon: NavIconName; label: Record<Lang, string>;
   { key: 'ops', icon: 'cpu', label: { en: 'Operations', vi: 'Vận hành' }, slugs: ['duplicate-scans', 'ai-generate-jobs', 'drive-sync-jobs', 'cms-sync-runs'] },
   { key: 'system', icon: 'settings', label: { en: 'System', vi: 'Hệ thống' }, slugs: ['users', 'staff-roles', 'media', 'site-settings', 'navigation', 'branding', 'languages', 'better-editor-settings'] },
 ]
+
+/**
+ * Taxonomy lồng vào collection cha — giống WordPress: Categories và Tags nằm
+ * DƯỚI Posts thay vì ngang hàng. Gom lại để biên tập viên không nhầm với
+ * danh mục nguyên liệu (cũng tên "Categories" ở nhóm Bioscope).
+ */
+const NESTED_UNDER: Record<string, string[]> = {
+  posts: ['categories', 'industries', 'tags'],
+}
+const NESTED_SLUGS = new Set(Object.values(NESTED_UNDER).flat())
 
 const HIDDEN = new Set(['home'])
 const isHidden = (slug: string) => slug.startsWith('payload-') || HIDDEN.has(slug)
@@ -124,8 +134,17 @@ export const WpNav: React.FC = () => {
   const groups: Group[] = useMemo(() => {
     const used = new Set<string>()
     const res = GROUP_DEFS.map((g) => {
-      const items = g.slugs.map((s) => bySlug.get(s)).filter(Boolean) as Entity[]
-      items.forEach((it) => used.add(it.slug))
+      const all = g.slugs.map((s) => bySlug.get(s)).filter(Boolean) as Entity[]
+      all.forEach((it) => used.add(it.slug))
+      // Gắn taxonomy vào collection cha rồi bỏ khỏi hàng ngang.
+      const items = all
+        .filter((it) => !NESTED_SLUGS.has(it.slug))
+        .map((it) => {
+          const kidSlugs = NESTED_UNDER[it.slug]
+          if (!kidSlugs) return it
+          const kids = kidSlugs.map((k) => bySlug.get(k)).filter(Boolean) as Entity[]
+          return kids.length ? { ...it, kids } : it
+        })
       return { key: g.key, icon: g.icon, label: g.label, items }
     }).filter((g) => g.items.length)
     const others = [...bySlug.values()].filter((e) => !used.has(e.slug))
@@ -135,7 +154,8 @@ export const WpNav: React.FC = () => {
 
   const hrefOf = (e: Entity) => `${adminRoute}/${e.type === 'global' ? 'globals' : 'collections'}/${e.slug}`
   const isActive = (e: Entity) => pathname?.includes(`/${e.type === 'global' ? 'globals' : 'collections'}/${e.slug}`)
-  const groupActive = (items: Entity[]) => items.some(isActive)
+  const anyActive = (e: Entity): boolean => isActive(e) || (e.kids?.some(isActive) ?? false)
+  const groupActive = (items: Entity[]) => items.some(anyActive)
   const onDashboard = pathname === adminRoute || pathname === `${adminRoute}/`
 
   const openFlyout = useCallback(
@@ -235,12 +255,24 @@ export const WpNav: React.FC = () => {
                 {expanded && (
                   <div className="dv-wpnav__children">
                     {grp.items.map((e) => (
-                      <Link key={e.slug} href={hrefOf(e)} className={`dv-wpnav__child${isActive(e) ? ' is-active' : ''}`} onClick={closeMobile}>
-                        <span className="dv-wpnav__cicon" aria-hidden>
-                          <NavIconGraphic name={e.icon} />
-                        </span>
-                        {e.label}
-                      </Link>
+                      <React.Fragment key={e.slug}>
+                        <Link href={hrefOf(e)} className={`dv-wpnav__child${isActive(e) ? ' is-active' : ''}`} onClick={closeMobile}>
+                          <span className="dv-wpnav__cicon" aria-hidden>
+                            <NavIconGraphic name={e.icon} />
+                          </span>
+                          {e.label}
+                        </Link>
+                        {/* Taxonomy con — chỉ hiện khi đang ở trong nhánh đó, giống WordPress */}
+                        {e.kids && anyActive(e) && (
+                          <div className="dv-wpnav__grandchildren">
+                            {e.kids.map((k) => (
+                              <Link key={k.slug} href={hrefOf(k)} className={`dv-wpnav__grandchild${isActive(k) ? ' is-active' : ''}`} onClick={closeMobile}>
+                                {k.label}
+                              </Link>
+                            ))}
+                          </div>
+                        )}
+                      </React.Fragment>
                     ))}
                   </div>
                 )}
@@ -309,6 +341,10 @@ const WPNAV_CSS = `
 .dv-wpnav__chev { transition: transform .15s; opacity: .45; font-size: 16px; line-height: 1; }
 .dv-wpnav__chev.is-open { transform: rotate(90deg); }
 .dv-wpnav__children { display: flex; flex-direction: column; gap: 1px; padding: 1px 0 6px 8px; }
+.dv-wpnav__grandchildren { display: flex; flex-direction: column; gap: 1px; margin: 1px 0 4px 0; padding-left: 26px; border-left: 1px solid var(--theme-elevation-150); margin-left: 13px; }
+.dv-wpnav__grandchild { display: block; padding: 5px 10px; border-radius: 6px; font-size: 12.5px; color: var(--theme-elevation-600); text-decoration: none; }
+.dv-wpnav__grandchild:hover { background: var(--theme-elevation-50); color: var(--theme-elevation-900); }
+.dv-wpnav__grandchild.is-active { background: var(--theme-elevation-100); color: var(--theme-elevation-1000); font-weight: 600; }
 .dv-wpnav__child {
   display: flex; align-items: center; gap: 9px; padding: 7px 10px 7px 20px; border-radius: 8px;
   color: var(--theme-elevation-650); font-size: 13px; text-decoration: none; transition: background .12s, color .12s;

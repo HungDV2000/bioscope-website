@@ -8,6 +8,7 @@ import type { BlogPost } from '@/lib/content'
 import { img } from '@/lib/images'
 import { cn } from '@/lib/utils'
 import { useLocale } from '@/lib/i18n/context'
+import { newsPostPath } from '@/lib/news-path'
 
 const PAGE_SIZE = 6
 
@@ -101,10 +102,24 @@ function Pagination({
   )
 }
 
-export function BlogList({ posts }: { posts: BlogPost[] }) {
-  const { t, content } = useLocale()
+export function BlogList({
+  posts,
+  topics,
+  industries,
+}: {
+  posts: BlogPost[]
+  /** Chủ đề lấy từ CMS. Bỏ trống thì lùi về danh sách tĩnh. */
+  topics?: string[]
+  /** Ngành lấy từ CMS. Bỏ trống thì lùi về danh sách tĩnh. */
+  industries?: string[]
+}) {
+  const { t, content, locale } = useLocale()
   const m = t.blogPage
-  const { BLOG_TOPICS, BLOG_INDUSTRIES, formatBlogDate } = content
+  const { formatBlogDate } = content
+  // Danh sách bộ lọc do CMS quyết định. Trước đây gán cứng trong mã nên biên
+  // tập viên đổi danh mục trong admin thì bộ lọc vẫn đếm ra 0.
+  const BLOG_TOPICS = topics?.length ? topics : content.BLOG_TOPICS
+  const BLOG_INDUSTRIES = industries?.length ? industries : content.BLOG_INDUSTRIES
   const [q, setQ] = useState('')
   const [topic, setTopic] = useState<string | null>(null)
   const [industry, setIndustry] = useState<string | null>(null)
@@ -112,7 +127,7 @@ export function BlogList({ posts }: { posts: BlogPost[] }) {
 
   const topicCounts = useMemo(() => {
     const counts: Record<string, number> = {}
-    BLOG_TOPICS.forEach((t) => {
+    BLOG_TOPICS.forEach((t: string) => {
       counts[t] = posts.filter((p) => p.topic === t).length
     })
     return counts
@@ -120,7 +135,7 @@ export function BlogList({ posts }: { posts: BlogPost[] }) {
 
   const industryCounts = useMemo(() => {
     const counts: Record<string, number> = {}
-    BLOG_INDUSTRIES.forEach((ind) => {
+    BLOG_INDUSTRIES.forEach((ind: string) => {
       counts[ind] = posts.filter((p) => p.industry === ind).length
     })
     return counts
@@ -245,7 +260,7 @@ export function BlogList({ posts }: { posts: BlogPost[] }) {
 
             {featured && (
               <Link
-                href={`/tai-nguyen/blog-chuyen-mon/${featured.slug}`}
+                href={newsPostPath(locale, featured.slug)}
                 className="group mt-6 grid overflow-hidden rounded-[2rem] border border-primary-border/60 bg-white transition-all duration-500 hover:-translate-y-0.5 hover:shadow-card lg:grid-cols-[1.1fr_1fr]"
               >
                 <div className="relative aspect-[16/10] lg:aspect-auto lg:min-h-[280px]">
@@ -291,7 +306,7 @@ export function BlogList({ posts }: { posts: BlogPost[] }) {
               {gridPosts.map((post) => (
                 <Link
                   key={post.slug}
-                  href={`/tai-nguyen/blog-chuyen-mon/${post.slug}`}
+                  href={newsPostPath(locale, post.slug)}
                   className="group flex flex-col overflow-hidden rounded-[1.75rem] border border-primary-border/60 bg-white transition-all duration-500 hover:-translate-y-1 hover:shadow-card"
                 >
                   <div className="relative aspect-[16/10] overflow-hidden">

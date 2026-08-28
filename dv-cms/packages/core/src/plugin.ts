@@ -6,6 +6,7 @@ import { Pages } from './collections/Pages.js'
 import { Posts } from './collections/Posts.js'
 import { Categories } from './collections/Categories.js'
 import { Tags } from './collections/Tags.js'
+import { Industries } from './collections/Industries.js'
 import { Forms } from './collections/Forms.js'
 import { FormSubmissions } from './collections/FormSubmissions.js'
 import { Redirects } from './collections/Redirects.js'
@@ -46,6 +47,7 @@ export const corePlugin =
       withRevalidate(Posts),
       Categories,
       Tags,
+      Industries,
       Forms,
       FormSubmissions,
       Redirects,

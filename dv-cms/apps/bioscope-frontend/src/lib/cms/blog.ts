@@ -13,9 +13,15 @@ type PostDoc = {
   cover?: { url?: string } | null
   author?: { name?: string; email?: string } | number | null
   categories?: ({ title?: string; name?: string } | number)[]
+  industries?: ({ title?: string; name?: string } | number)[]
   tags?: ({ title?: string; name?: string } | number)[]
   publishedAt?: string
 }
+
+/** Một mục trong bộ lọc — tên hiển thị lấy từ CMS, không phải danh sách cứng. */
+export type TaxonomyItem = { slug: string; name: string }
+
+type TaxDoc = { slug?: string; name?: string; order?: number }
 
 // Rotating placeholder images until covers are uploaded to Media.
 const FALLBACK_IMAGES: ImgKey[] = ['labWork', 'botanical', 'capsules', 'microscope', 'powder', 'glassware']
@@ -42,13 +48,16 @@ function toPost(d: PostDoc, index: number): BlogPost {
   const body = lexicalToParagraphs(d.content)
   const words = body.join(' ').split(/\s+/).filter(Boolean).length
   const topic = (d.categories ?? []).map(relName).find(Boolean)
+  const industry = (d.industries ?? []).map(relName).find(Boolean)
   const authorObj = d.author && typeof d.author === 'object' ? d.author : undefined
   return {
     slug: d.slug,
     title: d.title,
     excerpt: d.excerpt ?? body[0] ?? '',
-    topic: (topic ?? 'Phát triển nhãn hàng') as BlogPost['topic'],
-    industry: 'Đa ngành' as BlogPost['industry'],
+    // Chủ đề và ngành lấy TỪ CMS. Trước đây `industry` bị gán cứng 'Đa ngành'
+    // nên mọi bộ lọc ngành khác đều đếm ra 0.
+    topic: (topic ?? '') as BlogPost['topic'],
+    industry: (industry ?? '') as BlogPost['industry'],
     readTime: Math.max(3, Math.round(words / 200)),
     date: d.publishedAt ? d.publishedAt.slice(0, 10) : '',
     author: authorObj?.name ?? authorObj?.email ?? 'Bioscope',
@@ -57,6 +66,20 @@ function toPost(d: PostDoc, index: number): BlogPost {
     tags: (d.tags ?? []).map(relName).filter((t): t is string => Boolean(t)),
   }
 }
+
+/** Đọc một taxonomy (chủ đề / ngành) để dựng bộ lọc. Trả [] khi CMS không phản hồi. */
+async function getTaxonomy(collection: string, locale: Locale): Promise<TaxonomyItem[]> {
+  const res = await cmsFetch<Paginated<TaxDoc>>(
+    `${collection}?limit=100&sort=order&depth=0`,
+    { locale, revalidate: 300 },
+  )
+  return (res?.docs ?? [])
+    .map((d) => ({ slug: d.slug ?? '', name: d.name ?? '' }))
+    .filter((x) => x.name)
+}
+
+export const getPostCategories = (locale: Locale) => getTaxonomy('categories', locale)
+export const getIndustries = (locale: Locale) => getTaxonomy('industries', locale)
 
 /** All published posts (newest first). Returns null on failure/empty (caller falls back to static). */
 export async function getPosts(locale: Locale): Promise<BlogPost[] | null> {

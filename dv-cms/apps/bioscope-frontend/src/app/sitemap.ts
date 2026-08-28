@@ -43,7 +43,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })),
     ...detail('/nguyen-lieu', (ings ?? INGREDIENTS).map((i) => i.slug), 0.7),
     ...detail('/giai-phap', (sols ?? SOLUTIONS).map((s) => s.slug), 0.7),
-    ...detail('/tai-nguyen/blog-chuyen-mon', (posts ?? BLOG_POSTS).map((p) => p.slug), 0.6),
+    // Bản tin có hai địa chỉ theo ngôn ngữ; khai cả hai để công cụ tìm kiếm
+    // lập chỉ mục đúng bản của từng ngôn ngữ.
+    ...detail('/ban-tin', (posts ?? BLOG_POSTS).map((p) => p.slug), 0.6),
+    ...detail('/news', (posts ?? BLOG_POSTS).map((p) => p.slug), 0.6),
     ...detail('/case-study', (cases ?? CASE_STUDIES).map((c) => c.slug), 0.6),
   ]
 }

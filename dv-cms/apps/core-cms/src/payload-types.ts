@@ -78,6 +78,7 @@ export interface Config {
     posts: Post;
     categories: Category;
     tags: Tag;
+    industries: Industry;
     forms: Form;
     'form-submissions': FormSubmission;
     redirects: Redirect;
@@ -126,6 +127,7 @@ export interface Config {
     posts: PostsSelect<false> | PostsSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     tags: TagsSelect<false> | TagsSelect<true>;
+    industries: IndustriesSelect<false> | IndustriesSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
@@ -1566,7 +1568,17 @@ export interface Post {
   slug?: string | null;
   cover?: (number | null) | Media;
   author?: (number | null) | User;
+  /**
+   * Chủ đề chính của bài. Dùng để lọc trên trang Bản tin.
+   */
   categories?: (number | Category)[] | null;
+  /**
+   * Ngành hàng bài viết hướng tới. Một bài có thể thuộc nhiều ngành.
+   */
+  industries?: (number | Industry)[] | null;
+  /**
+   * Thẻ tự do, tuỳ chọn.
+   */
   tags?: (number | Tag)[] | null;
   publishedAt?: string | null;
   updatedAt: string;
@@ -1575,6 +1587,8 @@ export interface Post {
   _status?: ('draft' | 'published') | null;
 }
 /**
+ * Chủ đề dùng để phân loại và lọc bài viết trên trang Bản tin.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "categories".
  */
@@ -1585,11 +1599,43 @@ export interface Category {
    * Đường dẫn theo từng ngôn ngữ. Để trống sẽ tự tạo từ tiêu đề của ngôn ngữ đang chọn.
    */
   slug?: string | null;
+  /**
+   * Hiển thị ở đầu trang lọc theo chủ đề (tuỳ chọn).
+   */
+  description?: string | null;
+  /**
+   * Số nhỏ hiện trước trong bộ lọc.
+   */
+  order?: number | null;
   updatedAt: string;
   createdAt: string;
   deletedAt?: string | null;
 }
 /**
+ * Ngành hàng dùng để lọc bài viết: Thực phẩm chức năng, Mỹ phẩm, Dược phẩm…
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "industries".
+ */
+export interface Industry {
+  id: number;
+  name: string;
+  /**
+   * Đường dẫn theo từng ngôn ngữ. Để trống sẽ tự tạo từ tiêu đề của ngôn ngữ đang chọn.
+   */
+  slug?: string | null;
+  description?: string | null;
+  /**
+   * Số nhỏ hiện trước trong bộ lọc.
+   */
+  order?: number | null;
+  updatedAt: string;
+  createdAt: string;
+  deletedAt?: string | null;
+}
+/**
+ * Thẻ tự do gắn cho bài viết. Chủ đề mới là danh mục chính.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "tags".
  */
@@ -1602,6 +1648,7 @@ export interface Tag {
   slug?: string | null;
   updatedAt: string;
   createdAt: string;
+  deletedAt?: string | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -3115,6 +3162,10 @@ export interface PayloadLockedDocument {
         value: number | Tag;
       } | null)
     | ({
+        relationTo: 'industries';
+        value: number | Industry;
+      } | null)
+    | ({
         relationTo: 'forms';
         value: number | Form;
       } | null)
@@ -4161,6 +4212,7 @@ export interface PostsSelect<T extends boolean = true> {
   cover?: T;
   author?: T;
   categories?: T;
+  industries?: T;
   tags?: T;
   publishedAt?: T;
   updatedAt?: T;
@@ -4175,6 +4227,8 @@ export interface PostsSelect<T extends boolean = true> {
 export interface CategoriesSelect<T extends boolean = true> {
   name?: T;
   slug?: T;
+  description?: T;
+  order?: T;
   updatedAt?: T;
   createdAt?: T;
   deletedAt?: T;
@@ -4188,6 +4242,20 @@ export interface TagsSelect<T extends boolean = true> {
   slug?: T;
   updatedAt?: T;
   createdAt?: T;
+  deletedAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "industries_select".
+ */
+export interface IndustriesSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  description?: T;
+  order?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  deletedAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

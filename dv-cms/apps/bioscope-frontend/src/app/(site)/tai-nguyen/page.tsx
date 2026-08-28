@@ -17,6 +17,13 @@ import { getContent } from '@/lib/get-content'
 import { getLocale } from '@/lib/i18n/server'
 import { getPageContent } from '@/lib/cms/page'
 import { getMessages } from '@/lib/i18n/messages'
+import { newsBase } from '@/lib/news-path'
+
+/**
+ * Chỉ mục Blog đang mở. Năm mục còn lại chưa có nội dung nên hiện nhãn
+ * "Sắp ra mắt" và KHÔNG cho bấm — thà nói thẳng còn hơn dẫn khách vào trang rỗng.
+ */
+const OPEN_CATEGORIES = new Set(['blog-chuyen-mon'])
 
 const CATEGORY_ICONS: Record<string, LucideIcon> = {
   'whitepaper-ebook': FileText,
@@ -47,6 +54,7 @@ export default async function ResourcesPage() {
           newsletter: 'R&D newsletter',
           newsletterTitle: 'Stay updated on ingredients & new technologies',
           newsletterDesc: 'Expert newsletter from Bioscope R&D — new research, case studies, and market trends.',
+          comingSoon: 'Coming soon',
           emailPlaceholder: 'Your work email',
           subscribe: 'Subscribe',
           privacy: 'No spam · Expert content only · Unsubscribe anytime',
@@ -57,6 +65,7 @@ export default async function ResourcesPage() {
           newsletter: 'Bản tin R&D',
           newsletterTitle: 'Cập nhật xu hướng nguyên liệu & công nghệ mới',
           newsletterDesc: 'Nhận bản tin chuyên môn từ đội ngũ R&D Bioscope — nghiên cứu mới, case study và xu hướng thị trường.',
+          comingSoon: 'Sắp ra mắt',
           emailPlaceholder: 'Email công việc của bạn',
           subscribe: 'Đăng ký nhận tin',
           privacy: 'Không spam · Chỉ gửi nội dung chuyên môn · Hủy đăng ký bất cứ lúc nào',
@@ -70,21 +79,56 @@ export default async function ResourcesPage() {
         <div className="container-bs grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {RESOURCE_CATEGORIES.map((cat, i) => {
             const Icon = CATEGORY_ICONS[cat.slug] ?? FileText
+            const open = OPEN_CATEGORIES.has(cat.slug)
+            // Blog nay nằm ở /ban-tin (vi) hoặc /news (en), không còn dưới /tai-nguyen.
+            const href = cat.slug === 'blog-chuyen-mon' ? newsBase(locale) : `/tai-nguyen/${cat.slug}`
+
+            const body = (
+              <>
+                <span
+                  className={`grid h-12 w-12 place-items-center rounded-2xl transition-colors ${
+                    open
+                      ? 'bg-primary-tint text-primary group-hover:bg-primary group-hover:text-white'
+                      : 'bg-ink/[0.04] text-ink/30'
+                  }`}
+                >
+                  <Icon className="h-6 w-6" strokeWidth={1.5} />
+                </span>
+                <h3 className={`mt-5 text-[19px] font-bold ${open ? 'text-ink' : 'text-ink/45'}`}>
+                  {cat.title}
+                </h3>
+                <p className={`mt-2 flex-1 text-[14px] leading-relaxed ${open ? 'text-ink/65' : 'text-ink/40'}`}>
+                  {cat.shortDesc}
+                </p>
+                <span
+                  className={`mt-5 inline-flex w-fit rounded-full px-3 py-1 text-[11px] font-bold ${
+                    open ? 'bg-accent-soft text-accent' : 'bg-ink/[0.05] text-ink/40'
+                  }`}
+                >
+                  {open ? m.common.explore : ui.comingSoon}
+                </span>
+              </>
+            )
+
             return (
               <Reveal key={cat.slug} delay={i * 0.08}>
-                <Link
-                  href={`/tai-nguyen/${cat.slug}`}
-                  className="group flex h-full flex-col rounded-[2rem] border border-primary-border/60 bg-mist/40 p-8 transition-all duration-300 hover:-translate-y-0.5 hover:bg-white hover:shadow-card"
-                >
-                  <span className="grid h-12 w-12 place-items-center rounded-2xl bg-primary-tint text-primary transition-colors group-hover:bg-primary group-hover:text-white">
-                    <Icon className="h-6 w-6" strokeWidth={1.5} />
-                  </span>
-                  <h3 className="mt-5 text-[19px] font-bold text-ink">{cat.title}</h3>
-                  <p className="mt-2 flex-1 text-[14px] leading-relaxed text-ink/65">{cat.shortDesc}</p>
-                  <span className="mt-5 inline-flex w-fit rounded-full bg-accent-soft px-3 py-1 text-[11px] font-bold text-accent">
-                    {m.common.explore}
-                  </span>
-                </Link>
+                {open ? (
+                  <Link
+                    href={href}
+                    className="group flex h-full flex-col rounded-[2rem] border border-primary-border/60 bg-mist/40 p-8 transition-all duration-300 hover:-translate-y-0.5 hover:bg-white hover:shadow-card"
+                  >
+                    {body}
+                  </Link>
+                ) : (
+                  // Không bọc thẻ liên kết: mục chưa mở thì không bấm được,
+                  // và cũng không xuất hiện trong danh sách liên kết của trình đọc màn hình.
+                  <div
+                    aria-disabled
+                    className="flex h-full cursor-not-allowed flex-col rounded-[2rem] border border-primary-border/40 bg-mist/20 p-8"
+                  >
+                    {body}
+                  </div>
+                )}
               </Reveal>
             )
           })}

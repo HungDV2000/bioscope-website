@@ -11,6 +11,7 @@ import { BlogRelatedPosts } from '@/components/resources/blog-related'
 import type { BlogComment, BlogPost } from '@/lib/content'
 import { img } from '@/lib/images'
 import { useLocale } from '@/lib/i18n/context'
+import { newsBase } from '@/lib/news-path'
 
 export function BlogArticle({
   post,
@@ -21,7 +22,7 @@ export function BlogArticle({
   related: BlogPost[]
   comments?: BlogComment[]
 }) {
-  const { t, content } = useLocale()
+  const { t, content, locale } = useLocale()
   const m = t.blogPage
   const sections = content.getBlogSections(post)
   const sampleComments = comments ?? content.BLOG_SAMPLE_COMMENTS
@@ -162,7 +163,7 @@ export function BlogArticle({
 
         <Reveal className="mt-12">
           <Link
-            href="/tai-nguyen/blog-chuyen-mon"
+            href={newsBase(locale)}
             className="inline-flex items-center gap-2 text-[14px] font-semibold text-primary transition-colors hover:text-primary-dark"
           >
             <ArrowLeft className="h-4 w-4" strokeWidth={2} />

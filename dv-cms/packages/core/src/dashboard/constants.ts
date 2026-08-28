@@ -13,6 +13,7 @@ export const DEFAULT_DASHBOARD_SHORTCUTS = [
   'partners',
   'forms',
   'categories',
+  'industries',
   'ct-definitions',
   'tax-definitions',
   'staff-roles',

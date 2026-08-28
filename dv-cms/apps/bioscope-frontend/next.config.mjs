@@ -58,6 +58,25 @@ const nextConfig = {
   async headers() {
     return [{ source: '/:path*', headers: securityHeaders }]
   },
+  /**
+   * Trang blog đã chuyển từ /tai-nguyen/blog-chuyen-mon sang /ban-tin (vi) và
+   * /news (en).
+   *
+   * Đặt ở đây chứ không dùng `permanentRedirect` trong page: cách kia chỉ sinh
+   * ra trang HTML kèm meta refresh (mã 200), yếu cho SEO. Khai ở tầng định
+   * tuyến mới ra đúng mã 308 và không phải dựng trang.
+   *
+   * Điều kiện cookie để khách đang xem tiếng Anh về /news, còn lại về /ban-tin.
+   */
+  async redirects() {
+    const en = [{ type: 'cookie', key: 'bioscope_locale', value: 'en' }]
+    return [
+      { source: '/tai-nguyen/blog-chuyen-mon', has: en, destination: '/news', permanent: true },
+      { source: '/tai-nguyen/blog-chuyen-mon/:slug', has: en, destination: '/news/:slug', permanent: true },
+      { source: '/tai-nguyen/blog-chuyen-mon', destination: '/ban-tin', permanent: true },
+      { source: '/tai-nguyen/blog-chuyen-mon/:slug', destination: '/ban-tin/:slug', permanent: true },
+    ]
+  },
 }
 
 export default nextConfig

@@ -7,9 +7,10 @@ import { Reveal } from '@/components/ui/reveal'
 import type { BlogPost } from '@/lib/content'
 import { img } from '@/lib/images'
 import { useLocale } from '@/lib/i18n/context'
+import { newsPostPath } from '@/lib/news-path'
 
 export function BlogRelatedPosts({ posts }: { posts: BlogPost[] }) {
-  const { t, content } = useLocale()
+  const { t, content, locale } = useLocale()
   const m = t.blogPage
 
   if (posts.length === 0) return null
@@ -24,7 +25,7 @@ export function BlogRelatedPosts({ posts }: { posts: BlogPost[] }) {
         {posts.map((post, i) => (
           <Reveal key={post.slug} delay={i * 0.06}>
             <Link
-              href={`/tai-nguyen/blog-chuyen-mon/${post.slug}`}
+              href={newsPostPath(locale, post.slug)}
               className="group flex h-full flex-col overflow-hidden rounded-[1.75rem] border border-primary-border/60 bg-white transition-all duration-500 hover:-translate-y-1 hover:shadow-card"
             >
               <div className="relative aspect-[16/10] overflow-hidden">

@@ -169,8 +169,10 @@ export function BlogList({
   // `safePage` clamps a stale-high page without needing a sync effect.
   const safePage = Math.min(page, totalPages)
   const paginated = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
-  const featured = !q && !topic && !industry && safePage === 1 ? paginated[0] : null
-  const gridPosts = featured ? paginated.slice(1) : paginated
+  // Bỏ thẻ "nổi bật" khổ lớn: nó chiếm gần trọn màn hình đầu nên khách chỉ
+  // thấy đúng MỘT bài trước khi phải cuộn. Mọi bài nay vào cùng một lưới 2 cột,
+  // nhìn được nhiều bài hơn và các thẻ đều nhau.
+  const gridPosts = paginated
   const hasFilters = Boolean(topic || industry || q)
 
   const clearFilters = () => {
@@ -259,51 +261,7 @@ export function BlogList({
               </p>
             </div>
 
-            {featured && (
-              <Link
-                href={newsPostPath(locale, featured.slug)}
-                className="group mt-6 grid overflow-hidden rounded-[2rem] border border-primary-border/60 bg-white transition-all duration-500 hover:-translate-y-0.5 hover:shadow-card lg:grid-cols-[1.1fr_1fr]"
-              >
-                <div className="relative aspect-[16/10] lg:aspect-auto lg:min-h-[280px]">
-                  <Image
-                    src={postImage(featured, 900)}
-                    alt={featured.title}
-                    fill
-                    sizes="(max-width: 1024px) 100vw, 45vw"
-                    className="object-cover transition-transform duration-700 group-hover:scale-105"
-                    priority
-                  />
-                  <span className="absolute left-4 top-4 rounded-full bg-accent px-3 py-1 text-[11px] font-bold text-white">
-                    {m.featured}
-                  </span>
-                </div>
-                <div className="flex flex-col justify-center p-6 lg:p-8">
-                  <div className="flex flex-wrap items-center gap-3 text-[12.5px] text-ink/50">
-                    <span className="rounded-full bg-primary-tint px-3 py-1 font-semibold text-primary-dark">
-                      {featured.topic}
-                    </span>
-                    <span className="inline-flex items-center gap-1">
-                      <Calendar className="h-3.5 w-3.5" />
-                      {formatBlogDate(featured.date)}
-                    </span>
-                    <span className="inline-flex items-center gap-1">
-                      <Clock className="h-3.5 w-3.5" />
-                      {featured.readTime} {m.minRead}
-                    </span>
-                  </div>
-                  <h2 className="mt-4 text-[1.35rem] font-bold leading-snug tracking-tight text-ink sm:text-[1.5rem]">
-                    {featured.title}
-                  </h2>
-                  <p className="mt-3 text-[14.5px] leading-relaxed text-ink/65">{featured.excerpt}</p>
-                  <span className="mt-5 inline-flex items-center gap-1 text-[14px] font-semibold text-primary">
-                    {m.readArticle}
-                    <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                  </span>
-                </div>
-              </Link>
-            )}
-
-            <div className={cn('grid gap-6 sm:grid-cols-2', featured ? 'mt-6' : 'mt-6', 'xl:grid-cols-2')}>
+            <div className="mt-6 grid gap-6 sm:grid-cols-2">
               {gridPosts.map((post) => (
                 <Link
                   key={post.slug}

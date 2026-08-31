@@ -183,18 +183,6 @@ export function BlogArticle({
             </div>
             )}
 
-            <Reveal className="mt-12">
-              <div className="flex gap-5 rounded-[1.5rem] border border-primary-border/60 bg-mist/40 p-6 sm:items-center">
-                <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-primary-tint text-[18px] font-bold text-primary">
-                  BS
-                </span>
-                <div>
-                  <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-ink/40">{m.author}</p>
-                  <p className="mt-1 text-[16px] font-bold text-ink">{post.author}</p>
-                  <p className="mt-1 text-[14px] leading-relaxed text-ink/60">{m.authorBio}</p>
-                </div>
-              </div>
-            </Reveal>
           </div>
         </div>
 

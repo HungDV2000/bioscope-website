@@ -100,11 +100,11 @@ export async function NewsArticlePage({ slug, base }: { slug: string; base: '/ba
               {post.topic}
             </span>
           )}
-          <h1 className="mt-4 max-w-4xl text-balance text-[1.75rem] font-bold leading-[1.18] tracking-tight text-ink sm:text-[2.15rem] lg:text-[2.4rem]">
+          <h1 className="mt-4 text-balance text-[1.75rem] font-bold leading-[1.18] tracking-tight text-ink sm:text-[2.15rem] lg:text-[2.4rem]">
             {post.title}
           </h1>
           {post.excerpt && (
-            <p className="mt-4 max-w-3xl text-pretty text-[16px] leading-relaxed text-ink/65">
+            <p className="mt-4 text-pretty text-[16px] leading-relaxed text-ink/65">
               {post.excerpt}
             </p>
           )}

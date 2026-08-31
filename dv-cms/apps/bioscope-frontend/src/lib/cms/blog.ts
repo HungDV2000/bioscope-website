@@ -94,12 +94,39 @@ async function getTaxonomy(collection: string, locale: Locale): Promise<Taxonomy
 export const getPostCategories = (locale: Locale) => getTaxonomy('categories', locale)
 export const getIndustries = (locale: Locale) => getTaxonomy('industries', locale)
 
+/**
+ * Bài đã có nội dung ở ngôn ngữ đang xem chưa.
+ *
+ * Trường tiêu đề là ĐA NGỮ: đăng bản tiếng Anh mà chưa dịch sang tiếng Việt thì
+ * Payload trả bản ghi với tiêu đề rỗng. Trước đây thẻ bài vẫn hiện ra — chỉ có
+ * ảnh và nút "Đọc bài viết", không có chữ nào. Lọc bỏ ở đây thay vì ở từng chỗ
+ * hiển thị, để mọi nơi (trang Bản tin, trang chủ, bài liên quan) đều nhất quán.
+ */
+const hasContent = (d: PostDoc): boolean =>
+  typeof d.title === 'string' && d.title.trim().length > 0
+
 /** All published posts (newest first). Returns null on failure/empty (caller falls back to static). */
 export async function getPosts(locale: Locale): Promise<BlogPost[] | null> {
-  const res = await cmsFetch<Paginated<PostDoc>>('posts?limit=100&sort=-publishedAt&depth=1', {
-    locale,
-    revalidate: 60,
-  })
+  /**
+   * `fallback-locale=none` — TẮT dự phòng ngôn ngữ cho lời gọi này.
+   *
+   * Cấu hình site đặt en dự phòng về vi, nên bài chỉ có bản tiếng Việt vẫn trả
+   * về tiêu đề tiếng Việt khi xem trang tiếng Anh — khách Anh đọc phải chữ Việt.
+   * Còn vi không có dự phòng nên bài chưa dịch trả tiêu đề RỖNG, sinh ra thẻ
+   * trắng không chữ.
+   *
+   * Tắt dự phòng làm cả hai trường hợp cùng trả rỗng, rồi `hasContent` lọc bỏ.
+   * Kết quả: mỗi ngôn ngữ chỉ hiện bài THẬT SỰ có nội dung ở ngôn ngữ đó.
+   *
+   * Chỉ tắt ở đây, không đổi cấu hình chung — các trang khác vẫn cần dự phòng
+   * để không trống trơn khi chưa dịch xong.
+   */
+  const res = await cmsFetch<Paginated<PostDoc>>(
+    'posts?limit=100&sort=-publishedAt&depth=1&fallback-locale=none',
+    { locale, revalidate: 60 },
+  )
   if (!res?.docs?.length) return null
-  return res.docs.map(toPost)
+  const usable = res.docs.filter(hasContent)
+  // Không còn bài nào ở ngôn ngữ này → trả null để nơi gọi dùng nội dung tĩnh.
+  return usable.length ? usable.map(toPost) : null
 }

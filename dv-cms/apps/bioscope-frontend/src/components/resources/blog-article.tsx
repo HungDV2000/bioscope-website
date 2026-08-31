@@ -118,7 +118,9 @@ export function BlogArticle({
           </div>
         </Reveal>
 
-        <div className="mt-12 grid gap-10 lg:grid-cols-[220px_minmax(0,1fr)] xl:grid-cols-[240px_minmax(0,1fr)]">
+        {/* Cột mục lục nới từ 220/240 lên 260/300px: tiêu đề bài viết thật dài
+            7–10 chữ, ở bề rộng cũ mỗi mục vỡ 3–4 dòng, đọc rất mệt. */}
+        <div className="mt-12 grid gap-10 lg:grid-cols-[260px_minmax(0,1fr)] xl:grid-cols-[300px_minmax(0,1fr)]">
           <aside className="hidden lg:block">
             <div className="sticky top-28 space-y-6">
               <BlogTableOfContents sections={toc} />

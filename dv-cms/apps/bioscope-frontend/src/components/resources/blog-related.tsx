@@ -53,7 +53,11 @@ export function BlogRelatedPosts({ posts }: { posts: BlogPost[] }) {
                     {post.readTime} {m.minRead}
                   </span>
                 </div>
-                <h3 className="mt-2.5 text-[16px] font-bold leading-snug text-ink">{post.title}</h3>
+                {/* Tối đa 2 dòng: tiêu đề bài viết thật rất dài, để tự do thì các thẻ
+                    trong hàng cao thấp lệch nhau. */}
+                <h3 className="mt-2.5 line-clamp-2 text-[16px] font-bold leading-snug text-ink">
+                  {post.title}
+                </h3>
                 <p className="mt-2 flex-1 text-[13px] leading-relaxed text-ink/60 line-clamp-2">{post.excerpt}</p>
                 <span className="mt-4 inline-flex items-center gap-1 text-[13px] font-semibold text-primary">
                   {m.readArticle}

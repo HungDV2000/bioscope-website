@@ -79,6 +79,7 @@ export interface Config {
     categories: Category;
     tags: Tag;
     industries: Industry;
+    'post-comments': PostComment;
     forms: Form;
     'form-submissions': FormSubmission;
     redirects: Redirect;
@@ -128,6 +129,7 @@ export interface Config {
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     tags: TagsSelect<false> | TagsSelect<true>;
     industries: IndustriesSelect<false> | IndustriesSelect<true>;
+    'post-comments': PostCommentsSelect<false> | PostCommentsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
@@ -1686,6 +1688,31 @@ export interface Tag {
   deletedAt?: string | null;
 }
 /**
+ * Bình luận khách gửi từ trang bài viết. Duyệt tại đây trước khi hiển thị.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "post-comments".
+ */
+export interface PostComment {
+  id: number;
+  post: number | Post;
+  status: 'pending' | 'approved' | 'spam';
+  authorName: string;
+  /**
+   * Chỉ nhân viên xem được. KHÔNG hiển thị ra website.
+   */
+  authorEmail?: string | null;
+  content: string;
+  /**
+   * Ghi lại để xử lý khi bị gửi rác. Không hiển thị ra website.
+   */
+  authorIp?: string | null;
+  locale?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  deletedAt?: string | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "forms".
  */
@@ -3201,6 +3228,10 @@ export interface PayloadLockedDocument {
         value: number | Industry;
       } | null)
     | ({
+        relationTo: 'post-comments';
+        value: number | PostComment;
+      } | null)
+    | ({
         relationTo: 'forms';
         value: number | Form;
       } | null)
@@ -4308,6 +4339,22 @@ export interface IndustriesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "post-comments_select".
+ */
+export interface PostCommentsSelect<T extends boolean = true> {
+  post?: T;
+  status?: T;
+  authorName?: T;
+  authorEmail?: T;
+  content?: T;
+  authorIp?: T;
+  locale?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  deletedAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "forms_select".
  */
 export interface FormsSelect<T extends boolean = true> {
@@ -5352,6 +5399,29 @@ export interface SiteSetting {
         id?: string | null;
       }[]
     | null;
+  comments?: {
+    /**
+     * Tắt thì khu bình luận biến mất hoàn toàn khỏi trang bài viết, kể cả các bình luận đã duyệt.
+     */
+    enabled?: boolean | null;
+    /**
+     * NÊN BẬT. Tắt là bình luận hiện ngay lập tức — mở cửa cho quảng cáo rác và nội dung xấu.
+     */
+    requireApproval?: boolean | null;
+    /**
+     * Email chỉ nhân viên xem được, không hiển thị ra website.
+     */
+    requireEmail?: boolean | null;
+    maxLength?: number | null;
+    /**
+     * Chặn gửi hàng loạt. Vượt ngưỡng thì bị từ chối.
+     */
+    perHourPerIp?: number | null;
+    /**
+     * Bỏ trống sẽ dùng câu mặc định theo trạng thái duyệt.
+     */
+    notice?: string | null;
+  };
   /**
    * ID đo lường (để trống nếu chưa dùng).
    */
@@ -5936,6 +6006,16 @@ export interface SiteSettingsSelect<T extends boolean = true> {
         platform?: T;
         url?: T;
         id?: T;
+      };
+  comments?:
+    | T
+    | {
+        enabled?: T;
+        requireApproval?: T;
+        requireEmail?: T;
+        maxLength?: T;
+        perHourPerIp?: T;
+        notice?: T;
       };
   tracking?:
     | T

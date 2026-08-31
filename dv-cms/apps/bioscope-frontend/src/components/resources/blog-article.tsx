@@ -8,7 +8,8 @@ import { Reveal } from '@/components/ui/reveal'
 import { BlogTableOfContents } from '@/components/resources/blog-toc'
 import { BlogComments } from '@/components/resources/blog-comments'
 import { BlogRelatedPosts } from '@/components/resources/blog-related'
-import type { BlogComment, BlogPost } from '@/lib/content'
+import type { BlogPost } from '@/lib/content'
+import type { CommentsData } from '@/lib/cms/comments'
 import { img } from '@/lib/images'
 import { useLocale } from '@/lib/i18n/context'
 import { newsBase } from '@/lib/news-path'
@@ -34,11 +35,11 @@ function extractHeadings(value: unknown): { id: string; title: string }[] {
 export function BlogArticle({
   post,
   related,
-  comments,
+  commentsData,
 }: {
   post: BlogPost
   related: BlogPost[]
-  comments?: BlogComment[]
+  commentsData: CommentsData
 }) {
   const { t, content, locale } = useLocale()
   const m = t.blogPage
@@ -57,7 +58,6 @@ export function BlogArticle({
   // Mục lục lấy từ tiêu đề H2/H3 THẬT trong bài.
   const richToc = rich ? extractHeadings(rich) : []
   const toc = rich ? richToc : sections.map((x) => ({ id: x.id, title: x.title }))
-  const sampleComments = comments ?? content.BLOG_SAMPLE_COMMENTS
   const tags = post.tags ?? [post.topic, post.industry]
   const [copied, setCopied] = useState(false)
   // Client-only page URL (empty on the server) without a set-state-in-effect.
@@ -188,7 +188,7 @@ export function BlogArticle({
 
         <div className="mt-16 space-y-16 border-t border-primary-border/50 pt-16">
           <BlogRelatedPosts posts={related} />
-          <BlogComments initialComments={sampleComments} postTitle={post.title} />
+          <BlogComments data={commentsData} postId={post.cmsId} postTitle={post.title} />
         </div>
 
         <Reveal className="mt-12">

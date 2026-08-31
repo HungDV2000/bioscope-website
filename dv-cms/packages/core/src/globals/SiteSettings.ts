@@ -193,6 +193,83 @@ export const SiteSettings: GlobalConfig = {
           ],
         },
 
+        // ── Bình luận ───────────────────────────────────────────────────────
+        {
+          label: { en: 'Comments', vi: 'Bình luận' },
+          description: 'Cấu hình khu bình luận ở cuối mỗi bài viết.',
+          fields: [
+            {
+              name: 'comments',
+              type: 'group',
+              label: { en: 'Post comments', vi: 'Bình luận bài viết' },
+              fields: [
+                {
+                  name: 'enabled',
+                  type: 'checkbox',
+                  defaultValue: false,
+                  label: { en: 'Enable comments', vi: 'Bật bình luận' },
+                  admin: {
+                    description:
+                      'Tắt thì khu bình luận biến mất hoàn toàn khỏi trang bài viết, kể cả các bình luận đã duyệt.',
+                  },
+                },
+                {
+                  name: 'requireApproval',
+                  type: 'checkbox',
+                  defaultValue: true,
+                  label: { en: 'Review before publishing', vi: 'Duyệt trước khi hiển thị' },
+                  admin: {
+                    description:
+                      'NÊN BẬT. Tắt là bình luận hiện ngay lập tức — mở cửa cho quảng cáo rác và nội dung xấu.',
+                    condition: (_: unknown, sib: { enabled?: boolean }) => sib?.enabled === true,
+                  },
+                },
+                {
+                  name: 'requireEmail',
+                  type: 'checkbox',
+                  defaultValue: false,
+                  label: { en: 'Email required', vi: 'Bắt buộc nhập email' },
+                  admin: {
+                    description: 'Email chỉ nhân viên xem được, không hiển thị ra website.',
+                    condition: (_: unknown, sib: { enabled?: boolean }) => sib?.enabled === true,
+                  },
+                },
+                {
+                  name: 'maxLength',
+                  type: 'number',
+                  defaultValue: 1500,
+                  min: 100,
+                  max: 5000,
+                  label: { en: 'Max characters', vi: 'Số ký tự tối đa' },
+                  admin: { condition: (_: unknown, sib: { enabled?: boolean }) => sib?.enabled === true },
+                },
+                {
+                  name: 'perHourPerIp',
+                  type: 'number',
+                  defaultValue: 5,
+                  min: 1,
+                  max: 60,
+                  label: { en: 'Max comments per hour (per IP)', vi: 'Số bình luận tối đa mỗi giờ (theo IP)' },
+                  admin: {
+                    description: 'Chặn gửi hàng loạt. Vượt ngưỡng thì bị từ chối.',
+                    condition: (_: unknown, sib: { enabled?: boolean }) => sib?.enabled === true,
+                  },
+                },
+                {
+                  name: 'notice',
+                  type: 'text',
+                  localized: true,
+                  label: { en: 'Note under the form', vi: 'Ghi chú dưới khung nhập' },
+                  admin: {
+                    description: 'Bỏ trống sẽ dùng câu mặc định theo trạng thái duyệt.',
+                    condition: (_: unknown, sib: { enabled?: boolean }) => sib?.enabled === true,
+                  },
+                },
+              ],
+            },
+          ],
+        },
+
         // ── Theo dõi & SEO ──────────────────────────────────────────────────
         {
           label: { en: 'Tracking & SEO', vi: 'Theo dõi & SEO' },

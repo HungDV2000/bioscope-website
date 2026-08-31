@@ -6,7 +6,6 @@ import { ingredientForm } from '@/lib/content'
 import {
   BLOG_TOPICS_EN,
   BLOG_INDUSTRIES_EN,
-  BLOG_SAMPLE_COMMENTS_EN,
   translateBlogPost,
   getBlogSectionsEn,
   formatBlogDateEn,
@@ -35,7 +34,6 @@ function buildEnContent(): ContentModule {
     BLOG_POSTS: blogPosts,
     BLOG_TOPICS: BLOG_TOPICS_EN as unknown as typeof vi.BLOG_TOPICS,
     BLOG_INDUSTRIES: BLOG_INDUSTRIES_EN as unknown as typeof vi.BLOG_INDUSTRIES,
-    BLOG_SAMPLE_COMMENTS: BLOG_SAMPLE_COMMENTS_EN,
     getBlogPost: (slug: string) => blogPosts.find((p) => p.slug === slug),
     getRelatedBlogPosts: (post: BlogPost, limit = 3) => getRelatedBlogPostsEn(post, blogPosts, limit),
     getBlogSections: getBlogSectionsEn,

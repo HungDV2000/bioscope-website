@@ -28,7 +28,7 @@ type Entity = { slug: string; type: 'collection' | 'global'; label: string; icon
 type Group = { key: string; icon: NavIconName; label: Record<Lang, string>; items: Entity[] }
 
 const GROUP_DEFS: { key: string; icon: NavIconName; label: Record<Lang, string>; slugs: string[] }[] = [
-  { key: 'content', icon: 'file', label: { en: 'Content', vi: 'Nội dung' }, slugs: ['pages', 'posts', 'categories', 'industries', 'tags', 'forms', 'form-submissions'] },
+  { key: 'content', icon: 'file', label: { en: 'Content', vi: 'Nội dung' }, slugs: ['pages', 'posts', 'categories', 'industries', 'tags', 'post-comments', 'forms', 'form-submissions'] },
   { key: 'bioscope', icon: 'flask', label: { en: 'Bioscope', vi: 'Bioscope' }, slugs: ['ingredients', 'ingredient-categories', 'ingredient-facets', 'technologies', 'services', 'certifications', 'case-studies', 'faqs', 'partners', 'product-categories', 'products'] },
   { key: 'b2b', icon: 'user-circle', label: { en: 'B2B portal', vi: 'Cổng B2B' }, slugs: ['members', 'gated-documents'] },
   { key: 'seo', icon: 'newspaper', label: { en: 'SEO & Marketing', vi: 'SEO & Marketing' }, slugs: ['seo-settings', 'redirects', 'image-settings', 'bioscope-ai'] },
@@ -44,7 +44,7 @@ const GROUP_DEFS: { key: string; icon: NavIconName; label: Record<Lang, string>;
  * danh mục nguyên liệu (cũng tên "Categories" ở nhóm Bioscope).
  */
 const NESTED_UNDER: Record<string, string[]> = {
-  posts: ['categories', 'industries', 'tags'],
+  posts: ['categories', 'industries', 'tags', 'post-comments'],
 }
 const NESTED_SLUGS = new Set(Object.values(NESTED_UNDER).flat())
 

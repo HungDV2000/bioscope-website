@@ -5,6 +5,7 @@ import { getContent } from '@/lib/get-content'
 import { getLocale } from '@/lib/i18n/server'
 import { getPageI18n } from '@/lib/i18n/pages'
 import { getPosts } from '@/lib/cms/blog'
+import { getPostComments } from '@/lib/cms/comments'
 import { JsonLd } from '@/components/seo/json-ld'
 import { absUrl, DEFAULT_OG_IMAGE } from '@/lib/seo'
 
@@ -25,6 +26,11 @@ export async function NewsArticlePage({ slug, base }: { slug: string; base: '/ba
   if (!post?.title?.trim()) notFound()
 
   const listTitle = locale === 'en' ? 'News' : 'Bản tin'
+  // Bình luận thật đã duyệt + cấu hình khu bình luận. Bài tĩnh không có id CMS
+  // nên bỏ qua — khu bình luận sẽ tự ẩn.
+  const commentsData = post.cmsId
+    ? await getPostComments(post.cmsId, locale)
+    : { enabled: false, comments: [], requireApproval: true, requireEmail: false, maxLength: 1500 }
   const related = cmsPosts
     ? cmsPosts.filter((p) => p.slug !== slug).slice(0, 3)
     : content.getRelatedBlogPosts(post, 3)
@@ -110,7 +116,7 @@ export async function NewsArticlePage({ slug, base }: { slug: string; base: '/ba
           )}
         </div>
       </header>
-      <BlogArticle post={post} related={related} comments={content.BLOG_SAMPLE_COMMENTS} />
+      <BlogArticle post={post} related={related} commentsData={commentsData} />
     </>
   )
 }

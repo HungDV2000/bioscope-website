@@ -8,6 +8,7 @@ type Paginated<T> = { docs: T[]; totalDocs: number }
 type Rel = { title?: string; name?: string; slug?: string } | number
 
 type PostDoc = {
+  id: number
   slug: string
   title: string
   excerpt?: string
@@ -58,6 +59,7 @@ function toPost(d: PostDoc, index: number): BlogPost {
   const industry = (d.industries ?? []).map(relName).find(Boolean)
   const authorObj = d.author && typeof d.author === 'object' ? d.author : undefined
   return {
+    cmsId: d.id,
     slug: d.slug,
     title: d.title,
     excerpt: d.excerpt ?? body[0] ?? '',

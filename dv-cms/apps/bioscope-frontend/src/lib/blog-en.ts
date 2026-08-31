@@ -1,4 +1,4 @@
-import type { BlogComment, BlogPost, BlogSection } from './content'
+import type { BlogPost, BlogSection } from './content'
 import { BLOG_INDUSTRIES, BLOG_TOPICS } from './content'
 
 export const BLOG_TOPICS_EN = [
@@ -39,26 +39,6 @@ export const SECTION_TITLES_EN = [
 
 export const BLOG_AUTHOR_EN = 'Bioscope R&D Team'
 
-export const BLOG_SAMPLE_COMMENTS_EN: BlogComment[] = [
-  {
-    id: 'c1',
-    author: 'Nguyễn Minh Anh',
-    role: 'Formulator',
-    company: 'NovaHealth',
-    date: '2026-06-18',
-    content:
-      'Highly practical article — especially the section on validating before production. Our team applied the approach and significantly reduced inventory risk.',
-  },
-  {
-    id: 'c2',
-    author: 'Trần Hoàng Long',
-    role: 'Product Manager',
-    company: 'GreenLab VN',
-    date: '2026-06-12',
-    content:
-      'Thank you, Bioscope, for sharing such a clear case study. We would love to see more articles on premium nutraceutical positioning.',
-  },
-]
 
 export const BLOG_SLUG_EN: Record<string, { title: string; excerpt: string; body: string[] }> = {
   'test-thi-truong-truoc-khi-lam-hang': {

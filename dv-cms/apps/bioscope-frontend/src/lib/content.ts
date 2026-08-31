@@ -1062,14 +1062,6 @@ export type BlogSection = {
   paragraphs: string[]
 }
 
-export type BlogComment = {
-  id: string
-  author: string
-  role?: string
-  company?: string
-  date: string
-  content: string
-}
 
 export type BlogPost = {
   slug: string
@@ -1078,6 +1070,8 @@ export type BlogPost = {
   topic: (typeof BLOG_TOPICS)[number]
   /** Slug của chủ đề — dùng để lọc. So bằng TÊN sẽ vỡ khi biên tập viên đổi tên. */
   topicSlug?: string
+  /** Id bản ghi trong CMS — cần để gắn bình luận đúng bài. */
+  cmsId?: number
   industry: (typeof BLOG_INDUSTRIES)[number]
   readTime: number
   date: string
@@ -1113,24 +1107,6 @@ export function getBlogSections(post: BlogPost): BlogSection[] {
   return sections
 }
 
-export const BLOG_SAMPLE_COMMENTS: BlogComment[] = [
-  {
-    id: 'c1',
-    author: 'Nguyễn Minh Anh',
-    role: 'Formulator',
-    company: 'NovaHealth',
-    date: '2026-06-18',
-    content: 'Bài viết rất thực tế — đặc biệt phần validate trước khi sản xuất. Team chúng tôi đã áp dụng và giảm được rủi ro tồn kho đáng kể.',
-  },
-  {
-    id: 'c2',
-    author: 'Trần Hoàng Long',
-    role: 'Product Manager',
-    company: 'GreenLab VN',
-    date: '2026-06-12',
-    content: 'Cảm ơn Bioscope đã chia sẻ case study rõ ràng. Mong có thêm bài về positioning TPCN premium.',
-  },
-]
 
 export function getRelatedBlogPosts(post: BlogPost, limit = 3): BlogPost[] {
   const others = BLOG_POSTS.filter((p) => p.slug !== post.slug)

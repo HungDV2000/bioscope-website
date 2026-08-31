@@ -175,12 +175,35 @@ function renderTable(node: Node, key: React.Key): React.ReactNode {
   )
 }
 
+/** Chữ thuần của một node — dùng để sinh id neo cho tiêu đề. */
+export function nodeText(node: unknown): string {
+  const n = node as { text?: string; children?: unknown[] }
+  if (typeof n?.text === 'string') return n.text
+  if (Array.isArray(n?.children)) return n.children.map(nodeText).join('')
+  return ''
+}
+
+/** Bỏ dấu tiếng Việt rồi tạo slug — dùng làm id neo cho mục lục. */
+export function headingId(text: string): string {
+  return text
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'D')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 60)
+}
+
 function renderBlock(node: Node, key: React.Key): React.ReactNode {
   switch (node.type) {
     case 'heading': {
       const Tag = (node.tag as 'h2') || 'h2'
+      // id neo để mục lục bên trái nhảy tới đúng mục.
+      const id = headingId(nodeText(node))
       return (
-        <Tag key={key} className={alignClass(node)}>
+        <Tag key={key} id={id || undefined} className={`scroll-mt-28 ${alignClass(node) ?? ''}`.trim()}>
           {renderInline(node.children ?? [])}
         </Tag>
       )

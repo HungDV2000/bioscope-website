@@ -1,4 +1,4 @@
-import { cmsFetch } from '@/lib/payload'
+import { cmsFetch, mediaUrl } from '@/lib/payload'
 import type { Locale } from '@/lib/i18n/config'
 import type { BlogPost } from '@/lib/content'
 import type { ImgKey } from '@/lib/images'
@@ -69,7 +69,12 @@ function toPost(d: PostDoc, index: number): BlogPost {
     readTime: Math.max(3, Math.round(words / 200)),
     date: d.publishedAt ? d.publishedAt.slice(0, 10) : '',
     author: authorObj?.name ?? authorObj?.email ?? 'Bioscope',
+    // Ảnh đại diện thật nếu biên tập viên đã tải lên; không thì dùng ảnh mặc
+    // định luân phiên để thẻ bài không bị trống.
+    coverUrl: mediaUrl(d.cover?.url) ?? undefined,
     image: FALLBACK_IMAGES[index % FALLBACK_IMAGES.length],
+    // Giữ nguyên richText để trang chi tiết dựng đúng định dạng biên tập viên soạn.
+    contentRich: d.content,
     body,
     tags: (d.tags ?? []).map(relName).filter((t): t is string => Boolean(t)),
   }

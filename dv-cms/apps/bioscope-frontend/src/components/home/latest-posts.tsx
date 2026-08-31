@@ -11,6 +11,7 @@ import { img } from '@/lib/images'
 import { newsBase, newsPostPath } from '@/lib/news-path'
 import type { BlogPost } from '@/lib/content'
 import type { SectionMedia } from '@/lib/cms/home'
+import { postImage } from '@/lib/post-image'
 
 /**
  * Khối "Bài viết mới" trên trang chủ.
@@ -74,7 +75,7 @@ export function LatestPosts({ posts, media }: { posts: BlogPost[]; media?: Secti
       >
         <div className="relative aspect-[16/10] overflow-hidden bg-mist">
           <Image
-            src={img(p.image, 720)}
+            src={postImage(p, 720)}
             alt=""
             fill
             sizes="(max-width: 640px) 84vw, (max-width: 1024px) 46vw, 32vw"

@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from 'react'
 import { cn } from '@/lib/utils'
-import type { BlogSection } from '@/lib/content'
 import { useLocale } from '@/lib/i18n/context'
 
 export function BlogTableOfContents({
   sections,
 }: {
-  sections: BlogSection[]
+  /** Chỉ cần id + tiêu đề — dùng được cho cả mục lục sinh từ richText. */
+  sections: { id: string; title: string }[]
 }) {
   const { t } = useLocale()
   const m = t.blogPage
@@ -53,7 +53,11 @@ export function BlogTableOfContents({
                   : 'text-ink/60 hover:bg-white hover:text-ink',
               )}
             >
-              <span className="mt-0.5 shrink-0 text-[11px] font-bold text-ink/30">{i + 1}.</span>
+              {/* Chỉ tự đánh số khi tiêu đề CHƯA có số. Bài viết thường tự đánh
+                  "1." "2." trong tiêu đề, thêm số nữa thành "1.1." rất khó đọc. */}
+              {!/^\d+[.)]/.test(title.trim()) && (
+                <span className="mt-0.5 shrink-0 text-[11px] font-bold text-ink/30">{i + 1}.</span>
+              )}
               {title}
             </a>
           </li>

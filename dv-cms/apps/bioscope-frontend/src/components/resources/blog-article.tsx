@@ -12,6 +12,24 @@ import type { BlogComment, BlogPost } from '@/lib/content'
 import { img } from '@/lib/images'
 import { useLocale } from '@/lib/i18n/context'
 import { newsBase } from '@/lib/news-path'
+import { RichText, nodeText, headingId } from '@/components/ui/rich-text'
+import { postImage } from '@/lib/post-image'
+
+/** Trích tiêu đề H2/H3 từ richText để dựng mục lục. */
+function extractHeadings(value: unknown): { id: string; title: string }[] {
+  const root = (value as { root?: { children?: unknown[] } } | undefined)?.root
+  if (!root?.children) return []
+  const out: { id: string; title: string }[] = []
+  for (const c of root.children) {
+    const n = c as { type?: string; tag?: string }
+    if (n.type !== 'heading') continue
+    if (n.tag !== 'h2' && n.tag !== 'h3') continue
+    const title = nodeText(c).trim()
+    const id = headingId(title)
+    if (title && id) out.push({ id, title })
+  }
+  return out
+}
 
 export function BlogArticle({
   post,
@@ -24,7 +42,21 @@ export function BlogArticle({
 }) {
   const { t, content, locale } = useLocale()
   const m = t.blogPage
-  const sections = content.getBlogSections(post)
+  /**
+   * Bài từ CMS dựng NGUYÊN VẸN nội dung richText — giữ tiêu đề, chữ đậm, ảnh,
+   * danh sách đúng như biên tập viên soạn.
+   *
+   * Trước đây mọi bài đều bị cắt thành ba phần đều nhau rồi gán tiêu đề CỨNG
+   * ("Bối cảnh & vấn đề", "Phân tích & giải pháp", "Kết luận & hành động").
+   * Cách đó chỉ hợp với mấy bài mẫu tĩnh; với bài thật nó bịa ra cấu trúc
+   * không hề có và làm mất toàn bộ định dạng.
+   */
+  const rich = post.contentRich
+  const sections = rich ? [] : content.getBlogSections(post)
+
+  // Mục lục lấy từ tiêu đề H2/H3 THẬT trong bài.
+  const richToc = rich ? extractHeadings(rich) : []
+  const toc = rich ? richToc : sections.map((x) => ({ id: x.id, title: x.title }))
   const sampleComments = comments ?? content.BLOG_SAMPLE_COMMENTS
   const tags = post.tags ?? [post.topic, post.industry]
   const [copied, setCopied] = useState(false)
@@ -76,7 +108,7 @@ export function BlogArticle({
         <Reveal delay={0.05}>
           <div className="relative mt-8 aspect-[21/9] overflow-hidden rounded-[2rem]">
             <Image
-              src={img(post.image, 1200)}
+              src={postImage(post, 1200)}
               alt={post.title}
               fill
               sizes="100vw"
@@ -89,7 +121,7 @@ export function BlogArticle({
         <div className="mt-12 grid gap-10 lg:grid-cols-[220px_minmax(0,1fr)] xl:grid-cols-[240px_minmax(0,1fr)]">
           <aside className="hidden lg:block">
             <div className="sticky top-28 space-y-6">
-              <BlogTableOfContents sections={sections} />
+              <BlogTableOfContents sections={toc} />
               <div className="rounded-[1.5rem] border border-primary-border/60 bg-white p-5">
                 <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-ink/40">{m.share}</p>
                 <div className="mt-3 flex flex-col gap-2">
@@ -119,9 +151,16 @@ export function BlogArticle({
 
           <div className="min-w-0">
             <div className="mb-8 lg:hidden">
-              <BlogTableOfContents sections={sections} />
+              <BlogTableOfContents sections={toc} />
             </div>
 
+            {rich ? (
+              <Reveal>
+                <div className="blog-rich">
+                  <RichText value={rich} className="max-w-none" />
+                </div>
+              </Reveal>
+            ) : (
             <div className="space-y-12">
               {sections.map((section, si) => (
                 <Reveal key={section.id} delay={si * 0.04}>
@@ -140,6 +179,7 @@ export function BlogArticle({
                 </Reveal>
               ))}
             </div>
+            )}
 
             <Reveal className="mt-12">
               <div className="flex gap-5 rounded-[1.5rem] border border-primary-border/60 bg-mist/40 p-6 sm:items-center">

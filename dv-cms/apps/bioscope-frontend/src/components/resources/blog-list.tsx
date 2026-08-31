@@ -9,6 +9,7 @@ import { img } from '@/lib/images'
 import { cn } from '@/lib/utils'
 import { useLocale } from '@/lib/i18n/context'
 import { newsPostPath } from '@/lib/news-path'
+import { postImage } from '@/lib/post-image'
 
 const PAGE_SIZE = 6
 
@@ -265,7 +266,7 @@ export function BlogList({
               >
                 <div className="relative aspect-[16/10] lg:aspect-auto lg:min-h-[280px]">
                   <Image
-                    src={img(featured.image, 900)}
+                    src={postImage(featured, 900)}
                     alt={featured.title}
                     fill
                     sizes="(max-width: 1024px) 100vw, 45vw"
@@ -311,7 +312,7 @@ export function BlogList({
                 >
                   <div className="relative aspect-[16/10] overflow-hidden">
                     <Image
-                      src={img(post.image, 600)}
+                      src={postImage(post, 600)}
                       alt={post.title}
                       fill
                       sizes="(max-width: 768px) 100vw, 360px"

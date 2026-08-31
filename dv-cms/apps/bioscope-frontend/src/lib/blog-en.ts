@@ -292,7 +292,11 @@ export function getBlogSectionsEn(post: BlogPost): BlogSection[] {
 }
 
 export function formatBlogDateEn(iso: string): string {
-  return new Date(iso).toLocaleDateString('en-US', {
+  // Bài chưa có ngày đăng → chuỗi rỗng, không phải "Invalid Date".
+  if (!iso) return ''
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return ''
+  return d.toLocaleDateString('en-US', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',

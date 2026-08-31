@@ -89,6 +89,29 @@
     background-color: color-mix(in oklab, var(--color-primary) 45%, white);
   }
 
+  /* Nội dung bài viết dựng từ richText — hiển thị ĐÚNG như biên tập viên soạn
+     trong trình soạn thảo của CMS: tiêu đề, chữ đậm, danh sách, ảnh, trích dẫn. */
+  .blog-rich > div > * { margin-block: 0; }
+  .blog-rich p { margin: 0 0 1.1em; font-size: 16px; line-height: 1.8; color: color-mix(in oklab, var(--color-ink) 75%, white); }
+  .blog-rich h2 { margin: 2.1em 0 0.7em; font-size: 1.5rem; font-weight: 700; letter-spacing: -0.01em; color: var(--color-ink); }
+  .blog-rich h3 { margin: 1.7em 0 0.6em; font-size: 1.2rem; font-weight: 700; color: var(--color-ink); }
+  .blog-rich h4 { margin: 1.5em 0 0.5em; font-size: 1.05rem; font-weight: 700; color: var(--color-ink); }
+  .blog-rich h2:first-child, .blog-rich h3:first-child { margin-top: 0; }
+  .blog-rich strong { font-weight: 700; color: var(--color-ink); }
+  .blog-rich em { font-style: italic; }
+  .blog-rich a { color: var(--color-primary); font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
+  .blog-rich ul, .blog-rich ol { margin: 0 0 1.1em; padding-left: 1.4em; font-size: 16px; line-height: 1.8; color: color-mix(in oklab, var(--color-ink) 75%, white); }
+  .blog-rich ul { list-style: disc; }
+  .blog-rich ol { list-style: decimal; }
+  .blog-rich li { margin-bottom: 0.35em; }
+  .blog-rich li::marker { color: var(--color-primary); }
+  .blog-rich img { border-radius: 1rem; margin: 1.6em 0; }
+  .blog-rich figure { margin: 1.6em 0; }
+  .blog-rich figcaption { margin-top: 0.6em; font-size: 13px; text-align: center; color: color-mix(in oklab, var(--color-ink) 45%, white); }
+  .blog-rich table { width: 100%; margin: 1.6em 0; border-collapse: collapse; font-size: 14.5px; }
+  .blog-rich th, .blog-rich td { border: 1px solid var(--color-primary-border); padding: 0.6em 0.8em; text-align: left; }
+  .blog-rich th { background: var(--color-tint, #eef6f1); font-weight: 700; }
+
   @keyframes bs-float {
     0%,
     100% {

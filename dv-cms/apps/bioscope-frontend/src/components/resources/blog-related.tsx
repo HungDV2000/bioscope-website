@@ -8,6 +8,7 @@ import type { BlogPost } from '@/lib/content'
 import { img } from '@/lib/images'
 import { useLocale } from '@/lib/i18n/context'
 import { newsPostPath } from '@/lib/news-path'
+import { postImage } from '@/lib/post-image'
 
 export function BlogRelatedPosts({ posts }: { posts: BlogPost[] }) {
   const { t, content, locale } = useLocale()
@@ -30,7 +31,7 @@ export function BlogRelatedPosts({ posts }: { posts: BlogPost[] }) {
             >
               <div className="relative aspect-[16/10] overflow-hidden">
                 <Image
-                  src={img(post.image, 480)}
+                  src={postImage(post, 480)}
                   alt={post.title}
                   fill
                   sizes="(max-width: 768px) 100vw, 320px"

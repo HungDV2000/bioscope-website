@@ -1083,7 +1083,11 @@ export type BlogPost = {
   date: string
   author: string
   image: ImgKey
+  /** Ảnh đại diện tải lên CMS. Rỗng thì dùng `image` (ảnh mặc định luân phiên). */
+  coverUrl?: string
   body: string[]
+  /** Nội dung richText NGUYÊN VẸN từ CMS — giữ tiêu đề, chữ đậm, ảnh, danh sách. */
+  contentRich?: unknown
   sections?: BlogSection[]
   tags?: string[]
 }
@@ -1448,7 +1452,12 @@ export function getBlogPost(slug: string) {
 }
 
 export function formatBlogDate(iso: string, locale: 'vi' | 'en' = 'vi') {
-  return new Date(iso).toLocaleDateString(locale === 'en' ? 'en-US' : 'vi-VN', {
+  // Bài chưa đặt ngày đăng thì trả chuỗi rỗng. Trước đây new Date('') cho ra
+  // "Invalid Date" và chuỗi đó hiện thẳng lên thẻ bài.
+  if (!iso) return ''
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return ''
+  return d.toLocaleDateString(locale === 'en' ? 'en-US' : 'vi-VN', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',

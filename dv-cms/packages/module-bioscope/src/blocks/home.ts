@@ -186,6 +186,43 @@ export const HOME_BLOCKS: Block[] = [
     ],
   },
   {
+    slug: 'homeLatestPosts',
+    interfaceName: 'HomeLatestPostsBlock',
+    labels: { singular: { en: 'Latest posts', vi: 'Bài viết mới' }, plural: { en: 'Latest posts', vi: 'Bài viết mới' } },
+    fields: [
+      T('title', { en: 'Title', vi: 'Tiêu đề' }),
+      R('description', { en: 'Description', vi: 'Mô tả' }),
+      T('viewAll', { en: 'View all label', vi: 'Nhãn nút xem tất cả' }),
+      {
+        name: 'limit',
+        type: 'number',
+        defaultValue: 3,
+        min: 1,
+        max: 12,
+        label: { en: 'Number of posts', vi: 'Số bài hiển thị' },
+        admin: {
+          description: {
+            en: 'From 4 posts up the section turns into a slider automatically.',
+            vi: 'Từ 4 bài trở lên khối tự chuyển sang dạng trượt.',
+          },
+        },
+      },
+      {
+        // Lọc theo chủ đề là TUỲ CHỌN. Bỏ trống = lấy bài mới nhất bất kể chủ đề.
+        name: 'category',
+        type: 'relationship',
+        relationTo: 'categories',
+        label: { en: 'Only this category', vi: 'Chỉ lấy chủ đề này' },
+        admin: {
+          description: {
+            en: 'Leave empty to show the newest posts from every category.',
+            vi: 'Bỏ trống để lấy bài mới nhất của mọi chủ đề.',
+          },
+        },
+      },
+    ],
+  },
+  {
     slug: 'homeCta',
     interfaceName: 'HomeCtaBlock',
     labels: { singular: { en: 'Closing CTA', vi: 'CTA cuối trang' }, plural: { en: 'Closing CTA', vi: 'CTA cuối trang' } },

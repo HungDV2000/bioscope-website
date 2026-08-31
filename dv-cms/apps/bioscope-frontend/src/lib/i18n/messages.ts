@@ -79,6 +79,13 @@ export type Messages = {
       title: string
       viewAll: string
     }
+    latestPosts: {
+      title: string
+      description: string
+      viewAll: string
+      readMore: string
+      empty: string
+    }
     experts: {
       eyebrow: string
       title: string
@@ -282,6 +289,13 @@ const vi: Messages = {
     caseStudies: {
       title: 'Đổi mới tạo nên tác động — Giải pháp thật. Kết quả thật. Tăng trưởng thật.',
       viewAll: 'Xem tất cả câu chuyện',
+    },
+    latestPosts: {
+      title: 'Bài viết mới nhất',
+      description: 'Kiến thức chuyên môn về phát triển nhãn hàng, công thức và xu hướng thị trường.',
+      viewAll: 'Xem tất cả bài viết',
+      readMore: 'Đọc bài viết',
+      empty: 'Chưa có bài viết nào.',
     },
     experts: {
       eyebrow: 'Đội ngũ chuyên gia',
@@ -520,6 +534,13 @@ const en: Messages = {
     caseStudies: {
       title: 'Innovation that drives impact — Real solutions. Real results. Real growth.',
       viewAll: 'View all stories',
+    },
+    latestPosts: {
+      title: 'Latest posts',
+      description: 'Expert knowledge on brand development, formulation and market trends.',
+      viewAll: 'View all posts',
+      readMore: 'Read the post',
+      empty: 'No posts yet.',
     },
     experts: {
       eyebrow: 'Expert team',

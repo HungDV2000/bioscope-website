@@ -5,6 +5,8 @@ import type { ImgKey } from '@/lib/images'
 
 type Paginated<T> = { docs: T[]; totalDocs: number }
 
+type Rel = { title?: string; name?: string; slug?: string } | number
+
 type PostDoc = {
   slug: string
   title: string
@@ -12,7 +14,7 @@ type PostDoc = {
   content?: unknown
   cover?: { url?: string } | null
   author?: { name?: string; email?: string } | number | null
-  categories?: ({ title?: string; name?: string } | number)[]
+  categories?: Rel[]
   industries?: ({ title?: string; name?: string } | number)[]
   tags?: ({ title?: string; name?: string } | number)[]
   publishedAt?: string
@@ -39,15 +41,20 @@ function lexicalToParagraphs(value: unknown): string[] {
   return root.children.map(readNode).map((s) => s.trim()).filter(Boolean)
 }
 
-function relName(rel: { title?: string; name?: string } | number | null | undefined): string | undefined {
+function relName(rel: Rel | null | undefined): string | undefined {
   if (rel && typeof rel === 'object') return rel.title ?? rel.name
   return undefined
+}
+
+function relSlug(rel: Rel | null | undefined): string | undefined {
+  return rel && typeof rel === 'object' ? rel.slug : undefined
 }
 
 function toPost(d: PostDoc, index: number): BlogPost {
   const body = lexicalToParagraphs(d.content)
   const words = body.join(' ').split(/\s+/).filter(Boolean).length
   const topic = (d.categories ?? []).map(relName).find(Boolean)
+  const topicSlug = (d.categories ?? []).map(relSlug).find(Boolean)
   const industry = (d.industries ?? []).map(relName).find(Boolean)
   const authorObj = d.author && typeof d.author === 'object' ? d.author : undefined
   return {
@@ -57,6 +64,7 @@ function toPost(d: PostDoc, index: number): BlogPost {
     // Chủ đề và ngành lấy TỪ CMS. Trước đây `industry` bị gán cứng 'Đa ngành'
     // nên mọi bộ lọc ngành khác đều đếm ra 0.
     topic: (topic ?? '') as BlogPost['topic'],
+    topicSlug,
     industry: (industry ?? '') as BlogPost['industry'],
     readTime: Math.max(3, Math.round(words / 200)),
     date: d.publishedAt ? d.publishedAt.slice(0, 10) : '',

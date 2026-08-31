@@ -648,6 +648,7 @@ export interface Page {
         | HomeCertificationsBlock
         | HomeExpertsBlock
         | HomeAiPromoBlock
+        | HomeLatestPostsBlock
         | HomeCtaBlock
         | AboutMissionBlock
         | AboutDifferentiationBlock
@@ -1178,6 +1179,65 @@ export interface HomeAiPromoBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "HomeLatestPostsBlock".
+ */
+export interface HomeLatestPostsBlock {
+  title?: string | null;
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  viewAll?: string | null;
+  /**
+   * From 4 posts up the section turns into a slider automatically.
+   */
+  limit?: number | null;
+  /**
+   * Leave empty to show the newest posts from every category.
+   */
+  category?: (number | null) | Category;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'homeLatestPosts';
+}
+/**
+ * Chủ đề dùng để phân loại và lọc bài viết trên trang Bản tin.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "categories".
+ */
+export interface Category {
+  id: number;
+  name: string;
+  /**
+   * Đường dẫn theo từng ngôn ngữ. Để trống sẽ tự tạo từ tiêu đề của ngôn ngữ đang chọn.
+   */
+  slug?: string | null;
+  /**
+   * Hiển thị ở đầu trang lọc theo chủ đề (tuỳ chọn).
+   */
+  description?: string | null;
+  /**
+   * Số nhỏ hiện trước trong bộ lọc.
+   */
+  order?: number | null;
+  updatedAt: string;
+  createdAt: string;
+  deletedAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "HomeCtaBlock".
  */
 export interface HomeCtaBlock {
@@ -1585,31 +1645,6 @@ export interface Post {
   createdAt: string;
   deletedAt?: string | null;
   _status?: ('draft' | 'published') | null;
-}
-/**
- * Chủ đề dùng để phân loại và lọc bài viết trên trang Bản tin.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "categories".
- */
-export interface Category {
-  id: number;
-  name: string;
-  /**
-   * Đường dẫn theo từng ngôn ngữ. Để trống sẽ tự tạo từ tiêu đề của ngôn ngữ đang chọn.
-   */
-  slug?: string | null;
-  /**
-   * Hiển thị ở đầu trang lọc theo chủ đề (tuỳ chọn).
-   */
-  description?: string | null;
-  /**
-   * Số nhỏ hiện trước trong bộ lọc.
-   */
-  order?: number | null;
-  updatedAt: string;
-  createdAt: string;
-  deletedAt?: string | null;
 }
 /**
  * Ngành hàng dùng để lọc bài viết: Thực phẩm chức năng, Mỹ phẩm, Dược phẩm…
@@ -3575,6 +3610,7 @@ export interface PagesSelect<T extends boolean = true> {
         homeCertifications?: T | HomeCertificationsBlockSelect<T>;
         homeExperts?: T | HomeExpertsBlockSelect<T>;
         homeAiPromo?: T | HomeAiPromoBlockSelect<T>;
+        homeLatestPosts?: T | HomeLatestPostsBlockSelect<T>;
         homeCta?: T | HomeCtaBlockSelect<T>;
         aboutMission?: T | AboutMissionBlockSelect<T>;
         aboutDifferentiation?: T | AboutDifferentiationBlockSelect<T>;
@@ -3907,6 +3943,19 @@ export interface HomeAiPromoBlockSelect<T extends boolean = true> {
   demoAi2?: T;
   replyAntiAging?: T;
   replyOmega3?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "HomeLatestPostsBlock_select".
+ */
+export interface HomeLatestPostsBlockSelect<T extends boolean = true> {
+  title?: T;
+  description?: T;
+  viewAll?: T;
+  limit?: T;
+  category?: T;
   id?: T;
   blockName?: T;
 }

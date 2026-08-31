@@ -14,6 +14,7 @@ const BLOCK_TO_SECTION: Record<string, HomeSection> = {
   homeCaseStudies: 'caseStudies',
   homeCertifications: 'certifications',
   homeExperts: 'experts',
+  homeLatestPosts: 'latestPosts',
   homeAiPromo: 'aiChat',
   homeCta: 'cta',
 }
@@ -21,7 +22,7 @@ const BLOCK_TO_SECTION: Record<string, HomeSection> = {
 /** Default section order when the CMS is unreachable or homePage is unset. */
 const DEFAULT_ORDER: HomeSection[] = [
   'hero', 'brands', 'process', 'categories', 'caseStudies',
-  'certifications', 'experts', 'cta', 'aiChat',
+  'certifications', 'experts', 'latestPosts', 'cta', 'aiChat',
 ]
 
 /** A card's image + (optional) link, extracted from a block outside the i18n overlay. */
@@ -38,6 +39,9 @@ export type SectionMedia = {
    * collection or typed by hand in the CMS (then `icon` names the lucide glyph).
    */
   categoryChips?: { name: string; href: string; icon?: string }[]
+  /** Khối bài viết mới: số bài hiển thị + lọc theo chủ đề (tuỳ chọn). */
+  postLimit?: number
+  postCategory?: string
   /** Hero CTA links + optional background video. */
   ctaPrimaryHref?: string
   ctaSecondaryHref?: string
@@ -89,6 +93,15 @@ function extractMedia(block: Block): SectionMedia | undefined {
     }
     case 'homeCta':
       return { image: uploadUrl(b.image), descRich: richVal(b.description) }
+    case 'homeLatestPosts': {
+      // Quan hệ chủ đề có thể là số (chưa populate) hoặc đối tượng (depth>=1).
+      const cat = b.category as { slug?: string } | number | null | undefined
+      return {
+        descRich: richVal(b.description),
+        postLimit: typeof b.limit === 'number' && b.limit > 0 ? Math.min(b.limit, 12) : undefined,
+        postCategory: cat && typeof cat === 'object' ? cat.slug : undefined,
+      }
+    }
     case 'homeExperts':
       return { image: uploadUrl(b.image) }
     case 'homeProcess':

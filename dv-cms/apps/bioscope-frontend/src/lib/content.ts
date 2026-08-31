@@ -1076,6 +1076,8 @@ export type BlogPost = {
   title: string
   excerpt: string
   topic: (typeof BLOG_TOPICS)[number]
+  /** Slug của chủ đề — dùng để lọc. So bằng TÊN sẽ vỡ khi biên tập viên đổi tên. */
+  topicSlug?: string
   industry: (typeof BLOG_INDUSTRIES)[number]
   readTime: number
   date: string

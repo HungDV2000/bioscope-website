@@ -82,7 +82,26 @@ BEGIN
   END IF;
 END$$;
 
--- ── 5. Khoá tài liệu đang mở trong admin ────────────────────────────────────
+-- ── 5. Quan hệ ở BẢNG PHIÊN BẢN của bài viết ────────────────────────────────
+-- Posts bật lưu bản nháp (versions.drafts) nên Payload sinh bảng bóng
+-- `_posts_v_rels` song song với `posts_rels`. Thêm quan hệ mới mà QUÊN bảng này
+-- thì trang danh sách bài viết trong admin trắng trơn: truy vấn phiên bản gãy
+-- với lỗi "column _posts_v_rels.industries_id does not exist".
+ALTER TABLE public._posts_v_rels
+  ADD COLUMN IF NOT EXISTS industries_id integer;
+CREATE INDEX IF NOT EXISTS _posts_v_rels_industries_id_idx
+  ON public._posts_v_rels USING btree (industries_id);
+
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname='_posts_v_rels_industries_fk') THEN
+    ALTER TABLE public._posts_v_rels
+      ADD CONSTRAINT _posts_v_rels_industries_fk
+      FOREIGN KEY (industries_id) REFERENCES public.industries(id) ON DELETE CASCADE;
+  END IF;
+END$$;
+
+-- ── 6. Khoá tài liệu đang mở trong admin ────────────────────────────────────
 ALTER TABLE public.payload_locked_documents_rels
   ADD COLUMN IF NOT EXISTS industries_id integer;
 CREATE INDEX IF NOT EXISTS payload_locked_documents_rels_industries_id_idx
@@ -106,3 +125,4 @@ UNION ALL
 SELECT 'cột industries_id', table_name FROM information_schema.columns
  WHERE column_name='industries_id' AND table_schema='public'
  ORDER BY 1, 2;
+-- Phải in ra ĐỦ BA bảng: posts_rels, _posts_v_rels, payload_locked_documents_rels.

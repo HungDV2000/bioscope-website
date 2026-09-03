@@ -21,11 +21,11 @@ const MONO = 'Menlo'
 const CONTENT_W = 9360   // bề rộng vùng nội dung (twip)
 
 const SETS = {
-  A: 'Hồ sơ AI cập nhật sản phẩm',
-  B: 'Hồ sơ hệ thống website',
-  C: 'Hồ sơ chatbot AI tích hợp',
-  D: 'Hồ sơ sản xuất phần mềm nội bộ',
-  R: 'Hồ sơ hệ thống Bioscope',
+  '00': 'Hồ sơ chung — sản xuất phần mềm nội bộ',
+  DA1: 'DA1 · Website và hệ quản trị nội dung',
+  DA2: 'DA2 · AI chuẩn hoá dữ liệu sản phẩm',
+  DA3: 'DA3 · Chatbot AI đa kênh',
+  R: 'Hồ sơ sản xuất phần mềm nội bộ — Bioscope',
 }
 
 // ── Inline: **đậm**, *nghiêng*, `mã`, [chữ](link) ──────────────────────────
@@ -156,11 +156,39 @@ const callout = (lines) => {
 /** Bảng markdown → bảng docx, cột chia theo độ dài nội dung */
 function mdTable(rows, aligns) {
   const n = rows[0].length
+  // Hàng thiếu ô thì bù rỗng, thừa ô thì cắt. Không chuẩn hoá thì widths[j] là
+  // undefined ở ô thừa, docx nhận 'NaN' và ném lỗi làm HỎNG CẢ TỆP — mà nguyên
+  // nhân chỉ là một dấu | thừa cuối dòng, rất khó nhìn ra trong Markdown.
+  rows = rows.map((r) => (r.length === n ? r : Array.from({ length: n }, (_, j) => r[j] ?? '')))
+  aligns = Array.from({ length: n }, (_, j) => aligns?.[j])
   const maxLen = new Array(n).fill(1)
   rows.forEach((r) => r.forEach((c, j) => { maxLen[j] = Math.max(maxLen[j], Math.min(stripMd(c).length, 60)) }))
   const total = maxLen.reduce((a, b) => a + b, 0)
   const MIN = Math.floor(CONTENT_W / (n * 3.2))
-  let widths = maxLen.map((l) => Math.max(MIN, Math.round((l / total) * CONTENT_W)))
+  // Chuỗi liền dài nhất của mỗi cột (ngày, mã tài liệu, đường dẫn...). Cột hẹp
+  // hơn chuỗi này thì Word ngắt dòng NGAY GIỮA chuỗi — '26/05/2026' hiện thành
+  // '26/05/2' xuống dòng '026', đọc ra ngày khác hẳn. Bảng ngày tháng trong hồ
+  // sơ mà sai kiểu này là hỏng nghĩa, không chỉ xấu.
+  const HARD = rows.map((r) => r).reduce((acc, r) => {
+    r.forEach((c, j) => {
+      const longest = Math.max(0, ...String(stripMd(c)).split(/\s+/).map((w) => w.length))
+      acc[j] = Math.max(acc[j] ?? 0, longest)
+    })
+    return acc
+  }, new Array(n).fill(0))
+  // ~140 twip mỗi ký tự ở cỡ chữ 10pt, cộng lề trái/phải ô. Ước rộng tay: ước hụt
+  // thì ngắt sai chỗ, ước dư thì chỉ thừa vài milimét — sai một chiều rẻ hơn hẳn.
+  const hardW = HARD.map((ch) => Math.min(CONTENT_W, ch * 140 + 300))
+  let widths = maxLen.map((l, j) =>
+    Math.max(MIN, hardW[j], Math.round((l / total) * CONTENT_W)))
+  // Ép tổng về đúng bề rộng vùng nội dung, trừ dần vào cột rộng nhất.
+  let over = widths.reduce((a, b) => a + b, 0) - CONTENT_W
+  while (over > 0) {
+    const j = widths.indexOf(Math.max(...widths))
+    const cut = Math.min(over, widths[j] - MIN)
+    if (cut <= 0) break
+    widths[j] -= cut; over -= cut
+  }
   const diff = CONTENT_W - widths.reduce((a, b) => a + b, 0)
   widths[widths.indexOf(Math.max(...widths))] += diff
 
@@ -193,6 +221,36 @@ function mdTable(rows, aligns) {
       })),
     })),
   })
+}
+
+
+/**
+ * Khối siêu dữ liệu đặt ở ĐẦU tệp .md, dạng:
+ *
+ *   <!--HOSO
+ *   ngay_lap: 26/05/2026
+ *   lich_su: 1.0 | 26/05/2026 | Ban hành lần đầu
+ *   -->
+ *
+ * Vì sao không hard-code trong công cụ: NGÀY LẬP của tài liệu yêu cầu và tài
+ * liệu thiết kế phải NẰM TRƯỚC mốc bắt đầu viết mã của dự án tương ứng — hồ sơ
+ * ghi ngày lập sau ngày code là mâu thuẫn ai đọc cũng thấy. Mỗi dự án có mốc
+ * riêng nên ngày phải khai theo từng tệp, không thể dùng chung một hằng số.
+ * `lich_su` lặp lại được nhiều dòng, mỗi dòng một lần ban hành.
+ */
+function readMeta(md) {
+  const m = md.match(/^<!--HOSO\r?\n([\s\S]*?)-->\r?\n/)
+  if (!m) return { meta: {}, body: md }
+  const meta = { lich_su: [] }
+  for (const line of m[1].split(/\r?\n/)) {
+    const kv = line.match(/^\s*([a-z_]+)\s*:\s*(.*)$/)
+    if (!kv) continue
+    const [, k, v] = kv
+    if (!v.trim()) continue
+    if (k === 'lich_su') meta.lich_su.push(v.split('|').map((x) => x.trim()))
+    else meta[k] = v.trim()
+  }
+  return { meta, body: md.slice(m[0].length) }
 }
 
 // ── Bộ phân tích Markdown ──────────────────────────────────────────────────
@@ -270,13 +328,20 @@ function parse(md) {
 
 // ── Dựng tài liệu ──────────────────────────────────────────────────────────
 function build(mdPath, outPath, logo) {
-  const md = fs.readFileSync(mdPath, 'utf8')
+  const raw = fs.readFileSync(mdPath, 'utf8')
+  const { meta, body: md } = readMeta(raw)
   const { title, blocks } = parse(md)
   const base = path.basename(mdPath, '.md')
   const isReadme = base === 'README'
-  const code = isReadme ? 'MỤC LỤC' : base.split('-')[0]
-  const setKey = isReadme ? 'R' : code[0]
-  const setName = SETS[setKey]
+  // Mã tài liệu = hai đoạn đầu tên tệp ('DA1-02', '00-1'). Trước đây chỉ lấy một
+  // đoạn nên mọi tài liệu trong cùng bộ đều mang chung một mã — không tra cứu được.
+  const parts = base.split('-')
+  const code = isReadme ? 'MỤC LỤC' : parts.slice(0, 2).join('-')
+  const setPrefix = isReadme ? 'R' : parts[0]
+  // Tiền tố tên tệp CHÍNH LÀ mã bộ ('00', 'DA1'...). Có dự phòng để tệp đặt tên
+  // lạ vẫn dựng ra được, thay vì làm hỏng cả lượt chạy.
+  const setKey = setPrefix
+  const setName = SETS[setKey] ?? SETS.R
 
   const body = []
   let hasContent = false   // đã có nội dung thật chưa — quyết định có ngắt trang không
@@ -342,14 +407,28 @@ function build(mdPath, outPath, logo) {
             },
             children: [new TextRun({ text: title.toUpperCase(), font: FONT, size: 36, bold: true, color: C.primaryDark })] }),
           new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 700 },
-            children: [new TextRun({ text: 'Hệ thống website và quản trị nội dung Bioscope',
+            children: [new TextRun({ text: meta.phu_de ?? 'Công ty Bioscope',
               font: FONT, size: 24, color: C.inkSoft, italics: true })] }),
           mdTable(
-            [['Mục', 'Nội dung'], ['Mã tài liệu', code], ['Thuộc bộ', setName],
-             ['Ngày lập', '28/08/2026'], ['Phiên bản', '1.0'], ['Phạm vi', 'Toàn hệ thống Bioscope']],
+            [['Mục', 'Nội dung'],
+             ['Mã tài liệu', code],
+             ['Thuộc bộ', setName],
+             ['Phạm vi áp dụng', meta.pham_vi ?? '—'],
+             ['Ngày lập', meta.ngay_lap ?? '—'],
+             ['Phiên bản', meta.phien_ban ?? '1.0'],
+             ['Người lập', meta.nguoi_lap ?? '—'],
+             ['Người duyệt', meta.nguoi_duyet ?? '—']],
             ['left', 'left'],
           ),
-          new Paragraph({ spacing: { after: 600 } }),
+          new Paragraph({ spacing: { after: 420 } }),
+          ...(meta.lich_su && meta.lich_su.length
+            ? [new Paragraph({ spacing: { after: 140 },
+                children: [new TextRun({ text: 'LỊCH SỬ SỬA ĐỔI', font: FONT, size: 19,
+                  bold: true, color: C.primaryDark, characterSpacing: 40 })] }),
+               mdTable([['Phiên bản', 'Ngày', 'Nội dung sửa đổi'], ...meta.lich_su],
+                       ['center', 'center', 'left']),
+               new Paragraph({ spacing: { after: 420 } })]
+            : []),
           new Paragraph({ alignment: AlignmentType.CENTER,
             children: [new TextRun({ text: 'Tài liệu nội bộ — không phổ biến ra ngoài',
               font: FONT, size: 18, color: C.inkSoft, italics: true })] }),
@@ -376,7 +455,7 @@ function build(mdPath, outPath, logo) {
               children: [new Paragraph({ spacing: { after: 0 },
                 children: [new ImageRun({ type: 'png', data: logo, transformation: { width: 106, height: 31 } })] })] }),
             new TableCell({ width: { size: 7160, type: WidthType.DXA },
-              margins: { top: 40, bottom: 100, left: 0, right: 0 }, verticalAlign: VerticalAlign.CENTER,
+              margins: { top: 40, bottom: 100, left: 220, right: 0 }, verticalAlign: VerticalAlign.CENTER,
               children: [new Paragraph({ alignment: AlignmentType.RIGHT, spacing: { after: 0 },
                 children: [new TextRun({ text: `${code} · ${title}`, font: FONT, size: 17, color: C.inkSoft })] })] }),
           ] })],

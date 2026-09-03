@@ -21,7 +21,7 @@ lich_su: 1.0 | 03/09/2026 | Ban hành lần đầu
 | :---- | :---- | :---- | :---- | :---- |
 | **DA1** | Website Bioscope & Hệ quản trị nội dung | Ứng dụng web hai lớp: cổng thông tin công khai đa ngữ + hệ quản trị nội dung tự xây trên nền Payload/Next.js | ~51.300 dòng TypeScript | 15/06/2026 – nay |
 | **DA2** | Hệ thống AI chuẩn hoá và cập nhật dữ liệu sản phẩm | Dây chuyền tự động: quét kho tài liệu → bóc tách nội dung → gọi mô hình ngôn ngữ → sinh dữ liệu nguyên liệu có cấu trúc → ghi vào hệ quản trị | ~4.200 dòng TypeScript | 07/2026 – nay |
-| **DA3** | Chatbot AI đa kênh BioBot | Trợ lý hội thoại có truy hồi tri thức (RAG), phục vụ đồng thời web, Zalo, Telegram, Messenger, WhatsApp; có chuyển tiếp người thật | ~47.700 dòng Python/JavaScript + 44 quy trình tự động hoá | 06/02/2026 – 12/06/2026 |
+| **DA3** | Chatbot AI đa kênh BioBot | Trợ lý hội thoại có truy hồi tri thức (RAG), phục vụ đồng thời web, Zalo, Telegram, Messenger, WhatsApp; có chuyển tiếp người thật | ~47.700 dòng Python/JavaScript + 44 quy trình tự động hoá + 7.600 dòng tài liệu kỹ thuật | 06/02/2026 – 12/06/2026 |
 
 Ba dự án nối tiếp nhau về thời gian: DA3 làm trước (02–06/2026), DA1 và DA2 làm sau (06/2026 đến nay). Đây là dòng chảy phát triển liên tục của cùng một đội.
 
@@ -38,11 +38,13 @@ docs/
 │   ├── 00-2-quy-trinh-san-xuat-phan-mem-noi-bo.md
 │   ├── 00-3-doi-chieu-ho-so-theo-cong-doan.md
 │   ├── 00-4-ha-tang-cong-cu-va-moi-truong.md
-│   └── 00-5-quy-chuan-ma-nguon-va-quan-ly-phien-ban.md
+│   ├── 00-5-quy-chuan-ma-nguon-va-quan-ly-phien-ban.md
+│   └── 00-6-ho-so-chi-phi-phat-trien.md
+│                                      6 tài liệu · 1.385 dòng
 │
-├── DA1-website-va-cms/                10 tài liệu
-├── DA2-ai-chuan-hoa-du-lieu/          10 tài liệu
-├── DA3-chatbot-ai-da-kenh/            10 tài liệu
+├── DA1-website-va-cms/                10 tài liệu · 3.518 dòng
+├── DA2-ai-chuan-hoa-du-lieu/          10 tài liệu · 3.154 dòng
+├── DA3-chatbot-ai-da-kenh/            10 tài liệu · 3.755 dòng
 │
 └── _cong-cu/                          Công cụ dựng bản .docx (không phải hồ sơ)
 ```
@@ -61,6 +63,19 @@ Mỗi thư mục dự án có cùng một bộ xương mười tài liệu:
 | `-08-cd5-6-7-dong-goi-trien-khai` | Đóng gói, phiên bản, cài đặt, chuyển giao, bảo trì, phát hành | 5, 6, 7 |
 | `-09-huong-dan-su-dung` | Tài liệu hướng dẫn cho người dùng cuối và quản trị viên | 6 |
 | `-10-tra-cuu-ky-thuat` | Sổ tra cứu: API, cấu hình, mã lỗi, sự cố đã gặp và cách xử lý | 3, 6 |
+
+### Quy mô bộ hồ sơ
+
+| Bộ | Tài liệu | Dòng |
+| :---- | :----: | :----: |
+| Mục lục | 1 | 125 |
+| Hồ sơ chung | 6 | 1.385 |
+| DA1 — Website và CMS | 10 | 3.518 |
+| DA2 — AI chuẩn hoá dữ liệu | 10 | 3.154 |
+| DA3 — Chatbot AI đa kênh | 10 | 3.755 |
+| **Tổng** | **37** | **11.937** |
+
+Mỗi tài liệu có bản `.md` và bản `.docx` mang nhận diện thương hiệu công ty.
 
 ---
 

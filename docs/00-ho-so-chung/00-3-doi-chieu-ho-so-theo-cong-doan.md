@@ -145,7 +145,7 @@ Mỗi tệp có phần ghi chú nêu rõ thay đổi gì, vì sao. Đây là b�
 
 ## 9. Danh mục tài liệu đầy đủ
 
-### 9.1 Hồ sơ chung — 5 tài liệu
+### 9.1 Hồ sơ chung — 6 tài liệu
 
 | # | Tệp | Nội dung |
 | :---- | :---- | :---- |
@@ -154,6 +154,7 @@ Mỗi tệp có phần ghi chú nêu rõ thay đổi gì, vì sao. Đây là b�
 | 3 | `00-3-doi-chieu-ho-so-theo-cong-doan.md` | Tài liệu đang đọc |
 | 4 | `00-4-ha-tang-cong-cu-va-moi-truong.md` | Máy chủ, công cụ, môi trường, chi phí hạ tầng |
 | 5 | `00-5-quy-chuan-ma-nguon-va-quan-ly-phien-ban.md` | Quy chuẩn viết mã, quản lý phiên bản, quy trình đổi cấu trúc dữ liệu |
+| 6 | `00-6-ho-so-chi-phi-phat-trien.md` | **Chi phí nhân công, hạ tầng, dịch vụ; căn cứ phân bổ; đối chiếu hoá đơn** |
 
 ### 9.2 Mỗi dự án — 10 tài liệu
 
@@ -170,7 +171,7 @@ Mỗi tệp có phần ghi chú nêu rõ thay đổi gì, vì sao. Đây là b�
 | 9 | `-09-huong-dan-su-dung` | 6 |
 | 10 | `-10-tra-cuu-ky-thuat` | 3, 6 |
 
-**Tổng cộng: 5 + 30 + 1 mục lục = 36 tài liệu.**
+**Tổng cộng: 6 + 30 + 1 mục lục = 37 tài liệu.**
 
 ---
 
@@ -186,7 +187,11 @@ Mỗi tệp có phần ghi chú nêu rõ thay đổi gì, vì sao. Đây là b�
 | 6 | Ký biên bản nghiệm thu ở tài liệu `-07` của ba dự án | ☐ |
 | 7 | Chuyển kho mã nguồn về tài khoản tổ chức, hoặc lập biên bản xác nhận quyền sở hữu | ☐ |
 | 8 | Sao lưu toàn bộ kho mã nguồn ra bản lưu trữ có mốc thời gian | ☐ |
-| 9 | Đối chiếu lại văn bản pháp lý đang có hiệu lực tại thời điểm nộp | ☐ |
-| 10 | Dựng bản `.docx` mới nhất từ các tệp `.md` | ☐ |
+| 9 | **Điền hồ sơ chi phí `00-6`: bảng kê nhân công, hạ tầng, dịch vụ** | ☐ |
+| 10 | **Đối chiếu chi phí dịch vụ AI trong hệ thống với hoá đơn nhà cung cấp** | ☐ |
+| 11 | Điền kết quả kiểm thử đối chiếu tài liệu gốc ở `DA2-07` mục 4 | ☐ |
+| 12 | Chạy bộ ca kiểm thử an toàn `DA3-07` mục 3, ghi kết quả | ☐ |
+| 13 | Đối chiếu lại văn bản pháp lý đang có hiệu lực tại thời điểm nộp | ☐ |
+| 14 | Dựng bản `.docx` mới nhất từ các tệp `.md` | ☐ |
 
-Bảy mục đầu là việc của công ty, không phải việc kỹ thuật. Hồ sơ kỹ thuật dù đầy đủ đến đâu, thiếu bảy mục này thì vẫn không chứng minh được **công ty** tự phát triển — chỉ chứng minh được **có ai đó** tự phát triển.
+Tám mục đầu là việc của công ty, không phải việc kỹ thuật. Hồ sơ kỹ thuật dù đầy đủ đến đâu, thiếu bảy mục này thì vẫn không chứng minh được **công ty** tự phát triển — chỉ chứng minh được **có ai đó** tự phát triển.

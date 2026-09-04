@@ -44,7 +44,7 @@ docs/
 │   └── 00-6-ho-so-chi-phi-phat-trien.md
 │                                      6 tài liệu · 1.407 dòng
 │
-├── DA1-website-va-cms/                11 tài liệu · 4.006 dòng
+├── DA1-website-va-cms/                12 tài liệu · 4.183 dòng
 ├── DA2-ai-chuan-hoa-du-lieu/          10 tài liệu · 3.154 dòng
 ├── DA3-chatbot-ai-da-kenh/            10 tài liệu · 3.755 dòng
 ├── DA4-chatbot-telegram-google-workspace/
@@ -72,9 +72,17 @@ Riêng DA1 có thêm một tài liệu thao tác ngoài bộ xương chung:
 
 | Tệp | Nội dung | Công đoạn |
 | :---- | :---- | :---- |
-| `DA1-11-huong-dan-ket-noi-telegram` | Tạo bot Telegram, tạo nhóm cho nhân viên, cấu hình khung chat vào website, xử lý sự cố | 6 |
+| `DA1-11-huong-dan-ket-noi-telegram` | Bản đầy đủ: tạo bot, tạo nhóm, cấu hình, giải thích lý do, xử lý sự cố, bảo mật | 6 |
+| `DA1-12-cai-dat-nhanh-telegram` | Bản rút gọn: 24 bước thao tác, không giải thích | 6 |
 
-Tách riêng vì đây là tài liệu **đưa cho người cài đặt làm theo từng bước**, khác mục đích với `DA1-09` vốn hướng dẫn dùng hệ quản trị hằng ngày.
+Hai tài liệu cùng nội dung, khác mục đích dùng:
+
+| | `DA1-11` | `DA1-12` |
+| :---- | :---- | :---- |
+| Dùng khi | Cần hiểu vì sao, hoặc đang gỡ lỗi | Ngồi cài đặt, làm theo từng bước |
+| Độ dài | 488 dòng | 177 dòng |
+
+Cả hai tách riêng khỏi `DA1-09` vì `DA1-09` hướng dẫn **dùng hệ quản trị hằng ngày**, còn hai tài liệu này chỉ phục vụ **một lần cài đặt**.
 
 ### Quy mô bộ hồ sơ
 
@@ -82,11 +90,11 @@ Tách riêng vì đây là tài liệu **đưa cho người cài đặt làm the
 | :---- | :----: | :----: |
 | Mục lục | 1 | 161 |
 | Hồ sơ chung | 6 | 1.407 |
-| DA1 — Website và CMS | 11 | 4.006 |
+| DA1 — Website và CMS | 12 | 4.183 |
 | DA2 — AI chuẩn hoá dữ liệu | 10 | 3.154 |
 | DA3 — Chatbot AI đa kênh | 10 | 3.755 |
 | DA4 — Chatbot Telegram và Google Workspace | 10 | 2.716 |
-| **Tổng** | **48** | **15.199** |
+| **Tổng** | **49** | **15.376** |
 
 Mỗi tài liệu có bản `.md` và bản `.docx` mang nhận diện thương hiệu công ty.
 

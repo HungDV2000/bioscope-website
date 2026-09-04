@@ -1,6 +1,6 @@
 /**
  * Chuyển Markdown → DOCX theo nhận diện Bioscope.
- * Dùng chung cho toàn bộ hồ sơ để 21 tài liệu có cùng một bộ định dạng.
+ * Dùng chung cho toàn bộ hồ sơ để các tài liệu có cùng một bộ định dạng.
  */
 const fs = require('fs')
 const path = require('path')
@@ -25,6 +25,7 @@ const SETS = {
   DA1: 'DA1 · Website và hệ quản trị nội dung',
   DA2: 'DA2 · AI chuẩn hoá dữ liệu sản phẩm',
   DA3: 'DA3 · Chatbot AI đa kênh',
+  DA4: 'DA4 · Chatbot Telegram và Google Workspace',
   R: 'Hồ sơ sản xuất phần mềm nội bộ — Bioscope',
 }
 
@@ -345,14 +346,17 @@ function build(mdPath, outPath, logo) {
 
   const body = []
   let hasContent = false   // đã có nội dung thật chưa — quyết định có ngắt trang không
+  let hasMajorSection = false
   for (const b of blocks) {
     if (b.t === 'h1') {
-      // Chỉ ngắt trang khi PHÍA TRƯỚC đã có nội dung. Dải đầu tiên nằm ngay đầu
-      // thân bài mà ngắt trang thì sinh ra một trang gần trống.
-      if (hasContent) body.push(new Paragraph({ pageBreakBefore: true, spacing: { after: 200 } }))
+      // Dải PHẦN đầu tiên đi cùng tiêu đề/mở đầu của thân bài. Chỉ các PHẦN
+      // tiếp theo mới sang trang; nếu dựa vào hasContent thì tiêu đề phụ ngắn
+      // cũng làm phát sinh một trang gần trống trước PHẦN A.
+      if (hasMajorSection) body.push(new Paragraph({ pageBreakBefore: true, spacing: { after: 200 } }))
       body.push(h1band(b.s))
       body.push(new Paragraph({ spacing: { after: 240 } }))
       hasContent = true
+      hasMajorSection = true
     }
     else if (b.t === 'h2') { body.push(h2(b.s)); hasContent = true }
     else if (b.t === 'h3') body.push(h3(b.s))
@@ -394,19 +398,19 @@ function build(mdPath, outPath, logo) {
           top: convertMillimetersToTwip(28), bottom: convertMillimetersToTwip(24),
           left: convertMillimetersToTwip(25), right: convertMillimetersToTwip(20) } } },
         children: [
-          new Paragraph({ spacing: { after: 1400 } }),
-          new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 700 },
+          new Paragraph({ spacing: { after: 900 } }),
+          new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 350 },
             children: [new ImageRun({ type: 'png', data: logo, transformation: { width: 260, height: 76 } })] }),
           new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 160 },
             children: [new TextRun({ text: setName.toUpperCase(), font: FONT, size: 22, bold: true,
               color: C.accent, characterSpacing: 60 })] }),
-          new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 260, after: 900 },
+          new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 220, after: 500 },
             border: {
               top: { style: BorderStyle.SINGLE, size: 12, color: C.primary, space: 18 },
               bottom: { style: BorderStyle.SINGLE, size: 12, color: C.primary, space: 18 },
             },
             children: [new TextRun({ text: title.toUpperCase(), font: FONT, size: 36, bold: true, color: C.primaryDark })] }),
-          new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 700 },
+          new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 350 },
             children: [new TextRun({ text: meta.phu_de ?? 'Công ty Bioscope',
               font: FONT, size: 24, color: C.inkSoft, italics: true })] }),
           mdTable(
@@ -420,14 +424,14 @@ function build(mdPath, outPath, logo) {
              ['Người duyệt', meta.nguoi_duyet ?? '—']],
             ['left', 'left'],
           ),
-          new Paragraph({ spacing: { after: 420 } }),
+          new Paragraph({ spacing: { after: 200 } }),
           ...(meta.lich_su && meta.lich_su.length
             ? [new Paragraph({ spacing: { after: 140 },
                 children: [new TextRun({ text: 'LỊCH SỬ SỬA ĐỔI', font: FONT, size: 19,
                   bold: true, color: C.primaryDark, characterSpacing: 40 })] }),
                mdTable([['Phiên bản', 'Ngày', 'Nội dung sửa đổi'], ...meta.lich_su],
                        ['center', 'center', 'left']),
-               new Paragraph({ spacing: { after: 420 } })]
+               new Paragraph({ spacing: { after: 200 } })]
             : []),
           new Paragraph({ alignment: AlignmentType.CENTER,
             children: [new TextRun({ text: 'Tài liệu nội bộ — không phổ biến ra ngoài',

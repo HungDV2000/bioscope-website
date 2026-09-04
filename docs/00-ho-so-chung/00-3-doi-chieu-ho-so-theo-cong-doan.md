@@ -2,10 +2,11 @@
 phu_de: Bảng đối chiếu hồ sơ theo bảy công đoạn
 pham_vi: Toàn bộ hồ sơ
 ngay_lap: 03/09/2026
-phien_ban: 1.0
+phien_ban: 1.1
 nguoi_lap: Bộ phận Phát triển phần mềm — Công ty Bioscope
 nguoi_duyet: Ban Giám đốc
 lich_su: 1.0 | 03/09/2026 | Ban hành lần đầu
+lich_su: 1.1 | 03/09/2026 | Bổ sung phụ lục trạng thái dự thảo DA4
 -->
 # BẢNG ĐỐI CHIẾU HỒ SƠ THEO CÔNG ĐOẠN
 
@@ -171,7 +172,21 @@ Mỗi tệp có phần ghi chú nêu rõ thay đổi gì, vì sao. Đây là b�
 | 9 | `-09-huong-dan-su-dung` | 6 |
 | 10 | `-10-tra-cuu-ky-thuat` | 3, 6 |
 
-**Tổng cộng: 6 + 30 + 1 mục lục = 37 tài liệu.**
+**Tổng cộng sau khi bổ sung DA4: 6 + 40 + 1 mục lục = 47 tài liệu.** DA4 hiện là hồ sơ thiết kế, checklist và biểu mẫu; không tính là bằng chứng đã hoàn tất công đoạn 3–7.
+
+### 9.3 DA4 — trạng thái theo công đoạn
+
+| Công đoạn | Tài liệu DA4 | Trạng thái | Bằng chứng còn thiếu |
+| :---- | :---- | :---- | :---- |
+| 1. Xác định yêu cầu | `DA4-02-cd1-xac-dinh-yeu-cau.md` | Dự thảo chờ phê duyệt | Biên bản duyệt phạm vi, role, dataScope, câu hỏi và báo cáo ưu tiên |
+| 2. Phân tích và thiết kế | `DA4-03`, `DA4-04`, `DA4-05` | Dự thảo chờ phê duyệt | Schema `OPS_SHEET_ID`, ma trận quyền, thiết kế module nghiệp vụ đã ký |
+| 3. Lập trình | `DA4-06` | Mới có kế hoạch và chuẩn mã | Project Apps Script, commit/version, code review, secret scan |
+| 4. Kiểm thử | `DA4-07` | Có bộ ca, chưa chạy | Kết quả thật, log, tệp mẫu, chữ ký UAT |
+| 5. Đóng gói | `DA4-08` phần A | Có checklist, chưa thực hiện | Release package, checksum, version/deployment record |
+| 6. Cài đặt/chuyển giao | `DA4-08` phần B, `DA4-09`, `DA4-10` | Có hướng dẫn, chưa thực hiện | Biên bản tài nguyên, quyền, bàn giao và diễn tập rollback |
+| 7. Phát hành | `DA4-08` phần C | Chưa phát hành | UAT sign-off, webhook/trigger production, thông báo phát hành và log đầu tiên |
+
+> **Quy tắc đối chiếu DA4:** không dùng mã nguồn, commit, test hoặc log vận hành của DA3 để lấp các ô còn thiếu của DA4. Hai dự án có kiến trúc và vòng đời bằng chứng khác nhau.
 
 ---
 
@@ -193,5 +208,7 @@ Mỗi tệp có phần ghi chú nêu rõ thay đổi gì, vì sao. Đây là b�
 | 12 | Chạy bộ ca kiểm thử an toàn `DA3-07` mục 3, ghi kết quả | ☐ |
 | 13 | Đối chiếu lại văn bản pháp lý đang có hiệu lực tại thời điểm nộp | ☐ |
 | 14 | Dựng bản `.docx` mới nhất từ các tệp `.md` | ☐ |
+| 15 | Với DA4: phê duyệt yêu cầu/thiết kế trước khi đổi phiên bản hồ sơ từ `0.1` | ☐ |
+| 16 | Với DA4: chỉ đánh dấu công đoạn 3–7 hoàn tất sau khi có bằng chứng riêng | ☐ |
 
 Tám mục đầu là việc của công ty, không phải việc kỹ thuật. Hồ sơ kỹ thuật dù đầy đủ đến đâu, thiếu bảy mục này thì vẫn không chứng minh được **công ty** tự phát triển — chỉ chứng minh được **có ai đó** tự phát triển.

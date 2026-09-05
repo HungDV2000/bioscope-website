@@ -3,7 +3,7 @@ phu_de: Kết nối khung chat website với Telegram
 pham_vi: Dự án DA1 — quản trị viên và nhân viên kinh doanh
 ngay_lap: 14/08/2026
 phien_ban: 1.1
-nguoi_lap: QuanNH — Team Lead, Công ty OPTIMAI
+nguoi_lap: Dưỡng — Team phát triển, Công ty OPTIMAI
 nguoi_duyet: Ban Giám đốc Công ty OPTIMAI
 lich_su: 1.0 | 14/08/2026 | Ban hành lần đầu
 lich_su: 1.1 | 03/09/2026 | Bổ sung phần xử lý sự cố và bảng phân biệt hai chế độ nhóm

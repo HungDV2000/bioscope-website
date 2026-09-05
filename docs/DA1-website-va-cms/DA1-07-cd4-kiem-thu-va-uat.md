@@ -47,6 +47,8 @@ Trong bộ ca dưới đây, ca âm được đánh dấu **(âm)**.
 
 ### 3.1 Quản trị nội dung
 
+*Kiểm chứng: `YC-01` `YC-02` `YC-03` `YC-04` `YC-05` `YC-06` `YC-07` `YC-08` `YC-09` `YC-10`*
+
 | Mã ca | Yêu cầu | Điều kiện đầu | Các bước | Kết quả mong đợi | Kết quả thật |
 | :---- | :---- | :---- | :---- | :---- | :---- |
 | TC-01 | YC-01 | Đăng nhập biên tập viên | Mở Nguyên liệu → Thêm mới → điền tên → Lưu | Tạo được bản ghi, hiện trong danh sách | ☐ |
@@ -73,6 +75,8 @@ Trong bộ ca dưới đây, ca âm được đánh dấu **(âm)**.
 
 ### 3.3 Cổng thông tin công khai
 
+*Kiểm chứng: `YC-15` `YC-16` `YC-17` `YC-18` `YC-19` `YC-20` `YC-21` `YC-22`*
+
 | Mã ca | Yêu cầu | Điều kiện đầu | Các bước | Kết quả mong đợi | Kết quả thật |
 | :---- | :---- | :---- | :---- | :---- | :---- |
 | TC-17 | YC-17 | Có ≥ 9 nguyên liệu đã xuất bản | Mở `/nguyen-lieu` trên màn hình 1366×768 | Danh sách nguyên liệu **thấy được ngay**, không phải cuộn | ☐ |
@@ -86,6 +90,8 @@ Trong bộ ca dưới đây, ca âm được đánh dấu **(âm)**.
 | TC-25 | YC-22 | — | Xem mã nguồn trang | Có thẻ mô tả, dữ liệu có cấu trúc, đường dẫn chuẩn | ☐ |
 
 ### 3.4 Cổng khách hàng
+
+*Kiểm chứng: `YC-23` `YC-24` `YC-25` `YC-26` `YC-27` `YC-28` `YC-29`*
 
 | Mã ca | Yêu cầu | Điều kiện đầu | Các bước | Kết quả mong đợi | Kết quả thật |
 | :---- | :---- | :---- | :---- | :---- | :---- |
@@ -103,6 +109,8 @@ Trong bộ ca dưới đây, ca âm được đánh dấu **(âm)**.
 
 ### 3.5 Giao diện lập trình
 
+*Kiểm chứng: `YC-30` `YC-31` `YC-32` `YC-33` `YC-34`*
+
 | Mã ca | Yêu cầu | Điều kiện đầu | Các bước | Kết quả mong đợi | Kết quả thật |
 | :---- | :---- | :---- | :---- | :---- | :---- |
 | TC-37 | YC-30 | Có 1 khoá hợp lệ | Gọi `/api/catalog/ingredients` kèm khoá | Trả về danh sách nguyên liệu | ☐ |
@@ -117,6 +125,8 @@ Trong bộ ca dưới đây, ca âm được đánh dấu **(âm)**.
 
 ### 3.6 Phân quyền
 
+*Kiểm chứng: `YC-39` `YC-40` `YC-41` `YC-42` `YC-43` `YC-44`*
+
 | Mã ca | Yêu cầu | Điều kiện đầu | Các bước | Kết quả mong đợi | Kết quả thật |
 | :---- | :---- | :---- | :---- | :---- | :---- |
 | TC-46 **(âm)** | YC-39 | Đăng nhập vai trò biên tập viên | Mở mục Người dùng | Không truy cập được | ☐ |
@@ -128,6 +138,8 @@ Trong bộ ca dưới đây, ca âm được đánh dấu **(âm)**.
 ---
 
 ## 4. Kiểm thử phi chức năng
+
+*Kiểm chứng: `YC-35` `YC-36` `YC-37` · `PC-01`–`PC-13`*
 
 | Mã ca | Yêu cầu | Cách đo | Ngưỡng đạt | Kết quả thật |
 | :---- | :---- | :---- | :---- | :---- |
@@ -154,23 +166,25 @@ Bình luận là đường ghi mở duy nhất cho người không đăng nhập
 
 ### 5.1 Kết quả
 
-| # | Phép thử | Kết quả mong đợi | **Kết quả thật** |
+*Kiểm chứng: `YC-38`*
+
+| Mã ca | Phép thử | Kết quả mong đợi | **Kết quả thật** |
 | :---- | :---- | :---- | :---- |
-| 1 | Gửi bình luận hợp lệ | Nhận và lưu | `{"ok":true,"pending":true}` mã 201 ✅ |
-| 2 **(âm)** | Gửi thiếu tên | Từ chối | Mã 400 ✅ |
-| 3 **(âm)** | Gửi vào bài không tồn tại | Từ chối | Mã 404 ✅ |
-| 4 **(âm)** | Gửi kèm `status:"approved"` | Bỏ qua, vẫn chờ duyệt | **Lưu ở trạng thái `pending`** ✅ |
-| 5 **(âm)** | Đọc danh sách khi chưa duyệt | Không trả bình luận nào | `comments: []` ✅ |
-| 6 | Duyệt 1 bình luận rồi đọc lại | Trả về 1 bình luận | Trả về đúng 1 ✅ |
-| 7 **(âm)** | Kiểm phản hồi có lộ thư điện tử | Không lộ | **Không lộ** ✅ |
-| 8 **(âm)** | Kiểm phản hồi có lộ địa chỉ mạng | Không lộ | **Không lộ** ✅ |
-| 9 **(âm)** | Kiểm phản hồi có lộ bình luận chưa duyệt | Không lộ | **Không lộ** ✅ |
-| 10 | Giới hạn 5 lần/giờ theo địa chỉ | Lần thứ 6 bị chặn | 201 × 5 lần, rồi **429** ở lần 6 và 7 ✅ |
-| 11 **(âm)** | Tắt bình luận rồi gửi | Từ chối | Mã 403 ✅ |
-| 12 | Tắt bình luận rồi đọc | Báo đã tắt, danh sách rỗng | `{"ok":true,"enabled":false,"comments":[]}` ✅ |
-| 13 | Trang bài viết hiện bình luận thật | Hiện | Hiện đúng ✅ |
-| 14 **(âm)** | Trang bài viết có lộ bình luận chờ duyệt | Không lộ | **Không lộ** ✅ |
-| 15 | Dữ liệu mẫu cũ đã gỡ hết | Không còn | **Đã gỡ sạch** ✅ |
+| **TC-63** | Gửi bình luận hợp lệ | Nhận và lưu | `{"ok":true,"pending":true}` mã 201 ✅ |
+| **TC-64** **(âm)** | Gửi thiếu tên | Từ chối | Mã 400 ✅ |
+| **TC-65** **(âm)** | Gửi vào bài không tồn tại | Từ chối | Mã 404 ✅ |
+| **TC-66** **(âm)** | Gửi kèm `status:"approved"` | Bỏ qua, vẫn chờ duyệt | **Lưu ở trạng thái `pending`** ✅ |
+| **TC-67** **(âm)** | Đọc danh sách khi chưa duyệt | Không trả bình luận nào | `comments: []` ✅ |
+| **TC-68** | Duyệt 1 bình luận rồi đọc lại | Trả về 1 bình luận | Trả về đúng 1 ✅ |
+| **TC-69** **(âm)** | Kiểm phản hồi có lộ thư điện tử | Không lộ | **Không lộ** ✅ |
+| **TC-70** **(âm)** | Kiểm phản hồi có lộ địa chỉ mạng | Không lộ | **Không lộ** ✅ |
+| **TC-71** **(âm)** | Kiểm phản hồi có lộ bình luận chưa duyệt | Không lộ | **Không lộ** ✅ |
+| **TC-72** | Giới hạn 5 lần/giờ theo địa chỉ | Lần thứ 6 bị chặn | 201 × 5 lần, rồi **429** ở lần 6 và 7 ✅ |
+| **TC-73** **(âm)** | Tắt bình luận rồi gửi | Từ chối | Mã 403 ✅ |
+| **TC-74** | Tắt bình luận rồi đọc | Báo đã tắt, danh sách rỗng | `{"ok":true,"enabled":false,"comments":[]}` ✅ |
+| **TC-75** | Trang bài viết hiện bình luận thật | Hiện | Hiện đúng ✅ |
+| **TC-76** **(âm)** | Trang bài viết có lộ bình luận chờ duyệt | Không lộ | **Không lộ** ✅ |
+| **TC-77** | Dữ liệu mẫu cũ đã gỡ hết | Không còn | **Đã gỡ sạch** ✅ |
 
 **15/15 đạt.**
 
@@ -263,7 +277,7 @@ Ghi vào hồ sơ vì bài học có giá trị lâu dài.
 | Bên | Vai trò | Họ tên | Ngày | Ký |
 | :---- | :---- | :---- | :---- | :---- |
 | OPTIMAI | Người kiểm thử — Thu, QA | | | |
-| OPTIMAI | Team Lead — QuanNH | | | |
+| OPTIMAI | Team phát triển — Quân | | | |
 | Bioscope | Đại diện bộ phận kinh doanh | | | |
 | Bioscope | Đại diện bộ phận kỹ thuật | | | |
 | **Bioscope** | **Đại diện nghiệm thu** | | | |

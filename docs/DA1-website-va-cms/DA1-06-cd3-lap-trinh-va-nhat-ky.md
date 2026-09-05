@@ -3,7 +3,7 @@ phu_de: Website Bioscope và Hệ quản trị nội dung
 pham_vi: Dự án DA1
 ngay_lap: 15/06/2026
 phien_ban: 1.4
-nguoi_lap: QuanNH — Team Lead, Công ty OPTIMAI
+nguoi_lap: Quân — Team phát triển, Công ty OPTIMAI
 nguoi_duyet: Ban Giám đốc Công ty OPTIMAI
 lich_su: 1.0 | 15/06/2026 | Mở sổ nhật ký phát triển
 lich_su: 1.1 | 29/07/2026 | Ghi nhận mốc 1 đến mốc 5

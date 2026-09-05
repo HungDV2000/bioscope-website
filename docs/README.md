@@ -3,7 +3,7 @@ phu_de: Mục lục và hướng dẫn đọc toàn bộ hồ sơ
 pham_vi: Bốn dự án — OPTIMAI thực hiện, Bioscope thụ hưởng
 ngay_lap: 03/09/2026
 phien_ban: 2.0
-nguoi_lap: HungDV — Product Owner, Công ty OPTIMAI
+nguoi_lap: A Hùng — Product Owner, Công ty OPTIMAI
 nguoi_duyet: Ban Giám đốc OPTIMAI và đại diện Công ty Bioscope
 lich_su: 1.0 | 03/09/2026 | Ban hành lần đầu
 lich_su: 1.1 | 03/09/2026 | Bổ sung hồ sơ thiết kế DA4
@@ -37,10 +37,10 @@ lich_su: 2.0 | 03/09/2026 | Xác lập quan hệ nhà thầu OPTIMAI — chủ �
 
 | Nhân sự | Vai trò | Công đoạn phụ trách | Tài liệu chịu trách nhiệm |
 | :---- | :---- | :---- | :---- |
-| **HungDV** | Product Owner | **1**, ký nghiệm thu ở **4** | `-01`, `-02`, `-09` |
-| **QuanNH** | Team Lead | **2**, **3**, **5**, **6** | `-03`, `-04`, `-05`, `-06`, `-08`, `-10` |
-| **Duong Vu** | Developer | **3** | Mã nguồn |
-| **Thu** | QA | **4** | `-07` |
+| **A Hùng** | Product Owner | **1** · chủ trì nghiệm thu ở **4** · phát hành **7** | `-01` `-02` `-09` |
+| **Quân** | Team phát triển | **2** kiến trúc và dữ liệu · **3** · **5** · **6** | `-03` `-04` `-06` `-08` `-10` |
+| **Dưỡng** | Team phát triển | **2** giao diện và luồng · **3** | `-05` `-11` `-12` |
+| **Thu** | QA | **4** · **quyền chặn phát hành** | `-07` |
 
 Ma trận phân công công việc theo công đoạn và hồ sơ nhân sự: `00-ho-so-chung/00-1-thuyet-minh-nang-luc-va-doi-ngu.md` mục 4.
 
@@ -63,26 +63,28 @@ Ma trận phân công công việc theo công đoạn và hồ sơ nhân sự: `
 
 ## 4. Mục lục toàn bộ hồ sơ
 
-**50 tài liệu**, mỗi tài liệu có bản `.md` và bản `.docx` mang nhận diện thương hiệu.
+**52 tài liệu**, mỗi tài liệu có bản `.md` và bản `.docx` mang nhận diện thương hiệu.
 
-### 4.1 Hồ sơ chung — 7 tài liệu
+### 4.1 Hồ sơ chung — 9 tài liệu
 
 | # | Tài liệu | Nội dung chính | Người lập |
 | :----: | :---- | :---- | :---- |
-| 1 | [00-1 — Năng lực nhà thầu và đội ngũ](00-ho-so-chung/00-1-thuyet-minh-nang-luc-va-doi-ngu.md) | Quan hệ hai bên; khẳng định của bên thực hiện; **bốn nhân sự và vai trò**; **ma trận phân công theo công đoạn**; ranh giới công cụ / sản phẩm; bằng chứng khối lượng lao động | HungDV |
-| 2 | [00-2 — Quy trình sản xuất phần mềm](00-ho-so-chung/00-2-quy-trinh-san-xuat-phan-mem-noi-bo.md) | Bốn nguyên tắc chi phối; **bảy công đoạn**: việc làm, đầu ra, bằng chứng để lại; sơ đồ tổng quát | QuanNH |
-| 3 | [00-3 — Đối chiếu hồ sơ theo công đoạn](00-ho-so-chung/00-3-doi-chieu-ho-so-theo-cong-doan.md) | **Bảng đối chiếu từng công đoạn với tài liệu chứng minh và bằng chứng gốc**; lệnh kiểm chứng; danh sách kiểm tra trước khi nộp | HungDV |
-| 4 | [00-4 — Hạ tầng, công cụ, môi trường](00-ho-so-chung/00-4-ha-tang-cong-cu-va-moi-truong.md) | Ba tầng môi trường; hạ tầng vận hành từng dự án; công cụ phát triển; phiên bản nền tảng đã ghim; quản lý bí mật; sao lưu | QuanNH |
-| 5 | [00-5 — Quy chuẩn mã nguồn và phiên bản](00-ho-so-chung/00-5-quy-chuan-ma-nguon-va-quan-ly-phien-ban.md) | Quy chuẩn viết mã; kiểm tra bắt buộc trước ghi nhận; quy ước mô tả thay đổi; **quy trình bảy bước đổi cấu trúc cơ sở dữ liệu**; sổ tra cứu sự cố | QuanNH |
+| 1 | [00-1 — Năng lực nhà thầu và đội ngũ](00-ho-so-chung/00-1-thuyet-minh-nang-luc-va-doi-ngu.md) | Quan hệ hai bên; khẳng định của bên thực hiện; **bốn nhân sự và vai trò**; **ma trận phân công theo công đoạn**; ranh giới công cụ / sản phẩm; bằng chứng khối lượng lao động | A Hùng |
+| 2 | [00-2 — Quy trình sản xuất phần mềm](00-ho-so-chung/00-2-quy-trinh-san-xuat-phan-mem-noi-bo.md) | Bốn nguyên tắc chi phối; **bảy công đoạn**: việc làm, đầu ra, bằng chứng để lại; sơ đồ tổng quát | Quân |
+| 3 | [00-3 — Đối chiếu hồ sơ theo công đoạn](00-ho-so-chung/00-3-doi-chieu-ho-so-theo-cong-doan.md) | **Bảng đối chiếu từng công đoạn với tài liệu chứng minh và bằng chứng gốc**; lệnh kiểm chứng; danh sách kiểm tra trước khi nộp | A Hùng |
+| 4 | [00-4 — Hạ tầng, công cụ, môi trường](00-ho-so-chung/00-4-ha-tang-cong-cu-va-moi-truong.md) | Ba tầng môi trường; hạ tầng vận hành từng dự án; công cụ phát triển; phiên bản nền tảng đã ghim; quản lý bí mật; sao lưu | Quân |
+| 5 | [00-5 — Quy chuẩn mã nguồn và phiên bản](00-ho-so-chung/00-5-quy-chuan-ma-nguon-va-quan-ly-phien-ban.md) | Quy chuẩn viết mã; kiểm tra bắt buộc trước ghi nhận; quy ước mô tả thay đổi; **quy trình bảy bước đổi cấu trúc cơ sở dữ liệu**; sổ tra cứu sự cố | Quân |
 | 6 | [00-6 — Hồ sơ chi phí phát triển](00-ho-so-chung/00-6-ho-so-chi-phi-phat-trien.md) | Bốn nhóm chi phí; bảng kê nhân công theo vai trò; **căn cứ phân bổ giữa DA1 và DA2**; đối chiếu chi phí dịch vụ AI với hoá đơn; đối chiếu chi phí với giá bán — **mọi ô số để trống, công ty tự điền** | Kế toán OPTIMAI |
-| 7 | [00-7 — Hợp đồng, bàn giao, quyền sở hữu](00-ho-so-chung/00-7-hop-dong-ban-giao-va-quyen-so-huu.md) | Hợp đồng và phụ lục phạm vi; chuỗi nghiệm thu → bàn giao → hoá đơn; **quyền sở hữu trí tuệ**; **giao dịch liên kết**; nghĩa vụ hồ sơ từng bên | HungDV |
+| 7 | [00-7 — Hợp đồng, bàn giao, quyền sở hữu](00-ho-so-chung/00-7-hop-dong-ban-giao-va-quyen-so-huu.md) | Hợp đồng và phụ lục phạm vi; chuỗi nghiệm thu → bàn giao → hoá đơn; **quyền sở hữu trí tuệ**; **giao dịch liên kết**; nghĩa vụ hồ sơ từng bên | A Hùng |
+| 8 | [00-8 — Danh mục tài liệu, thuật ngữ và quy ước](00-ho-so-chung/00-8-danh-muc-tai-lieu-va-thuat-ngu.md) | Quy ước mã và phiên bản tài liệu; **danh mục đầy đủ 52 tài liệu kèm nội dung chính**; thuật ngữ; từ viết tắt; phân phối; **kiểm soát thay đổi tài liệu** | A Hùng |
+| 9 | [00-9 — Kế hoạch quản lý dự án](00-ho-so-chung/00-9-ke-hoach-quan-ly-du-an.md) | Phạm vi và ranh giới; tổ chức và trách nhiệm; **7 mốc kiểm soát M1–M7**; **quản lý thay đổi phạm vi**; quản lý rủi ro; trao đổi thông tin; tiêu chí kết thúc; **8 bài học rút ra** | A Hùng |
 
 ### 4.2 DA1 — Website và Hệ quản trị nội dung · 12 tài liệu
 
 | # | Tài liệu | Nội dung chính | CĐ |
 | :----: | :---- | :---- | :----: |
 | 1 | [DA1-01 — Thuyết minh sản phẩm](DA1-website-va-cms/DA1-01-thuyet-minh-san-pham.md) | Sản phẩm là gì; vấn đề giải quyết; người dùng và vai trò; 49 nhóm dữ liệu; 12 mô-đun; phạm vi loại trừ | — |
-| 2 | [DA1-02 — Xác định yêu cầu](DA1-website-va-cms/DA1-02-cd1-xac-dinh-yeu-cau.md) | Hiện trạng đo được; 8 yêu cầu nghiệp vụ; **44 yêu cầu chức năng**; 13 yêu cầu phi chức năng; 10 tiêu chí nghiệm thu | 1 |
+| 2 | [DA1-02 — Xác định yêu cầu](DA1-website-va-cms/DA1-02-cd1-xac-dinh-yeu-cau.md) | Hiện trạng đo được; 8 yêu cầu nghiệp vụ; **44 yêu cầu chức năng**; 13 yêu cầu phi chức năng; 10 tiêu chí nghiệm thu; **ma trận truy vết — độ phủ 100%** | 1 |
 | 3 | [DA1-03 — Thiết kế kiến trúc](DA1-website-va-cms/DA1-03-cd2-thiet-ke-kien-truc.md) | Kiến trúc hai ứng dụng; cơ chế mô-đun; bốn luồng xử lý chính; đa ngữ; bảo mật nhiều lớp; **8 nhật ký quyết định kỹ thuật** | 2 |
 | 4 | [DA1-04 — Thiết kế dữ liệu](DA1-website-va-cms/DA1-04-cd2-thiet-ke-du-lieu.md) | Sơ đồ quan hệ; **`ingredients` 73 trường**; bảng giá khoá ở tầng trường; ba trục phân loại bài viết; phân quyền; dữ liệu cá nhân; chỉ mục | 2 |
 | 5 | [DA1-05 — Giao diện và luồng](DA1-website-va-cms/DA1-05-cd2-thiet-ke-giao-dien-va-luong.md) | Hệ thống nhận diện; bản đồ 27 đường dẫn; ba luồng người dùng chính; trạng thái hiển thị; màn hình nhỏ; khả năng tiếp cận | 2 |
@@ -99,7 +101,7 @@ Ma trận phân công công việc theo công đoạn và hồ sơ nhân sự: `
 | # | Tài liệu | Nội dung chính | CĐ |
 | :----: | :---- | :---- | :----: |
 | 1 | [DA2-01 — Thuyết minh sản phẩm](DA2-ai-chuan-hoa-du-lieu/DA2-01-thuyet-minh-san-pham.md) | Bảy bước dây chuyền; hiệu quả đo được; **nguyên tắc máy đề xuất người quyết định**; **chia trường thành hai loại**; ranh giới dịch vụ ngoài | — |
-| 2 | [DA2-02 — Xác định yêu cầu](DA2-ai-chuan-hoa-du-lieu/DA2-02-cd1-xac-dinh-yeu-cau.md) | Đo hiện trạng 2–3,5 giờ/nguyên liệu; 8 yêu cầu nghiệp vụ; **40 yêu cầu chức năng**; 12 yêu cầu phi chức năng; 8 rủi ro nhận diện từ đầu | 1 |
+| 2 | [DA2-02 — Xác định yêu cầu](DA2-ai-chuan-hoa-du-lieu/DA2-02-cd1-xac-dinh-yeu-cau.md) | Đo hiện trạng 2–3,5 giờ/nguyên liệu; 8 yêu cầu nghiệp vụ; **40 yêu cầu chức năng**; 12 yêu cầu phi chức năng; 8 rủi ro nhận diện từ đầu; **ma trận truy vết — độ phủ 100%** | 1 |
 | 3 | [DA2-03 — Thiết kế kiến trúc](DA2-ai-chuan-hoa-du-lieu/DA2-03-cd2-thiet-ke-kien-truc.md) | Bảy bước dây chuyền chi tiết; **ba cơ chế bảo vệ dữ liệu**; cấu hình động nhà cung cấp; ước tính chi phí; xử lý lỗi; **7 nhật ký quyết định** | 2 |
 | 4 | [DA2-04 — Thiết kế dữ liệu](DA2-ai-chuan-hoa-du-lieu/DA2-04-cd2-thiet-ke-du-lieu.md) | Hàng đợi công việc **9 trạng thái**; bộ đếm chi phí; nhật ký ba mức; cấu hình AI; **trường loại A và loại B**; vòng đời bản ghi | 2 |
 | 5 | [DA2-05 — Giao diện và luồng](DA2-ai-chuan-hoa-du-lieu/DA2-05-cd2-thiet-ke-giao-dien-va-luong.md) | Bốn thành phần giao diện tự viết; luồng sinh nội dung; sinh hàng loạt; **luồng duyệt kết quả bốn bước**; cấu hình nhà cung cấp | 2 |
@@ -114,7 +116,7 @@ Ma trận phân công công việc theo công đoạn và hồ sơ nhân sự: `
 | # | Tài liệu | Nội dung chính | CĐ |
 | :----: | :---- | :---- | :----: |
 | 1 | [DA3-01 — Thuyết minh sản phẩm](DA3-chatbot-ai-da-kenh/DA3-01-thuyet-minh-san-pham.md) | Kiến trúc sáu dịch vụ; 44 quy trình; hai miền nghiệp vụ; **phân quyền ở tầng công cụ**; **chốt chặn dược**; tài liệu gốc sẵn có 7.600 dòng | — |
-| 2 | [DA3-02 — Xác định yêu cầu](DA3-chatbot-ai-da-kenh/DA3-02-cd1-xac-dinh-yeu-cau.md) | Hiện trạng bốn kênh rời rạc; **rủi ro đặc thù ngành dược**; 10 yêu cầu nghiệp vụ; **54 yêu cầu chức năng**; 14 yêu cầu phi chức năng; 10 rủi ro | 1 |
+| 2 | [DA3-02 — Xác định yêu cầu](DA3-chatbot-ai-da-kenh/DA3-02-cd1-xac-dinh-yeu-cau.md) | Hiện trạng bốn kênh rời rạc; **rủi ro đặc thù ngành dược**; 10 yêu cầu nghiệp vụ; **54 yêu cầu chức năng**; 14 yêu cầu phi chức năng; 10 rủi ro; **ma trận truy vết — độ phủ 100%** | 1 |
 | 3 | [DA3-03 — Thiết kế kiến trúc](DA3-chatbot-ai-da-kenh/DA3-03-cd2-thiet-ke-kien-truc.md) | Ranh giới quy trình / mã; **vòng lặp trợ lý**; **ba lớp chốt chặn an toàn**; kiến trúc đa kênh; dây chuyền tri thức; **9 nhật ký quyết định** | 2 |
 | 4 | [DA3-04 — Thiết kế dữ liệu](DA3-chatbot-ai-da-kenh/DA3-04-cd2-thiet-ke-du-lieu.md) | Ba kho dữ liệu; **30 bảng**; nhật ký AI; **hai bộ sưu tập vectơ tách biệt**; phân quyền ba tầng; dữ liệu cá nhân | 2 |
 | 5 | [DA3-05 — Giao diện và luồng](DA3-chatbot-ai-da-kenh/DA3-05-cd2-thiet-ke-giao-dien-va-luong.md) | Sáu kênh hai kiểu trải nghiệm; bản đồ màn hình theo vai trò; **sáu luồng hội thoại**; quy tắc hiển thị; giao diện quản trị | 2 |
@@ -146,12 +148,31 @@ Ma trận phân công công việc theo công đoạn và hồ sơ nhân sự: `
 | Bộ | Tài liệu | Dòng |
 | :---- | :----: | :----: |
 | Mục lục | 1 | *tài liệu này* |
-| Hồ sơ chung | 7 | 1.774 |
+| Hồ sơ chung | 9 | 2.320 |
 | DA1 — Website và CMS | 12 | 4.186 |
 | DA2 — AI chuẩn hoá dữ liệu | 10 | 3.157 |
 | DA3 — Chatbot AI đa kênh | 10 | 3.758 |
 | DA4 — Chatbot Telegram *(thiết kế)* | 10 | 2.716 |
-| **Tổng** | **50** | **15.829** |
+| **Tổng** | **52** | **16.770** |
+
+---
+
+## 4.7 Cấu phần chuẩn của bộ hồ sơ
+
+| Cấu phần | Có ở |
+| :---- | :---- |
+| Khối kiểm soát tài liệu — mã, phiên bản, ngày, người lập, người duyệt | Trang bìa mọi tài liệu |
+| Lịch sử sửa đổi | Trang bìa mọi tài liệu |
+| **Mục lục** | Tự sinh, mọi tài liệu từ 4 mục trở lên |
+| **Danh mục tài liệu** | `00-8` mục 3 |
+| **Thuật ngữ và từ viết tắt** | `00-8` mục 4 và 5 |
+| **Ma trận truy vết yêu cầu** | Phụ lục A của `-02` từng dự án |
+| **Kế hoạch quản lý dự án** | `00-9` |
+| **Quản lý thay đổi phạm vi** | `00-9` mục 5 |
+| **Kiểm soát thay đổi tài liệu** | `00-8` mục 7 |
+| Phân phối tài liệu | `00-8` mục 6 |
+| Biên bản nghiệm thu | `-07` mục cuối từng dự án |
+| Biên bản bàn giao | `-08` phần B từng dự án |
 
 ---
 

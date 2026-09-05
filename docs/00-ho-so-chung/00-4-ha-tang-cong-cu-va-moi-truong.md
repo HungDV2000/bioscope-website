@@ -3,7 +3,7 @@ phu_de: Hạ tầng, công cụ và môi trường phát triển
 pham_vi: Toàn công ty
 ngay_lap: 12/01/2026
 phien_ban: 1.2
-nguoi_lap: QuanNH — Team Lead, Công ty OPTIMAI
+nguoi_lap: Quân — Team phát triển, Công ty OPTIMAI
 nguoi_duyet: Ban Giám đốc Công ty OPTIMAI
 lich_su: 1.0 | 12/01/2026 | Ban hành lần đầu, hạ tầng dự án DA3
 lich_su: 1.1 | 09/07/2026 | Bổ sung hạ tầng dự án DA1 và DA2

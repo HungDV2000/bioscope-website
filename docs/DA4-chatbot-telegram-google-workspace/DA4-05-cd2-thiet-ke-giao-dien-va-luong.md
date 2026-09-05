@@ -3,7 +3,7 @@ phu_de: Chatbot Bioscope trên Telegram, Google Drive và Google Sheets
 pham_vi: Dự án DA4 — Công đoạn 2, thiết kế giao diện và luồng dự thảo
 ngay_lap: 03/09/2026
 phien_ban: 0.1
-nguoi_lap: QuanNH — Team Lead, Công ty OPTIMAI
+nguoi_lap: Dưỡng — Team phát triển, Công ty OPTIMAI
 nguoi_duyet: Ban Giám đốc Công ty OPTIMAI
 lich_su: 0.1 | 03/09/2026 | Thiết kế Telegram UI và luồng Google Workspace
 -->

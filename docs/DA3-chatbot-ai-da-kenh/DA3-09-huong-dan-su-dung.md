@@ -3,7 +3,7 @@ phu_de: Chatbot AI đa kênh BioBot — Bioscope Assistants
 pham_vi: Dự án DA3 — người dùng cuối và quản trị viên
 ngay_lap: 08/06/2026
 phien_ban: 1.1
-nguoi_lap: HungDV — Product Owner, Công ty OPTIMAI
+nguoi_lap: A Hùng — Product Owner, Công ty OPTIMAI
 nguoi_duyet: Ban Giám đốc Công ty OPTIMAI
 lich_su: 1.0 | 08/06/2026 | Ban hành lần đầu
 lich_su: 1.1 | 12/06/2026 | Bổ sung hướng dẫn cho quản trị viên

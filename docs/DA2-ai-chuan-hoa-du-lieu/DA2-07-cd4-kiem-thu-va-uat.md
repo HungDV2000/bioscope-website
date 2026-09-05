@@ -55,6 +55,8 @@ Lớp thứ ba là lớp quan trọng nhất và cũng là lớp tốn công nh�
 
 ### 3.1 Thu thập và bóc tách
 
+*Kiểm chứng: `YC-01` `YC-02` `YC-03` `YC-04` `YC-05` `YC-06` `YC-07` `YC-08`*
+
 | Mã ca | Yêu cầu | Điều kiện đầu | Các bước | Kết quả mong đợi | Thật |
 | :---- | :---- | :---- | :---- | :---- | :---- |
 | TC-01 | YC-01 | Có thư mục kho tài liệu | Chạy đồng bộ | Liệt kê đúng số tệp | ☐ |
@@ -69,6 +71,8 @@ Lớp thứ ba là lớp quan trọng nhất và cũng là lớp tốn công nh�
 | TC-10 | YC-07 | Có tệp bảng danh sách nguyên liệu | Nhập tệp bảng | Tạo đúng số nguyên liệu | ☐ |
 
 ### 3.2 Sinh nội dung
+
+*Kiểm chứng: `YC-09` `YC-10` `YC-11` `YC-12` `YC-13` `YC-14` `YC-15` `YC-16` `YC-17` `YC-18` `YC-19`*
 
 | Mã ca | Yêu cầu | Điều kiện đầu | Các bước | Kết quả mong đợi | Thật |
 | :---- | :---- | :---- | :---- | :---- | :---- |
@@ -102,6 +106,8 @@ Toàn bộ nhóm này là **ca âm**: kiểm rằng hệ thống **không** làm
 
 ### 3.4 Bảo vệ dữ liệu đã có
 
+*Kiểm chứng: `YC-20` `YC-22` `YC-23` `YC-24` `YC-25`*
+
 | Mã ca | Yêu cầu | Điều kiện đầu | Các bước | Kết quả mong đợi | Thật |
 | :---- | :---- | :---- | :---- | :---- | :---- |
 | TC-31 **(âm)** | YC-22 | Nguyên liệu **đã có mã CAS** người nhập tay; bộ tệp mới **không** chứa mã CAS | Chạy lại dây chuyền | **Mã CAS cũ được giữ nguyên**, không bị xoá | ☐ |
@@ -122,6 +128,8 @@ Toàn bộ nhóm này là **ca âm**: kiểm rằng hệ thống **không** làm
 
 ### 3.6 Vận hành và chịu lỗi
 
+*Kiểm chứng: `YC-26` `YC-27` `YC-28` `YC-29` `YC-30` `YC-31` `YC-32` `YC-33`*
+
 | Mã ca | Yêu cầu | Điều kiện đầu | Các bước | Kết quả mong đợi | Thật |
 | :---- | :---- | :---- | :---- | :---- | :---- |
 | TC-41 | YC-26 | — | Bấm Tạo nội dung | Giao diện **không bị treo**, dùng tiếp được | ☐ |
@@ -137,6 +145,8 @@ Toàn bộ nhóm này là **ca âm**: kiểm rằng hệ thống **không** làm
 | TC-51 **(âm)** | — | **Chưa có khoá tạo ảnh** | Chạy chế độ đầy đủ | Phần nội dung **vẫn xong**; chỉ báo lỗi ở bước ảnh | ☐ |
 
 ### 3.7 Chi phí và cấu hình
+
+*Kiểm chứng: `YC-34` `YC-35` `YC-36` `YC-37` `YC-38` `YC-39` `YC-40`*
 
 | Mã ca | Yêu cầu | Điều kiện đầu | Các bước | Kết quả mong đợi | Thật |
 | :---- | :---- | :---- | :---- | :---- | :---- |
@@ -298,7 +308,7 @@ Toàn bộ nhóm này là **ca âm**: kiểm rằng hệ thống **không** làm
 | Bên | Vai trò | Họ tên | Ngày | Ký |
 | :---- | :---- | :---- | :---- | :---- |
 | OPTIMAI | Người kiểm thử — Thu, QA | | | |
-| OPTIMAI | Team Lead — QuanNH | | | |
+| OPTIMAI | Team phát triển — Quân | | | |
 | **Bioscope** | **Đại diện bộ phận kỹ thuật sản phẩm** | | | |
 | Bioscope | Đại diện bộ phận kinh doanh | | | |
 | **Bioscope** | **Đại diện nghiệm thu** | | | |

@@ -3,7 +3,7 @@ phu_de: Năng lực nhà thầu và đội ngũ thực hiện
 pham_vi: Toàn bộ hồ sơ — bốn dự án
 ngay_lap: 08/01/2026
 phien_ban: 2.0
-nguoi_lap: HungDV — Product Owner, Công ty OPTIMAI
+nguoi_lap: A Hùng — Product Owner, Công ty OPTIMAI
 nguoi_duyet: Ban Giám đốc Công ty OPTIMAI
 lich_su: 1.0 | 08/01/2026 | Ban hành lần đầu, phục vụ dự án DA3
 lich_su: 1.1 | 20/05/2026 | Bổ sung phạm vi dự án DA1
@@ -58,9 +58,9 @@ Cụ thể:
 
 | Nhân sự | Vai trò | Trách nhiệm chính | Công đoạn phụ trách |
 | :---- | :---- | :---- | :---- |
-| **HungDV** | Product Owner | Làm việc với Bioscope, chốt yêu cầu nghiệp vụ, quyết định phạm vi, chủ trì nghiệm thu | **1**, và ký nghiệm thu ở **4** |
-| **QuanNH** | Team Lead | Thiết kế kiến trúc, thiết kế dữ liệu, quyết định kỹ thuật, lập trình, đóng gói, triển khai | **2**, **3**, **5**, **6** |
-| **Duong Vu** | Developer | Lập trình theo thiết kế, tự kiểm tra, sửa lỗi | **3** |
+| **A Hùng** | Product Owner | Làm việc với Bioscope, chốt yêu cầu nghiệp vụ, quyết định phạm vi, chủ trì nghiệm thu | **1**, và ký nghiệm thu ở **4** |
+| **Quân** | Team phát triển | Thiết kế kiến trúc, thiết kế dữ liệu, quyết định kỹ thuật, lập trình, đóng gói, triển khai | **2**, **3**, **5**, **6** |
+| **Dưỡng** | Developer | Lập trình theo thiết kế, tự kiểm tra, sửa lỗi | **3** |
 | **Thu** | QA | Dựng bộ ca kiểm thử, chạy kiểm thử, ghi nhận lỗi, xác nhận đạt | **4** |
 
 ### 3.2 Quy mô đội và ý nghĩa của nó
@@ -69,7 +69,7 @@ Bốn người cho bốn sản phẩm trải bảy tháng là **đội nhỏ, l�
 
 | Đặc điểm | Nguyên nhân |
 | :---- | :---- |
-| Một người đảm nhiều công đoạn | Đội nhỏ; Team Lead vừa thiết kế vừa lập trình |
+| Một người đảm nhiều công đoạn | Đội nhỏ; Team phát triển vừa thiết kế vừa lập trình |
 | Kiến trúc ưu tiên đơn giản, dễ bảo trì | Thiết kế phải để **một người bảo trì được** |
 | Dùng nhiều nền tảng mã nguồn mở | Không đủ người để viết lại những thứ đã có |
 | Nhật ký phát triển giai đoạn đầu sơ sài | Quy trình trưởng thành dần — xem mục 8 |
@@ -84,7 +84,7 @@ Bốn người cho bốn sản phẩm trải bảy tháng là **đội nhỏ, l�
 
 Bảng dưới là phân công chính thức của dự án: mỗi công đoạn giao cho vai trò nào, sản phẩm đầu ra là gì.
 
-| Công đoạn | HungDV<br>*Product Owner* | QuanNH<br>*Team Lead* | Duong Vu<br>*Developer* | Thu<br>*QA* | Đầu ra |
+| Công đoạn | A Hùng<br>*Product Owner* | Quân<br>*Team phát triển* | Dưỡng<br>*Developer* | Thu<br>*QA* | Đầu ra |
 | :---- | :----: | :----: | :----: | :----: | :---- |
 | **1** Xác định yêu cầu | **C** | T | | T | Tài liệu `-02` |
 | **2** Phân tích và thiết kế | T | **C** | T | | Tài liệu `-03` `-04` `-05` |
@@ -102,8 +102,8 @@ Mỗi tài liệu ghi rõ người lập ở trang bìa, khớp với ma trận 
 
 | Nhóm tài liệu | Người lập |
 | :---- | :---- |
-| `-01` Thuyết minh sản phẩm · `-02` Xác định yêu cầu · `-09` Hướng dẫn sử dụng | **HungDV** — Product Owner |
-| `-03` `-04` `-05` Thiết kế · `-06` Nhật ký lập trình · `-08` Đóng gói và triển khai · `-10` Tra cứu kỹ thuật | **QuanNH** — Team Lead |
+| `-01` Thuyết minh sản phẩm · `-02` Xác định yêu cầu · `-09` Hướng dẫn sử dụng | **A Hùng** — Product Owner |
+| `-03` `-04` `-05` Thiết kế · `-06` Nhật ký lập trình · `-08` Đóng gói và triển khai · `-10` Tra cứu kỹ thuật | **Quân** — Team phát triển |
 | `-07` Kiểm thử và nghiệm thu | **Thu** — QA |
 
 ### 4.3 Ghi chú về danh tính trong kho mã nguồn

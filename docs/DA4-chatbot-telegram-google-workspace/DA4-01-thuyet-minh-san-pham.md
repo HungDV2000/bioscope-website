@@ -3,7 +3,7 @@ phu_de: Chatbot Bioscope trên Telegram, Google Drive và Google Sheets
 pham_vi: Dự án DA4 — hồ sơ thiết kế trước triển khai
 ngay_lap: 03/09/2026
 phien_ban: 0.1
-nguoi_lap: HungDV — Product Owner, Công ty OPTIMAI
+nguoi_lap: A Hùng — Product Owner, Công ty OPTIMAI
 nguoi_duyet: Ban Giám đốc Công ty OPTIMAI
 lich_su: 0.1 | 03/09/2026 | Dự thảo ban đầu từ Bioscope Build Guide
 -->

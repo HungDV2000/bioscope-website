@@ -3,7 +3,7 @@ phu_de: Hệ thống AI chuẩn hoá và cập nhật dữ liệu sản phẩm
 pham_vi: Dự án DA2
 ngay_lap: 20/06/2026
 phien_ban: 1.1
-nguoi_lap: HungDV — Product Owner, Công ty OPTIMAI
+nguoi_lap: A Hùng — Product Owner, Công ty OPTIMAI
 nguoi_duyet: Ban Giám đốc Công ty OPTIMAI
 lich_su: 1.0 | 20/06/2026 | Ban hành lần đầu
 lich_su: 1.1 | 24/08/2026 | Cập nhật quy mô và trạng thái thực tế

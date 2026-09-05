@@ -3,7 +3,7 @@ phu_de: Hệ thống AI chuẩn hoá và cập nhật dữ liệu sản phẩm
 pham_vi: Dự án DA2
 ngay_lap: 24/06/2026
 phien_ban: 1.1
-nguoi_lap: HungDV — Product Owner, Công ty OPTIMAI
+nguoi_lap: A Hùng — Product Owner, Công ty OPTIMAI
 nguoi_duyet: Ban Giám đốc OPTIMAI và đại diện Công ty Bioscope
 lich_su: 1.0 | 24/06/2026 | Ban hành lần đầu
 lich_su: 1.1 | 20/07/2026 | Bổ sung yêu cầu nhận dạng chữ trong ảnh và ước tính chi phí
@@ -210,11 +210,79 @@ Toàn bộ hồ sơ nhà cung cấp **đã được lưu tập trung** trên kho
 
 ---
 
+---
+
+## Phụ lục A — Ma trận truy vết yêu cầu
+
+Bảng nối **yêu cầu → thiết kế → ca kiểm thử**. Mục đích: chứng minh không yêu cầu nào bị bỏ quên, và mỗi yêu cầu đều có cách kiểm chứng độc lập.
+
+### A.1 Độ phủ
+
+| Chỉ số | Số lượng |
+| :---- | :----: |
+| Tổng yêu cầu chức năng | **40** |
+| Đã có ca kiểm thử | **40** |
+| **Chưa có ca kiểm thử** | **0** |
+| Độ phủ | **100%** |
+
+Tài liệu thiết kế tương ứng: `DA2-03` kiến trúc · `DA2-04` dữ liệu · `DA2-05` giao diện.
+
+### A.2 Bảng truy vết
+
+| Yêu cầu | Nội dung | Thiết kế | Ca kiểm thử |
+| :---- | :---- | :---- | :---- |
+| `YC-01` | Quét thư mục kho tài liệu, liệt kê tệp của từng nguyên liệu | `DA2-03` `DA2-04` `DA2-05` | TC-01, TC-01–TC-10, TC-09 |
+| `YC-02` | Đối chiếu tệp với nguyên liệu tương ứng trong hệ quản trị | `DA2-03` `DA2-04` `DA2-05` | TC-01–TC-10, TC-02 |
+| `YC-03` | Đọc được PDF dạng chữ | `DA2-03` `DA2-04` `DA2-05` | TC-01–TC-10, TC-03 |
+| `YC-04` | Đọc được PDF dạng scan và ảnh chụp | `DA2-03` `DA2-04` `DA2-05` | TC-01–TC-10, TC-04, TC-05 |
+| `YC-05` | Đọc được Google Docs, Sheets, Slides | `DA2-03` `DA2-04` `DA2-05` | TC-01–TC-10, TC-06, TC-07 |
+| `YC-06` | Đọc được tệp văn bản và CSV | `DA2-03` `DA2-04` `DA2-05` | TC-01–TC-10, TC-08 |
+| `YC-07` | Nhập danh sách nguyên liệu từ tệp bảng | `DA2-03` `DA2-04` `DA2-05` | TC-01–TC-10, TC-10 |
+| `YC-08` | Ghi lại số tệp và thời điểm đồng bộ gần nhất của mỗi nguyên liệu | `DA2-03` `DA2-04` `DA2-05` | TC-01–TC-10 |
+| `YC-09` | Sinh đủ 20 nhóm trường của hồ sơ nguyên liệu | `DA2-03` `DA2-04` `DA2-05` | TC-11, TC-11–TC-19, TC-16, TC-17 |
+| `YC-10` | Mọi trường có tính ngôn ngữ đều sinh đồng thời tiếng Việt và tiế… | `DA2-03` `DA2-04` `DA2-05` | TC-11–TC-19, TC-12 |
+| `YC-11` | Chia trường thành hai loại: trích xuất và biên tập, với hai tiêu… | `DA2-03` `DA2-04` `DA2-05` | TC-11–TC-19 |
+| `YC-12` | Trường loại trích xuất không có trong tài liệu thì để trống, khô… | `DA2-03` `DA2-04` `DA2-05` | TC-11–TC-19, TC-20, TC-21, TC-22, TC-23, TC-24, TC-25 |
+| `YC-13` | Trường loại biên tập được suy luận, nhưng mọi con số phải có tro… | `DA2-03` `DA2-04` `DA2-05` | TC-11–TC-19, TC-26 |
+| `YC-14` | Chuẩn hoá tên nguyên liệu: bỏ số thứ tự, bỏ mã nội bộ, bỏ hậu tố | `DA2-03` `DA2-04` `DA2-05` | TC-11–TC-19, TC-13 |
+| `YC-15` | Chỉ chọn thẻ lọc từ danh mục có sẵn, không được tạo tên mới | `DA2-03` `DA2-04` `DA2-05` | TC-11–TC-19, TC-27 |
+| `YC-16` | Sinh chỉ tiêu kỹ thuật đầy đủ, lấy hết thông số có trong tài liệ… | `DA2-03` `DA2-04` `DA2-05` | TC-11–TC-19, TC-14 |
+| `YC-17` | Sinh tiêu đề và mô tả tối ưu tìm kiếm, đúng giới hạn độ dài | `DA2-03` `DA2-04` `DA2-05` | TC-11–TC-19, TC-15 |
+| `YC-18` | Sinh ảnh đại diện khi nguyên liệu chưa có ảnh | `DA2-03` `DA2-04` `DA2-05` | TC-11–TC-19, TC-18, TC-19 |
+| `YC-19` | Xử lý đúng khi một tài liệu chứa nhiều biến thể sản phẩm | `DA2-03` `DA2-04` `DA2-05` | TC-11–TC-19, TC-29, TC-30 |
+| `YC-20` | Kết quả luôn lưu ở trạng thái nháp, không tự xuất bản | `DA2-03` `DA2-04` `DA2-05` | TC-31–TC-36, TC-33 |
+| `YC-21` | Chuẩn hoá hình dạng dữ liệu trả về, chấp nhận khác biệt giữa các… | `DA2-03` `DA2-04` `DA2-05` | TC-37, TC-38, TC-39, TC-40 |
+| `YC-22` | Không ghi đè dữ liệu cũ bằng giá trị rỗng | `DA2-03` `DA2-04` `DA2-05` | TC-31, TC-31–TC-36, TC-32 |
+| `YC-23` | Loại bỏ giá trị không nằm trong danh mục hợp lệ | `DA2-03` `DA2-04` `DA2-05` | TC-28, TC-31–TC-36 |
+| `YC-24` | Đánh dấu nguyên liệu do AI sinh là chờ duyệt | `DA2-03` `DA2-04` `DA2-05` | TC-31–TC-36, TC-34 |
+| `YC-25` | Phát hiện nguyên liệu trùng hoặc gần trùng tên | `DA2-03` `DA2-04` `DA2-05` | TC-31–TC-36 |
+| `YC-26` | Xếp hàng công việc, chạy nền, không chặn giao diện | `DA2-03` `DA2-04` `DA2-05` | TC-41, TC-41–TC-51 |
+| `YC-27` | Xử lý hàng loạt: chọn nhiều nguyên liệu hoặc toàn bộ | `DA2-03` `DA2-04` `DA2-05` | TC-41–TC-51, TC-42 |
+| `YC-28` | Theo dõi trạng thái từng công việc theo 9 giai đoạn | `DA2-03` `DA2-04` `DA2-05` | TC-41–TC-51, TC-43 |
+| `YC-29` | Nhật ký chi tiết từng bước, có mốc thời gian và mức độ | `DA2-03` `DA2-04` `DA2-05` | TC-41–TC-51, TC-44 |
+| `YC-30` | Huỷ được công việc đang chạy | `DA2-03` `DA2-04` `DA2-05` | TC-41–TC-51, TC-45 |
+| `YC-31` | Đặt hạn giờ cho mỗi tệp, tránh treo hàng đợi | `DA2-03` `DA2-04` `DA2-05` | TC-41–TC-51, TC-47 |
+| `YC-32` | Lùi phương án khi lỗi: tệp hỏng thì gọi lại không kèm tệp thay v… | `DA2-03` `DA2-04` `DA2-05` | TC-41–TC-51, TC-48 |
+| `YC-33` | Xuất và nhập nội dung dạng tệp để sửa hàng loạt | `DA2-03` `DA2-04` `DA2-05` | TC-41–TC-51 |
+| `YC-34` | Đếm số đơn vị đã dùng cho từng công việc | `DA2-03` `DA2-04` `DA2-05` | TC-52, TC-52–TC-58 |
+| `YC-35` | Ước tính chi phí ra đô-la và đồng Việt Nam | `DA2-03` `DA2-04` `DA2-05` | TC-52–TC-58, TC-53 |
+| `YC-36` | Ghi rõ đang dùng bảng giá dựng sẵn hay giá do người quản trị đặt | `DA2-03` `DA2-04` `DA2-05` | TC-52–TC-58, TC-54, TC-55 |
+| `YC-37` | Đổi nhà cung cấp AI ngay trên giao diện, không triển khai lại | `DA2-03` `DA2-04` `DA2-05` | TC-52–TC-58, TC-56 |
+| `YC-38` | Đổi mô hình cho từng loại tác vụ: sinh nội dung, đọc ảnh, tạo ản… | `DA2-03` `DA2-04` `DA2-05` | TC-52–TC-58 |
+| `YC-39` | Khoá truy cập dịch vụ chỉ quản trị viên đọc/sửa được | `DA2-03` `DA2-04` `DA2-05` | TC-52–TC-58, TC-57 |
+| `YC-40` | Bỏ trống ô cấu hình thì lấy từ biến môi trường | `DA2-03` `DA2-04` `DA2-05` | TC-52–TC-58 |
+
+### A.3 Đánh giá
+
+**Độ phủ đầy đủ** — mọi yêu cầu chức năng đều có ít nhất một ca kiểm thử dẫn chiếu tới. Không yêu cầu nào đã cam kết mà thiếu cách kiểm chứng.
+
+---
+
 ## 9. Phê duyệt yêu cầu
 
 | Bên | Vai trò | Họ tên | Ngày | Ký |
 | :---- | :---- | :---- | :---- | :---- |
-| OPTIMAI | Người lập yêu cầu — HungDV, Product Owner | | | |
+| OPTIMAI | Người lập yêu cầu — A Hùng, Product Owner | | | |
 | Bioscope | Đại diện bộ phận kỹ thuật sản phẩm | | | |
 | Bioscope | Đại diện bộ phận kinh doanh | | | |
 | **Bioscope** | **Ban giám đốc phê duyệt yêu cầu** | | | |

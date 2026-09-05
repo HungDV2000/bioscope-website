@@ -3,7 +3,7 @@ phu_de: Chatbot AI đa kênh BioBot — Bioscope Assistants
 pham_vi: Dự án DA3
 ngay_lap: 15/01/2026
 phien_ban: 1.2
-nguoi_lap: HungDV — Product Owner, Công ty OPTIMAI
+nguoi_lap: A Hùng — Product Owner, Công ty OPTIMAI
 nguoi_duyet: Ban Giám đốc OPTIMAI và đại diện Công ty Bioscope
 lich_su: 1.0 | 15/01/2026 | Ban hành lần đầu
 lich_su: 1.1 | 18/04/2026 | Bổ sung nhóm yêu cầu mô-đun kế toán
@@ -259,11 +259,93 @@ Hai rủi ro đầu được xếp mức **rất cao** vì hậu quả không ho
 
 ---
 
+---
+
+## Phụ lục A — Ma trận truy vết yêu cầu
+
+Bảng nối **yêu cầu → thiết kế → ca kiểm thử**. Mục đích: chứng minh không yêu cầu nào bị bỏ quên, và mỗi yêu cầu đều có cách kiểm chứng độc lập.
+
+### A.1 Độ phủ
+
+| Chỉ số | Số lượng |
+| :---- | :----: |
+| Tổng yêu cầu chức năng | **54** |
+| Đã có ca kiểm thử | **54** |
+| **Chưa có ca kiểm thử** | **0** |
+| Độ phủ | **100%** |
+
+Tài liệu thiết kế tương ứng: `DA3-03` kiến trúc · `DA3-04` dữ liệu · `DA3-05` giao diện.
+
+### A.2 Bảng truy vết
+
+| Yêu cầu | Nội dung | Thiết kế | Ca kiểm thử |
+| :---- | :---- | :---- | :---- |
+| `YC-01` | Nhận câu hỏi bằng tiếng Việt tự nhiên | `DA3-03` `DA3-04` `DA3-05` | TC-41–TC-50 |
+| `YC-02` | Trợ lý tự chọn công cụ tra dữ liệu phù hợp câu hỏi | `DA3-03` `DA3-04` `DA3-05` | TC-41, TC-41–TC-50 |
+| `YC-03` | Gọi được nhiều công cụ liên tiếp cho một câu hỏi | `DA3-03` `DA3-04` `DA3-05` | TC-41–TC-50, TC-42 |
+| `YC-04` | Giới hạn số lượt gọi công cụ mỗi câu hỏi | `DA3-03` `DA3-04` `DA3-05` | TC-41–TC-50, TC-43 |
+| `YC-05` | Trả lời chỉ dựa trên dữ liệu công cụ trả về | `DA3-03` `DA3-04` `DA3-05` | TC-36–TC-40 |
+| `YC-06` | Trả lời theo dòng, chữ hiện dần | `DA3-03` `DA3-04` `DA3-05` | TC-41–TC-50, TC-44 |
+| `YC-07` | Nhớ ngữ cảnh hội thoại | `DA3-03` `DA3-04` `DA3-05` | TC-41–TC-50, TC-45 |
+| `YC-08` | Hiểu câu trả lời ngắn theo ngữ cảnh trước | `DA3-03` `DA3-04` `DA3-05` | TC-41–TC-50, TC-46, TC-47 |
+| `YC-09` | Câu hỏi rõ ràng thì gọi thẳng công cụ đúng, không để mô hình chọ… | `DA3-03` `DA3-04` `DA3-05` | TC-41–TC-50, TC-48 |
+| `YC-10` | Phân loại ý định câu hỏi trước khi xử lý | `DA3-03` `DA3-04` `DA3-05` | TC-41–TC-50 |
+| `YC-11` | Nói rõ khi không có dữ liệu, thay vì bịa | `DA3-03` `DA3-04` `DA3-05` | TC-36–TC-40 |
+| `YC-12` | Hỏi lại khi câu hỏi mơ hồ | `DA3-03` `DA3-04` `DA3-05` | TC-41–TC-50, TC-49 |
+| `YC-13` | Chặn câu hỏi y tế, dược lý | `DA3-03` `DA3-04` `DA3-05` | TC-01–TC-23 |
+| `YC-14` | Chốt chặn dược không phụ thuộc mô hình, không thể vượt bằng cách… | `DA3-03` `DA3-04` `DA3-05` | TC-01–TC-23 |
+| `YC-15` | Khi chặn, hướng người hỏi tới nguồn đúng | `DA3-03` `DA3-04` `DA3-05` | TC-01–TC-23 |
+| `YC-16` | Lọc danh sách công cụ theo vai trò trước khi gửi cho mô hình | `DA3-03` `DA3-04` `DA3-05` | TC-24–TC-35 |
+| `YC-17` | Nhân viên kinh doanh không truy cập được công cụ kế toán | `DA3-03` `DA3-04` `DA3-05` | TC-24–TC-35 |
+| `YC-18` | Nhân viên kế toán không truy cập được dữ liệu khách hàng của kin… | `DA3-03` `DA3-04` `DA3-05` | TC-24–TC-35 |
+| `YC-19` | Ghi nhật ký mọi lượt gọi mô hình và gọi công cụ | `DA3-03` `DA3-04` `DA3-05` | TC-51–TC-60 |
+| `YC-20` | Chống xử lý trùng khi nền tảng nhắn tin gửi lặp sự kiện | `DA3-03` `DA3-04` `DA3-05` | TC-51–TC-60 |
+| `YC-21` | Kênh web | `DA3-03` `DA3-04` `DA3-05` | TC-51–TC-60 |
+| `YC-22` | Kênh Zalo | `DA3-03` `DA3-04` `DA3-05` | TC-51–TC-60 |
+| `YC-23` | Kênh Telegram | `DA3-03` `DA3-04` `DA3-05` | TC-51–TC-60 |
+| `YC-24` | Kênh Messenger | `DA3-03` `DA3-04` `DA3-05` | TC-51–TC-60 |
+| `YC-25` | Kênh WhatsApp | `DA3-03` `DA3-04` `DA3-05` | TC-51–TC-60 |
+| `YC-26` | Kênh thư điện tử, cả nhận và gửi | `DA3-03` `DA3-04` `DA3-05` | TC-51–TC-60 |
+| `YC-27` | Sáu kênh dùng chung một bộ xử lý nghiệp vụ | `DA3-03` `DA3-04` `DA3-05` | TC-51–TC-60 |
+| `YC-28` | Tự làm mới khoá truy cập của các nền tảng | `DA3-03` `DA3-04` `DA3-05` | TC-51–TC-60 |
+| `YC-29` | Chuyển hội thoại cho người thật khi cần | `DA3-03` `DA3-04` `DA3-05` | TC-71–TC-74 |
+| `YC-30` | Quét kho tài liệu, phát hiện tệp mới và tệp đã sửa | `DA3-03` `DA3-04` `DA3-05` | TC-61, TC-61–TC-70 |
+| `YC-31` | Bóc tách nội dung nhiều định dạng | `DA3-03` `DA3-04` `DA3-05` | TC-61–TC-70, TC-62 |
+| `YC-32` | Đọc chữ trong ảnh và tài liệu scan | `DA3-03` `DA3-04` `DA3-05` | TC-61–TC-70, TC-63 |
+| `YC-33` | Cắt tài liệu thành đoạn, sinh vectơ, nạp vào kho | `DA3-03` `DA3-04` `DA3-05` | TC-61–TC-70, TC-64 |
+| `YC-34` | Tìm theo ngữ nghĩa, không chỉ khớp từ khoá | `DA3-03` `DA3-04` `DA3-05` | TC-61–TC-70, TC-65 |
+| `YC-35` | Tách kho tri thức theo miền nghiệp vụ | `DA3-03` `DA3-04` `DA3-05` | TC-61–TC-70, TC-66 |
+| `YC-36` | Đồng bộ bộ câu hỏi thường gặp | `DA3-03` `DA3-04` `DA3-05` | TC-61–TC-70 |
+| `YC-37` | Kiểm chứng dữ liệu đã nạp đúng | `DA3-03` `DA3-04` `DA3-05` | TC-61–TC-70, TC-67 |
+| `YC-38` | Xuất kho tri thức ra tài liệu đọc được để rà soát | `DA3-03` `DA3-04` `DA3-05` | TC-61–TC-70, TC-70 |
+| `YC-39` | Đệm kết quả câu hỏi lặp lại | `DA3-03` `DA3-04` `DA3-05` | TC-61–TC-70 |
+| `YC-40` | Tra cứu, so sánh, phân tích sản phẩm | `DA3-03` `DA3-04` `DA3-05` | TC-84–TC-91 |
+| `YC-41` | Tra cứu khách hàng và lịch sử trao đổi | `DA3-03` `DA3-04` `DA3-05` | TC-84–TC-91 |
+| `YC-42` | Phân khúc khách hàng | `DA3-03` `DA3-04` `DA3-05` | TC-84–TC-91 |
+| `YC-43` | Luồng đơn hàng | `DA3-03` `DA3-04` `DA3-05` | TC-84–TC-91 |
+| `YC-44` | Biểu mẫu phê duyệt | `DA3-03` `DA3-04` `DA3-05` | TC-84–TC-91 |
+| `YC-45` | Thông báo nội bộ | `DA3-03` `DA3-04` `DA3-05` | TC-84–TC-91 |
+| `YC-46` | Tra cứu, tổng hợp hoá đơn và chứng từ | `DA3-03` `DA3-04` `DA3-05` | TC-84–TC-91 |
+| `YC-47` | Đọc chứng từ scan | `DA3-03` `DA3-04` `DA3-05` | TC-84–TC-91 |
+| `YC-48` | Trạng thái báo cáo kế toán | `DA3-03` `DA3-04` `DA3-05` | TC-84–TC-91 |
+| `YC-49` | Kiểm tra sức khoẻ hệ thống định kỳ | `DA3-03` `DA3-04` `DA3-05` | TC-75–TC-83 |
+| `YC-50` | Cảnh báo khi có lỗi | `DA3-03` `DA3-04` `DA3-05` | TC-75–TC-83 |
+| `YC-51` | Hàng đợi việc chết cho việc thất bại nhiều lần | `DA3-03` `DA3-04` `DA3-05` | TC-75–TC-83 |
+| `YC-52` | Sao lưu tự động | `DA3-03` `DA3-04` `DA3-05` | TC-75–TC-83 |
+| `YC-53` | Xử lý lỗi tập trung | `DA3-03` `DA3-04` `DA3-05` | TC-75–TC-83 |
+| `YC-54` | Xoá dữ liệu theo yêu cầu | `DA3-03` `DA3-04` `DA3-05` | TC-84–TC-91 |
+
+### A.3 Đánh giá
+
+**Độ phủ đầy đủ** — mọi yêu cầu chức năng đều có ít nhất một ca kiểm thử dẫn chiếu tới. Không yêu cầu nào đã cam kết mà thiếu cách kiểm chứng.
+
+---
+
 ## 9. Phê duyệt yêu cầu
 
 | Bên | Vai trò | Họ tên | Ngày | Ký |
 | :---- | :---- | :---- | :---- | :---- |
-| OPTIMAI | Người lập yêu cầu — HungDV, Product Owner | | | |
+| OPTIMAI | Người lập yêu cầu — A Hùng, Product Owner | | | |
 | Bioscope | Đại diện bộ phận kinh doanh | | | |
 | **Bioscope** | **Kế toán trưởng** | | | |
 | **Bioscope** | **Ban giám đốc phê duyệt yêu cầu** | | | |

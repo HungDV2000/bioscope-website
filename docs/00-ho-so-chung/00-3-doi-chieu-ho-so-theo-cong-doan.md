@@ -3,7 +3,7 @@ phu_de: Bảng đối chiếu hồ sơ theo bảy công đoạn
 pham_vi: Toàn bộ hồ sơ
 ngay_lap: 03/09/2026
 phien_ban: 1.1
-nguoi_lap: HungDV — Product Owner, Công ty OPTIMAI
+nguoi_lap: A Hùng — Product Owner, Công ty OPTIMAI
 nguoi_duyet: Ban Giám đốc Công ty OPTIMAI
 lich_su: 1.0 | 03/09/2026 | Ban hành lần đầu
 lich_su: 1.1 | 03/09/2026 | Bổ sung phụ lục trạng thái dự thảo DA4

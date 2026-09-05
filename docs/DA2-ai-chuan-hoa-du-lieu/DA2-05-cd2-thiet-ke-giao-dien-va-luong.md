@@ -3,7 +3,7 @@ phu_de: Hệ thống AI chuẩn hoá và cập nhật dữ liệu sản phẩm
 pham_vi: Dự án DA2
 ngay_lap: 04/07/2026
 phien_ban: 1.1
-nguoi_lap: QuanNH — Team Lead, Công ty OPTIMAI
+nguoi_lap: Dưỡng — Team phát triển, Công ty OPTIMAI
 nguoi_duyet: Ban Giám đốc Công ty OPTIMAI
 lich_su: 1.0 | 04/07/2026 | Ban hành lần đầu
 lich_su: 1.1 | 22/07/2026 | Bổ sung luồng sinh hàng loạt và luồng duyệt

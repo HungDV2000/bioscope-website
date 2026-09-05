@@ -89,9 +89,9 @@ Bốn nhân sự tham gia — vai trò và công đoạn phụ trách ở `00-1`
 
 | Kỳ | Nhân sự | Vai trò | Dự án | Tỉ lệ thời gian | Lương + bảo hiểm | Chi phí phân bổ |
 | :---- | :---- | :---- | :---- | :----: | :---- | :---- |
-| 02/2026 | HungDV | Product Owner | DA3 | % | | |
-| 02/2026 | QuanNH | Team Lead | DA3 | % | | |
-| 02/2026 | Duong Vu | Developer | DA3 | % | | |
+| 02/2026 | A Hùng | Product Owner | DA3 | % | | |
+| 02/2026 | Quân | Team phát triển | DA3 | % | | |
+| 02/2026 | Dưỡng | Developer | DA3 | % | | |
 | 02/2026 | Thu | QA | DA3 | % | | |
 | 03/2026 | *(bốn người)* | | DA3 | % | | |
 | 04/2026 | *(bốn người)* | | DA3 | % | | |

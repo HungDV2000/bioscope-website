@@ -342,6 +342,42 @@ function parse(md) {
 }
 
 // ── Dựng tài liệu ──────────────────────────────────────────────────────────
+
+/**
+ * Mục lục tự sinh từ đầu đề cấp 2 của tài liệu.
+ *
+ * Vì sao cần: hồ sơ dài 250–500 dòng, in ra 10–20 trang. Không có mục lục thì
+ * người kiểm tra phải lật từng trang tìm mục cần đối chiếu — đúng thứ họ hay
+ * phải làm nhất. Sinh tự động nên không bao giờ lệch với nội dung thật.
+ *
+ * Chỉ lấy cấp 2: cấp 1 là dải tiêu đề phần, cấp 3 trở xuống quá chi tiết,
+ * đưa vào thì mục lục dài hơn cả phần nội dung nó dẫn tới.
+ */
+function tocBlock(blocks) {
+  // Bỏ qua đầu đề cấp 2 đứng NGAY ĐẦU tài liệu — đó là phụ đề nằm dưới tên
+  // tài liệu, không phải một mục nội dung.
+  const usable = blocks[0] && blocks[0].t === 'h2' ? blocks.slice(1) : blocks
+  const items = usable.filter((b) => b.t === 'h2').map((b) => b.s)
+  if (items.length < 4) return []   // tài liệu ngắn thì mục lục là thừa
+  return [
+    new Paragraph({
+      spacing: { before: 120, after: 140 },
+      children: [new TextRun({ text: 'MỤC LỤC', font: FONT, size: 21, bold: true,
+        color: C.primaryDark, characterSpacing: 50 })],
+    }),
+    ...items.map((s) => new Paragraph({
+      spacing: { after: 40, line: 260 },
+      indent: { left: 220 },
+      children: inline(s, { size: 19, color: C.inkSoft }),
+    })),
+    new Paragraph({
+      spacing: { before: 160, after: 260 },
+      border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: C.border, space: 4 } },
+      children: [new TextRun({ text: '', font: FONT, size: 2 })],
+    }),
+  ]
+}
+
 function build(mdPath, outPath, _logo) {
   const raw = fs.readFileSync(mdPath, 'utf8')
   const { meta, body: md } = readMeta(raw)
@@ -496,7 +532,7 @@ function build(mdPath, outPath, _logo) {
             new TextRun({ children: [PageNumber.TOTAL_PAGES], font: FONT, size: 16, color: C.inkSoft }),
           ],
         })] }) },
-        children: body,
+        children: [...tocBlock(blocks), ...body],
       },
     ],
   })

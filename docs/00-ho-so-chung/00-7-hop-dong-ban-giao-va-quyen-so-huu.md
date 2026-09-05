@@ -3,7 +3,7 @@ phu_de: Quan hệ hợp đồng OPTIMAI — Bioscope, bàn giao và quyền sở
 pham_vi: Toàn bộ hồ sơ — bốn dự án
 ngay_lap: 15/01/2026
 phien_ban: 1.1
-nguoi_lap: HungDV — Product Owner, Công ty OPTIMAI
+nguoi_lap: A Hùng — Product Owner, Công ty OPTIMAI
 nguoi_duyet: Ban Giám đốc OPTIMAI và đại diện Công ty Bioscope
 lich_su: 1.0 | 15/01/2026 | Ban hành lần đầu
 lich_su: 1.1 | 03/09/2026 | Bổ sung mục giao dịch liên kết và bảng nghĩa vụ hồ sơ hai bên

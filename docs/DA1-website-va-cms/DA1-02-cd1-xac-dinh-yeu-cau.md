@@ -3,7 +3,7 @@ phu_de: Website Bioscope và Hệ quản trị nội dung
 pham_vi: Dự án DA1
 ngay_lap: 26/05/2026
 phien_ban: 1.1
-nguoi_lap: HungDV — Product Owner, Công ty OPTIMAI
+nguoi_lap: A Hùng — Product Owner, Công ty OPTIMAI
 nguoi_duyet: Ban Giám đốc OPTIMAI và đại diện Công ty Bioscope
 lich_su: 1.0 | 26/05/2026 | Ban hành lần đầu — 44 yêu cầu chức năng, 13 yêu cầu phi chức năng
 lich_su: 1.1 | 17/08/2026 | Bổ sung nhóm yêu cầu giao diện lập trình cho hệ thống ngoài
@@ -202,11 +202,83 @@ Dứt khoát **không làm** trong phạm vi DA1:
 
 ---
 
+---
+
+## Phụ lục A — Ma trận truy vết yêu cầu
+
+Bảng nối **yêu cầu → thiết kế → ca kiểm thử**. Mục đích: chứng minh không yêu cầu nào bị bỏ quên, và mỗi yêu cầu đều có cách kiểm chứng độc lập.
+
+### A.1 Độ phủ
+
+| Chỉ số | Số lượng |
+| :---- | :----: |
+| Tổng yêu cầu chức năng | **44** |
+| Đã có ca kiểm thử | **44** |
+| **Chưa có ca kiểm thử** | **0** |
+| Độ phủ | **100%** |
+
+Tài liệu thiết kế tương ứng: `DA1-03` kiến trúc · `DA1-04` dữ liệu · `DA1-05` giao diện.
+
+### A.2 Bảng truy vết
+
+| Yêu cầu | Nội dung | Thiết kế | Ca kiểm thử |
+| :---- | :---- | :---- | :---- |
+| `YC-01` | Quản lý nguyên liệu: thêm, sửa, xoá, tìm kiếm, phân loại | `DA1-03` `DA1-04` `DA1-05` | TC-01, TC-01–TC-10, TC-02 |
+| `YC-02` | Mỗi nguyên liệu có đủ trường kỹ thuật: tên khoa học, xuất xứ, qu… | `DA1-03` `DA1-04` `DA1-05` | TC-01–TC-10 |
+| `YC-03` | Nội dung có trạng thái nháp và đã xuất bản; nháp không hiện ra n… | `DA1-03` `DA1-04` `DA1-05` | TC-01–TC-10, TC-03, TC-04 |
+| `YC-04` | Xem trước nội dung nháp đúng như khi đã xuất bản | `DA1-03` `DA1-04` `DA1-05` | TC-01–TC-10, TC-05 |
+| `YC-05` | Lưu lịch sử phiên bản, khôi phục được bản cũ | `DA1-03` `DA1-04` `DA1-05` | TC-01–TC-10, TC-06 |
+| `YC-06` | Thùng rác: xoá là chuyển vào thùng rác, khôi phục được | `DA1-03` `DA1-04` `DA1-05` | TC-01–TC-10, TC-07 |
+| `YC-07` | Quản lý bài viết bản tin, có chủ đề, ngành, thẻ | `DA1-03` `DA1-04` `DA1-05` | TC-01–TC-10 |
+| `YC-08` | Dựng trang tĩnh bằng cách xếp các khối nội dung, không cần lập t… | `DA1-03` `DA1-04` `DA1-05` | TC-01–TC-10, TC-08 |
+| `YC-09` | Kho ảnh dùng chung, tự động tạo nhiều kích thước | `DA1-03` `DA1-04` `DA1-05` | TC-01–TC-10, TC-09 |
+| `YC-10` | Cấu hình được thông tin công ty, điều hướng, nhận diện thương hi… | `DA1-03` `DA1-04` `DA1-05` | TC-01–TC-10, TC-10 |
+| `YC-11` | Mỗi trường nội dung có bản tiếng Việt và bản tiếng Anh riêng | `DA1-03` `DA1-04` `DA1-05` | TC-11 |
+| `YC-12` | Đường dẫn khác nhau theo ngôn ngữ (`/ban-tin` và `/news`) | `DA1-03` `DA1-04` `DA1-05` | TC-12, TC-15 |
+| `YC-13` | Nội dung chưa dịch thì không hiện ở trang ngôn ngữ đó, thay vì h… | `DA1-03` `DA1-04` `DA1-05` | TC-13, TC-14 |
+| `YC-14` | Chuyển ngôn ngữ giữ nguyên trang đang xem | `DA1-03` `DA1-04` `DA1-05` | TC-16 |
+| `YC-15` | Trang chủ giới thiệu năng lực, cấu hình được từng khối | `DA1-03` `DA1-04` `DA1-05` | TC-17–TC-25 |
+| `YC-16` | Trang danh sách nguyên liệu có tìm kiếm và bộ lọc | `DA1-03` `DA1-04` `DA1-05` | TC-17–TC-25, TC-18, TC-19 |
+| `YC-17` | Danh sách nguyên liệu hiện ngay khi vào trang, không bị banner đ… | `DA1-03` `DA1-04` `DA1-05` | TC-17, TC-17–TC-25 |
+| `YC-18` | Trang chi tiết nguyên liệu hiện đủ thông số kỹ thuật | `DA1-03` `DA1-04` `DA1-05` | TC-17–TC-25, TC-20 |
+| `YC-19` | Trang dịch vụ, công nghệ, chứng nhận, tình huống khách hàng, câu… | `DA1-03` `DA1-04` `DA1-05` | TC-17–TC-25 |
+| `YC-20` | Trang bản tin, trang chi tiết bài viết có mục lục bên cạnh | `DA1-03` `DA1-04` `DA1-05` | TC-17–TC-25, TC-24 |
+| `YC-21` | Khối "bài viết mới" ở trang chủ, cấu hình được tiêu đề, mô tả, s… | `DA1-03` `DA1-04` `DA1-05` | TC-17–TC-25, TC-23 |
+| `YC-22` | Tối ưu công cụ tìm kiếm: thẻ mô tả, dữ liệu có cấu trúc, sơ đồ t… | `DA1-03` `DA1-04` `DA1-05` | TC-17–TC-25, TC-25 |
+| `YC-23` | Khách tự đăng ký tài khoản, phân biệt doanh nghiệp và cá nhân | `DA1-03` `DA1-04` `DA1-05` | TC-26, TC-26–TC-36, TC-27 |
+| `YC-24` | Đăng nhập bằng thư điện tử và mật khẩu | `DA1-03` `DA1-04` `DA1-05` | TC-26–TC-36 |
+| `YC-25` | Đăng nhập bằng tài khoản Google; chưa có tài khoản thì tự tạo | `DA1-03` `DA1-04` `DA1-05` | TC-26–TC-36, TC-34 |
+| `YC-26` | Ô mật khẩu có nút hiện/ẩn, thanh đánh giá độ mạnh, ô nhập lại | `DA1-03` `DA1-04` `DA1-05` | TC-26–TC-36, TC-28, TC-29, TC-30, TC-31, TC-32 |
+| `YC-27` | Tài liệu có kiểm soát: chỉ tài khoản đã đăng nhập mới tải được | `DA1-03` `DA1-04` `DA1-05` | TC-26–TC-36, TC-35 |
+| `YC-28` | Ghi nhận lượt tải: ai, tài liệu nào, lúc nào | `DA1-03` `DA1-04` `DA1-05` | TC-26–TC-36, TC-36 |
+| `YC-29` | Cửa sổ đăng nhập/đăng ký mở ngay tại trang đang xem, không chuyể… | `DA1-03` `DA1-04` `DA1-05` | TC-26–TC-36, TC-33 |
+| `YC-30` | Cung cấp giao diện lập trình cho hệ thống khác lấy dữ liệu | `DA1-03` `DA1-04` `DA1-05` | TC-37, TC-37–TC-45 |
+| `YC-31` | Truy cập bằng khoá, mỗi khoá có phạm vi riêng | `DA1-03` `DA1-04` `DA1-05` | TC-37–TC-45, TC-38, TC-39, TC-40 |
+| `YC-32` | Chỉ trả về các trường nằm trong danh sách được phép công bố | `DA1-03` `DA1-04` `DA1-05` | TC-37–TC-45, TC-42, TC-43 |
+| `YC-33` | Không trả về nội dung nháp, không trả về dữ liệu nội bộ | `DA1-03` `DA1-04` `DA1-05` | TC-37–TC-45, TC-41 |
+| `YC-34` | Có bản mô tả danh mục dữ liệu để bên tích hợp tự tra | `DA1-03` `DA1-04` `DA1-05` | TC-37–TC-45, TC-45 |
+| `YC-35` | Khung chat trực tuyến trên web, nhân viên kinh doanh trả lời qua… | `DA1-03` `DA1-04` `DA1-05` | TC-51–TC-62 |
+| `YC-36` | Ghi nhận thông tin phiên chat: nguồn truy cập, thiết bị, vị trí … | `DA1-03` `DA1-04` `DA1-05` | TC-51–TC-62 |
+| `YC-37` | Biểu mẫu liên hệ, dữ liệu lưu vào hệ thống | `DA1-03` `DA1-04` `DA1-05` | TC-51–TC-62 |
+| `YC-38` | Bình luận bài viết, cấu hình bật/tắt và duyệt trước khi hiển thị | `DA1-03` `DA1-04` `DA1-05` | TC-63–TC-77 |
+| `YC-39` | Phân quyền theo vai trò: quản trị viên, biên tập viên, khách hàn… | `DA1-03` `DA1-04` `DA1-05` | TC-46, TC-46–TC-50, TC-47, TC-48 |
+| `YC-40` | Ghi nhật ký thao tác trên dữ liệu quan trọng | `DA1-03` `DA1-04` `DA1-05` | TC-46–TC-50, TC-50 |
+| `YC-41` | Giới hạn số lần gọi theo địa chỉ để chống lạm dụng | `DA1-03` `DA1-04` `DA1-05` | TC-44, TC-46–TC-50 |
+| `YC-42` | Chặn địa chỉ có hành vi xấu | `DA1-03` `DA1-04` `DA1-05` | TC-46–TC-50 |
+| `YC-43` | Xin phép trước khi dùng dữ liệu cá nhân, ghi nhật ký đồng ý | `DA1-03` `DA1-04` `DA1-05` | TC-46–TC-50 |
+| `YC-44` | Bí mật không nằm trong mã nguồn | `DA1-03` `DA1-04` `DA1-05` | TC-46–TC-50, TC-62 |
+
+### A.3 Đánh giá
+
+**Độ phủ đầy đủ** — mọi yêu cầu chức năng đều có ít nhất một ca kiểm thử dẫn chiếu tới. Không yêu cầu nào đã cam kết mà thiếu cách kiểm chứng.
+
+---
+
 ## 8. Phê duyệt yêu cầu
 
 | Bên | Vai trò | Họ tên | Ngày | Ký |
 | :---- | :---- | :---- | :---- | :---- |
-| OPTIMAI | Người lập yêu cầu — HungDV, Product Owner | | | |
+| OPTIMAI | Người lập yêu cầu — A Hùng, Product Owner | | | |
 | Bioscope | Đại diện bộ phận kinh doanh | | | |
 | Bioscope | Đại diện bộ phận kỹ thuật | | | |
 | **Bioscope** | **Ban giám đốc phê duyệt yêu cầu** | | | |

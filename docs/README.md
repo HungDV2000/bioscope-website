@@ -83,7 +83,7 @@ Ma trận phân công công việc theo công đoạn và hồ sơ nhân sự: `
 
 | # | Tài liệu | Nội dung chính | CĐ |
 | :----: | :---- | :---- | :----: |
-| 1 | [DA1-01 — Thuyết minh sản phẩm](DA1-website-va-cms/DA1-01-thuyet-minh-san-pham.md) | Sản phẩm là gì; vấn đề giải quyết; người dùng và vai trò; 49 nhóm dữ liệu; 12 mô-đun; phạm vi loại trừ | — |
+| 1 | [DA1-01 — Thuyết minh sản phẩm](DA1-website-va-cms/DA1-01-thuyet-minh-san-pham.md) | Sản phẩm là gì; vấn đề giải quyết; người dùng và vai trò; 49 nhóm dữ liệu; 12 mô-đun; **nguyên tắc mặc định đóng**; **ranh giới công cụ / sản phẩm OPTIMAI tự viết** | — |
 | 2 | [DA1-02 — Xác định yêu cầu](DA1-website-va-cms/DA1-02-cd1-xac-dinh-yeu-cau.md) | Hiện trạng đo được; 8 yêu cầu nghiệp vụ; **44 yêu cầu chức năng**; 13 yêu cầu phi chức năng; 10 tiêu chí nghiệm thu; **ma trận truy vết — độ phủ 100%** | 1 |
 | 3 | [DA1-03 — Thiết kế kiến trúc](DA1-website-va-cms/DA1-03-cd2-thiet-ke-kien-truc.md) | Kiến trúc hai ứng dụng; cơ chế mô-đun; bốn luồng xử lý chính; đa ngữ; bảo mật nhiều lớp; **8 nhật ký quyết định kỹ thuật** | 2 |
 | 4 | [DA1-04 — Thiết kế dữ liệu](DA1-website-va-cms/DA1-04-cd2-thiet-ke-du-lieu.md) | Sơ đồ quan hệ; **`ingredients` 73 trường**; bảng giá khoá ở tầng trường; ba trục phân loại bài viết; phân quyền; dữ liệu cá nhân; chỉ mục | 2 |
@@ -107,7 +107,7 @@ Ma trận phân công công việc theo công đoạn và hồ sơ nhân sự: `
 | 5 | [DA2-05 — Giao diện và luồng](DA2-ai-chuan-hoa-du-lieu/DA2-05-cd2-thiet-ke-giao-dien-va-luong.md) | Bốn thành phần giao diện tự viết; luồng sinh nội dung; sinh hàng loạt; **luồng duyệt kết quả bốn bước**; cấu hình nhà cung cấp | 2 |
 | 6 | [DA2-06 — Lập trình và nhật ký](DA2-ai-chuan-hoa-du-lieu/DA2-06-cd3-lap-trinh-va-nhat-ky.md) | Tổ chức mã nguồn; ranh giới hai tệp lõi; **7 mốc phát triển**; giải thích tỉ lệ sửa lỗi 40%; việc còn lại | 3 |
 | 7 | [DA2-07 — Kiểm thử và nghiệm thu](DA2-ai-chuan-hoa-du-lieu/DA2-07-cd4-kiem-thu-va-uat.md) | Vì sao kiểm thử khác DA1; **63 ca**, trong đó nhóm chống bịa dữ liệu là quan trọng nhất; **kiểm thử đối chiếu tài liệu gốc**; 16 lỗi; biên bản nghiệm thu | 4 |
-| 8 | [DA2-08 — Đóng gói và triển khai](DA2-ai-chuan-hoa-du-lieu/DA2-08-cd5-6-7-dong-goi-trien-khai.md) | Rà soát 7 mục riêng; biến môi trường; tài khoản dịch vụ Google; kiểm tra sau triển khai; **kiểm soát chi phí hàng tháng**; bàn giao | 5·6·7 |
+| 8 | [DA2-08 — Đóng gói và triển khai](DA2-ai-chuan-hoa-du-lieu/DA2-08-cd5-6-7-dong-goi-trien-khai.md) | Rà soát 7 mục riêng; biến môi trường; tài khoản dịch vụ Google; **quy trình nâng cấp và lùi phiên bản**; kiểm tra sau triển khai; **kiểm soát chi phí hàng tháng**; bàn giao | 5·6·7 |
 | 9 | [DA2-09 — Hướng dẫn sử dụng](DA2-ai-chuan-hoa-du-lieu/DA2-09-huong-dan-su-dung.md) | AI làm gì và không làm gì; **hai loại trường**; đồng bộ kho tài liệu; sinh nội dung; **duyệt kết quả bốn bước**; xem chi phí | 6 |
 | 10 | [DA2-10 — Tra cứu kỹ thuật](DA2-ai-chuan-hoa-du-lieu/DA2-10-tra-cuu-ky-thuat.md) | 14 điểm truy cập; bảng cấu hình ↔ biến môi trường; bảng đơn giá mô hình; **16 sự cố**; lệnh tra cứu chi phí và chất lượng | 3·6 |
 
@@ -149,11 +149,11 @@ Ma trận phân công công việc theo công đoạn và hồ sơ nhân sự: `
 | :---- | :----: | :----: |
 | Mục lục | 1 | *tài liệu này* |
 | Hồ sơ chung | 9 | 2.342 |
-| DA1 — Website và CMS | 12 | 4.297 |
-| DA2 — AI chuẩn hoá dữ liệu | 10 | 3.258 |
+| DA1 — Website và CMS | 12 | 4.388 |
+| DA2 — AI chuẩn hoá dữ liệu | 10 | 3.310 |
 | DA3 — Chatbot AI đa kênh | 10 | 3.883 |
 | DA4 — Chatbot Telegram *(thiết kế)* | 10 | 2.731 |
-| **Tổng** | **52** | **16.770** |
+| **Tổng** | **52** | **16.913** |
 
 ---
 

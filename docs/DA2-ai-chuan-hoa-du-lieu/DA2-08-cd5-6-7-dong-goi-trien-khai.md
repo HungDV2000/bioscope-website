@@ -91,6 +91,24 @@ Kho tài liệu của công ty nằm trên ổ dùng chung, nên mọi lời g�
 
 # PHẦN B — CÔNG ĐOẠN 6: CÀI ĐẶT, CHUYỂN GIAO, BẢO TRÌ
 
+## A5. Đánh số phiên bản và danh sách thay đổi
+
+DA2 nằm trong ảnh chứa của hệ quản trị nên **dùng chung số phiên bản với DA1** — quy tắc `X.Y.Z` ở `DA1-08` mục A3. Không đánh số riêng, tránh hai hệ số hiệu song song gây nhầm.
+
+Danh sách thay đổi riêng của DA2 theo từng mốc:
+
+| Mốc | Ngày | Thay đổi | Kịch bản chuyển đổi |
+| :---- | :---- | :---- | :---- |
+| Đồng bộ kho tài liệu | 09/07/2026 | Quét Google Drive, nhập tệp bảng | có |
+| Dây chuyền sinh nội dung | 13–15/07/2026 | Bộ điều phối, hàng đợi công việc, nhật ký | có |
+| Mở rộng hợp đồng dữ liệu | 15–18/07/2026 | Tên INCI, chỉ tiêu, tối ưu tìm kiếm; sinh hàng loạt | có |
+| Tách sinh ảnh | 17–22/07/2026 | Hai chế độ riêng; lưu bản nháp chờ duyệt | có |
+| Đọc tài liệu dạng ảnh | 23–24/07/2026 | Gửi thẳng tệp cho mô hình; thêm đường nhận dạng dự phòng | không |
+| Kiểm soát chi phí | 23–25/07/2026 | Đếm đơn vị, bảng đơn giá theo mô hình, quy đổi tiền Việt | có |
+| Cổng trung gian nhiều mô hình | 17/08/2026 | Cấu hình động nhà cung cấp và mô hình | có |
+
+---
+
 ## B1. Cài đặt lần đầu
 
 ```bash
@@ -115,7 +133,41 @@ docker compose build cms && docker compose up -d
 
 > **Bước 6 không được bỏ.** Cấu hình sai mà chạy hàng loạt ngay là tốn tiền thật cho hàng loạt kết quả hỏng. Chạy một nguyên liệu, đọc kỹ kết quả và nhật ký, rồi mới mở rộng.
 
-## B2. Danh sách kiểm tra sau triển khai
+## B2. Quy trình nâng cấp
+
+DA2 không triển khai độc lập — nâng cấp DA2 là **nâng cấp hệ quản trị**. Quy trình bảy bước ở `DA1-08` mục B2 áp dụng nguyên vẹn, kèm ba lưu ý riêng:
+
+| # | Lưu ý riêng của DA2 | Vì sao |
+| :---- | :---- | :---- |
+| 1 | **Kiểm hàng đợi rỗng trước khi khởi động lại** | Công việc đang chạy dở bị cắt giữa chừng sẽ mắc kẹt ở trạng thái trung gian, không tự thoát |
+| 2 | **Không nâng cấp trong giờ chạy hàng loạt** | Xử lý tệp chạy chung tiến trình; khởi động lại giữa chừng làm mất công việc và mất tiền đã gọi mô hình |
+| 3 | Sau nâng cấp, chạy thử **một** nguyên liệu trước khi mở lại hàng loạt | Cấu hình sai mà chạy hàng loạt ngay là tốn tiền thật cho hàng loạt kết quả hỏng |
+
+```bash
+# Kiểm hàng đợi trước khi nâng cấp — phải rỗng hoặc chỉ còn việc đã kết thúc
+docker exec dvcms-db psql -U dvcms -d dvcms -c "
+SELECT status, count(*) FROM ai_generate_jobs
+WHERE status NOT IN ('done','error','cancelled') GROUP BY 1;"
+```
+
+Kết quả không rỗng thì **chờ hoặc huỷ** các công việc đó trước khi nâng cấp.
+
+---
+
+## B3. Quy trình lùi phiên bản
+
+Lùi phiên bản DA2 cũng là lùi hệ quản trị — theo `DA1-08` mục B4. Hai điểm riêng:
+
+| Tình huống | Xử lý |
+| :---- | :---- |
+| Bản ghi công việc AI sinh ra ở phiên bản mới | **Giữ nguyên, không xoá.** Chúng là bằng chứng vận hành và không gây xung đột với mã cũ |
+| Nội dung nguyên liệu do phiên bản mới ghi vào | Nằm ở **bản nháp**, chưa xuất bản. Lùi phiên bản không ảnh hưởng nội dung đang hiển thị |
+
+Đây là lợi ích cụ thể của nguyên tắc *"kết quả AI luôn ở trạng thái nháp"* — lùi phiên bản không bao giờ làm hỏng nội dung công khai.
+
+---
+
+## B4. Danh sách kiểm tra sau triển khai
 
 | # | Kiểm tra | Cách kiểm | Đạt |
 | :---- | :---- | :---- | :----: |
@@ -130,7 +182,7 @@ docker compose build cms && docker compose up -d
 | 9 | Đọc được một tệp PDF scan | Chạy trên nguyên liệu có hồ sơ scan | ☐ |
 | 10 | Sinh hàng loạt xếp đúng số việc | Thử với 3 nguyên liệu | ☐ |
 
-## B3. Bảo trì định kỳ
+## B5. Bảo trì định kỳ
 
 | Việc | Tần suất | Cách làm |
 | :---- | :---- | :---- |
@@ -142,7 +194,7 @@ docker compose build cms && docker compose up -d
 | **Đo tỉ lệ trường người duyệt phải sửa** | Hàng quý | Chỉ số chất lượng thật của dây chuyền |
 | Kiểm hạn tệp chứng thực Google | Hàng năm | Tệp chứng thực có thể bị thu hồi |
 
-### B3.1 Quy trình kiểm soát chi phí hàng tháng
+### B5.1 Quy trình kiểm soát chi phí hàng tháng
 
 ```
 1. Vào bảng hàng đợi, lọc theo tháng
@@ -157,7 +209,7 @@ docker compose build cms && docker compose up -d
 
 Bước 4 nhánh cuối là lý do trường `appName` tồn tại: nó hiện trong bảng điều khiển nhà cung cấp, giúp phân biệt chi phí của DA2 với chi phí của hệ thống khác dùng chung tài khoản.
 
-### B3.2 Ngưỡng cảnh báo chi phí
+### B5.2 Ngưỡng cảnh báo chi phí
 
 Đề xuất để ban giám đốc chốt:
 
@@ -169,7 +221,7 @@ Bước 4 nhánh cuối là lý do trường `appName` tồn tại: nó hiện t
 
 Hiện **chưa đặt ngưỡng cảnh báo tự động**. Nằm trong danh sách việc còn lại.
 
-## B4. Xử lý sự cố thường gặp
+## B6. Xử lý sự cố thường gặp
 
 | Dấu hiệu | Nguyên nhân thường gặp | Xử lý |
 | :---- | :---- | :---- |
@@ -182,7 +234,7 @@ Hiện **chưa đặt ngưỡng cảnh báo tự động**. Nằm trong danh sá
 | Chi phí một công việc cao bất thường | Tệp rất lớn, hoặc nhiều trang scan | Kiểm bộ đếm trong công việc |
 | Thao tác hệ quản trị chậm khi chạy AI | **Hàng đợi chung tiến trình** | Hạn chế chạy hàng loạt giờ cao điểm |
 
-## B5. Bàn giao
+## B7. Bàn giao
 
 | # | Hạng mục | Hình thức |
 | :---- | :---- | :---- |

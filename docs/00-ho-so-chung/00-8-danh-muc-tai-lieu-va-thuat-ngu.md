@@ -84,7 +84,7 @@ Mọi thay đổi phải ghi vào **Lịch sử sửa đổi** ở trang bìa: p
 
 | Mã | Tên tài liệu | Nội dung chính | PB | Ngày lập | Người lập |
 | :---- | :---- | :---- | :----: | :----: | :---- |
-| `DA1-01` | Thuyết minh sản phẩm | Hai bên trong dự án; sản phẩm là gì; vấn đề giải quyết; người dùng và vai trò; 49 nhóm dữ liệu; 12 mô-đun; phạm vi loại trừ | 1.1 | 20/05/2026 | A Hùng |
+| `DA1-01` | Thuyết minh sản phẩm | Hai bên trong dự án; sản phẩm là gì; vấn đề giải quyết; người dùng và vai trò; 49 nhóm dữ liệu; 12 mô-đun; **nguyên tắc mặc định đóng**; **ranh giới công cụ / sản phẩm OPTIMAI tự viết** | 1.1 | 20/05/2026 | A Hùng |
 | `DA1-02` | Công đoạn 1 — Xác định yêu cầu | Hiện trạng đo được; 8 yêu cầu nghiệp vụ; **44 yêu cầu chức năng**; 13 yêu cầu phi chức năng; 10 tiêu chí nghiệm thu; **ma trận truy vết** | 1.1 | 26/05/2026 | A Hùng |
 | `DA1-03` | Công đoạn 2 — Thiết kế kiến trúc | Kiến trúc hai ứng dụng; cơ chế mô-đun; bốn luồng xử lý chính; đa ngữ; bảo mật nhiều lớp; **8 nhật ký quyết định kỹ thuật** | 1.2 | 02/06/2026 | Quân |
 | `DA1-04` | Công đoạn 2 — Thiết kế cơ sở dữ liệu | Sơ đồ quan hệ; `ingredients` 73 trường; **bảng giá khoá ở tầng trường**; ba trục phân loại bài viết; phân quyền; dữ liệu cá nhân; chỉ mục | 1.3 | 05/06/2026 | Quân |
@@ -108,7 +108,7 @@ Mọi thay đổi phải ghi vào **Lịch sử sửa đổi** ở trang bìa: p
 | `DA2-05` | Công đoạn 2 — Thiết kế giao diện và luồng | Bốn thành phần giao diện tự viết; luồng sinh nội dung; sinh hàng loạt; **luồng duyệt kết quả bốn bước**; cấu hình nhà cung cấp | 1.1 | 04/07/2026 | Dưỡng |
 | `DA2-06` | Công đoạn 3 — Lập trình và nhật ký | Tổ chức mã nguồn; ranh giới hai tệp lõi; **7 mốc phát triển**; giải thích tỉ lệ sửa lỗi 40%; việc còn lại | 1.4 | 09/07/2026 | Quân |
 | `DA2-07` | Công đoạn 4 — Kiểm thử và nghiệm thu | Vì sao kiểm thử khác DA1; **63 ca**, nhóm chống bịa dữ liệu quan trọng nhất; **kiểm thử đối chiếu tài liệu gốc**; 16 lỗi; biên bản nghiệm thu | 1.1 | 10/08/2026 | Thu |
-| `DA2-08` | Công đoạn 5·6·7 — Đóng gói và triển khai | Rà soát 7 mục riêng; biến môi trường; tài khoản dịch vụ Google; kiểm tra sau triển khai; **kiểm soát chi phí hàng tháng**; bàn giao | 1.1 | 15/08/2026 | Quân |
+| `DA2-08` | Công đoạn 5·6·7 — Đóng gói và triển khai | Rà soát 7 mục riêng; biến môi trường; tài khoản dịch vụ Google; **quy trình nâng cấp và lùi phiên bản**; kiểm tra sau triển khai; **kiểm soát chi phí hàng tháng**; bàn giao | 1.1 | 15/08/2026 | Quân |
 | `DA2-09` | Hướng dẫn sử dụng | AI làm gì và không làm gì; **hai loại trường**; đồng bộ kho tài liệu; sinh nội dung; **duyệt kết quả bốn bước**; xem chi phí | 1.1 | 18/08/2026 | A Hùng |
 | `DA2-10` | Sổ tra cứu kỹ thuật | 14 điểm truy cập; bảng cấu hình ↔ biến môi trường; bảng đơn giá mô hình; **16 sự cố**; lệnh tra cứu chi phí và chất lượng | 1.0 | 24/08/2026 | Quân |
 

@@ -199,7 +199,98 @@ Lợi ích của cách chia này: gói `core` và các gói `module-*` chung dù
 
 ---
 
-## 9. Trạng thái hiện tại
+## 9. Nguyên tắc nền tảng: mặc định đóng, mở có kiểm soát
+
+Nguyên tắc chi phối toàn bộ thiết kế của DA1. Nói rõ ngay từ đầu vì nó giải thích nhiều quyết định trông có vẻ khắt khe ở các tài liệu sau.
+
+### 9.1 Ba biểu hiện
+
+| Biểu hiện | Cách làm | Ví dụ trong hệ thống |
+| :---- | :---- | :---- |
+| **Quyền đọc mặc định đóng** | Nhóm dữ liệu nào chưa khai quyền thì công chúng không đọc được | `post-comments` chứa thư điện tử và địa chỉ mạng — đóng hoàn toàn, trang web đọc qua điểm truy cập riêng chỉ trả ba trường |
+| **Danh sách trắng, không danh sách đen** | Chỉ những gì được liệt kê rõ mới lọt ra ngoài | Giao diện lập trình công khai: trường mới thêm vào mô hình dữ liệu mà chưa khai thì **mặc định không ra ngoài** |
+| **Chức năng mở đường ghi thì mặc định tắt** | Bật là quyết định có chủ ý của quản trị viên | Bình luận mặc định `enabled = false`; triển khai xong khu bình luận không xuất hiện cho tới khi có người chủ động bật |
+
+### 9.2 Vì sao chọn hướng này
+
+| | Danh sách đen — liệt kê cái cấm | Danh sách trắng — liệt kê cái cho phép |
+| :---- | :---- | :---- |
+| Thêm trường mới mà quên khai | **Lộ dữ liệu** | Thiếu dữ liệu |
+| Hậu quả khi sai | Không thu lại được | Sửa một dòng khai báo |
+| Ai phát hiện trước | Người ngoài | Người trong |
+
+Cột bên phải **sai theo hướng an toàn**. Đó là lý do chọn.
+
+### 9.3 Chốt chặn cứng ở khâu khởi động
+
+Danh sách nhóm dữ liệu **tuyệt đối không được công bố** — 23 nhóm gồm toàn bộ dữ liệu cá nhân và dữ liệu vận hành nội bộ — được đối chiếu **ngay lúc ứng dụng khởi động**. Có xung đột thì ứng dụng **không khởi động**, kèm thông báo nêu đích danh nhóm dữ liệu vi phạm.
+
+Lỗi cấu hình vì thế bị chặn ở khâu triển khai, trước khi có bất kỳ lời gọi nào. Nếu chỉ chặn lúc trả dữ liệu thì lỗi chỉ lộ ra khi đã có người gọi — lúc đó có thể đã muộn.
+
+### 9.4 Không tin dữ liệu gửi lên
+
+Mọi giá trị do người dùng gửi đều bị coi là **có thể đã bị sửa**. Trạng thái quan trọng luôn được tính lại ở máy chủ.
+
+Ví dụ đã kiểm chứng bằng lời gọi thật: kẻ tấn công gửi bình luận kèm trạng thái `"approved"` để hiện ngay không cần duyệt. Hệ thống bỏ qua hoàn toàn giá trị gửi lên và tự tính từ cấu hình — bản ghi vẫn vào trạng thái chờ duyệt.
+
+Chi tiết ở `DA1-03` mục 5 và `DA1-07` mục 5.
+
+---
+
+## 10. Ranh giới: cái gì là công cụ, cái gì OPTIMAI tự viết
+
+Mục này trả lời trực tiếp câu hỏi *"phần mềm này thực sự do ai làm ra"*.
+
+### 10.1 Nền tảng công cụ — vật tư đầu vào
+
+| Thành phần | Vai trò | Giấy phép |
+| :---- | :---- | :---- |
+| TypeScript 5.9.3 | Ngôn ngữ lập trình | Apache 2.0 |
+| Next.js 16.2.9 · React 19.2.7 | Bộ dựng ứng dụng và giao diện web | MIT |
+| Payload 3.85.1 | Bộ khung hệ quản trị nội dung | MIT |
+| PostgreSQL 16 | Hệ quản trị cơ sở dữ liệu | PostgreSQL License |
+| Docker | Đóng gói và triển khai | Apache 2.0 |
+| pnpm · Turborepo | Quản lý gói và điều phối dựng | MIT |
+
+OPTIMAI **không** tuyên bố sở hữu các thành phần này.
+
+### 10.2 Sản phẩm do OPTIMAI tự viết
+
+| Nội dung | Quy mô | Vì sao đây là sản phẩm |
+| :---- | :---- | :---- |
+| **Mô hình dữ liệu nghiệp vụ** | 49 nhóm dữ liệu và bảng cấu hình | Định nghĩa nguyên liệu, dịch vụ, chứng nhận, hội thoại gồm những gì trong nghiệp vụ Bioscope |
+| **Bảng nguyên liệu** | 73 trường, 8 thẻ | Không bộ khung nào có sẵn khái niệm *chỉ tiêu kỹ thuật*, *trạng thái pháp lý*, *bảng giá nhiều bậc* |
+| **Quy tắc phân quyền** | Gom vào một tệp dùng chung | Ba vai trò, quyền theo nhóm dữ liệu **và theo từng trường** |
+| **Khoá bảng giá ở tầng trường** | — | Nhóm dữ liệu mở cho công chúng đọc nhưng một trường bên trong vẫn đóng — logic này phải tự viết |
+| **Giao diện lập trình có khoá** | 52 điểm truy cập, 5 phạm vi | Cấp khoá, giới hạn phạm vi, giới hạn tần suất, danh sách trắng trường |
+| **Cơ chế đa ngữ theo nghiệp vụ** | — | Tắt cơ chế lấy bản dự phòng của bộ khung và tự lọc, vì mặc định của thư viện sai với nghiệp vụ |
+| **Toàn bộ giao diện cổng thông tin** | 68 thành phần, 27 đường dẫn | |
+| **Bộ khối dựng trang** | 18 khối | Cho phép biên tập viên tự dựng trang không cần lập trình |
+| **Cầu nối chat sang kênh nhắn tin** | — | Chuyển tin hai chiều, ghi nhận ngữ cảnh khách, chống lạm dụng |
+| **Kịch bản chuyển đổi cấu trúc dữ liệu** | 28 tệp | Mỗi tệp là một lần nâng cấp hệ thống thật, đã kiểm chứng |
+| **Kiến trúc 12 mô-đun** | — | Thiết kế cho nền tảng dùng nhiều lần, không phải một website đơn lẻ |
+
+**Tổng: ~51.300 dòng mã do OPTIMAI viết.**
+
+### 10.3 Cách kiểm chứng
+
+Gỡ toàn bộ thư viện bên ngoài ra, phần còn lại vẫn là hàng chục nghìn dòng mã mang khái niệm riêng của ngành nguyên liệu thực phẩm chức năng — *nguyên liệu*, *tên INCI*, *chỉ tiêu kỹ thuật*, *trạng thái pháp lý*, *số lượng đặt tối thiểu*, *phiếu phân tích*.
+
+Không sản phẩm đóng gói nào có sẵn những khái niệm đó. Cài Payload và Next.js rồi mở lên sẽ không có gì trong danh sách ở mục 10.2.
+
+### 10.4 Bằng chứng đối chiếu
+
+| Bằng chứng | Nơi xem |
+| :---- | :---- |
+| 49 nhóm dữ liệu với đầy đủ trường và ràng buộc | `DA1-04` |
+| 52 điểm truy cập với phạm vi khoá | `DA1-10` phần A |
+| 218 lần ghi nhận thay đổi, 15/06 → 31/08/2026 | Kho mã nguồn |
+| 28 kịch bản chuyển đổi cấu trúc dữ liệu | `dv-cms/scripts/` |
+| 12 sự cố đã gặp, có nguyên nhân xác minh | `DA1-10` phần C |
+
+---
+
+## 11. Trạng thái hiện tại
 
 | Hạng mục | Trạng thái |
 | :---- | :---- |
@@ -213,7 +304,7 @@ Lợi ích của cách chia này: gói `core` và các gói `module-*` chung dù
 
 ---
 
-## 10. Lịch sử phát triển tóm tắt
+## 12. Lịch sử phát triển tóm tắt
 
 | Mốc | Thời gian | Nội dung |
 | :---- | :---- | :---- |

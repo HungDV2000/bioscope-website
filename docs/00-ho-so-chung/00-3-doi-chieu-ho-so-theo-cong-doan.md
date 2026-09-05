@@ -194,7 +194,7 @@ Mỗi tệp có phần ghi chú nêu rõ thay đổi gì, vì sao. Đây là b�
 
 | # | Việc | Trạng thái |
 | :---- | :---- | :---- |
-| 1 | Điền bảng đối chiếu danh tính kỹ thuật ↔ nhân sự trong `00-1` mục 2 | ☐ |
+| 1 | Ban Giám đốc xác nhận ma trận phân công ở `00-1` mục 4.1 | ☐ |
 | 2 | Đính kèm hợp đồng lao động, quyết định phân công của từng người có tên | ☐ |
 | 3 | Đính kèm chứng từ chi trả lương và bảo hiểm xã hội | ☐ |
 | 4 | Ký và đóng dấu phần cam kết cuối `00-1` | ☐ |

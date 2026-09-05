@@ -7,7 +7,7 @@ const path = require('path')
 const {
   Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType,
   Table, TableRow, TableCell, WidthType, ShadingType, BorderStyle,
-  ImageRun, Header, Footer, PageNumber, LevelFormat,
+  Header, Footer, PageNumber, LevelFormat,
   convertMillimetersToTwip, TableLayoutType, VerticalAlign, ExternalHyperlink,
 } = require('docx')
 
@@ -146,10 +146,24 @@ const callout = (lines) => {
       width: { size: CONTENT_W, type: WidthType.DXA },
       shading: { type: ShadingType.CLEAR, fill, color: 'auto' },
       margins: { top: 150, bottom: 150, left: 190, right: 160 },
-      children: lines.map((l, i) => new Paragraph({
-        spacing: { after: i === lines.length - 1 ? 0 : 100, line: 290 },
-        children: inline(l, { size: 20, color: warn ? C.accentDark : C.ink }),
-      })),
+      // Dòng mở đầu bằng '#' trong khối trích dẫn là TIÊU ĐỀ của khối, không
+      // phải chữ '#' theo nghĩa đen. Không xử lý riêng thì Word in ra '### ⚠ ...'
+      // — trông như lỗi soạn thảo, mà đây lại thường là chỗ đặt cảnh báo quan
+      // trọng nhất của tài liệu.
+      children: lines.map((l, i) => {
+        const h = l.match(/^(#{1,4})\s+(.*)$/)
+        const last = i === lines.length - 1
+        if (h) {
+          return new Paragraph({
+            spacing: { before: i === 0 ? 0 : 160, after: last ? 0 : 140, line: 290 },
+            children: inline(h[2], { size: 23, bold: true, color: warn ? C.accentDark : C.primaryDark }),
+          })
+        }
+        return new Paragraph({
+          spacing: { after: last ? 0 : 100, line: 290 },
+          children: inline(l, { size: 20, color: warn ? C.accentDark : C.ink }),
+        })
+      }),
     })] })],
   })
 }
@@ -328,7 +342,7 @@ function parse(md) {
 }
 
 // ── Dựng tài liệu ──────────────────────────────────────────────────────────
-function build(mdPath, outPath, logo) {
+function build(mdPath, outPath, _logo) {
   const raw = fs.readFileSync(mdPath, 'utf8')
   const { meta, body: md } = readMeta(raw)
   const { title, blocks } = parse(md)
@@ -399,8 +413,15 @@ function build(mdPath, outPath, logo) {
           left: convertMillimetersToTwip(25), right: convertMillimetersToTwip(20) } } },
         children: [
           new Paragraph({ spacing: { after: 900 } }),
-          new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 350 },
-            children: [new ImageRun({ type: 'png', data: logo, transformation: { width: 260, height: 76 } })] }),
+          // Nhãn nhà thầu — dùng CHỮ thay ảnh: không phụ thuộc tệp logo và in ra
+          // cỡ nào cũng sắc nét.
+          new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 40 },
+            children: [new TextRun({ text: 'OPTIMAI', font: FONT, size: 64, bold: true,
+              color: C.primaryDark, characterSpacing: 160 })] }),
+          new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 320 },
+            border: { top: { style: BorderStyle.SINGLE, size: 8, color: C.accent, space: 10 } },
+            children: [new TextRun({ text: 'CÔNG TY PHÁT TRIỂN PHẦN MỀM', font: FONT, size: 16,
+              color: C.accentDark, characterSpacing: 70 })] }),
           new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 160 },
             children: [new TextRun({ text: setName.toUpperCase(), font: FONT, size: 22, bold: true,
               color: C.accent, characterSpacing: 60 })] }),
@@ -457,7 +478,8 @@ function build(mdPath, outPath, logo) {
             new TableCell({ width: { size: 2200, type: WidthType.DXA },
               margins: { top: 40, bottom: 100, left: 0, right: 0 }, verticalAlign: VerticalAlign.CENTER,
               children: [new Paragraph({ spacing: { after: 0 },
-                children: [new ImageRun({ type: 'png', data: logo, transformation: { width: 106, height: 31 } })] })] }),
+                children: [new TextRun({ text: 'OPTIMAI', font: FONT, size: 19, bold: true,
+                  color: C.primaryDark, characterSpacing: 60 })] })] }),
             new TableCell({ width: { size: 7160, type: WidthType.DXA },
               margins: { top: 40, bottom: 100, left: 220, right: 0 }, verticalAlign: VerticalAlign.CENTER,
               children: [new Paragraph({ alignment: AlignmentType.RIGHT, spacing: { after: 0 },

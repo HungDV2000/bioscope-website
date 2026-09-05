@@ -6,7 +6,6 @@ const fs = require('fs'), path = require('path')
 const { build } = require('./md2docx.js')
 
 const ROOT = path.resolve(__dirname, '..')
-const logo = fs.readFileSync(path.join(__dirname, '.logo.png'))
 
 /** Liệt kê mọi .md trong docs/, bỏ qua thư mục công cụ */
 function walk(dir, out = []) {
@@ -26,7 +25,7 @@ function walk(dir, out = []) {
     const out = f.replace(/\.md$/, '.docx')
     const label = path.relative(ROOT, f)
     try {
-      const size = await build(f, out, logo)
+      const size = await build(f, out)
       console.log(`  ✅ ${label.padEnd(58)} ${(size / 1024).toFixed(1)} KB`)
       ok++
     } catch (e) {

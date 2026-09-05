@@ -16,6 +16,12 @@ lich_su: 2.0 | 03/09/2026 | Tách chi phí bên thực hiện (OPTIMAI) và ghi 
 
 > **Tài liệu liên quan:** quan hệ hợp đồng, bàn giao và **giao dịch liên kết** ở `00-7-hop-dong-ban-giao-va-quyen-so-huu.md`.
 
+> ### ⚠ Mọi ô số trong tài liệu này để trống — công ty tự điền
+>
+> Tài liệu cung cấp **khung bảng, cách phân loại và căn cứ phân bổ**. Số liệu chi phí phải lấy từ chứng từ gốc và sổ sách kế toán của OPTIMAI.
+>
+> Không điền số ước lượng vào đây. Con số không có chứng từ đối chiếu thì làm yếu cả hồ sơ, vì người kiểm tra sẽ hỏi nguồn gốc của nó.
+
 ---
 
 ## 1. Mục đích
@@ -101,15 +107,17 @@ Bốn nhân sự tham gia — vai trò và công đoạn phụ trách ở `00-1`
 
 DA1 và DA2 dùng chung kho mã nguồn nên cần căn cứ khách quan để tách chi phí. Đề xuất dùng **khối lượng mã nguồn**:
 
-| Dự án | Dòng mã | Tỉ lệ |
-| :---- | :---- | :---- |
-| DA1 — Website và CMS | ~51.300 | **92,4%** |
-| DA2 — AI chuẩn hoá dữ liệu | ~4.200 | **7,6%** |
-| Cộng | ~55.500 | 100% |
+| Dự án | Dòng mã *(số đo từ kho mã nguồn)* | Tỉ lệ phân bổ *(công ty chốt)* |
+| :---- | :----: | :----: |
+| DA1 — Website và CMS | ~51.300 | ............ % |
+| DA2 — AI chuẩn hoá dữ liệu | ~4.200 | ............ % |
+| **Cộng** | **~55.500** | **100%** |
+
+Cột *dòng mã* là số đo khách quan, đếm lại được từ kho mã nguồn. Cột *tỉ lệ* do công ty chốt — có thể lấy theo tỉ lệ dòng mã, hoặc theo căn cứ khác nếu phù hợp hơn với cách hạch toán.
 
 Căn cứ này kiểm chứng được: đếm lại số dòng mã của các tệp thuộc từng dự án theo danh sách ở `DA2-01` mục 7.
 
-Bộ phận Kế toán có thể chọn căn cứ khác (số ngày công ghi nhận, số lần ghi nhận thay đổi) nếu phù hợp hơn với cách hạch toán của công ty — miễn là **căn cứ nhất quán và kiểm chứng được**.
+Căn cứ khác có thể dùng: số ngày công ghi nhận, số lần ghi nhận thay đổi, hoặc khối lượng chức năng. Yêu cầu duy nhất: **căn cứ phải nhất quán giữa các kỳ và kiểm chứng lại được**.
 
 ### 3.4 Chứng từ phải đính kèm
 
@@ -121,7 +129,7 @@ Bộ phận Kế toán có thể chọn căn cứ khác (số ngày công ghi nh
 | 4 | Chứng từ chi trả lương | Kế toán OPTIMAI | ☐ |
 | 5 | Chứng từ đóng bảo hiểm xã hội | Nhân sự OPTIMAI | ☐ |
 | 6 | Bản mô tả công việc | Nhân sự OPTIMAI | ☐ |
-| 7 | **Bảng đối chiếu danh tính kỹ thuật ↔ nhân sự** | Kỹ thuật + Nhân sự OPTIMAI | ☐ |
+| 7 | **Ma trận phân công công việc theo vai trò** | Ban Giám đốc OPTIMAI | ☐ |
 
 > **Mục 7 là mắt xích nối hai loại bằng chứng.** Nó nằm ở `00-1` mục 2, hiện **chưa điền**. Thiếu mục này thì bảng lương và lịch sử mã nguồn là hai bộ giấy tờ rời rạc, không nối được với nhau.
 
@@ -236,7 +244,7 @@ Dòng *chi phí / 1.000 dòng mã* là chỉ số dễ đối chiếu nhất v�
 
 | # | Việc | Bộ phận | Xong |
 | :---- | :---- | :---- | :----: |
-| 1 | Điền bảng đối chiếu danh tính kỹ thuật ↔ nhân sự ở `00-1` | Kỹ thuật + Nhân sự | ☐ |
+| 1 | Xác nhận ma trận phân công ở `00-1` mục 4.1 | Ban Giám đốc OPTIMAI | ☐ |
 | 2 | Tập hợp hợp đồng lao động của người có tên | Nhân sự | ☐ |
 | 3 | Tập hợp quyết định phân công dự án | Nhân sự | ☐ |
 | 4 | Tập hợp bảng lương và chứng từ chi trả | Kế toán | ☐ |

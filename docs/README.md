@@ -42,7 +42,7 @@ lich_su: 2.0 | 03/09/2026 | Xác lập quan hệ nhà thầu OPTIMAI — chủ �
 | **Duong Vu** | Developer | **3** | Mã nguồn |
 | **Thu** | QA | **4** | `-07` |
 
-Chi tiết năng lực, đối chiếu danh tính kỹ thuật và hồ sơ nhân sự: `00-ho-so-chung/00-1-thuyet-minh-nang-luc-va-doi-ngu.md`.
+Ma trận phân công công việc theo công đoạn và hồ sơ nhân sự: `00-ho-so-chung/00-1-thuyet-minh-nang-luc-va-doi-ngu.md` mục 4.
 
 ---
 
@@ -69,12 +69,12 @@ Chi tiết năng lực, đối chiếu danh tính kỹ thuật và hồ sơ nhâ
 
 | # | Tài liệu | Nội dung chính | Người lập |
 | :----: | :---- | :---- | :---- |
-| 1 | [00-1 — Năng lực nhà thầu và đội ngũ](00-ho-so-chung/00-1-thuyet-minh-nang-luc-va-doi-ngu.md) | Quan hệ hai bên; khẳng định của bên thực hiện; **bốn nhân sự và vai trò**; đối chiếu danh tính kỹ thuật ↔ nhân sự; ranh giới công cụ / sản phẩm; bằng chứng khối lượng lao động | HungDV |
+| 1 | [00-1 — Năng lực nhà thầu và đội ngũ](00-ho-so-chung/00-1-thuyet-minh-nang-luc-va-doi-ngu.md) | Quan hệ hai bên; khẳng định của bên thực hiện; **bốn nhân sự và vai trò**; **ma trận phân công theo công đoạn**; ranh giới công cụ / sản phẩm; bằng chứng khối lượng lao động | HungDV |
 | 2 | [00-2 — Quy trình sản xuất phần mềm](00-ho-so-chung/00-2-quy-trinh-san-xuat-phan-mem-noi-bo.md) | Bốn nguyên tắc chi phối; **bảy công đoạn**: việc làm, đầu ra, bằng chứng để lại; sơ đồ tổng quát | QuanNH |
 | 3 | [00-3 — Đối chiếu hồ sơ theo công đoạn](00-ho-so-chung/00-3-doi-chieu-ho-so-theo-cong-doan.md) | **Bảng đối chiếu từng công đoạn với tài liệu chứng minh và bằng chứng gốc**; lệnh kiểm chứng; danh sách kiểm tra trước khi nộp | HungDV |
 | 4 | [00-4 — Hạ tầng, công cụ, môi trường](00-ho-so-chung/00-4-ha-tang-cong-cu-va-moi-truong.md) | Ba tầng môi trường; hạ tầng vận hành từng dự án; công cụ phát triển; phiên bản nền tảng đã ghim; quản lý bí mật; sao lưu | QuanNH |
 | 5 | [00-5 — Quy chuẩn mã nguồn và phiên bản](00-ho-so-chung/00-5-quy-chuan-ma-nguon-va-quan-ly-phien-ban.md) | Quy chuẩn viết mã; kiểm tra bắt buộc trước ghi nhận; quy ước mô tả thay đổi; **quy trình bảy bước đổi cấu trúc cơ sở dữ liệu**; sổ tra cứu sự cố | QuanNH |
-| 6 | [00-6 — Hồ sơ chi phí phát triển](00-ho-so-chung/00-6-ho-so-chi-phi-phat-trien.md) | Bốn nhóm chi phí; bảng kê nhân công theo vai trò; **căn cứ phân bổ giữa DA1 và DA2**; đối chiếu chi phí dịch vụ AI với hoá đơn; **đối chiếu chi phí với giá bán** | Kế toán OPTIMAI |
+| 6 | [00-6 — Hồ sơ chi phí phát triển](00-ho-so-chung/00-6-ho-so-chi-phi-phat-trien.md) | Bốn nhóm chi phí; bảng kê nhân công theo vai trò; **căn cứ phân bổ giữa DA1 và DA2**; đối chiếu chi phí dịch vụ AI với hoá đơn; đối chiếu chi phí với giá bán — **mọi ô số để trống, công ty tự điền** | Kế toán OPTIMAI |
 | 7 | [00-7 — Hợp đồng, bàn giao, quyền sở hữu](00-ho-so-chung/00-7-hop-dong-ban-giao-va-quyen-so-huu.md) | Hợp đồng và phụ lục phạm vi; chuỗi nghiệm thu → bàn giao → hoá đơn; **quyền sở hữu trí tuệ**; **giao dịch liên kết**; nghĩa vụ hồ sơ từng bên | HungDV |
 
 ### 4.2 DA1 — Website và Hệ quản trị nội dung · 12 tài liệu
@@ -212,7 +212,7 @@ Lịch sử ghi nhận thay đổi là bằng chứng mạnh nhất: **381 mốc
 
 | # | Việc | Bên | Tài liệu tham chiếu |
 | :----: | :---- | :---- | :---- |
-| 1 | **Điền bảng đối chiếu danh tính kỹ thuật ↔ nhân sự** | OPTIMAI | `00-1` mục 4 |
+| 1 | **Xác nhận ma trận phân công công việc** | OPTIMAI | `00-1` mục 4.1 |
 | 2 | Tập hợp hồ sơ nhân sự bốn người | OPTIMAI | `00-1` mục 5 |
 | 3 | Ký hợp đồng và phụ lục phạm vi từng dự án | Hai bên | `00-7` mục 2 |
 | 4 | Chạy bộ ca kiểm thử, điền kết quả | OPTIMAI | `-07` các dự án |
@@ -223,7 +223,7 @@ Lịch sử ghi nhận thay đổi là bằng chứng mạnh nhất: **381 mốc
 | 9 | Xử lý nơi lưu kho mã nguồn | OPTIMAI | `00-7` mục 4.2 |
 | 10 | Ghi nhận tài sản hoặc chi phí phần mềm | Bioscope | `00-6` mục 9 |
 
-**Mục 1 và 8 là hai mục quan trọng nhất.** Mục 1 nối bằng chứng kỹ thuật với nhân sự có hợp đồng lao động — thiếu nó thì 381 lần ghi nhận thay đổi không quy được về OPTIMAI. Mục 8 là nghĩa vụ riêng của giao dịch giữa hai công ty liên kết.
+**Mục 1 và 8 là hai mục quan trọng nhất.** Mục 1 nối khối lượng công việc ghi trong kho mã nguồn với nhân sự có hợp đồng lao động tại OPTIMAI. Mục 8 là nghĩa vụ riêng của giao dịch giữa hai công ty liên kết.
 
 ---
 

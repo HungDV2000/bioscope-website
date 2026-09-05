@@ -38,7 +38,7 @@ Thiếu tài liệu này thì hồ sơ kỹ thuật đứng một mình: chứng
 | Ngày ký | | ....... /....... /........... |
 | Bên A — Bên đặt hàng | Công ty Bioscope | Mã số thuế: ..................... |
 | Bên B — Bên thực hiện | Công ty OPTIMAI | Mã số thuế: ..................... |
-| Giá trị hợp đồng | | ............................. |
+| Giá trị hợp đồng | *(công ty điền)* | ............................. |
 | Thời hạn thực hiện | | Từ ............ đến ............ |
 | Thời hạn bảo hành | | ............................. |
 
@@ -204,9 +204,9 @@ Bộ hồ sơ kỹ thuật cung cấp sẵn số liệu để làm căn cứ:
 | Thời gian thực hiện | 7 tháng liên tục, 381 lần ghi nhận | `00-1` mục 7 |
 | Quy mô đội | 4 người, phân vai rõ | `00-1` mục 3 |
 | Khối lượng chức năng | 138 yêu cầu chức năng, 216 ca kiểm thử | `-02` và `-07` các dự án |
-| Chi phí trực tiếp của bên bán | Khung bảng | `00-6` |
+| Chi phí trực tiếp của bên bán | Khung bảng — **số liệu công ty tự điền** | `00-6` |
 
-Ba căn cứ đầu là số đo khách quan, kiểm chứng lại được từ kho mã nguồn — mạnh hơn nhiều so với một con số không có cơ sở.
+Bốn căn cứ đầu là số đo khách quan, kiểm chứng lại được từ kho mã nguồn và bộ hồ sơ — mạnh hơn nhiều so với một con số không có cơ sở. Căn cứ cuối lấy từ sổ sách kế toán.
 
 ---
 
@@ -235,7 +235,7 @@ Mục 2 là mục duy nhất **dùng chung cho cả hai bên** — và đó là 
 | # | Việc | Bên | Xong |
 | :---- | :---- | :---- | :----: |
 | 1 | Ký hợp đồng và phụ lục phạm vi từng dự án | Hai bên | ☐ |
-| 2 | Điền bảng đối chiếu danh tính kỹ thuật ở `00-1` mục 4 | OPTIMAI | ☐ |
+| 2 | Ban Giám đốc xác nhận ma trận phân công ở `00-1` mục 4.1 | OPTIMAI | ☐ |
 | 3 | Tập hợp hồ sơ nhân sự bốn người | OPTIMAI | ☐ |
 | 4 | Chạy bộ ca kiểm thử, điền kết quả vào `-07` | OPTIMAI | ☐ |
 | 5 | Ký biên bản nghiệm thu ba dự án | Hai bên | ☐ |

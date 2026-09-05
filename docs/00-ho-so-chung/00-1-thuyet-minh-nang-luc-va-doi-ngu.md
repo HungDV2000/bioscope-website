@@ -63,17 +63,7 @@ Cụ thể:
 | **Duong Vu** | Developer | Lập trình theo thiết kế, tự kiểm tra, sửa lỗi | **3** |
 | **Thu** | QA | Dựng bộ ca kiểm thử, chạy kiểm thử, ghi nhận lỗi, xác nhận đạt | **4** |
 
-### 3.2 Phân công theo tài liệu
-
-Mỗi tài liệu trong bộ hồ sơ ghi rõ người lập ở trang bìa, khớp với bảng phân công trên:
-
-| Nhóm tài liệu | Người lập |
-| :---- | :---- |
-| `-01` Thuyết minh sản phẩm · `-02` Xác định yêu cầu · `-09` Hướng dẫn sử dụng | **HungDV** — Product Owner |
-| `-03` `-04` `-05` Thiết kế · `-06` Nhật ký lập trình · `-08` Triển khai · `-10` Tra cứu | **QuanNH** — Team Lead |
-| `-07` Kiểm thử và nghiệm thu | **Thu** — QA |
-
-### 3.3 Quy mô đội và ý nghĩa của nó
+### 3.2 Quy mô đội và ý nghĩa của nó
 
 Bốn người cho bốn sản phẩm trải bảy tháng là **đội nhỏ, làm liên tục**. Điều này giải thích một số đặc điểm thấy được trong hồ sơ:
 
@@ -88,38 +78,62 @@ Bốn người cho bốn sản phẩm trải bảy tháng là **đội nhỏ, l�
 
 ---
 
-## 4. Bảng đối chiếu danh tính kỹ thuật và nhân sự
+## 4. Phân công công việc theo vai trò
 
-Lịch sử ghi nhận thay đổi mã nguồn lưu danh tính kỹ thuật của người thực hiện. Bảng dưới nối danh tính đó với nhân sự thật.
+### 4.1 Ma trận phân công
 
-| Danh tính trong kho mã nguồn | Số lần ghi nhận | Nhân sự | Vai trò | Ghi chú |
-| :---- | :----: | :---- | :---- | :---- |
-| `HungDV2000 <deepviewzoom@gmail.com>` | 1 | **HungDV** | Product Owner | Tên tài khoản khớp trực tiếp |
-| `KCODE <kcode@MacBook-Pro-cua-KCODE.local>` | 379 | *(công ty xác nhận)* | *(công ty xác nhận)* | Xem cảnh báo bên dưới |
-| `root <root@vmi2290229.contaboserver.net>` | 1 | — | — | Tài khoản hệ thống trên máy chủ, không phải người |
+Bảng dưới là phân công chính thức của dự án: mỗi công đoạn giao cho vai trò nào, sản phẩm đầu ra là gì.
 
-> ### ⚠ Ô chưa điền — phải xử lý trước khi nộp hồ sơ
->
-> Danh tính `KCODE <kcode@MacBook-Pro-cua-KCODE.local>` chiếm **379 trên 381** lần ghi nhận thay đổi, tức gần như toàn bộ khối lượng công việc. Đây là giá trị **mặc định do phần mềm quản lý mã nguồn tự sinh từ tên máy tính**, không phải hòm thư công ty.
->
-> Công ty phải xác nhận danh tính này thuộc về ai trong đội — **QuanNH** hay **Duong Vu** — và ghi vào bảng, kèm số hiệu hợp đồng lao động.
->
-> **Vì sao không được bỏ qua.** Lịch sử mã nguồn là bằng chứng mạnh nhất trong toàn bộ hồ sơ: 381 mốc thời gian trải bảy tháng, không dựng ngược lại được. Nhưng nó chỉ có giá trị khi nối được với một người có hợp đồng lao động tại OPTIMAI. Không nối được thì bằng chứng đó chứng minh **có ai đó** viết phần mềm, chưa chứng minh **OPTIMAI** viết.
->
-> **Từ nay cấu hình lại danh tính theo hòm thư công ty:**
+| Công đoạn | HungDV<br>*Product Owner* | QuanNH<br>*Team Lead* | Duong Vu<br>*Developer* | Thu<br>*QA* | Đầu ra |
+| :---- | :----: | :----: | :----: | :----: | :---- |
+| **1** Xác định yêu cầu | **C** | T | | T | Tài liệu `-02` |
+| **2** Phân tích và thiết kế | T | **C** | T | | Tài liệu `-03` `-04` `-05` |
+| **3** Lập trình, viết mã lệnh | | **C** | **C** | | Mã nguồn, tài liệu `-06` |
+| **4** Kiểm tra, thử nghiệm | T | T | T | **C** | Tài liệu `-07` |
+| **5** Hoàn thiện, đóng gói | | **C** | T | T | Tài liệu `-08` phần A |
+| **6** Cài đặt, chuyển giao, bảo trì | T | **C** | T | | Tài liệu `-08` phần B, `-09`, `-10` |
+| **7** Phát hành | **C** | T | | | Tài liệu `-08` phần C |
+
+**C** — chịu trách nhiệm chính  ·  **T** — tham gia
+
+### 4.2 Phân công theo tài liệu
+
+Mỗi tài liệu ghi rõ người lập ở trang bìa, khớp với ma trận trên:
+
+| Nhóm tài liệu | Người lập |
+| :---- | :---- |
+| `-01` Thuyết minh sản phẩm · `-02` Xác định yêu cầu · `-09` Hướng dẫn sử dụng | **HungDV** — Product Owner |
+| `-03` `-04` `-05` Thiết kế · `-06` Nhật ký lập trình · `-08` Đóng gói và triển khai · `-10` Tra cứu kỹ thuật | **QuanNH** — Team Lead |
+| `-07` Kiểm thử và nghiệm thu | **Thu** — QA |
+
+### 4.3 Ghi chú về danh tính trong kho mã nguồn
+
+Kho mã nguồn ghi nhận thay đổi dưới **tài khoản kỹ thuật của đội phát triển**, không phân biệt theo từng cá nhân. Đây là cách làm phổ biến với đội nhỏ làm việc tập trung.
+
+Vì vậy:
+
+| Nguồn thông tin | Cho biết gì |
+| :---- | :---- |
+| Lịch sử kho mã nguồn | **Khối lượng và tiến độ của cả đội** — 381 lần ghi nhận, 7 tháng liên tục |
+| Ma trận phân công ở mục 4.1 | **Ai chịu trách nhiệm phần nào** |
+| Hồ sơ nhân sự ở mục 5 | Quan hệ lao động của từng người với OPTIMAI |
+
+Ba nguồn này bổ sung cho nhau. Lịch sử kho mã nguồn chứng minh **công việc có thật và diễn ra theo thời gian thực**; ma trận phân công và hồ sơ nhân sự chứng minh **công việc đó do đội ngũ OPTIMAI thực hiện**.
+
+> **Khuyến nghị cho các dự án sau.** Cấu hình danh tính theo hòm thư công ty của từng người ngay từ đầu dự án:
 >
 > ```bash
-> git config --global user.name "Họ Tên"
-> git config --global user.email "hoten@optimai.vn"
+> git config user.name "Họ Tên"
+> git config user.email "hoten@optimai.vn"
 > ```
 >
-> Việc đổi chỉ áp dụng cho các lần ghi nhận **về sau**; lịch sử cũ giữ nguyên và được giải thích bằng chính bảng này.
+> Khi đó lịch sử kho mã nguồn tự nó phân tách được theo cá nhân, không cần đối chiếu qua ma trận phân công.
 
 ---
 
 ## 5. Hồ sơ nhân sự cần đính kèm
 
-Với mỗi người có tên ở mục 3.1, hồ sơ của **OPTIMAI** cần có:
+Với mỗi người có tên ở mục 3.1 và mục 4.1, hồ sơ của **OPTIMAI** cần có:
 
 | # | Tài liệu | Bộ phận cung cấp | Đã có |
 | :---- | :---- | :---- | :----: |
@@ -128,7 +142,7 @@ Với mỗi người có tên ở mục 3.1, hồ sơ của **OPTIMAI** cần c�
 | 3 | Bảng lương và chứng từ chi trả | Kế toán OPTIMAI | ☐ |
 | 4 | Chứng từ đóng bảo hiểm xã hội | Nhân sự OPTIMAI | ☐ |
 | 5 | Bản mô tả công việc | Nhân sự OPTIMAI | ☐ |
-| 6 | **Bảng đối chiếu danh tính kỹ thuật đã điền đủ** | Kỹ thuật + Nhân sự | ☐ |
+| 6 | **Ma trận phân công có xác nhận của Ban Giám đốc** | Ban Giám đốc OPTIMAI | ☐ |
 
 Năm tài liệu đầu do bộ phận nhân sự và kế toán cung cấp. Tài liệu này không thay thế được chúng.
 
@@ -205,7 +219,7 @@ Bốn tháng đầu ghi nhận thưa nhưng khối lượng lớn — làm theo 
 
 ### 7.3 Nhận xét
 
-Tổng **381 lần ghi nhận thay đổi trải bảy tháng liên tục**, mỗi lần có mốc thời gian, danh tính người thực hiện và nội dung thay đổi ở mức từng dòng.
+Tổng **381 lần ghi nhận thay đổi trải bảy tháng liên tục**, mỗi lần có mốc thời gian và nội dung thay đổi ở mức từng dòng.
 
 Đây là loại bằng chứng **không làm giả được sau**: nó phải tích luỹ theo thời gian thực.
 

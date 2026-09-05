@@ -3,8 +3,8 @@ phu_de: Hệ thống AI chuẩn hoá và cập nhật dữ liệu sản phẩm
 pham_vi: Dự án DA2
 ngay_lap: 10/08/2026
 phien_ban: 1.1
-nguoi_lap: Bộ phận Phát triển phần mềm — Công ty Bioscope
-nguoi_duyet: Ban Giám đốc
+nguoi_lap: Thu — QA, Công ty OPTIMAI
+nguoi_duyet: Ban Giám đốc OPTIMAI và đại diện Công ty Bioscope
 lich_su: 1.0 | 10/08/2026 | Ban hành bộ ca kiểm thử — 58 ca
 lich_su: 1.1 | 24/08/2026 | Bổ sung quy trình kiểm thử đối chiếu tài liệu gốc
 -->

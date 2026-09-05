@@ -3,8 +3,8 @@ phu_de: Website Bioscope và Hệ quản trị nội dung
 pham_vi: Dự án DA1
 ngay_lap: 25/08/2026
 phien_ban: 1.1
-nguoi_lap: Bộ phận Phát triển phần mềm — Công ty Bioscope
-nguoi_duyet: Ban Giám đốc
+nguoi_lap: QuanNH — Team Lead, Công ty OPTIMAI
+nguoi_duyet: Ban Giám đốc Công ty OPTIMAI
 lich_su: 1.0 | 25/08/2026 | Ban hành lần đầu
 lich_su: 1.1 | 03/09/2026 | Bổ sung quy trình triển khai hệ thống bình luận
 -->
@@ -385,10 +385,13 @@ Mỗi lần phát hành có chức năng ảnh hưởng tới người dùng, g�
 
 ## C4. Giấy phép và quyền sở hữu
 
+> **Quan hệ hai bên.** Phần mềm do **Công ty OPTIMAI** thực hiện theo hợp đồng và bàn giao cho **Công ty Bioscope**. Quyền sở hữu mã nguồn nghiệp vụ chuyển sang Bioscope sau khi nghiệm thu và bàn giao, theo điều khoản hợp đồng — chi tiết ở `00-7-hop-dong-ban-giao-va-quyen-so-huu.md` mục 4.
+
+
 | Nội dung | Chủ sở hữu |
 | :---- | :---- |
-| Mã nguồn nghiệp vụ do công ty viết | **Công ty Bioscope** |
-| Dữ liệu nguyên liệu, nội dung, hình ảnh | **Công ty Bioscope** |
+| Mã nguồn nghiệp vụ do công ty viết | OPTIMAI → **Bioscope** *(sau bàn giao)* |
+| Dữ liệu nguyên liệu, nội dung, hình ảnh | **Bioscope** *(từ đầu)* |
 | Thư viện mã nguồn mở sử dụng | Tác giả tương ứng, theo giấy phép mã nguồn mở (chủ yếu MIT, Apache 2.0) |
 
 Danh mục thư viện và giấy phép ở `00-4` mục 4.

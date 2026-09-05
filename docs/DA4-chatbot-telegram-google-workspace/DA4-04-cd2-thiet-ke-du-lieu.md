@@ -3,8 +3,8 @@ phu_de: Chatbot Bioscope trên Telegram, Google Drive và Google Sheets
 pham_vi: Dự án DA4 — Công đoạn 2, thiết kế dữ liệu dự thảo
 ngay_lap: 03/09/2026
 phien_ban: 0.1
-nguoi_lap: Bộ phận Phát triển phần mềm — Công ty Bioscope
-nguoi_duyet: Chưa xác nhận
+nguoi_lap: QuanNH — Team Lead, Công ty OPTIMAI
+nguoi_duyet: Ban Giám đốc Công ty OPTIMAI
 lich_su: 0.1 | 03/09/2026 | Thiết kế dữ liệu nền từ Bioscope Build Guide
 -->
 # DA4 — CÔNG ĐOẠN 2: THIẾT KẾ DỮ LIỆU

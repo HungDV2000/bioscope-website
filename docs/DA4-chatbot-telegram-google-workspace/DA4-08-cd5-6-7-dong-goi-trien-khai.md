@@ -3,8 +3,8 @@ phu_de: Chatbot Bioscope trên Telegram, Google Drive và Google Sheets
 pham_vi: Dự án DA4 — Công đoạn 5, 6, 7; kế hoạch triển khai và bàn giao
 ngay_lap: 03/09/2026
 phien_ban: 0.1
-nguoi_lap: Bộ phận Phát triển phần mềm — Công ty Bioscope
-nguoi_duyet: Chưa xác nhận
+nguoi_lap: QuanNH — Team Lead, Công ty OPTIMAI
+nguoi_duyet: Ban Giám đốc Công ty OPTIMAI
 lich_su: 0.1 | 03/09/2026 | Lập checklist đóng gói, triển khai và phát hành dự thảo
 -->
 # DA4 — CÔNG ĐOẠN 5, 6, 7

@@ -3,8 +3,8 @@ phu_de: Website Bioscope và Hệ quản trị nội dung
 pham_vi: Dự án DA1
 ngay_lap: 15/06/2026
 phien_ban: 1.4
-nguoi_lap: Bộ phận Phát triển phần mềm — Công ty Bioscope
-nguoi_duyet: Ban Giám đốc
+nguoi_lap: QuanNH — Team Lead, Công ty OPTIMAI
+nguoi_duyet: Ban Giám đốc Công ty OPTIMAI
 lich_su: 1.0 | 15/06/2026 | Mở sổ nhật ký phát triển
 lich_su: 1.1 | 29/07/2026 | Ghi nhận mốc 1 đến mốc 5
 lich_su: 1.2 | 17/08/2026 | Ghi nhận mốc 6 đến mốc 8
@@ -121,7 +121,7 @@ Lưu ý về phạm vi: kho mã nguồn chứa cả DA1 và DA2. Nhật ký dư�
 
 **Ghi chú trung thực về chất lượng nhật ký giai đoạn này.** Mô tả thay đổi trong giai đoạn đầu rất sơ sài — nhiều lần chỉ ghi `up`, `update code`, `fix home`. Đây là thực tế, không che giấu. Từ 09/07/2026 trở đi, quy ước mô tả được áp dụng nghiêm và chất lượng nhật ký thay đổi hẳn.
 
-Sự chuyển biến này tự nó là bằng chứng: quy trình của đội **trưởng thành dần trong quá trình làm**, đúng với đặc điểm của một đội tự phát triển sản phẩm, khác với một dự án được bàn giao trọn gói.
+Sự chuyển biến này tự nó là bằng chứng: quy trình của đội **trưởng thành dần trong quá trình làm**, đúng với đặc điểm của một đội trực tiếp sản xuất, khác với một dự án nhận bàn giao trọn gói từ bên khác.
 
 ---
 

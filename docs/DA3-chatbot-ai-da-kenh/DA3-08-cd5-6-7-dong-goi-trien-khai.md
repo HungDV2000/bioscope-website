@@ -3,8 +3,8 @@ phu_de: Chatbot AI đa kênh BioBot — Bioscope Assistants
 pham_vi: Dự án DA3
 ngay_lap: 05/06/2026
 phien_ban: 1.1
-nguoi_lap: Bộ phận Phát triển phần mềm — Công ty Bioscope
-nguoi_duyet: Ban Giám đốc
+nguoi_lap: QuanNH — Team Lead, Công ty OPTIMAI
+nguoi_duyet: Ban Giám đốc Công ty OPTIMAI
 lich_su: 1.0 | 05/06/2026 | Ban hành lần đầu
 lich_su: 1.1 | 12/06/2026 | Bổ sung danh sách kiểm tra sau triển khai và quy trình bảo trì
 -->
@@ -334,15 +334,18 @@ Bảng `ai_interaction_logs` là bằng chứng mạnh nhất: mỗi dòng là m
 
 ## C3. Quyền sở hữu
 
+> **Quan hệ hai bên.** Phần mềm do **Công ty OPTIMAI** thực hiện theo hợp đồng và bàn giao cho **Công ty Bioscope**. Quyền sở hữu mã nguồn nghiệp vụ chuyển sang Bioscope sau khi nghiệm thu và bàn giao, theo điều khoản hợp đồng — chi tiết ở `00-7-hop-dong-ban-giao-va-quyen-so-huu.md` mục 4.
+
+
 | Nội dung | Chủ sở hữu |
 | :---- | :---- |
-| 44 quy trình tự động hoá | **Công ty Bioscope** |
-| Toàn bộ mã nguồn máy chủ và giao diện | **Công ty Bioscope** |
-| 14 công cụ trợ lý và bảng phân quyền | **Công ty Bioscope** |
-| Chốt chặn dược | **Công ty Bioscope** |
-| Mô hình dữ liệu 30 bảng | **Công ty Bioscope** |
-| Tri thức trong kho vectơ | **Công ty Bioscope** |
-| 7.600+ dòng tài liệu kỹ thuật | **Công ty Bioscope** |
+| 44 quy trình tự động hoá | OPTIMAI → **Bioscope** *(sau bàn giao)* |
+| Toàn bộ mã nguồn máy chủ và giao diện | OPTIMAI → **Bioscope** *(sau bàn giao)* |
+| 14 công cụ trợ lý và bảng phân quyền | OPTIMAI → **Bioscope** *(sau bàn giao)* |
+| Chốt chặn dược | OPTIMAI → **Bioscope** *(sau bàn giao)* |
+| Mô hình dữ liệu 30 bảng | OPTIMAI → **Bioscope** *(sau bàn giao)* |
+| Tri thức trong kho vectơ | **Bioscope** *(từ đầu)* |
+| 7.600+ dòng tài liệu kỹ thuật | OPTIMAI → **Bioscope** *(sau bàn giao)* |
 | Nền tảng điều phối, kho vectơ, cơ sở dữ liệu | Tác giả tương ứng, theo giấy phép mã nguồn mở |
 | Mô hình ngôn ngữ, mô hình sinh vectơ | Nhà cung cấp dịch vụ |
 | Nền tảng nhắn tin | Nhà cung cấp dịch vụ |

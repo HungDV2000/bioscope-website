@@ -3,8 +3,8 @@ phu_de: Hạ tầng, công cụ và môi trường phát triển
 pham_vi: Toàn công ty
 ngay_lap: 12/01/2026
 phien_ban: 1.2
-nguoi_lap: Bộ phận Phát triển phần mềm — Công ty Bioscope
-nguoi_duyet: Ban Giám đốc
+nguoi_lap: QuanNH — Team Lead, Công ty OPTIMAI
+nguoi_duyet: Ban Giám đốc Công ty OPTIMAI
 lich_su: 1.0 | 12/01/2026 | Ban hành lần đầu, hạ tầng dự án DA3
 lich_su: 1.1 | 09/07/2026 | Bổ sung hạ tầng dự án DA1 và DA2
 lich_su: 1.2 | 03/09/2026 | Cập nhật phiên bản nền tảng và bảng quản lý bí mật
@@ -13,7 +13,7 @@ lich_su: 1.2 | 03/09/2026 | Cập nhật phiên bản nền tảng và bảng qu
 
 *Tài liệu chung — áp dụng cho cả ba dự án DA1, DA2, DA3.*
 
-Tài liệu này mô tả phương tiện sản xuất: công ty dùng máy móc gì, công cụ gì, và tổ chức môi trường làm việc ra sao. Đây là bằng chứng bổ trợ cho tính tự phát triển — một đơn vị mua phần mềm về dùng thì không cần môi trường phát triển, không cần kho mã nguồn, không cần môi trường kiểm thử riêng.
+Tài liệu này mô tả phương tiện sản xuất của **Công ty OPTIMAI**: dùng máy móc gì, công cụ gì, tổ chức môi trường làm việc ra sao. Đây là bằng chứng bổ trợ cho hoạt động sản xuất phần mềm — một đơn vị chỉ mua phần mềm về dùng thì không cần môi trường phát triển, không cần kho mã nguồn, không cần môi trường kiểm thử riêng.
 
 ---
 
@@ -135,7 +135,7 @@ Ba dự án có dùng dịch vụ bên ngoài. Nói rõ ranh giới: đây là *
 | Zalo OA API | DA3 | Kênh nhắn tin |
 | Meta (Messenger, WhatsApp) | DA3 | Kênh nhắn tin |
 
-**Công ty tự viết phần nào:** toàn bộ cách gọi các dịch vụ này — dựng câu lệnh, cắt tài liệu thành đoạn, chọn đoạn liên quan, kiểm chứng kết quả trả về, xử lý khi dịch vụ lỗi, thử lại, đặt hạn giờ, ước tính chi phí, chuyển kênh về người thật. Dịch vụ ngoài chỉ trả lời một câu hỏi; biến nó thành hệ thống dùng được là phần công ty làm.
+**OPTIMAI tự viết phần nào:** toàn bộ cách gọi các dịch vụ này — dựng câu lệnh, cắt tài liệu thành đoạn, chọn đoạn liên quan, kiểm chứng kết quả trả về, xử lý khi dịch vụ lỗi, thử lại, đặt hạn giờ, ước tính chi phí, chuyển kênh về người thật. Dịch vụ ngoài chỉ trả lời một câu hỏi; biến nó thành hệ thống dùng được là phần OPTIMAI làm.
 
 ---
 

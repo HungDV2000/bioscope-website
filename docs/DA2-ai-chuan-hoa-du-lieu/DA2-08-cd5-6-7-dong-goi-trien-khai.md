@@ -3,8 +3,8 @@ phu_de: Hệ thống AI chuẩn hoá và cập nhật dữ liệu sản phẩm
 pham_vi: Dự án DA2
 ngay_lap: 15/08/2026
 phien_ban: 1.1
-nguoi_lap: Bộ phận Phát triển phần mềm — Công ty Bioscope
-nguoi_duyet: Ban Giám đốc
+nguoi_lap: QuanNH — Team Lead, Công ty OPTIMAI
+nguoi_duyet: Ban Giám đốc Công ty OPTIMAI
 lich_su: 1.0 | 15/08/2026 | Ban hành lần đầu
 lich_su: 1.1 | 24/08/2026 | Bổ sung quy trình kiểm soát chi phí định kỳ
 -->
@@ -225,12 +225,15 @@ DA2 là **công cụ nội bộ**, không phát hành ra ngoài công ty.
 
 ## C3. Quyền sở hữu
 
+> **Quan hệ hai bên.** Phần mềm do **Công ty OPTIMAI** thực hiện theo hợp đồng và bàn giao cho **Công ty Bioscope**. Quyền sở hữu mã nguồn nghiệp vụ chuyển sang Bioscope sau khi nghiệm thu và bàn giao, theo điều khoản hợp đồng — chi tiết ở `00-7-hop-dong-ban-giao-va-quyen-so-huu.md` mục 4.
+
+
 | Nội dung | Chủ sở hữu |
 | :---- | :---- |
-| Toàn bộ mã nguồn dây chuyền | **Công ty Bioscope** |
-| Hợp đồng dữ liệu 20 nhóm trường | **Công ty Bioscope** |
-| Câu lệnh gửi mô hình, gồm quy tắc chống bịa | **Công ty Bioscope** |
-| Nội dung nguyên liệu sinh ra | **Công ty Bioscope** |
+| Toàn bộ mã nguồn dây chuyền | OPTIMAI → **Bioscope** *(sau bàn giao)* |
+| Hợp đồng dữ liệu 20 nhóm trường | OPTIMAI → **Bioscope** *(sau bàn giao)* |
+| Câu lệnh gửi mô hình, gồm quy tắc chống bịa | OPTIMAI → **Bioscope** *(sau bàn giao)* |
+| Nội dung nguyên liệu sinh ra | **Bioscope** *(từ đầu)* |
 | Mô hình ngôn ngữ | Nhà cung cấp dịch vụ |
 | Dịch vụ nhận dạng chữ | Nhà cung cấp dịch vụ |
 

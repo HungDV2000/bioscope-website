@@ -3,8 +3,8 @@ phu_de: Website Bioscope và Hệ quản trị nội dung
 pham_vi: Dự án DA1 — người dùng cuối và quản trị viên
 ngay_lap: 28/08/2026
 phien_ban: 1.1
-nguoi_lap: Bộ phận Phát triển phần mềm — Công ty Bioscope
-nguoi_duyet: Ban Giám đốc
+nguoi_lap: HungDV — Product Owner, Công ty OPTIMAI
+nguoi_duyet: Ban Giám đốc Công ty OPTIMAI
 lich_su: 1.0 | 28/08/2026 | Ban hành lần đầu
 lich_su: 1.1 | 03/09/2026 | Bổ sung hướng dẫn quản lý bình luận
 -->

@@ -3,8 +3,8 @@ phu_de: Bản rút gọn — chỉ các bước thao tác
 pham_vi: Dự án DA1 — người cài đặt
 ngay_lap: 14/08/2026
 phien_ban: 1.0
-nguoi_lap: Bộ phận Phát triển phần mềm — Công ty Bioscope
-nguoi_duyet: Ban Giám đốc
+nguoi_lap: QuanNH — Team Lead, Công ty OPTIMAI
+nguoi_duyet: Ban Giám đốc Công ty OPTIMAI
 lich_su: 1.0 | 14/08/2026 | Ban hành lần đầu
 -->
 # DA1 — CÀI ĐẶT NHANH TELEGRAM

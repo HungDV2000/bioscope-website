@@ -3,8 +3,8 @@ phu_de: Website Bioscope và Hệ quản trị nội dung
 pham_vi: Dự án DA1
 ngay_lap: 26/05/2026
 phien_ban: 1.1
-nguoi_lap: Bộ phận Phát triển phần mềm — Công ty Bioscope
-nguoi_duyet: Ban Giám đốc
+nguoi_lap: HungDV — Product Owner, Công ty OPTIMAI
+nguoi_duyet: Ban Giám đốc OPTIMAI và đại diện Công ty Bioscope
 lich_su: 1.0 | 26/05/2026 | Ban hành lần đầu — 44 yêu cầu chức năng, 13 yêu cầu phi chức năng
 lich_su: 1.1 | 17/08/2026 | Bổ sung nhóm yêu cầu giao diện lập trình cho hệ thống ngoài
 -->

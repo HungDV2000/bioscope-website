@@ -3,8 +3,8 @@ phu_de: Bảng đối chiếu hồ sơ theo bảy công đoạn
 pham_vi: Toàn bộ hồ sơ
 ngay_lap: 03/09/2026
 phien_ban: 1.1
-nguoi_lap: Bộ phận Phát triển phần mềm — Công ty Bioscope
-nguoi_duyet: Ban Giám đốc
+nguoi_lap: HungDV — Product Owner, Công ty OPTIMAI
+nguoi_duyet: Ban Giám đốc Công ty OPTIMAI
 lich_su: 1.0 | 03/09/2026 | Ban hành lần đầu
 lich_su: 1.1 | 03/09/2026 | Bổ sung phụ lục trạng thái dự thảo DA4
 -->
@@ -211,4 +211,4 @@ Mỗi tệp có phần ghi chú nêu rõ thay đổi gì, vì sao. Đây là b�
 | 15 | Với DA4: phê duyệt yêu cầu/thiết kế trước khi đổi phiên bản hồ sơ từ `0.1` | ☐ |
 | 16 | Với DA4: chỉ đánh dấu công đoạn 3–7 hoàn tất sau khi có bằng chứng riêng | ☐ |
 
-Tám mục đầu là việc của công ty, không phải việc kỹ thuật. Hồ sơ kỹ thuật dù đầy đủ đến đâu, thiếu bảy mục này thì vẫn không chứng minh được **công ty** tự phát triển — chỉ chứng minh được **có ai đó** tự phát triển.
+Tám mục đầu là việc của hai công ty, không phải việc kỹ thuật. Hồ sơ kỹ thuật dù đầy đủ đến đâu, thiếu tám mục này thì vẫn không chứng minh được **OPTIMAI** đã sản xuất — chỉ chứng minh được **có ai đó** đã sản xuất.

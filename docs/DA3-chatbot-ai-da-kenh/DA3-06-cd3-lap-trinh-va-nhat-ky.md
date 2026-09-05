@@ -3,8 +3,8 @@ phu_de: Chatbot AI đa kênh BioBot — Bioscope Assistants
 pham_vi: Dự án DA3
 ngay_lap: 06/02/2026
 phien_ban: 1.5
-nguoi_lap: Bộ phận Phát triển phần mềm — Công ty Bioscope
-nguoi_duyet: Ban Giám đốc
+nguoi_lap: QuanNH — Team Lead, Công ty OPTIMAI
+nguoi_duyet: Ban Giám đốc Công ty OPTIMAI
 lich_su: 1.0 | 06/02/2026 | Mở sổ nhật ký phát triển
 lich_su: 1.1 | 31/03/2026 | Ghi nhận mốc 1 và mốc 2
 lich_su: 1.2 | 30/04/2026 | Ghi nhận mốc 3 — nhóm vận hành

@@ -1,31 +1,48 @@
 <!--HOSO
-phu_de: Hồ sơ chi phí phát triển phần mềm nội bộ
+phu_de: Chi phí phát triển của bên thực hiện và ghi nhận của bên thụ hưởng
 pham_vi: Toàn công ty — ba dự án DA1, DA2, DA3
 ngay_lap: 15/01/2026
-phien_ban: 1.2
-nguoi_lap: Bộ phận Kế toán — Công ty Bioscope
-nguoi_duyet: Ban Giám đốc
+phien_ban: 2.0
+nguoi_lap: Bộ phận Kế toán — Công ty OPTIMAI
+nguoi_duyet: Ban Giám đốc Công ty OPTIMAI
 lich_su: 1.0 | 15/01/2026 | Ban hành lần đầu, phục vụ dự án DA3
 lich_su: 1.1 | 20/06/2026 | Bổ sung dự án DA1
 lich_su: 1.2 | 09/07/2026 | Bổ sung dự án DA2
+lich_su: 2.0 | 03/09/2026 | Tách chi phí bên thực hiện (OPTIMAI) và ghi nhận bên thụ hưởng (Bioscope); bổ sung đối chiếu giá bán
 -->
-# HỒ SƠ CHI PHÍ PHÁT TRIỂN PHẦN MỀM NỘI BỘ
+# HỒ SƠ CHI PHÍ PHÁT TRIỂN
 
-*Tài liệu chung — do bộ phận Kế toán lập, phối hợp với bộ phận Phát triển phần mềm.*
+*Tài liệu chung — Kế toán OPTIMAI lập, phối hợp với đội phát triển.*
+
+> **Tài liệu liên quan:** quan hệ hợp đồng, bàn giao và **giao dịch liên kết** ở `00-7-hop-dong-ban-giao-va-quyen-so-huu.md`.
 
 ---
 
 ## 1. Mục đích
 
-Hồ sơ kỹ thuật ở các tài liệu khác chứng minh **phần mềm được tạo ra như thế nào**. Tài liệu này chứng minh **công ty đã bỏ ra chi phí gì để tạo ra nó**.
+Tài liệu này ghi **chi phí OPTIMAI đã bỏ ra để tạo ra phần mềm**, và là căn cứ đối chiếu với giá bán cho Bioscope.
 
-Hai loại bằng chứng này bổ sung cho nhau và **thiếu một loại thì loại kia mất phần lớn giá trị**:
+### 1.1 Hai bên, hai nghĩa vụ khác nhau
+
+| | **OPTIMAI — bên thực hiện** | **Bioscope — bên thụ hưởng** |
+| :---- | :---- | :---- |
+| Ghi nhận | Chi phí sản xuất phần mềm, doanh thu bán | Giá mua phần mềm |
+| Cần chứng minh | Chi phí là có thật và phục vụ đúng dự án | Khoản chi tương ứng sản phẩm có thật đã nhận |
+| Tài liệu chính | Tài liệu này, mục 3–7 | Hợp đồng, nghiệm thu, bàn giao, hoá đơn — `00-7` |
+
+### 1.2 Vì sao chi phí bên bán lại quan trọng với cả hai bên
+
+Đây là **giao dịch liên kết** — hai công ty có quan hệ với nhau. Cơ quan thuế sẽ đặt câu hỏi: *giá bán có tương xứng với chi phí và với mặt bằng thị trường không?*
+
+Bảng chi phí ở tài liệu này là một trong ba căn cứ trả lời câu hỏi đó. Hai căn cứ còn lại — khối lượng công việc đo được và so sánh giá thị trường — nằm ở `00-7` mục 5.4.
+
+### 1.3 Hồ sơ kỹ thuật và hồ sơ chi phí bổ sung cho nhau
 
 | Chỉ có hồ sơ kỹ thuật | Chỉ có hồ sơ chi phí |
 | :---- | :---- |
-| Chứng minh có người viết phần mềm, nhưng không chứng minh công ty trả tiền cho việc đó | Chứng minh có chi tiền, nhưng không chứng minh tiền đó tạo ra phần mềm này |
+| Chứng minh phần mềm có thật, nhưng không chứng minh OPTIMAI đã bỏ chi phí tạo ra nó | Chứng minh có chi tiền, nhưng không chứng minh tiền đó tạo ra chính phần mềm này |
 
-Ghép hai lại mới thành một bộ hồ sơ đứng vững.
+Ghép hai lại mới thành bộ hồ sơ đứng vững.
 
 ---
 
@@ -35,12 +52,12 @@ Chi phí phát triển phần mềm nội bộ gồm bốn nhóm:
 
 | Nhóm | Nội dung | Chứng từ gốc |
 | :---- | :---- | :---- |
-| **A. Nhân công** | Lương, thưởng, bảo hiểm của người tham gia phát triển | Bảng lương, chứng từ chi trả, chứng từ đóng bảo hiểm |
+| **A. Nhân công** | Lương, thưởng, bảo hiểm của **bốn nhân sự OPTIMAI** tham gia phát triển | Bảng lương, chứng từ chi trả, chứng từ đóng bảo hiểm |
 | **B. Hạ tầng** | Thuê máy chủ, tên miền, dịch vụ lưu trữ | Hoá đơn nhà cung cấp |
 | **C. Dịch vụ bên ngoài** | Gọi mô hình AI, dịch vụ nhận dạng chữ, nền tảng nhắn tin | Hoá đơn nhà cung cấp |
 | **D. Công cụ** | Phần mềm có bản quyền, dịch vụ lưu trữ mã nguồn | Hoá đơn |
 
-Nhóm A thường chiếm phần lớn và cũng là nhóm quan trọng nhất về mặt chứng minh **tự phát triển** — nó gắn trực tiếp với nhân sự của công ty.
+Nhóm A chiếm phần lớn và là nhóm quan trọng nhất về mặt chứng minh **OPTIMAI thực sự sản xuất** — nó gắn trực tiếp với bốn nhân sự có hợp đồng lao động tại OPTIMAI.
 
 ---
 
@@ -62,17 +79,23 @@ Chi phí nhân công phân bổ theo **thời gian thực tế** từng người
 
 *(Bộ phận Kế toán điền, đối chiếu với bảng lương)*
 
-| Kỳ | Họ tên | Chức danh | Dự án | Tỉ lệ thời gian | Lương + bảo hiểm | Chi phí phân bổ |
+Bốn nhân sự tham gia — vai trò và công đoạn phụ trách ở `00-1` mục 3.1:
+
+| Kỳ | Nhân sự | Vai trò | Dự án | Tỉ lệ thời gian | Lương + bảo hiểm | Chi phí phân bổ |
 | :---- | :---- | :---- | :---- | :----: | :---- | :---- |
-| 02/2026 | | | DA3 | % | | |
-| 03/2026 | | | DA3 | % | | |
-| 04/2026 | | | DA3 | % | | |
-| 05/2026 | | | DA3 | % | | |
-| 06/2026 | | | DA3 + DA1 | % | | |
-| 07/2026 | | | DA1 + DA2 | % | | |
-| 08/2026 | | | DA1 + DA2 | % | | |
-| … | | | | | | |
+| 02/2026 | HungDV | Product Owner | DA3 | % | | |
+| 02/2026 | QuanNH | Team Lead | DA3 | % | | |
+| 02/2026 | Duong Vu | Developer | DA3 | % | | |
+| 02/2026 | Thu | QA | DA3 | % | | |
+| 03/2026 | *(bốn người)* | | DA3 | % | | |
+| 04/2026 | *(bốn người)* | | DA3 | % | | |
+| 05/2026 | *(bốn người)* | | DA3 | % | | |
+| 06/2026 | *(bốn người)* | | DA3 + DA1 | % | | |
+| 07/2026 | *(bốn người)* | | DA1 + DA2 | % | | |
+| 08/2026 | *(bốn người)* | | DA1 + DA2 | % | | |
 | **Cộng** | | | | | | |
+
+> **Tỉ lệ thời gian phải khớp với vai trò.** Ví dụ QA chỉ tham gia nặng ở công đoạn 4, nên tỉ lệ tháng dựng nền thấp hơn tháng kiểm thử. Điền tỉ lệ đều nhau cho cả bốn người ở mọi tháng là dấu hiệu số liệu không dựa trên thực tế.
 
 ### 3.3 Căn cứ phân bổ giữa DA1 và DA2
 
@@ -92,13 +115,13 @@ Bộ phận Kế toán có thể chọn căn cứ khác (số ngày công ghi nh
 
 | # | Chứng từ | Ai cung cấp | Đã có |
 | :---- | :---- | :---- | :----: |
-| 1 | Hợp đồng lao động của từng người có tên | Nhân sự | ☐ |
-| 2 | Quyết định phân công tham gia dự án | Nhân sự | ☐ |
-| 3 | Bảng lương các kỳ | Kế toán | ☐ |
-| 4 | Chứng từ chi trả lương | Kế toán | ☐ |
-| 5 | Chứng từ đóng bảo hiểm xã hội | Nhân sự | ☐ |
-| 6 | Bản mô tả công việc | Nhân sự | ☐ |
-| 7 | **Bảng đối chiếu danh tính kỹ thuật ↔ nhân sự** | Kỹ thuật + Nhân sự | ☐ |
+| 1 | Hợp đồng lao động của bốn nhân sự | Nhân sự OPTIMAI | ☐ |
+| 2 | Quyết định phân công tham gia dự án, ghi rõ vai trò | Nhân sự OPTIMAI | ☐ |
+| 3 | Bảng lương các kỳ | Kế toán OPTIMAI | ☐ |
+| 4 | Chứng từ chi trả lương | Kế toán OPTIMAI | ☐ |
+| 5 | Chứng từ đóng bảo hiểm xã hội | Nhân sự OPTIMAI | ☐ |
+| 6 | Bản mô tả công việc | Nhân sự OPTIMAI | ☐ |
+| 7 | **Bảng đối chiếu danh tính kỹ thuật ↔ nhân sự** | Kỹ thuật + Nhân sự OPTIMAI | ☐ |
 
 > **Mục 7 là mắt xích nối hai loại bằng chứng.** Nó nằm ở `00-1` mục 2, hiện **chưa điền**. Thiếu mục này thì bảng lương và lịch sử mã nguồn là hai bộ giấy tờ rời rạc, không nối được với nhau.
 
@@ -169,7 +192,7 @@ Hai dự án đều tự ghi chi phí, nên đối chiếu được:
 | Phần mềm có bản quyền *(nếu có)* | | | | |
 | **Cộng** | | | | |
 
-**Phần lớn công cụ dùng trong ba dự án là mã nguồn mở, không phát sinh chi phí bản quyền.** Danh mục ở `00-4` mục 4. Đây là điểm cần nói rõ khi giải trình: chi phí công cụ thấp **không phải** dấu hiệu công ty không tự phát triển, mà là đặc điểm của việc dùng nền tảng mã nguồn mở.
+**Phần lớn công cụ dùng trong ba dự án là mã nguồn mở, không phát sinh chi phí bản quyền.** Danh mục ở `00-4` mục 4. Đây là điểm cần nói rõ khi giải trình: chi phí công cụ thấp **không phải** dấu hiệu OPTIMAI không tự sản xuất, mà là đặc điểm của việc dùng nền tảng mã nguồn mở.
 
 ---
 
@@ -198,10 +221,14 @@ Bảng này giúp người đọc hồ sơ đánh giá chi phí có tương xứ
 | Điểm giao tiếp lập trình | 52 | 14 | 12 nhóm |
 | Quy trình tự động hoá | — | — | 44 |
 | Tài liệu kỹ thuật kèm theo | — | — | 7.600 dòng |
-| **Chi phí** | | | |
+| **Chi phí của OPTIMAI** | | | |
 | **Chi phí / 1.000 dòng mã** | | | |
+| **Giá bán cho Bioscope** | | | |
+| **Chênh lệch** | | | |
 
-Dòng cuối là chỉ số dễ đối chiếu nhất với mặt bằng chung của ngành.
+Hai dòng cuối là phần cơ quan thuế quan tâm nhất trong giao dịch liên kết. Chênh lệch giữa chi phí và giá bán phải giải trình được — xem `00-7` mục 5.
+
+Dòng *chi phí / 1.000 dòng mã* là chỉ số dễ đối chiếu nhất với mặt bằng chung của ngành.
 
 ---
 
@@ -219,16 +246,19 @@ Dòng cuối là chỉ số dễ đối chiếu nhất với mặt bằng chung 
 | 8 | Tập hợp hoá đơn hạ tầng | Kế toán | ☐ |
 | 9 | **Đối chiếu chi phí dịch vụ AI với hoá đơn** | Kế toán + Kỹ thuật | ☐ |
 | 10 | Điền bảng tổng hợp (mục 7) | Kế toán | ☐ |
-| 11 | Ký và đóng dấu | Ban Giám đốc | ☐ |
+| 11 | Đối chiếu tổng chi phí với giá bán, giải trình chênh lệch | Kế toán OPTIMAI | ☐ |
+| 12 | **Lập hồ sơ giao dịch liên kết** — xem `00-7` mục 5 | Kế toán hai bên | ☐ |
+| 13 | Ghi nhận tài sản hoặc chi phí phần mềm đã mua | Kế toán Bioscope | ☐ |
+| 14 | Ký và đóng dấu | Ban Giám đốc OPTIMAI | ☐ |
 
 ---
 
 ## 10. Xác nhận
 
-Bộ phận Kế toán xác nhận các số liệu trong tài liệu này được lập trên cơ sở chứng từ gốc hiện có tại công ty, và phù hợp với sổ sách kế toán.
+Bộ phận Kế toán Công ty OPTIMAI xác nhận các số liệu trong tài liệu này được lập trên cơ sở chứng từ gốc hiện có tại công ty, và phù hợp với sổ sách kế toán.
 
 *Người lập:* ..................................... *Chức danh:* .....................................
 
 *Kế toán trưởng:* ..................................... *Ngày:* ....... /....... /...........
 
-*Người đại diện theo pháp luật ký, đóng dấu:*
+*Người đại diện theo pháp luật Công ty OPTIMAI ký, đóng dấu:*

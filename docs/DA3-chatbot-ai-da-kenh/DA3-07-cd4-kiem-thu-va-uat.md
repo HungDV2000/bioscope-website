@@ -3,8 +3,8 @@ phu_de: Chatbot AI đa kênh BioBot — Bioscope Assistants
 pham_vi: Dự án DA3
 ngay_lap: 20/05/2026
 phien_ban: 1.1
-nguoi_lap: Bộ phận Phát triển phần mềm — Công ty Bioscope
-nguoi_duyet: Ban Giám đốc
+nguoi_lap: Thu — QA, Công ty OPTIMAI
+nguoi_duyet: Ban Giám đốc OPTIMAI và đại diện Công ty Bioscope
 lich_su: 1.0 | 20/05/2026 | Ban hành bộ ca kiểm thử — 66 ca
 lich_su: 1.1 | 12/06/2026 | Bổ sung nhóm ca kiểm thử an toàn cho trợ lý có công cụ
 -->

@@ -3,8 +3,8 @@ phu_de: Chatbot AI đa kênh BioBot — Bioscope Assistants
 pham_vi: Dự án DA3
 ngay_lap: 12/01/2026
 phien_ban: 1.2
-nguoi_lap: Bộ phận Phát triển phần mềm — Công ty Bioscope
-nguoi_duyet: Ban Giám đốc
+nguoi_lap: HungDV — Product Owner, Công ty OPTIMAI
+nguoi_duyet: Ban Giám đốc Công ty OPTIMAI
 lich_su: 1.0 | 12/01/2026 | Ban hành lần đầu
 lich_su: 1.1 | 20/04/2026 | Bổ sung phạm vi mô-đun kế toán
 lich_su: 1.2 | 12/06/2026 | Cập nhật quy mô và trạng thái thực tế khi đưa vào vận hành
@@ -349,7 +349,7 @@ Quan hệ: **DA1 là nguồn dữ liệu, DA3 là nơi khai thác.** Hai hệ th
 
 ---
 
-## 11. Ranh giới: dịch vụ ngoài và phần công ty tự viết
+## 11. Ranh giới: dịch vụ ngoài và phần OPTIMAI tự viết
 
 ### 11.1 Dịch vụ và phần mềm nền — nguyên liệu đầu vào
 
@@ -363,7 +363,7 @@ Quan hệ: **DA1 là nguồn dữ liệu, DA3 là nơi khai thác.** Hai hệ th
 | Mô hình ngôn ngữ và mô hình sinh vectơ | Dịch vụ ngoài | Theo điều khoản nhà cung cấp |
 | API các nền tảng nhắn tin | Dịch vụ ngoài | Theo điều khoản |
 
-### 11.2 Phần công ty tự viết — sản phẩm
+### 11.2 Phần OPTIMAI tự viết — sản phẩm
 
 | Nội dung | Vì sao đây là sản phẩm |
 | :---- | :---- |
@@ -380,7 +380,7 @@ Quan hệ: **DA1 là nguồn dữ liệu, DA3 là nơi khai thác.** Hai hệ th
 | **Cơ chế chuyển người thật** | Quy trình nghiệp vụ |
 | **Năm quy trình vận hành** | Kiểm tra sức khoẻ, cảnh báo, hàng đợi việc chết, chống trùng, sao lưu |
 
-Cách kiểm chứng: **cài đặt n8n, Qdrant và một mô hình ngôn ngữ rồi hỏi "sản phẩm ABC có chỉ tiêu gì" sẽ không nhận được gì.** Toàn bộ khoảng cách giữa các thành phần nền và một hệ thống trả lời được câu hỏi đó là phần công ty làm.
+Cách kiểm chứng: **cài đặt n8n, Qdrant và một mô hình ngôn ngữ rồi hỏi "sản phẩm ABC có chỉ tiêu gì" sẽ không nhận được gì.** Toàn bộ khoảng cách giữa các thành phần nền và một hệ thống trả lời được câu hỏi đó là phần OPTIMAI làm.
 
 ---
 

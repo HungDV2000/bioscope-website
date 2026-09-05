@@ -21,12 +21,12 @@ const MONO = 'Menlo'
 const CONTENT_W = 9360   // bề rộng vùng nội dung (twip)
 
 const SETS = {
-  '00': 'Hồ sơ chung — sản xuất phần mềm nội bộ',
+  '00': 'Hồ sơ chung — OPTIMAI thực hiện cho Bioscope',
   DA1: 'DA1 · Website và hệ quản trị nội dung',
   DA2: 'DA2 · AI chuẩn hoá dữ liệu sản phẩm',
   DA3: 'DA3 · Chatbot AI đa kênh',
   DA4: 'DA4 · Chatbot Telegram và Google Workspace',
-  R: 'Hồ sơ sản xuất phần mềm nội bộ — Bioscope',
+  R: 'Hồ sơ sản xuất phần mềm — OPTIMAI · Bioscope',
 }
 
 // ── Inline: **đậm**, *nghiêng*, `mã`, [chữ](link) ──────────────────────────

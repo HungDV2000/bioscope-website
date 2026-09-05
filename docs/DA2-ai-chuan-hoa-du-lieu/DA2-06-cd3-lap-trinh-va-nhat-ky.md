@@ -3,8 +3,8 @@ phu_de: Hệ thống AI chuẩn hoá và cập nhật dữ liệu sản phẩm
 pham_vi: Dự án DA2
 ngay_lap: 09/07/2026
 phien_ban: 1.4
-nguoi_lap: Bộ phận Phát triển phần mềm — Công ty Bioscope
-nguoi_duyet: Ban Giám đốc
+nguoi_lap: QuanNH — Team Lead, Công ty OPTIMAI
+nguoi_duyet: Ban Giám đốc Công ty OPTIMAI
 lich_su: 1.0 | 09/07/2026 | Mở sổ nhật ký phát triển
 lich_su: 1.1 | 18/07/2026 | Ghi nhận mốc 1 đến mốc 3
 lich_su: 1.2 | 25/07/2026 | Ghi nhận mốc 4 đến mốc 6

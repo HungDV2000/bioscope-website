@@ -3,8 +3,8 @@ phu_de: Chatbot Bioscope trên Telegram, Google Drive và Google Sheets
 pham_vi: Dự án DA4 — Công đoạn 4, kế hoạch kiểm thử và biểu mẫu UAT
 ngay_lap: 03/09/2026
 phien_ban: 0.1
-nguoi_lap: Bộ phận Phát triển phần mềm — Công ty Bioscope
-nguoi_duyet: Chưa xác nhận
+nguoi_lap: Thu — QA, Công ty OPTIMAI
+nguoi_duyet: Ban Giám đốc OPTIMAI và đại diện Công ty Bioscope
 lich_su: 0.1 | 03/09/2026 | Lập bộ ca kiểm thử dự thảo, chưa chạy
 -->
 # DA4 — CÔNG ĐOẠN 4: KIỂM TRA, THỬ NGHIỆM VÀ NGHIỆM THU

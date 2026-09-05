@@ -3,8 +3,8 @@ phu_de: Website Bioscope và Hệ quản trị nội dung
 pham_vi: Dự án DA1
 ngay_lap: 20/08/2026
 phien_ban: 1.1
-nguoi_lap: Bộ phận Phát triển phần mềm — Công ty Bioscope
-nguoi_duyet: Ban Giám đốc
+nguoi_lap: Thu — QA, Công ty OPTIMAI
+nguoi_duyet: Ban Giám đốc OPTIMAI và đại diện Công ty Bioscope
 lich_su: 1.0 | 20/08/2026 | Ban hành bộ ca kiểm thử — 62 ca
 lich_su: 1.1 | 03/09/2026 | Bổ sung kết quả kiểm chứng hệ thống bình luận
 -->

@@ -3,8 +3,8 @@ phu_de: Hệ thống AI chuẩn hoá và cập nhật dữ liệu sản phẩm
 pham_vi: Dự án DA2
 ngay_lap: 20/06/2026
 phien_ban: 1.1
-nguoi_lap: Bộ phận Phát triển phần mềm — Công ty Bioscope
-nguoi_duyet: Ban Giám đốc
+nguoi_lap: HungDV — Product Owner, Công ty OPTIMAI
+nguoi_duyet: Ban Giám đốc Công ty OPTIMAI
 lich_su: 1.0 | 20/06/2026 | Ban hành lần đầu
 lich_su: 1.1 | 24/08/2026 | Cập nhật quy mô và trạng thái thực tế
 -->
@@ -224,7 +224,7 @@ Câu kiểm tra ranh giới: **gỡ DA2 đi thì DA1 vẫn là một sản phẩ
 
 ---
 
-## 9. Ranh giới: cái gì là dịch vụ ngoài, cái gì công ty tự viết
+## 9. Ranh giới: cái gì là dịch vụ ngoài, cái gì OPTIMAI tự viết
 
 Đây là mục dễ bị hiểu nhầm nhất của DA2, nên nói thẳng.
 
@@ -236,9 +236,9 @@ Câu kiểm tra ranh giới: **gỡ DA2 đi thì DA1 vẫn là một sản phẩ
 | Mistral OCR | Nhận một trang scan, trả chữ trong đó |
 | Google Drive API | Cho phép đọc tệp trong thư mục |
 
-Công ty **không** tuyên bố sở hữu các dịch vụ này. Chúng là vật tư, giống như xưởng cơ khí mua thép.
+OPTIMAI **không** tuyên bố sở hữu các dịch vụ này. Chúng là vật tư, giống như xưởng cơ khí mua thép.
 
-### 9.2 Công ty tự viết — sản phẩm
+### 9.2 OPTIMAI tự viết — sản phẩm
 
 | Nội dung | Vì sao đây là sản phẩm |
 | :---- | :---- |
@@ -254,7 +254,7 @@ Công ty **không** tuyên bố sở hữu các dịch vụ này. Chúng là v�
 | **Ước tính chi phí** | Bảng giá theo mô hình, quy đổi tiền Việt |
 | **Bắt buộc người duyệt** | Quyết định nghiệp vụ, không phải tính năng của dịch vụ nào |
 
-Cách kiểm chứng đơn giản: **gọi thẳng dịch vụ AI với cùng bộ tài liệu sẽ không cho ra kết quả dùng được.** Nó trả về một đoạn văn xuôi, không phải 20 nhóm trường song ngữ đã đối chiếu danh mục, đã loại giá trị không hợp lệ, đã sẵn sàng ghi vào cơ sở dữ liệu. Toàn bộ khoảng cách giữa hai thứ đó là phần công ty làm.
+Cách kiểm chứng đơn giản: **gọi thẳng dịch vụ AI với cùng bộ tài liệu sẽ không cho ra kết quả dùng được.** Nó trả về một đoạn văn xuôi, không phải 20 nhóm trường song ngữ đã đối chiếu danh mục, đã loại giá trị không hợp lệ, đã sẵn sàng ghi vào cơ sở dữ liệu. Toàn bộ khoảng cách giữa hai thứ đó là phần OPTIMAI làm.
 
 ---
 

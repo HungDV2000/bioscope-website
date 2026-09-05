@@ -148,11 +148,11 @@ Ma trận phân công công việc theo công đoạn và hồ sơ nhân sự: `
 | Bộ | Tài liệu | Dòng |
 | :---- | :----: | :----: |
 | Mục lục | 1 | *tài liệu này* |
-| Hồ sơ chung | 9 | 2.320 |
-| DA1 — Website và CMS | 12 | 4.186 |
-| DA2 — AI chuẩn hoá dữ liệu | 10 | 3.157 |
-| DA3 — Chatbot AI đa kênh | 10 | 3.758 |
-| DA4 — Chatbot Telegram *(thiết kế)* | 10 | 2.716 |
+| Hồ sơ chung | 9 | 2.342 |
+| DA1 — Website và CMS | 12 | 4.297 |
+| DA2 — AI chuẩn hoá dữ liệu | 10 | 3.258 |
+| DA3 — Chatbot AI đa kênh | 10 | 3.883 |
+| DA4 — Chatbot Telegram *(thiết kế)* | 10 | 2.731 |
 | **Tổng** | **52** | **16.770** |
 
 ---

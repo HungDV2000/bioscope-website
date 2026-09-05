@@ -260,9 +260,12 @@ Ghi vào hồ sơ vì bài học có giá trị lâu dài.
 
 ### 8.3 Ký xác nhận
 
-| Vai trò | Họ tên | Ý kiến | Ngày | Ký |
+| Bên | Vai trò | Họ tên | Ngày | Ký |
 | :---- | :---- | :---- | :---- | :---- |
-| Người kiểm thử | | | | |
-| Đại diện bộ phận kinh doanh | | | | |
-| Đại diện bộ phận kỹ thuật | | | | |
-| Ban giám đốc phê duyệt | | | | |
+| OPTIMAI | Người kiểm thử — Thu, QA | | | |
+| OPTIMAI | Team Lead — QuanNH | | | |
+| Bioscope | Đại diện bộ phận kinh doanh | | | |
+| Bioscope | Đại diện bộ phận kỹ thuật | | | |
+| **Bioscope** | **Đại diện nghiệm thu** | | | |
+| **Bioscope** | **Ban giám đốc xác nhận nghiệm thu** | | | |
+| OPTIMAI | Ban giám đốc bàn giao | | | |

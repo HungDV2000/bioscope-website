@@ -311,7 +311,9 @@ docker compose build && docker compose up -d
 
 ### Biên bản bàn giao
 
-**Bên giao:** ..............................  **Bên nhận:** ..............................
+**Bên giao:** Công ty **OPTIMAI** — đại diện: ...........................
+
+**Bên nhận:** Công ty **Bioscope** — đại diện: ...........................
 
 **Ngày bàn giao:** .................. **Phiên bản bàn giao:** ..................
 
@@ -326,7 +328,7 @@ docker compose build && docker compose up -d
 | 7 | Sổ tra cứu kỹ thuật | ☐ | |
 | 8 | Đã hướng dẫn sử dụng trực tiếp | ☐ | |
 
-*Bên giao ký:* ..............................  *Bên nhận ký:* ..............................
+*Đại diện OPTIMAI ký:* ...........................  *Đại diện Bioscope ký:* ...........................
 
 ---
 

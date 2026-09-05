@@ -16,6 +16,8 @@ lich_su: 1.4 | 03/09/2026 | Ghi nhận mốc 10 — hệ thống bình luận
 
 ---
 
+> **Đội thực hiện.** Toàn bộ công việc ghi trong nhật ký này do đội ngũ **Công ty OPTIMAI** thực hiện. Phân công theo vai trò và công đoạn: `00-ho-so-chung/00-1-thuyet-minh-nang-luc-va-doi-ngu.md` mục 4.1.
+
 ## 1. Tổ chức mã nguồn
 
 ```

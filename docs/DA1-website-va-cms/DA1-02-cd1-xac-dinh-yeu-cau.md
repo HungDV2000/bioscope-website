@@ -42,14 +42,14 @@ Ba mục tiêu, ghi nguyên văn tinh thần cuộc trao đổi:
 
 | Mã | Yêu cầu nghiệp vụ | Từ đâu |
 | :---- | :---- | :---- |
-| NV-01 | Tập trung toàn bộ dữ liệu nguyên liệu về một kho duy nhất, có kiểm soát phiên bản | Ban giám đốc, bộ phận kỹ thuật |
-| NV-02 | Nhân viên tự cập nhật nội dung website mà không cần lập trình viên | Ban giám đốc |
-| NV-03 | Website song ngữ Việt – Anh phục vụ khách trong và ngoài nước | Ban giám đốc, kinh doanh |
-| NV-04 | Kiểm soát việc phát tài liệu kỹ thuật: biết ai tải gì | Bộ phận kinh doanh |
-| NV-05 | Dữ liệu nguyên liệu dùng lại được cho hệ thống khác của công ty | Bộ phận kỹ thuật |
-| NV-06 | Nắm được khách quan tâm nội dung nào để định hướng kinh doanh | Bộ phận kinh doanh |
-| NV-07 | Khách liên hệ được ngay khi đang xem trang | Bộ phận kinh doanh |
-| NV-08 | Bảo vệ dữ liệu nội bộ và dữ liệu cá nhân của khách | Ban giám đốc |
+| NV-01 | Tập trung toàn bộ dữ liệu nguyên liệu về một kho duy nhất, có kiểm soát phiên bản | Ban giám đốc Bioscope, bộ phận kỹ thuật Bioscope |
+| NV-02 | Nhân viên tự cập nhật nội dung website mà không cần lập trình viên | Ban giám đốc Bioscope |
+| NV-03 | Website song ngữ Việt – Anh phục vụ khách trong và ngoài nước | Ban giám đốc Bioscope, bộ phận kinh doanh Bioscope |
+| NV-04 | Kiểm soát việc phát tài liệu kỹ thuật: biết ai tải gì | Bộ phận kinh doanh Bioscope |
+| NV-05 | Dữ liệu nguyên liệu dùng lại được cho hệ thống khác của công ty | Bộ phận kỹ thuật Bioscope |
+| NV-06 | Nắm được khách quan tâm nội dung nào để định hướng kinh doanh | Bộ phận kinh doanh Bioscope |
+| NV-07 | Khách liên hệ được ngay khi đang xem trang | Bộ phận kinh doanh Bioscope |
+| NV-08 | Bảo vệ dữ liệu nội bộ và dữ liệu cá nhân của khách | Ban giám đốc Bioscope |
 
 ---
 
@@ -204,9 +204,10 @@ Dứt khoát **không làm** trong phạm vi DA1:
 
 ## 8. Phê duyệt yêu cầu
 
-| Vai trò | Họ tên | Ý kiến | Ngày | Ký |
+| Bên | Vai trò | Họ tên | Ngày | Ký |
 | :---- | :---- | :---- | :---- | :---- |
-| Người lập yêu cầu | | | | |
-| Đại diện bộ phận kinh doanh | | | | |
-| Đại diện bộ phận kỹ thuật | | | | |
-| Ban giám đốc phê duyệt | | | | |
+| OPTIMAI | Người lập yêu cầu — HungDV, Product Owner | | | |
+| Bioscope | Đại diện bộ phận kinh doanh | | | |
+| Bioscope | Đại diện bộ phận kỹ thuật | | | |
+| **Bioscope** | **Ban giám đốc phê duyệt yêu cầu** | | | |
+| OPTIMAI | Ban giám đốc xác nhận phạm vi thực hiện | | | |

@@ -14,6 +14,23 @@ lich_su: 1.2 | 12/06/2026 | Cập nhật quy mô và trạng thái thực tế k
 
 ---
 
+## 0. Hai bên trong dự án
+
+| | **Bên thực hiện** | **Bên thụ hưởng** |
+| :---- | :---- | :---- |
+| Công ty | **OPTIMAI** | **Bioscope** |
+| Vai trò | Phân tích, thiết kế, lập trình, kiểm thử, đóng gói, triển khai, bàn giao, bảo hành | Đặt hàng, cung cấp yêu cầu nghiệp vụ, nghiệm thu, tiếp nhận, vận hành |
+
+| Tài liệu nền | Nội dung |
+| :---- | :---- |
+| `00-ho-so-chung/00-1-thuyet-minh-nang-luc-va-doi-ngu.md` | Đội thực hiện và **ma trận phân công theo bảy công đoạn** |
+| `00-ho-so-chung/00-7-hop-dong-ban-giao-va-quyen-so-huu.md` | Hợp đồng, nghiệm thu, bàn giao, **quyền sở hữu trí tuệ** |
+| `00-ho-so-chung/00-2-quy-trinh-san-xuat-phan-mem-noi-bo.md` | Quy trình bảy công đoạn OPTIMAI áp dụng |
+
+Trong tài liệu này, **"Bioscope"** chỉ doanh nghiệp thụ hưởng và nghiệp vụ của họ — nguyên liệu, khách hàng, dữ liệu. **"OPTIMAI"** chỉ bên thực hiện phần mềm.
+
+---
+
 ## 1. Tên sản phẩm
 
 **Tên đầy đủ:** Hệ thống trợ lý hội thoại trí tuệ nhân tạo đa kênh có truy hồi tri thức

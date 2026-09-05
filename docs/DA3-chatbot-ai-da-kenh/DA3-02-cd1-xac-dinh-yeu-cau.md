@@ -69,16 +69,16 @@ Yêu cầu chặn nhóm câu hỏi này được nêu **ngay từ đầu dự á
 
 | Mã | Yêu cầu nghiệp vụ | Từ đâu |
 | :---- | :---- | :---- |
-| NV-01 | Gom mọi kênh liên lạc với khách về một hệ thống | Ban giám đốc |
-| NV-02 | Trả lời khách ngay cả ngoài giờ làm việc | Bộ phận kinh doanh |
-| NV-03 | Câu trả lời nhất quán, cùng một nguồn tri thức | Ban giám đốc |
-| NV-04 | Nhân viên tra được thông tin bằng cách hỏi, không phải mở nhiều tệp | Bộ phận kinh doanh |
-| NV-05 | **Không trả lời câu hỏi y tế, dược lý vượt thẩm quyền** | Ban giám đốc |
-| NV-06 | **Dữ liệu kế toán không lọt sang người không có quyền** | Ban giám đốc, kế toán trưởng |
-| NV-07 | Trợ lý chuyển được cho người thật khi không xử lý được | Bộ phận kinh doanh |
-| NV-08 | Tri thức cập nhật được mà không cần lập trình viên | Bộ phận kinh doanh |
-| NV-09 | Mọi lượt hỏi đáp có nhật ký để truy vết | Ban giám đốc |
-| NV-10 | Hỗ trợ xử lý chứng từ kế toán | Kế toán trưởng |
+| NV-01 | Gom mọi kênh liên lạc với khách về một hệ thống | Ban giám đốc Bioscope |
+| NV-02 | Trả lời khách ngay cả ngoài giờ làm việc | Bộ phận kinh doanh Bioscope |
+| NV-03 | Câu trả lời nhất quán, cùng một nguồn tri thức | Ban giám đốc Bioscope |
+| NV-04 | Nhân viên tra được thông tin bằng cách hỏi, không phải mở nhiều tệp | Bộ phận kinh doanh Bioscope |
+| NV-05 | **Không trả lời câu hỏi y tế, dược lý vượt thẩm quyền** | Ban giám đốc Bioscope |
+| NV-06 | **Dữ liệu kế toán không lọt sang người không có quyền** | Ban giám đốc Bioscope, kế toán trưởng Bioscope |
+| NV-07 | Trợ lý chuyển được cho người thật khi không xử lý được | Bộ phận kinh doanh Bioscope |
+| NV-08 | Tri thức cập nhật được mà không cần lập trình viên | Bộ phận kinh doanh Bioscope |
+| NV-09 | Mọi lượt hỏi đáp có nhật ký để truy vết | Ban giám đốc Bioscope |
+| NV-10 | Hỗ trợ xử lý chứng từ kế toán | Kế toán trưởng Bioscope |
 
 > **NV-05 và NV-06 là hai yêu cầu chi phối thiết kế an toàn.** Cả hai đều thuộc loại "không được phép xảy ra, dù chỉ một lần" — nên không thể dựa vào việc yêu cầu mô hình cư xử đúng, phải chặn bằng mã nguồn.
 
@@ -261,11 +261,12 @@ Hai rủi ro đầu được xếp mức **rất cao** vì hậu quả không ho
 
 ## 9. Phê duyệt yêu cầu
 
-| Vai trò | Họ tên | Ý kiến | Ngày | Ký |
+| Bên | Vai trò | Họ tên | Ngày | Ký |
 | :---- | :---- | :---- | :---- | :---- |
-| Người lập yêu cầu | | | | |
-| Đại diện bộ phận kinh doanh | | | | |
-| **Kế toán trưởng** | | | | |
-| Ban giám đốc phê duyệt | | | | |
+| OPTIMAI | Người lập yêu cầu — HungDV, Product Owner | | | |
+| Bioscope | Đại diện bộ phận kinh doanh | | | |
+| **Bioscope** | **Kế toán trưởng** | | | |
+| **Bioscope** | **Ban giám đốc phê duyệt yêu cầu** | | | |
+| OPTIMAI | Ban giám đốc xác nhận phạm vi thực hiện | | | |
 
 Chữ ký của kế toán trưởng là bắt buộc vì yêu cầu NV-06 và NV-10 liên quan trực tiếp tới dữ liệu tài chính.

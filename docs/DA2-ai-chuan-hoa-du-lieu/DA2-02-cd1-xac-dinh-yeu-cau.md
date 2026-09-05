@@ -50,16 +50,16 @@ Toàn bộ hồ sơ nhà cung cấp **đã được lưu tập trung** trên kho
 
 | Mã | Yêu cầu nghiệp vụ | Từ đâu |
 | :---- | :---- | :---- |
-| NV-01 | Giảm mạnh thời gian đưa một nguyên liệu mới lên website | Ban giám đốc |
-| NV-02 | Loại bỏ sai sót do chép tay chỉ tiêu kỹ thuật | Bộ phận kỹ thuật sản phẩm |
-| NV-03 | Nội dung các nguyên liệu đồng đều về cấu trúc và độ chi tiết | Bộ phận kinh doanh |
-| NV-04 | Có nội dung song ngữ ngay, không phải dịch riêng một lượt | Bộ phận kinh doanh |
-| NV-05 | **Không được để thông tin sai lọt ra khách hàng** | Bộ phận kỹ thuật sản phẩm, ban giám đốc |
-| NV-06 | Kiểm soát được chi phí gọi dịch vụ AI | Ban giám đốc, kế toán |
-| NV-07 | Xử lý được cả hồ sơ dạng ảnh scan, không chỉ tệp chữ | Bộ phận kỹ thuật sản phẩm |
-| NV-08 | Đổi được nhà cung cấp AI khi giá hoặc chất lượng thay đổi | Bộ phận kỹ thuật |
+| NV-01 | Giảm mạnh thời gian đưa một nguyên liệu mới lên website | Ban giám đốc Bioscope |
+| NV-02 | Loại bỏ sai sót do chép tay chỉ tiêu kỹ thuật | Bộ phận kỹ thuật sản phẩm Bioscope |
+| NV-03 | Nội dung các nguyên liệu đồng đều về cấu trúc và độ chi tiết | Bộ phận kinh doanh Bioscope |
+| NV-04 | Có nội dung song ngữ ngay, không phải dịch riêng một lượt | Bộ phận kinh doanh Bioscope |
+| NV-05 | **Không được để thông tin sai lọt ra khách hàng** | Bộ phận kỹ thuật sản phẩm Bioscope, Ban giám đốc Bioscope |
+| NV-06 | Kiểm soát được chi phí gọi dịch vụ AI | Ban giám đốc Bioscope, kế toán Bioscope |
+| NV-07 | Xử lý được cả hồ sơ dạng ảnh scan, không chỉ tệp chữ | Bộ phận kỹ thuật sản phẩm Bioscope |
+| NV-08 | Đổi được nhà cung cấp AI khi giá hoặc chất lượng thay đổi | Bộ phận kỹ thuật Bioscope |
 
-> **NV-05 là yêu cầu chi phối toàn bộ thiết kế.** Ban giám đốc nêu rõ: thà chậm hơn còn hơn sai. Một mã CAS bịa ra đăng công khai cho khách hàng công nghiệp gây hậu quả lớn hơn nhiều so với việc để trống trường đó.
+> **NV-05 là yêu cầu chi phối toàn bộ thiết kế.** Ban giám đốc Bioscope nêu rõ: thà chậm hơn còn hơn sai. Một mã CAS bịa ra đăng công khai cho khách hàng công nghiệp gây hậu quả lớn hơn nhiều so với việc để trống trường đó.
 
 ---
 
@@ -212,9 +212,10 @@ Toàn bộ hồ sơ nhà cung cấp **đã được lưu tập trung** trên kho
 
 ## 9. Phê duyệt yêu cầu
 
-| Vai trò | Họ tên | Ý kiến | Ngày | Ký |
+| Bên | Vai trò | Họ tên | Ngày | Ký |
 | :---- | :---- | :---- | :---- | :---- |
-| Người lập yêu cầu | | | | |
-| Đại diện bộ phận kỹ thuật sản phẩm | | | | |
-| Đại diện bộ phận kinh doanh | | | | |
-| Ban giám đốc phê duyệt | | | | |
+| OPTIMAI | Người lập yêu cầu — HungDV, Product Owner | | | |
+| Bioscope | Đại diện bộ phận kỹ thuật sản phẩm | | | |
+| Bioscope | Đại diện bộ phận kinh doanh | | | |
+| **Bioscope** | **Ban giám đốc phê duyệt yêu cầu** | | | |
+| OPTIMAI | Ban giám đốc xác nhận phạm vi thực hiện | | | |

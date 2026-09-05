@@ -12,9 +12,9 @@ lich_su: 1.3 | 03/09/2026 | Bổ sung nguyên tắc ghi sổ tra cứu sự cố
 -->
 # QUY TRÌNH SẢN XUẤT PHẦN MỀM NỘI BỘ
 
-*Tài liệu chung — áp dụng cho cả ba dự án DA1, DA2, DA3.*
+*Tài liệu chung — quy trình **Công ty OPTIMAI** áp dụng cho mọi dự án trong bộ hồ sơ.*
 
-Tài liệu này mô tả quy trình mà đội phát triển của công ty thực sự làm, không phải quy trình lý thuyết chép từ sách. Mỗi công đoạn nêu rõ: đầu vào, việc phải làm, đầu ra, và **bằng chứng để lại** — vì bằng chứng mới là thứ hồ sơ cần.
+Tài liệu này mô tả quy trình mà đội phát triển OPTIMAI thực sự làm, không phải quy trình lý thuyết chép từ sách. Mỗi công đoạn nêu rõ: đầu vào, việc phải làm, đầu ra, và **bằng chứng để lại** — vì bằng chứng mới là thứ hồ sơ cần.
 
 ---
 

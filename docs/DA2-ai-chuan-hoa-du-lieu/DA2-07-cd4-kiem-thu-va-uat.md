@@ -295,11 +295,14 @@ Toàn bộ nhóm này là **ca âm**: kiểm rằng hệ thống **không** làm
 
 ### 7.4 Ký xác nhận
 
-| Vai trò | Họ tên | Ý kiến | Ngày | Ký |
+| Bên | Vai trò | Họ tên | Ngày | Ký |
 | :---- | :---- | :---- | :---- | :---- |
-| Người kiểm thử | | | | |
-| **Đại diện bộ phận kỹ thuật sản phẩm** | | | | |
-| Đại diện bộ phận kinh doanh | | | | |
-| Ban giám đốc phê duyệt | | | | |
+| OPTIMAI | Người kiểm thử — Thu, QA | | | |
+| OPTIMAI | Team Lead — QuanNH | | | |
+| **Bioscope** | **Đại diện bộ phận kỹ thuật sản phẩm** | | | |
+| Bioscope | Đại diện bộ phận kinh doanh | | | |
+| **Bioscope** | **Đại diện nghiệm thu** | | | |
+| **Bioscope** | **Ban giám đốc xác nhận nghiệm thu** | | | |
+| OPTIMAI | Ban giám đốc bàn giao | | | |
 
 Chữ ký của bộ phận kỹ thuật sản phẩm là bắt buộc, vì đây là bộ phận đủ chuyên môn để xác nhận tính chính xác của thông số kỹ thuật được trích.

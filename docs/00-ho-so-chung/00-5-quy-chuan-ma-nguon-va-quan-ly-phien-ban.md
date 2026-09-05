@@ -12,7 +12,7 @@ lich_su: 1.3 | 31/08/2026 | Bổ sung bước đối chiếu toàn bộ cột; g
 -->
 # QUY CHUẨN MÃ NGUỒN VÀ QUẢN LÝ PHIÊN BẢN
 
-*Tài liệu chung — áp dụng cho cả ba dự án DA1, DA2, DA3.*
+*Tài liệu chung — quy chuẩn **Công ty OPTIMAI** áp dụng cho mọi dự án trong bộ hồ sơ.*
 
 Tài liệu này ghi lại các quy tắc mà đội phát triển tuân theo khi viết mã và quản lý thay đổi. Phần lớn quy tắc ở đây sinh ra từ sự cố thật — mỗi mục có ghi rõ vì sao có quy tắc đó.
 

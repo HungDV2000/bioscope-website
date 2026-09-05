@@ -339,11 +339,14 @@ Nhóm thứ hai là đặc thù của DA3 và là phần quan trọng nhất c�
 
 ### 9.4 Ký xác nhận
 
-| Vai trò | Họ tên | Ý kiến | Ngày | Ký |
+| Bên | Vai trò | Họ tên | Ngày | Ký |
 | :---- | :---- | :---- | :---- | :---- |
-| Người kiểm thử | | | | |
-| Đại diện bộ phận kinh doanh | | | | |
-| **Kế toán trưởng** | | | | |
-| Ban giám đốc phê duyệt | | | | |
+| OPTIMAI | Người kiểm thử — Thu, QA | | | |
+| OPTIMAI | Team Lead — QuanNH | | | |
+| Bioscope | Đại diện bộ phận kinh doanh | | | |
+| **Bioscope** | **Kế toán trưởng** | | | |
+| **Bioscope** | **Đại diện nghiệm thu** | | | |
+| **Bioscope** | **Ban giám đốc xác nhận nghiệm thu** | | | |
+| OPTIMAI | Ban giám đốc bàn giao | | | |
 
 Chữ ký kế toán trưởng bắt buộc, vì tiêu chí 3 liên quan trực tiếp tới bảo mật dữ liệu tài chính.

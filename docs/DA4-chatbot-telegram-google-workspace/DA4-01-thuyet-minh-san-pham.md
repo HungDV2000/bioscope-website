@@ -14,6 +14,21 @@ lich_su: 0.1 | 03/09/2026 | Dự thảo ban đầu từ Bioscope Build Guide
 
 > **Trạng thái hồ sơ:** tài liệu thiết kế trước triển khai. Những mục ghi “cần xác nhận” hoặc “đề xuất” chưa phải bằng chứng hệ thống đã vận hành.
 
+## 0. Hai bên trong dự án
+
+| | **Bên thực hiện** | **Bên thụ hưởng** |
+| :---- | :---- | :---- |
+| Công ty | **OPTIMAI** | **Bioscope** |
+| Vai trò | Phân tích, thiết kế, lập trình, kiểm thử, đóng gói, triển khai, bàn giao | Đặt hàng, cung cấp yêu cầu nghiệp vụ, nghiệm thu, vận hành |
+
+Đội thực hiện và ma trận phân công theo công đoạn: `00-ho-so-chung/00-1-thuyet-minh-nang-luc-va-doi-ngu.md` mục 3 và 4.
+
+Quan hệ hợp đồng, bàn giao và quyền sở hữu: `00-ho-so-chung/00-7-hop-dong-ban-giao-va-quyen-so-huu.md`.
+
+> **DA4 chưa thuộc phạm vi bàn giao.** Dự án đang ở giai đoạn thiết kế trước triển khai, chưa có bằng chứng mã nguồn. Không đưa vào phụ lục nghiệm thu cho tới khi hoàn thành.
+
+---
+
 ## 1. Tên và định vị sản phẩm
 
 **Tên đầy đủ:** Hệ thống trợ lý truy vấn, phân tích và báo cáo Bioscope qua Telegram
@@ -127,9 +142,9 @@ Giá trị model mặc định trong Build Guide là `anthropic/claude-sonnet-4.
 6. **Mọi tác vụ ghi phải chống lặp.** Telegram có thể gửi lại webhook; báo cáo và cảnh báo phải có khóa chống trùng.
 7. **Lỗi một mô-đun không làm sập toàn bộ Dispatcher.** Mỗi scan chạy qua `bcSafe_`.
 
-## 8. Giá trị do đội nội bộ tạo ra
+## 8. Giá trị do OPTIMAI tạo ra
 
-Các dịch vụ Google, Telegram và OpenRouter là nền tảng đầu vào. Phần mềm DA4 do đội nội bộ thiết kế và triển khai gồm:
+Các dịch vụ Google, Telegram và OpenRouter là nền tảng đầu vào. Phần mềm DA4 do **đội ngũ OPTIMAI** thiết kế và triển khai, gồm:
 
 - Router và hợp đồng mô-đun.
 - Luồng hội thoại, callback, menu và session.
@@ -139,7 +154,7 @@ Các dịch vụ Google, Telegram và OpenRouter là nền tảng đầu vào. P
 - Cơ chế chống lặp, timeout, ghi log, theo dõi chi phí và bảo trì.
 - Bộ cấu hình, bảng dữ liệu, hướng dẫn triển khai và bộ ca kiểm thử.
 
-Build Guide cho phép tái dùng khung đã kiểm chứng từ Biochat, nhưng **việc tái dùng không đồng nghĩa DA4 đã có mã nguồn hoàn chỉnh**. Hồ sơ lập trình phải cập nhật đường dẫn và bằng chứng commit sau khi đội thực sự dựng project Apps Script.
+Build Guide cho phép tái dùng khung đã kiểm chứng từ Biochat, nhưng **việc tái dùng không đồng nghĩa DA4 đã có mã nguồn hoàn chỉnh**. Hồ sơ lập trình phải cập nhật đường dẫn và bằng chứng ghi nhận thay đổi sau khi đội OPTIMAI thực sự dựng project Apps Script.
 
 ## 9. Tiêu chí thành công cấp sản phẩm
 

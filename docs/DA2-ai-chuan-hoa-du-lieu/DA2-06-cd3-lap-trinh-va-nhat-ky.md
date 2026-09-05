@@ -16,6 +16,8 @@ lich_su: 1.4 | 24/08/2026 | Bổ sung thống kê và danh sách việc còn l�
 
 ---
 
+> **Đội thực hiện.** Toàn bộ công việc ghi trong nhật ký này do đội ngũ **Công ty OPTIMAI** thực hiện. Phân công theo vai trò và công đoạn: `00-ho-so-chung/00-1-thuyet-minh-nang-luc-va-doi-ngu.md` mục 4.1.
+
 ## 1. Tổ chức mã nguồn
 
 ```

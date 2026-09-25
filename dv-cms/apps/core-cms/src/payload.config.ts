@@ -26,6 +26,7 @@ import { imagePlugin } from '@dv/module-image'
 import { consentPlugin } from '@dv/module-consent'
 import { languagesPlugin, resolveLocalizationConfig } from '@dv/module-languages'
 import { permissionsPlugin } from '@dv/module-permissions'
+import { landingPlugin } from '@dv/module-landing'
 
 import { seedEndpoint } from './endpoints/seed.js'
 import { backupEndpoint } from './endpoints/backup.js'
@@ -266,6 +267,9 @@ export default buildConfig({
     securityPlugin(),
     // Complianz-style GDPR cookie consent (banner + proof-of-consent).
     consentPlugin(),
+    // Landing page chiến dịch (Gastroheal…): tên miền riêng, người tham gia, OTP,
+    // tích điểm, ghi âm, đơn hàng. Trước audit + RBAC để được ghi log và phân quyền.
+    landingPlugin(),
     // Nhật ký thay đổi — gắn hook ghi log vào mọi collection nội dung. Trước
     // permissions để audit-logs cũng nằm trong RBAC.
     auditPlugin(),

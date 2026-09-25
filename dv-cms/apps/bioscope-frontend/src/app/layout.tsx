@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next'
+import { headers } from 'next/headers'
 import { Suspense } from 'react'
 import { RouteProgress } from '@/components/route-progress'
 import { CmsThemeStyle } from '@/components/theme/cms-theme-style'
@@ -9,7 +10,18 @@ import { getSeoSettings } from '@/lib/cms/seo-settings'
 import { Analytics, GtmNoScript } from '@/components/analytics'
 import { CookieBanner } from '@/components/consent/CookieBanner'
 import { getTracking } from '@/lib/cms/site-settings'
+import { LP_HEADER } from '@/lib/landing/config'
 import './globals.css'
+
+/**
+ * Request của landing page (tên miền riêng hoặc /lp/*) — proxy gắn header này.
+ * Landing có GTM, font, SEO, favicon riêng: không nạp khung của web Bioscope
+ * (GTM/analytics, cookie banner, theme, JSON-LD) để khỏi đo lẫn số liệu và
+ * khỏi hiện banner của web chính trên trang chiến dịch.
+ */
+async function isLanding(): Promise<boolean> {
+  return (await headers()).get(LP_HEADER) !== null
+}
 
 const DESCRIPTION =
   'Không chỉ nguyên liệu — Bioscope đồng kiến tạo những giải pháp đột phá cho ngành Dược phẩm, Thực phẩm chức năng và Mỹ phẩm tại Việt Nam.'
@@ -22,6 +34,7 @@ const KEYWORDS = [
 ]
 
 export async function generateMetadata(): Promise<Metadata> {
+  if (await isLanding()) return {}
   const locale = await getLocale()
   const s = await getSeoSettings(locale)
   const siteName = s.siteName ?? 'Bioscope'
@@ -71,6 +84,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export async function generateViewport(): Promise<Viewport> {
+  if (await isLanding()) return {}
   const themeColor = await getFrontendThemeColor()
   return { themeColor }
 }
@@ -78,6 +92,13 @@ export async function generateViewport(): Promise<Viewport> {
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  if (await isLanding()) {
+    return (
+      <html lang="vi" suppressHydrationWarning>
+        <body suppressHydrationWarning>{children}</body>
+      </html>
+    )
+  }
   const locale = await getLocale()
   const [tracking, seo] = await Promise.all([getTracking(), getSeoSettings(locale)])
 

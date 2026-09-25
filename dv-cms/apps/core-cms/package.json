@@ -32,6 +32,7 @@
     "@dv/module-consent": "workspace:*",
     "@dv/module-custom-types": "workspace:*",
     "@dv/module-image": "workspace:*",
+    "@dv/module-landing": "workspace:*",
     "@dv/module-languages": "workspace:*",
     "@dv/module-permissions": "workspace:*",
     "@dv/module-security": "workspace:*",

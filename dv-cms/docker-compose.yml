@@ -49,6 +49,9 @@ services:
       # Public URLs (used by Payload cookies + revalidate hook). Match aaPanel proxy hostnames.
       PAYLOAD_PUBLIC_SERVER_URL: ${PAYLOAD_PUBLIC_SERVER_URL:-https://admin.bioscope.vn}
       FRONTEND_URL: ${FRONTEND_URL:-https://web.bioscope.vn}
+      # Landing page: CMS báo frontend dựng lại trang khi admin lưu chiến dịch.
+      # Đi mạng Docker nội bộ — gọi tên miền công khai từ trong container bị hairpin.
+      FRONTEND_INTERNAL_URL: ${FRONTEND_INTERNAL_URL:-http://frontend:26300}
       REVALIDATE_SECRET: ${REVALIDATE_SECRET:-}
       B2B_COOKIE: ${B2B_COOKIE:-bio-token}
       GOOGLE_DRIVE_ROOT_FOLDER_ID: ${GOOGLE_DRIVE_ROOT_FOLDER_ID:-}
@@ -119,6 +122,8 @@ services:
       MEMBER_SESSION_SECRET: ${MEMBER_SESSION_SECRET:-}
       # Phải khớp với INTERNAL_API_SECRET của service cms.
       INTERNAL_API_SECRET: ${INTERNAL_API_SECRET:-}
+      # Khoá ký cookie người tham gia landing page (bỏ trống = dùng MEMBER_SESSION_SECRET / PAYLOAD_SECRET).
+      LANDING_SESSION_SECRET: ${LANDING_SESSION_SECRET:-}
       # Chỉ đặt khi Google báo redirect_uri_mismatch mà tên miền suy ra tự động
       # vẫn không khớp: điền ĐÚNG chuỗi đã khai ở Google Console, hệ thống dùng
       # nguyên văn. VD: https://bioscope.vn/api/auth/google/callback

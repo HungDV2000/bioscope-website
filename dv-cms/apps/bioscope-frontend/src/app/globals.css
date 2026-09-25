@@ -1,4 +1,6 @@
 @import 'tailwindcss';
+/* Token + hiệu ứng riêng của landing page chiến dịch (tiền tố gh-/lp-). */
+@import './landing-theme.css';
 
 /* ------------------------------------------------------------------ *
  * Bioscope design tokens — derived from logo.avif + example_home.jpg

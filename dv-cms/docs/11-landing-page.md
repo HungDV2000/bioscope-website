@@ -27,11 +27,12 @@ bảng khoá tài liệu của Payload cần các cột `lp_*_id` mới; CMS cũ
 chạy trước là an toàn):
 
 ```bash
-cd /opt/bioscope-website/dv-cms
+# Đường dẫn repo tuỳ máy — VPS Bioscope đang đặt ở /www/wwwroot/bioscope-website
+cd /www/wwwroot/bioscope-website/dv-cms
 git pull origin main
 bash scripts/backup-db.sh
 docker exec -i dvcms-db psql -U dvcms -d dvcms -v ON_ERROR_STOP=1 < scripts/migrate-landing.sql
-docker exec dvcms-db psql -U dvcms -d dvcms -c "\dt lp_*"      # phải thấy 13 bảng lp_…
+docker exec dvcms-db psql -U dvcms -d dvcms -c "\dt lp_*"      # phải thấy 15 bảng lp_…
 ```
 
 File SQL chạy lại nhiều lần vẫn an toàn (idempotent, bọc BEGIN/COMMIT). Các dòng
@@ -111,7 +112,7 @@ chuyển chiến dịch sang **Đang chạy** và khai tên miền với Google 
 |---|---|
 | Landing lỗi, cần trả lại trang tĩnh cũ | aaPanel → site `gastroheal.net` → tắt *Reverse proxy* |
 | Muốn tắt landing nhưng giữ tên miền | Admin → chiến dịch → trạng thái **Tắt** (khách được chuyển hướng) |
-| Bản build mới hỏng | `bash scripts/upgrade.sh rollback /opt/bioscope-data/backups/pre-upgrade-<mốc>` |
+| Bản build mới hỏng | `bash scripts/upgrade.sh rollback <thư mục backup>/pre-upgrade-<mốc>` |
 | Cần gỡ hẳn dữ liệu landing | Khôi phục bản dump tạo ở Bước 1 |
 
 Các bảng `lp_*` tách riêng, không sửa bảng nào của web Bioscope, nên gỡ landing không

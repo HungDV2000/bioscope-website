@@ -3,8 +3,12 @@
 
 set -euo pipefail
 
-BACKUP_DIR="${BACKUP_DIR:-/opt/bioscope-website/backups}"
-DV_CMS_DIR="${DV_CMS_DIR:-/opt/bioscope-website/dv-cms}"
+# Suy đường dẫn từ vị trí chính file này, không cố định /opt — mỗi máy đặt repo
+# một chỗ (VPS Bioscope đang ở /www/wwwroot/bioscope-website). Vẫn cho phép
+# ghi đè bằng biến môi trường khi cần.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+DV_CMS_DIR="${DV_CMS_DIR:-$(dirname "$SCRIPT_DIR")}"
+BACKUP_DIR="${BACKUP_DIR:-$(dirname "$DV_CMS_DIR")/backups}"
 KEEP_DAYS="${KEEP_DAYS:-7}"
 
 mkdir -p "$BACKUP_DIR"

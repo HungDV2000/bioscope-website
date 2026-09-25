@@ -38,6 +38,8 @@ import { BulkAiGenerate as BulkAiGenerate_233a08fc34bc75fb9cb51c76ec9d609c } fro
 import { IngredientAiField as IngredientAiField_d58fb5a0d75374311f1eedb9e89183ac } from '../../../components/IngredientAiField/IngredientAiField'
 import { AiJobLogViewer as AiJobLogViewer_cbe5331e68a1b6faa2791bcfa661c147 } from '../../../components/AiJobLogViewer/AiJobLogViewer'
 import { DuplicateScanView as DuplicateScanView_2cc2f9d7b54cefb0e8ae2bcaf4c42cd8 } from '../../../components/DuplicateScanView/DuplicateScanView'
+import { CampaignActions as CampaignActions_3727ba00dcf165c18bcbc820c11e4af1 } from '@dv/module-landing/admin'
+import { AudioPreview as AudioPreview_3727ba00dcf165c18bcbc820c11e4af1 } from '@dv/module-landing/admin'
 import { FolderTypeField as FolderTypeField_2b8867833a34864a02ddf429b0728a40 } from '@payloadcms/next/client'
 import { TelegramSetup as TelegramSetup_da121418b14bda1eae82206f8a5620e8 } from '../../../components/TelegramSetup/TelegramSetup'
 import { GoogleAuthNote as GoogleAuthNote_e8e9cfa5a17691f40a9c360a3cbf00c1 } from '../../../components/GoogleAuthNote/GoogleAuthNote'
@@ -117,6 +119,8 @@ export const importMap = {
   "/components/IngredientAiField/IngredientAiField#IngredientAiField": IngredientAiField_d58fb5a0d75374311f1eedb9e89183ac,
   "/components/AiJobLogViewer/AiJobLogViewer#AiJobLogViewer": AiJobLogViewer_cbe5331e68a1b6faa2791bcfa661c147,
   "/components/DuplicateScanView/DuplicateScanView#DuplicateScanView": DuplicateScanView_2cc2f9d7b54cefb0e8ae2bcaf4c42cd8,
+  "@dv/module-landing/admin#CampaignActions": CampaignActions_3727ba00dcf165c18bcbc820c11e4af1,
+  "@dv/module-landing/admin#AudioPreview": AudioPreview_3727ba00dcf165c18bcbc820c11e4af1,
   "@payloadcms/next/client#FolderTypeField": FolderTypeField_2b8867833a34864a02ddf429b0728a40,
   "/components/TelegramSetup/TelegramSetup#TelegramSetup": TelegramSetup_da121418b14bda1eae82206f8a5620e8,
   "/components/GoogleAuthNote/GoogleAuthNote#GoogleAuthNote": GoogleAuthNote_e8e9cfa5a17691f40a9c360a3cbf00c1,

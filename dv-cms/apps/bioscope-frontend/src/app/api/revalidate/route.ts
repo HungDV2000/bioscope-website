@@ -1,4 +1,4 @@
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 import type { NextRequest } from 'next/server'
 
 export async function POST(req: NextRequest) {
@@ -10,6 +10,12 @@ export async function POST(req: NextRequest) {
 
   const path = req.nextUrl.searchParams.get('path') ?? '/'
   revalidatePath(path, 'layout')
+
+  // Landing page (/lp/<slug>): dữ liệu chiến dịch nằm trong cache fetch có tag
+  // riêng. Hết hạn NGAY (expire: 0) — đổi trạng thái sang "Kết thúc"/"Nháp" thì
+  // lượt xem kế tiếp phải thấy luôn, không được trả bản cũ thêm một lượt.
+  const lp = path.match(/^\/lp\/([a-z0-9-]{1,80})$/)
+  if (lp) revalidateTag(`lp:${lp[1]}`, { expire: 0 })
 
   return Response.json({ ok: true, revalidated: path })
 }

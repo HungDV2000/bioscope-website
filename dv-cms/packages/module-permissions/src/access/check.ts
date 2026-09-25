@@ -1,6 +1,6 @@
 import type { PayloadRequest } from 'payload'
 
-import { SENSITIVE_COLLECTIONS } from '../lib/constants.js'
+import { EXPLICIT_ONLY_COLLECTIONS, SENSITIVE_COLLECTIONS } from '../lib/constants.js'
 import { getLegacyPreset } from './legacy.js'
 import type { PermissionAction, PermissionResourceType, PermissionRule, StaffRoleDoc, StaffUserLike } from '../types.js'
 
@@ -47,6 +47,20 @@ export function checkPermissionRules(
   if (!rules.length) return false
 
   const fullAdmin = isFullAdminRules(rules)
+
+  // Chỉ nhận quyền cấp đích danh, `*` không tính (trừ Admin toàn quyền).
+  //
+  // Không dùng `fullAdmin` ở trên: preset Biên tập viên cũng có đủ 6 quyền
+  // trên collection `*` nên bị nhận nhầm là Admin. Admin thật là vai trò có
+  // quyền `*` cả trên global (chỉ preset Admin có).
+  const superAdmin =
+    fullAdmin && rules.some((r) => r.resourceType === 'global' && r.resource === '*' && r.actions.includes('update'))
+  if (resourceType === 'collection' && EXPLICIT_ONLY_COLLECTIONS.has(resourceSlug) && !superAdmin) {
+    return rules.some(
+      (rule) => rule.resourceType === resourceType && rule.resource === resourceSlug && ruleGrants(rule, action),
+    )
+  }
+
   const isSensitive =
     resourceType === 'collection' && SENSITIVE_COLLECTIONS.has(resourceSlug)
 

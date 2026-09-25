@@ -44,6 +44,14 @@ export const NAV_ICON_BY_SLUG: Record<string, NavIconName> = {
   // B2B
   members: 'user-circle',
   'gated-documents': 'lock',
+
+  // Landing page
+  'lp-campaigns': 'award',
+  'lp-participants': 'users',
+  'lp-recordings': 'inbox',
+  'lp-orders': 'package',
+  'lp-point-events': 'list-tree',
+  'lp-settings': 'settings',
 }
 
 export function parseNavLinkId(id: string): string | null {

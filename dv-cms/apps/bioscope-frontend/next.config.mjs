@@ -17,7 +17,10 @@ const csp = [
   `img-src 'self' data: blob: https: ${CMS_ORIGIN}`,
   `font-src 'self' data:`,
   `connect-src 'self' ${CMS_ORIGIN} https://www.googletagmanager.com https://www.google-analytics.com https://region1.google-analytics.com https://connect.facebook.net`,
-  `frame-src 'self' https://www.googletagmanager.com`,
+  // Landing page nhúng video YouTube (bản nocookie) / Vimeo — CMS chỉ cho hai nguồn này.
+  `frame-src 'self' https://www.googletagmanager.com https://www.youtube-nocookie.com https://www.youtube.com https://player.vimeo.com`,
+  // Nghe lại bản ghi âm vừa thu trên máy (blob:) ở landing page.
+  `media-src 'self' blob:`,
   `frame-ancestors 'self' ${CMS_ORIGIN}`,
 ].join('; ')
 
@@ -27,7 +30,9 @@ const securityHeaders = [
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
   { key: 'X-DNS-Prefetch-Control', value: 'on' },
-  { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(), browsing-topics=()' },
+  // microphone=(self): landing page cho người tham gia ghi âm kể chuyện. Chỉ trang cùng
+  // nguồn được xin quyền — iframe bên thứ ba (YouTube, GTM) vẫn bị chặn.
+  { key: 'Permissions-Policy', value: 'camera=(), microphone=(self), geolocation=(), browsing-topics=()' },
 ]
 
 /** @type {import('next').NextConfig} */

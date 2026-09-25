@@ -1,0 +1,91 @@
+/* ------------------------------------------------------------------ *
+ * Landing page chiến dịch (Gastroheal…) — bảng màu teal + nghệ lấy từ bao bì.
+ *
+ * Mọi token mang tiền tố `gh-`, mọi class tiện ích mang tiền tố `lp-`: web
+ * Bioscope đã có `ink`, `shadow-soft`, `radius-2xl` với giá trị KHÁC, trùng tên
+ * là một trong hai trang bị đổi màu mà không ai hiểu vì sao.
+ * ------------------------------------------------------------------ */
+@theme {
+  --color-gh-canvas: #f3f6f6;
+  --color-gh-ink: #14292c;
+  --color-gh-ink-soft: #4c5f62;
+  --color-gh-ink-faint: #7e9093;
+  --color-gh-brand: #14939a;
+  --color-gh-brand-deep: #0b6268;
+  --color-gh-brand-soft: #e1f1f1;
+  --color-gh-brand-mist: #eef6f6;
+  --color-gh-lime: #f2be3c;
+  --color-gh-lime-soft: #fff6dc;
+  --color-gh-cta: #ec8a2c;
+  --color-gh-cta-deep: #a9540e;
+  --color-gh-cta-soft: #fdf0e2;
+  --color-gh-danger: #c62a2f;
+
+  --shadow-gh-soft: 0 1px 1px rgba(20, 41, 44, 0.03), 0 12px 32px -16px rgba(11, 98, 104, 0.18);
+  --shadow-gh-float: 0 24px 50px -20px rgba(11, 98, 104, 0.28);
+  --shadow-gh-cta: 0 12px 26px -10px rgba(236, 138, 44, 0.6);
+
+  --ease-gh-spring: cubic-bezier(0.32, 0.72, 0, 1);
+  --font-gh-serif: var(--font-gh-fraunces), Georgia, serif;
+}
+
+/* Nền tảng: chữ to, nút to, tương phản cao — dùng được cho người lớn tuổi. */
+.lp-root {
+  background: #f3f6f6;
+  color: #14292c;
+  font-size: 17px;
+  font-family: var(--font-gh-sans), system-ui, sans-serif;
+  overflow-x: clip;
+  -webkit-tap-highlight-color: transparent;
+  min-height: 100dvh;
+}
+/* h2/h3 ngắn nên cân dòng cho đẹp; riêng h1 để chữ chạy hết chiều rộng —
+   `balance` làm tiêu đề dài co lại chỉ còn ~70% khung, nhìn hụt. */
+.lp-root h2, .lp-root h3 { text-wrap: balance; }
+.lp-root h1 { text-wrap: pretty; }
+.lp-root p, .lp-root li { text-wrap: pretty; }
+.lp-root :focus-visible { outline: 3px solid #0b6268; outline-offset: 3px; border-radius: 6px; }
+
+.lp-glass { background: rgba(255, 255, 255, 0.9); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
+/* Vùng chạm tối thiểu 56px */
+.lp-tap { min-height: 56px; }
+.lp-field { height: 60px; width: 100%; border-radius: 16px; border: 2px solid rgba(20, 41, 44, 0.12); background: #fff; padding: 0 16px; font-size: 17px; }
+.lp-field:focus { border-color: #14939a; outline: none; }
+.lp-field-error { border-color: #c62a2f !important; background: #fff7f7 !important; }
+
+.lp-reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.7s cubic-bezier(0.32, 0.72, 0, 1), transform 0.7s cubic-bezier(0.32, 0.72, 0, 1); }
+.lp-reveal.lp-in { opacity: 1; transform: none; }
+
+@keyframes lp-pop { 0% { transform: scale(0.85); opacity: 0 } 60% { transform: scale(1.04) } 100% { transform: scale(1); opacity: 1 } }
+.lp-pop { animation: lp-pop 0.45s cubic-bezier(0.32, 0.72, 0, 1) both; }
+@keyframes lp-fly { to { transform: translateY(-70px) scale(1.25); opacity: 0 } }
+.lp-fly { animation: lp-fly 1s cubic-bezier(0.32, 0.72, 0, 1) forwards; }
+@keyframes lp-bob { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(-6px) } }
+.lp-bob { animation: lp-bob 5s ease-in-out infinite; }
+@keyframes lp-ring { 0% { transform: scale(1); opacity: 0.45 } 100% { transform: scale(1.7); opacity: 0 } }
+.lp-rec-on .lp-ring { animation: lp-ring 1.8s cubic-bezier(0.32, 0.72, 0, 1) infinite; }
+.lp-rec-on .lp-ring:nth-child(2) { animation-delay: 0.9s; }
+@keyframes lp-bar { 0%, 100% { transform: scaleY(0.22) } 50% { transform: scaleY(1) } }
+.lp-wave i { display: block; width: 4px; height: 40px; border-radius: 4px; background: #14939a; opacity: 0.3; transform: scaleY(0.22); }
+.lp-rec-on .lp-wave i { opacity: 1; animation: lp-bar 0.9s ease-in-out infinite; }
+.lp-live .lp-wave i { animation: none; transition: transform 0.08s linear; }
+@keyframes lp-spin { to { transform: rotate(360deg) } }
+.lp-spin { animation: lp-spin 1s linear infinite; }
+
+/* Thẻ hộp quà: ánh sáng lướt qua + ngôi sao lấp lánh */
+@keyframes lp-shine { 0% { transform: translateX(-120%) skewX(-18deg) } 60%, 100% { transform: translateX(320%) skewX(-18deg) } }
+.lp-shine::after { content: ''; position: absolute; top: 0; bottom: 0; width: 42%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.75), transparent); animation: lp-shine 3.6s cubic-bezier(0.32, 0.72, 0, 1) infinite; pointer-events: none; }
+@keyframes lp-twinkle { 0%, 100% { opacity: 0.25; transform: scale(0.7) } 50% { opacity: 1; transform: scale(1) } }
+.lp-twinkle { animation: lp-twinkle 2.2s ease-in-out infinite; }
+
+/* Hoa văn chấm quanh ảnh sản phẩm + vòng chữ quanh ảnh thành phần */
+.lp-pattern-hex { background-image: radial-gradient(rgba(20, 147, 154, 0.18) 1.2px, transparent 1.4px); background-size: 14px 14px; -webkit-mask: radial-gradient(circle, #000 45%, transparent 72%); mask: radial-gradient(circle, #000 45%, transparent 72%); }
+@keyframes lp-orbit { to { transform: rotate(360deg) } }
+.lp-orbit { animation: lp-orbit 28s linear infinite; }
+.lp-orbit-rev { animation-direction: reverse; }
+.lp-eyebrow { display: inline-flex; align-items: center; gap: 0.4rem; border-radius: 999px; padding: 0.3rem 0.75rem; font-size: 10.5px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; }
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-root *, .lp-root *::before, .lp-root *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+  .lp-reveal { opacity: 1; transform: none; }
+}

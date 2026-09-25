@@ -27,6 +27,7 @@ const nextConfig = {
     '@dv/module-security',
     '@dv/module-image',
     '@dv/module-consent',
+    '@dv/module-landing',
   ],
   typescript: {
     // Disable type check during build (pre-existing issues in packages/core unrelated to CSV import).

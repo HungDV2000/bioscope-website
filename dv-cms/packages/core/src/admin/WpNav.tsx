@@ -31,6 +31,7 @@ const GROUP_DEFS: { key: string; icon: NavIconName; label: Record<Lang, string>;
   { key: 'content', icon: 'file', label: { en: 'Content', vi: 'Nội dung' }, slugs: ['pages', 'posts', 'categories', 'industries', 'tags', 'post-comments', 'forms', 'form-submissions'] },
   { key: 'bioscope', icon: 'flask', label: { en: 'Bioscope', vi: 'Bioscope' }, slugs: ['ingredients', 'ingredient-categories', 'ingredient-facets', 'technologies', 'services', 'certifications', 'case-studies', 'faqs', 'partners', 'product-categories', 'products'] },
   { key: 'b2b', icon: 'user-circle', label: { en: 'B2B portal', vi: 'Cổng B2B' }, slugs: ['members', 'gated-documents'] },
+  { key: 'landing', icon: 'award', label: { en: 'Landing pages', vi: 'Landing page' }, slugs: ['lp-campaigns', 'lp-participants', 'lp-recordings', 'lp-orders', 'lp-point-events', 'lp-settings'] },
   { key: 'seo', icon: 'newspaper', label: { en: 'SEO & Marketing', vi: 'SEO & Marketing' }, slugs: ['seo-settings', 'redirects', 'image-settings', 'bioscope-ai'] },
   { key: 'security', icon: 'shield', label: { en: 'Security', vi: 'Bảo mật' }, slugs: ['security-settings', 'blocked-ips', 'security-events', 'consent-settings', 'consent-log'] },
   { key: 'custom', icon: 'layers', label: { en: 'Custom types', vi: 'Loại tùy chỉnh' }, slugs: ['ct-definitions', 'tax-definitions', 'field-groups'] },

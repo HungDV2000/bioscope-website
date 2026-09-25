@@ -105,6 +105,13 @@ export interface Config {
     'blocked-ips': BlockedIp;
     'security-events': SecurityEvent;
     'consent-log': ConsentLog;
+    'lp-campaigns': LpCampaign;
+    'lp-rounds': LpRound;
+    'lp-participants': LpParticipant;
+    'lp-point-events': LpPointEvent;
+    'lp-recordings': LpRecording;
+    'lp-orders': LpOrder;
+    'lp-otps': LpOtp;
     'audit-logs': AuditLog;
     'payload-kv': PayloadKv;
     'payload-folders': FolderInterface;
@@ -155,6 +162,13 @@ export interface Config {
     'blocked-ips': BlockedIpsSelect<false> | BlockedIpsSelect<true>;
     'security-events': SecurityEventsSelect<false> | SecurityEventsSelect<true>;
     'consent-log': ConsentLogSelect<false> | ConsentLogSelect<true>;
+    'lp-campaigns': LpCampaignsSelect<false> | LpCampaignsSelect<true>;
+    'lp-rounds': LpRoundsSelect<false> | LpRoundsSelect<true>;
+    'lp-participants': LpParticipantsSelect<false> | LpParticipantsSelect<true>;
+    'lp-point-events': LpPointEventsSelect<false> | LpPointEventsSelect<true>;
+    'lp-recordings': LpRecordingsSelect<false> | LpRecordingsSelect<true>;
+    'lp-orders': LpOrdersSelect<false> | LpOrdersSelect<true>;
+    'lp-otps': LpOtpsSelect<false> | LpOtpsSelect<true>;
     'audit-logs': AuditLogsSelect<false> | AuditLogsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-folders': PayloadFoldersSelect<false> | PayloadFoldersSelect<true>;
@@ -179,6 +193,7 @@ export interface Config {
     'seo-settings': SeoSetting;
     'security-settings': SecuritySetting;
     'consent-settings': ConsentSetting;
+    'lp-settings': LpSetting;
   };
   globalsSelect: {
     'chat-settings': ChatSettingsSelect<false> | ChatSettingsSelect<true>;
@@ -193,6 +208,7 @@ export interface Config {
     'seo-settings': SeoSettingsSelect<false> | SeoSettingsSelect<true>;
     'security-settings': SecuritySettingsSelect<false> | SecuritySettingsSelect<true>;
     'consent-settings': ConsentSettingsSelect<false> | ConsentSettingsSelect<true>;
+    'lp-settings': LpSettingsSelect<false> | LpSettingsSelect<true>;
   };
   locale: 'vi' | 'en';
   widgets: {
@@ -3142,6 +3158,381 @@ export interface ConsentLog {
   createdAt: string;
 }
 /**
+ * Mỗi chiến dịch là một landing page. Khai tên miền ở tab "Tên miền", đổi trạng thái ở cột bên phải là có hiệu lực ngay, không cần deploy lại.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "lp-campaigns".
+ */
+export interface LpCampaign {
+  id: number;
+  title: string;
+  /**
+   * Chữ thường, không dấu, gạch nối. Dùng cho đường dẫn xem trước: web.bioscope.vn/lp/<mã>.
+   */
+  slug: string;
+  status: 'draft' | 'active' | 'ended' | 'off';
+  /**
+   * Đúng giờ chốt: đóng đăng ký, đóng băng thứ hạng và chọn người nhận quà — không cần ai ngồi canh.
+   */
+  autoEndAtDeadline?: boolean | null;
+  winnersFrozenAt?: string | null;
+  piiPurgedAt?: string | null;
+  /**
+   * Số người đứng đầu sẽ nhận quà khi chốt.
+   */
+  slots: number;
+  /**
+   * Con số "57 người đã nhận" trên trang.
+   */
+  given: number;
+  discountPercent: number;
+  /**
+   * Theo tháng: điểm tính lại từ đầu mỗi tháng, người tham gia không phải đăng ký lại. Mốc giờ tính theo giờ Việt Nam.
+   */
+  cycle: 'monthly' | 'once';
+  closeTime?: string | null;
+  /**
+   * Mặc định ngày 05 tháng sau.
+   */
+  announceDay?: number | null;
+  announceTime?: string | null;
+  /**
+   * Chỉ dùng cho chu kỳ "Một lần". Chu kỳ theo tháng thì hệ thống tự tính cuối tháng.
+   */
+  deadline?: string | null;
+  /**
+   * Sau khi công bố, dải "43 khách hàng nhận quà tháng trước" hiện trong bấy nhiêu ngày.
+   */
+  showResultDays?: number | null;
+  /**
+   * Tắt thì khách vào thẳng sau khi điền tên + SĐT — nhanh hơn nhưng dễ bị đăng ký ảo bằng số người khác.
+   */
+  requireOtp?: boolean | null;
+  /**
+   * Tắt thì gửi ghi âm là cộng điểm ngay.
+   */
+  requireRecordingApproval?: boolean | null;
+  domains?:
+    | {
+        host: string;
+        id?: string | null;
+      }[]
+    | null;
+  offRedirectUrl?: string | null;
+  points: {
+    video: number;
+    videoMain: number;
+    record: number;
+    /**
+     * Cộng khi người được mời xác thực OTP và xem xong 1 video.
+     */
+    order: number;
+    result: number;
+    goal: number;
+    bonusPerJoin: number;
+    bonusMax: number;
+    maxReferralOrders: number;
+  };
+  videos?:
+    | {
+        title: string;
+        durationLabel?: string | null;
+        /**
+         * Mở video ít hơn chừng này giây thì chưa cộng điểm.
+         */
+        minWatchSeconds?: number | null;
+        /**
+         * Để trống thì trang hiện "Video đang được cập nhật".
+         */
+        url?: string | null;
+        isMain?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Dùng {thang} và {nam} để tự điền theo đợt. VD: Chương trình quà tháng 10.
+   */
+  programName?: string | null;
+  /**
+   * Dùng {soSuat} để tự điền số phần quà. Đặt một cụm giữa *dấu sao* để cụm đó được tô xanh và gạch chân vàng.
+   */
+  heroTitle?: string | null;
+  heroSubtitle?: string | null;
+  /**
+   * Trả lời câu "quà là gì". Để trống thì ẩn dòng này.
+   */
+  giftNote?: string | null;
+  /**
+   * Trả lời câu "ai được tham gia". Để trống thì ẩn.
+   */
+  eligibilityNote?: string | null;
+  ctaLabel?: string | null;
+  /**
+   * Hiện ngay dưới mục "43 khách hàng có tổng điểm cao nhất". Để trống thì ẩn. Nội dung quảng cáo TPBVSK — nên cho bộ phận đăng ký duyệt câu chữ trước khi chạy.
+   */
+  numberExplain?: string | null;
+  /**
+   * Hiện trong popup "Xem thể lệ chương trình" ở cuối trang. Mỗi dòng một ý; dòng trống để tách đoạn.
+   */
+  rulesText?: string | null;
+  hotline?: string | null;
+  contactEmail?: string | null;
+  zaloUrl?: string | null;
+  company?: {
+    name?: string | null;
+    intro?: string | null;
+    registeredAddress?: string | null;
+    officeAddress?: string | null;
+    taxCode?: string | null;
+    invoiceEmail?: string | null;
+    website?: string | null;
+  };
+  certifications?:
+    | {
+        name: string;
+        number?: string | null;
+        file?: (number | null) | Media;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Chỉ đăng phản hồi có sự đồng ý của người dùng. Bật "Là nội dung minh hoạ" khi chưa có phản hồi thật — trang sẽ ghi rõ.
+   */
+  testimonials?:
+    | {
+        name: string;
+        area?: string | null;
+        symptom?: string | null;
+        quote: string;
+        isIllustration?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  studies?:
+    | {
+        title: string;
+        summary?: string | null;
+        /**
+         * Để trống thì trang ghi "đang cập nhật".
+         */
+        source?: string | null;
+        link?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  metaTitle?: string | null;
+  metaDescription?: string | null;
+  ogImage?: (number | null) | Media;
+  /**
+   * Ảnh vuông PNG/SVG, tối thiểu 64×64. Bỏ trống = biểu tượng mặc định màu Gastroheal.
+   */
+  favicon?: (number | null) | Media;
+  /**
+   * Dạng GTM-XXXXXXX. Mọi sự kiện của landing được đẩy vào dataLayer.
+   */
+  gtmId?: string | null;
+  /**
+   * Nguyên văn câu này được lưu kèm từng người tham gia làm bằng chứng đồng ý.
+   */
+  consentText: string;
+  /**
+   * Quá hạn này nên bấm "Xoá dữ liệu cá nhân" ở cột phải.
+   */
+  retentionDays?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Hệ thống tự chốt khi hết hạn và tự công bố đúng mốc. Danh sách người nhận quà chỉ hiện trên trang sau mốc công bố.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "lp-rounds".
+ */
+export interface LpRound {
+  id: number;
+  campaign: number | LpCampaign;
+  /**
+   * Dạng 2026-09. Chu kỳ một lần thì là "once".
+   */
+  key: string;
+  startAt?: string | null;
+  endAt: string;
+  announceAt: string;
+  status: 'open' | 'closed' | 'announced';
+  slots?: number | null;
+  participants?: number | null;
+  frozenAt?: string | null;
+  /**
+   * Đóng băng lúc chốt. Muốn đổi thì bấm "Chốt lại danh sách" trong trang chiến dịch.
+   */
+  winners?:
+    | {
+        participant?: (number | null) | LpParticipant;
+        rank?: number | null;
+        points?: number | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Dữ liệu sức khoẻ và số điện thoại — chỉ vai trò Admin (hoặc được cấp riêng) mới xem được. Điểm tính lại tự động từ Sổ điểm.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "lp-participants".
+ */
+export interface LpParticipant {
+  id: number;
+  campaign: number | LpCampaign;
+  name: string;
+  phone: string;
+  symptoms?: ('s1' | 's2' | 's3' | 's4' | 's5')[] | null;
+  symptomOther?: string | null;
+  referralCode?: string | null;
+  referredBy?: (number | null) | LpParticipant;
+  sharedAt?: string | null;
+  /**
+   * Người bị loại không xếp hạng và không nhận quà.
+   */
+  status: 'active' | 'blocked';
+  /**
+   * Tổng điểm mọi đợt. Xếp hạng dùng điểm của đợt đang chạy bên dưới.
+   */
+  points?: number | null;
+  joinSeq?: number | null;
+  /**
+   * Dạng 2026-09.
+   */
+  roundKey?: string | null;
+  roundJoinSeq?: number | null;
+  /**
+   * Chưa gồm điểm "người vào sau" — phần đó tính theo thứ tự trong đợt.
+   */
+  roundPoints?: number | null;
+  winner?: boolean | null;
+  winnerRank?: number | null;
+  inviteCredited?: boolean | null;
+  winAt?: string | null;
+  verifiedAt?: string | null;
+  consentAt?: string | null;
+  consentText?: string | null;
+  tracking?: {
+    ip?: string | null;
+    userAgent?: string | null;
+    host?: string | null;
+    utm?:
+      | {
+          [k: string]: unknown;
+        }
+      | unknown[]
+      | string
+      | number
+      | boolean
+      | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Muốn cộng/trừ điểm tay: tạo dòng mới loại "Điều chỉnh tay", điểm âm để trừ, bắt buộc ghi lý do.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "lp-point-events".
+ */
+export interface LpPointEvent {
+  id: number;
+  participant: number | LpParticipant;
+  campaign?: (number | null) | LpCampaign;
+  type: 'video' | 'record' | 'order' | 'result' | 'manual';
+  points: number;
+  note?: string | null;
+  /**
+   * Điểm thuộc đợt nào (2026-09). Xếp hạng chỉ tính điểm trong đợt đang chạy.
+   */
+  round?: string | null;
+  /**
+   * Tự sinh. Ví dụ video:1, order:25, record:intro.
+   */
+  refKey?: string | null;
+  createdBy?: (number | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Nghe rồi chọn "Đạt" để cộng điểm cho người tham gia, "Loại" nếu bản ghi không đúng yêu cầu.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "lp-recordings".
+ */
+export interface LpRecording {
+  id: number;
+  participant: number | LpParticipant;
+  campaign: number | LpCampaign;
+  kind: 'intro' | 'result' | 'symptom';
+  durationSec?: number | null;
+  /**
+   * Duyệt xong thì điểm cộng vào đợt này.
+   */
+  round?: string | null;
+  status: 'pending' | 'approved' | 'rejected';
+  reviewNote?: string | null;
+  reviewedBy?: (number | null) | User;
+  reviewedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+}
+/**
+ * Gọi xác nhận rồi chuyển sang "Đã xác nhận" — lúc đó người giới thiệu mới được cộng điểm.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "lp-orders".
+ */
+export interface LpOrder {
+  id: number;
+  campaign: number | LpCampaign;
+  name: string;
+  phone: string;
+  address: string;
+  quantity: number;
+  code?: string | null;
+  discountPercent?: number | null;
+  note?: string | null;
+  status: 'new' | 'confirmed' | 'shipped' | 'cancelled';
+  referrer?: (number | null) | LpParticipant;
+  buyer?: (number | null) | LpParticipant;
+  staffNote?: string | null;
+  ip?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "lp-otps".
+ */
+export interface LpOtp {
+  id: number;
+  campaign: number | LpCampaign;
+  phone: string;
+  codeHash: string;
+  expiresAt: string;
+  attempts?: number | null;
+  consumedAt?: string | null;
+  ip?: string | null;
+  delivered?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Ai đã tạo/sửa/xoá nội dung nào. Chỉ đọc — hệ thống tự ghi.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -3330,6 +3721,34 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'consent-log';
         value: number | ConsentLog;
+      } | null)
+    | ({
+        relationTo: 'lp-campaigns';
+        value: number | LpCampaign;
+      } | null)
+    | ({
+        relationTo: 'lp-rounds';
+        value: number | LpRound;
+      } | null)
+    | ({
+        relationTo: 'lp-participants';
+        value: number | LpParticipant;
+      } | null)
+    | ({
+        relationTo: 'lp-point-events';
+        value: number | LpPointEvent;
+      } | null)
+    | ({
+        relationTo: 'lp-recordings';
+        value: number | LpRecording;
+      } | null)
+    | ({
+        relationTo: 'lp-orders';
+        value: number | LpOrder;
+      } | null)
+    | ({
+        relationTo: 'lp-otps';
+        value: number | LpOtp;
       } | null)
     | ({
         relationTo: 'audit-logs';
@@ -5109,6 +5528,258 @@ export interface ConsentLogSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "lp-campaigns_select".
+ */
+export interface LpCampaignsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  status?: T;
+  autoEndAtDeadline?: T;
+  winnersFrozenAt?: T;
+  piiPurgedAt?: T;
+  slots?: T;
+  given?: T;
+  discountPercent?: T;
+  cycle?: T;
+  closeTime?: T;
+  announceDay?: T;
+  announceTime?: T;
+  deadline?: T;
+  showResultDays?: T;
+  requireOtp?: T;
+  requireRecordingApproval?: T;
+  domains?:
+    | T
+    | {
+        host?: T;
+        id?: T;
+      };
+  offRedirectUrl?: T;
+  points?:
+    | T
+    | {
+        video?: T;
+        videoMain?: T;
+        record?: T;
+        order?: T;
+        result?: T;
+        goal?: T;
+        bonusPerJoin?: T;
+        bonusMax?: T;
+        maxReferralOrders?: T;
+      };
+  videos?:
+    | T
+    | {
+        title?: T;
+        durationLabel?: T;
+        minWatchSeconds?: T;
+        url?: T;
+        isMain?: T;
+        id?: T;
+      };
+  programName?: T;
+  heroTitle?: T;
+  heroSubtitle?: T;
+  giftNote?: T;
+  eligibilityNote?: T;
+  ctaLabel?: T;
+  numberExplain?: T;
+  rulesText?: T;
+  hotline?: T;
+  contactEmail?: T;
+  zaloUrl?: T;
+  company?:
+    | T
+    | {
+        name?: T;
+        intro?: T;
+        registeredAddress?: T;
+        officeAddress?: T;
+        taxCode?: T;
+        invoiceEmail?: T;
+        website?: T;
+      };
+  certifications?:
+    | T
+    | {
+        name?: T;
+        number?: T;
+        file?: T;
+        id?: T;
+      };
+  testimonials?:
+    | T
+    | {
+        name?: T;
+        area?: T;
+        symptom?: T;
+        quote?: T;
+        isIllustration?: T;
+        id?: T;
+      };
+  studies?:
+    | T
+    | {
+        title?: T;
+        summary?: T;
+        source?: T;
+        link?: T;
+        id?: T;
+      };
+  metaTitle?: T;
+  metaDescription?: T;
+  ogImage?: T;
+  favicon?: T;
+  gtmId?: T;
+  consentText?: T;
+  retentionDays?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "lp-rounds_select".
+ */
+export interface LpRoundsSelect<T extends boolean = true> {
+  campaign?: T;
+  key?: T;
+  startAt?: T;
+  endAt?: T;
+  announceAt?: T;
+  status?: T;
+  slots?: T;
+  participants?: T;
+  frozenAt?: T;
+  winners?:
+    | T
+    | {
+        participant?: T;
+        rank?: T;
+        points?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "lp-participants_select".
+ */
+export interface LpParticipantsSelect<T extends boolean = true> {
+  campaign?: T;
+  name?: T;
+  phone?: T;
+  symptoms?: T;
+  symptomOther?: T;
+  referralCode?: T;
+  referredBy?: T;
+  sharedAt?: T;
+  status?: T;
+  points?: T;
+  joinSeq?: T;
+  roundKey?: T;
+  roundJoinSeq?: T;
+  roundPoints?: T;
+  winner?: T;
+  winnerRank?: T;
+  inviteCredited?: T;
+  winAt?: T;
+  verifiedAt?: T;
+  consentAt?: T;
+  consentText?: T;
+  tracking?:
+    | T
+    | {
+        ip?: T;
+        userAgent?: T;
+        host?: T;
+        utm?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "lp-point-events_select".
+ */
+export interface LpPointEventsSelect<T extends boolean = true> {
+  participant?: T;
+  campaign?: T;
+  type?: T;
+  points?: T;
+  note?: T;
+  round?: T;
+  refKey?: T;
+  createdBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "lp-recordings_select".
+ */
+export interface LpRecordingsSelect<T extends boolean = true> {
+  participant?: T;
+  campaign?: T;
+  kind?: T;
+  durationSec?: T;
+  round?: T;
+  status?: T;
+  reviewNote?: T;
+  reviewedBy?: T;
+  reviewedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "lp-orders_select".
+ */
+export interface LpOrdersSelect<T extends boolean = true> {
+  campaign?: T;
+  name?: T;
+  phone?: T;
+  address?: T;
+  quantity?: T;
+  code?: T;
+  discountPercent?: T;
+  note?: T;
+  status?: T;
+  referrer?: T;
+  buyer?: T;
+  staffNote?: T;
+  ip?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "lp-otps_select".
+ */
+export interface LpOtpsSelect<T extends boolean = true> {
+  campaign?: T;
+  phone?: T;
+  codeHash?: T;
+  expiresAt?: T;
+  attempts?: T;
+  consumedAt?: T;
+  ip?: T;
+  delivered?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "audit-logs_select".
  */
 export interface AuditLogsSelect<T extends boolean = true> {
@@ -5918,6 +6589,46 @@ export interface ConsentSetting {
   createdAt?: string | null;
 }
 /**
+ * Nhà cung cấp SMS gửi mã OTP và thông tin máy chủ để kiểm tra DNS.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "lp-settings".
+ */
+export interface LpSetting {
+  id: number;
+  /**
+   * Chế độ "Chỉ ghi ra log": mã OTP nằm trong log của container CMS, dùng để thử trước khi ký hợp đồng SMS. Không dùng khi chạy quảng cáo thật.
+   */
+  otpProvider: 'log' | 'esms' | 'speedsms';
+  /**
+   * Giữ {code} và {brand}. Viết KHÔNG DẤU: tin có dấu tính giá gấp đôi, và nhà mạng thường bắt đăng ký trước mẫu tin brandname.
+   */
+  smsTemplate: string;
+  brand?: string | null;
+  esms?: {
+    apiKey?: string | null;
+    secretKey?: string | null;
+    brandname?: string | null;
+    smsType?: ('2' | '8') | null;
+  };
+  speedsms?: {
+    accessToken?: string | null;
+    sender?: string | null;
+    smsType?: ('3' | '2' | '5') | null;
+  };
+  otpPerPhonePerHour?: number | null;
+  /**
+   * Chặn một máy spam tin nhắn tới hàng loạt số — mỗi tin đều tốn tiền.
+   */
+  otpPerIpPerHour?: number | null;
+  /**
+   * Dùng cho nút "Kiểm tra DNS": tên miền landing phải trỏ bản ghi A về đúng IP này.
+   */
+  serverIp?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "chat-settings_select".
  */
@@ -6424,6 +7135,36 @@ export interface ConsentSettingsSelect<T extends boolean = true> {
   accentColor?: T;
   blockScripts?: T;
   logConsent?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "lp-settings_select".
+ */
+export interface LpSettingsSelect<T extends boolean = true> {
+  otpProvider?: T;
+  smsTemplate?: T;
+  brand?: T;
+  esms?:
+    | T
+    | {
+        apiKey?: T;
+        secretKey?: T;
+        brandname?: T;
+        smsType?: T;
+      };
+  speedsms?:
+    | T
+    | {
+        accessToken?: T;
+        sender?: T;
+        smsType?: T;
+      };
+  otpPerPhonePerHour?: T;
+  otpPerIpPerHour?: T;
+  serverIp?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
